@@ -1,0 +1,38 @@
+{
+  "name": "level23/txtmsg-client",
+  "description": "Client for txtmsg.io api",
+  "keywords": [
+    "leve23",
+    "txtmsg.io",
+    "sms"
+  ],
+  "license": "MIT",
+  "type": "project",
+  "require": {
+    "php": ">=7.2",
+    "guzzlehttp/guzzle": "^6.3",
+    "illuminate/support": "~5.5|~5.6|~5.7|~5.8"
+  },
+  "require-dev": {
+    "mockery/mockery": "^1.2",
+    "phpstan/phpstan": "^0.11.9",
+    "phpunit/phpunit": "^8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "": "src/"
+    }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/"
+    ]
+  },
+  "config": {
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "optimize-autoloader": true
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
