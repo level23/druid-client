@@ -18,7 +18,7 @@ class SelectorFilter implements FilterInterface
      * InFilter constructor.
      *
      * @param string $dimension
-     * @param array  $values
+     * @param string $value
      */
     public function __construct(string $dimension, string $value)
     {

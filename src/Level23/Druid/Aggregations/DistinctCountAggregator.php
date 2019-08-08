@@ -29,13 +29,13 @@ class DistinctCountAggregator implements AggregatorInterface
      * CountAggregator constructor.
      *
      * @param string $outputName
-     * @param string $dimenion
+     * @param string $dimension
      * @param int    $size
      */
-    public function __construct(string $outputName, string $dimenion, int $size = 16384)
+    public function __construct(string $outputName, string $dimension, int $size = 16384)
     {
         $this->outputName = $outputName;
-        $this->dimension  = $dimenion;
+        $this->dimension  = $dimension;
         $this->size       = $size;
     }
 
