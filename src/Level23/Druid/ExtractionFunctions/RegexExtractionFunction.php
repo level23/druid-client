@@ -36,7 +36,7 @@ class RegexExtractionFunction implements ExtractionFunctionInterface
         string $regexp,
         $groupToExtract = 1,
         $replaceMissingValue = false,
-        ?string $replaceMissingValueWith = null
+        string $replaceMissingValueWith = null
     ) {
         $this->regexp                  = $regexp;
         $this->groupToExtract          = $groupToExtract;

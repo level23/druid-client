@@ -1,8 +1,8 @@
 parameters:
     level: max
+    includes:
+      - vendor/timeweb/phpstan-enum/extension.neon
     ignoreErrors:
-      - '#Call to an undefined method (.*)Mockery\\(MockInterface|ExpectationInterface)(.*)#'
-      - '#constructor expects GuzzleHttp\\Client|null, GuzzleHttp\\Client\|Mockery\\MockInterface given#'
     paths:
       - tests
       - src

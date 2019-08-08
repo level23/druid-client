@@ -15,7 +15,7 @@ class LookupDimension implements DimensionInterface
     protected $outputName;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var string
      */
     protected $registeredLookupFunction;
 

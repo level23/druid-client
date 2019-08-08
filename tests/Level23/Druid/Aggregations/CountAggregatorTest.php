@@ -7,9 +7,9 @@ use tests\TestCase;
 
 class CountAggregatorTest extends TestCase
 {
-    public function testCountAggregator()
+    public function testAggregator()
     {
-        $aggregator = new CountAggregator("numberOfThings");
+        $aggregator = new CountAggregator('numberOfThings');
         $this->assertEquals( [
             'type' => 'count',
             'name' => 'numberOfThings'

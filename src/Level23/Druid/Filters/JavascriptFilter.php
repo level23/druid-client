@@ -1,10 +1,21 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
 use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
 
-class SelectorFilter implements FilterInterface
+/**
+ * Class JavascriptFilter
+ *
+ * The JavaScript filter matches a dimension against the specified JavaScript function predicate.
+ * The filter matches values for which the function returns true.
+ *
+ * The function takes a single argument, the dimension value, and returns either true or false.
+ *
+ * @package Level23\Druid\Filters
+ */
+class JavascriptFilter implements FilterInterface
 {
     /**
      * @var string
@@ -14,7 +25,7 @@ class SelectorFilter implements FilterInterface
     /**
      * @var string
      */
-    protected $value;
+    protected $javascriptFunction;
 
     /**
      * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
@@ -22,19 +33,19 @@ class SelectorFilter implements FilterInterface
     protected $extractionFunction;
 
     /**
-     * InFilter constructor.
+     * JavascriptFilter constructor.
      *
      * @param string                           $dimension
-     * @param string                           $value
+     * @param string                           $javascriptFunction
      * @param ExtractionFunctionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
-        string $value,
+        string $javascriptFunction,
         ExtractionFunctionInterface $extractionFunction = null
     ) {
-        $this->value              = $value;
         $this->dimension          = $dimension;
+        $this->javascriptFunction = $javascriptFunction;
         $this->extractionFunction = $extractionFunction;
     }
 
@@ -46,9 +57,9 @@ class SelectorFilter implements FilterInterface
     public function getFilter(): array
     {
         $result = [
-            'type'      => 'selector',
+            'type'      => 'javascript',
             'dimension' => $this->dimension,
-            'value'     => $this->value,
+            'function'  => $this->javascriptFunction,
         ];
 
         if ($this->extractionFunction) {

@@ -1,10 +1,20 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
 use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
 
-class SelectorFilter implements FilterInterface
+/**
+ * Class RegexFilter
+ *
+ * The regular expression filter is similar to the selector filter, but using regular expressions.
+ * It matches the specified dimension with the given pattern. The pattern can be any standard Java regular expression.
+ *
+ * @see     http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
+ * @package Level23\Druid\Filters
+ */
+class RegexFilter implements FilterInterface
 {
     /**
      * @var string
@@ -14,7 +24,7 @@ class SelectorFilter implements FilterInterface
     /**
      * @var string
      */
-    protected $value;
+    protected $pattern;
 
     /**
      * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
@@ -22,18 +32,21 @@ class SelectorFilter implements FilterInterface
     protected $extractionFunction;
 
     /**
-     * InFilter constructor.
+     * RegexFilter constructor.
      *
      * @param string                           $dimension
-     * @param string                           $value
+     * @param string                           $pattern A Java regex pattern
+     *
      * @param ExtractionFunctionInterface|null $extractionFunction
+     *
+     * @see http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
      */
     public function __construct(
         string $dimension,
-        string $value,
+        string $pattern,
         ExtractionFunctionInterface $extractionFunction = null
     ) {
-        $this->value              = $value;
+        $this->pattern            = $pattern;
         $this->dimension          = $dimension;
         $this->extractionFunction = $extractionFunction;
     }
@@ -46,9 +59,9 @@ class SelectorFilter implements FilterInterface
     public function getFilter(): array
     {
         $result = [
-            'type'      => 'selector',
+            'type'      => 'regex',
             'dimension' => $this->dimension,
-            'value'     => $this->value,
+            'pattern'   => $this->pattern,
         ];
 
         if ($this->extractionFunction) {

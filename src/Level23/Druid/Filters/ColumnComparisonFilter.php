@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
@@ -34,7 +35,7 @@ class ColumnComparisonFilter implements FilterInterface
     protected $value;
 
     /**
-     * InFilter constructor.
+     * ColumnComparisonFilter constructor.
      *
      * @param string $dimensionA
      * @param string $dimensionB

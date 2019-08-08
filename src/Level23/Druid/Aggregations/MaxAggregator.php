@@ -2,7 +2,7 @@
 
 namespace Level23\Druid\Aggregations;
 
-class FloatSumAggregator extends LongSumAggregator
+class MaxAggregator extends SumAggregator
 {
     /**
      * Return the aggregator as it can be used in a druid query.
@@ -12,7 +12,7 @@ class FloatSumAggregator extends LongSumAggregator
     public function getAggregator(): array
     {
         return [
-            'type'      => 'floatSum',
+            'type'      => $this->type . 'Max',
             'name'      => $this->outputName,
             'fieldName' => $this->metricName,
         ];

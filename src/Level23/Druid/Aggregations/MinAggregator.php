@@ -2,7 +2,7 @@
 
 namespace Level23\Druid\Aggregations;
 
-class DoubleMaxAggregator extends LongSumAggregator
+class MinAggregator extends SumAggregator
 {
     /**
      * Return the aggregator as it can be used in a druid query.
@@ -12,7 +12,7 @@ class DoubleMaxAggregator extends LongSumAggregator
     public function getAggregator(): array
     {
         return [
-            'type'      => 'doubleMax',
+            'type'      => $this->type . 'Min',
             'name'      => $this->outputName,
             'fieldName' => $this->metricName,
         ];
