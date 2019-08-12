@@ -1,0 +1,21 @@
+{
+    "timeout": 10,
+    "source": {
+        "directories": [
+            "src"
+        ],
+        "excludes": [
+            "*DruidService*"
+        ]
+    },
+    "phpUnit": {
+        "configDir": "build/",
+        "customPath": "vendor/phpunit/phpunit/phpunit"
+    },
+    "logs": {
+        "text": "infection.log"
+    },
+    "mutators": {
+        "@default": true
+    }
+}
