@@ -2,7 +2,6 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Types\DataType;
 use tests\TestCase;
@@ -17,7 +16,7 @@ class SumAggregatorTest extends TestCase
             [DataType::FLOAT()],
             [DataType::STRING(), true],
             ["asDF", true],
-            ["LONG"]
+            ["LONG"],
         ];
     }
 
@@ -25,7 +24,7 @@ class SumAggregatorTest extends TestCase
      * @dataProvider  dataProvider
      *
      * @param DataType|string $type
-     * @param bool     $expectException
+     * @param bool            $expectException
      */
     public function testAggregator($type, bool $expectException = false)
     {
@@ -39,5 +38,7 @@ class SumAggregatorTest extends TestCase
             'name'      => 'dim123',
             'fieldName' => 'abc',
         ], $aggregator->getAggregator());
+
+        $this->assertEquals('dim123', $aggregator->getOutputName());
     }
 }

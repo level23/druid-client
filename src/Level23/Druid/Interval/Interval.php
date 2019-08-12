@@ -3,21 +3,21 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Interval;
 
-use Carbon\Carbon;
+use DateTime;
 
 class Interval implements IntervalInterface
 {
     /**
-     * @var \Carbon\Carbon
+     * @var DateTime
      */
     protected $start;
 
     /**
-     * @var \Carbon\Carbon
+     * @var DateTime
      */
     protected $stop;
 
-    public function __construct(Carbon $start, Carbon $stop)
+    public function __construct(DateTime $start, DateTime $stop)
     {
 
         $this->start = $start;
@@ -32,6 +32,6 @@ class Interval implements IntervalInterface
      */
     public function getInterval(): string
     {
-        return $this->start->toIso8601String() . '/' . $this->stop->toIso8601String();
+        return $this->start->format(DateTime::ATOM) . '/' . $this->stop->format(DateTime::ATOM);
     }
 }
