@@ -12,7 +12,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @param mixed  $object
      * @param string $propertyName
-     * @param mixed  $value
      *
      * @return mixed
      * @throws \ReflectionException
@@ -24,20 +23,5 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $property = $reflectionClass->getProperty($propertyName);
         $property->setAccessible(true);
         return $property->getValue($object);
-    }
-
-    /**
-     * Tear down the test case.
-     *
-     * @return void
-     */
-    public function tearsDown(): void
-    {
-
-        parent::tearDown();
-        if ($container = Mockery::getContainer()) {
-            $this->addToAssertionCount($container->mockery_getExpectationCount());
-        }
-        Mockery::close();
     }
 }

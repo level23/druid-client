@@ -2,7 +2,9 @@ parameters:
     level: max
     includes:
       - vendor/timeweb/phpstan-enum/extension.neon
+      - vendor/phpstan/phpstan-mockery/extension.neon
     ignoreErrors:
+      - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
     paths:
       - tests
       - src

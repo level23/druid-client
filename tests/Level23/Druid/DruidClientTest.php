@@ -20,7 +20,7 @@ class DruidClientTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 
@@ -58,6 +58,7 @@ class DruidClientTest extends TestCase
 
     /**
      * Our data sets for our select method.
+     *
      * @return array
      */
     public function selectDataProvider(): array
@@ -93,15 +94,19 @@ class DruidClientTest extends TestCase
      *
      * @dataProvider selectDataProvider
      *
-     * @param $parameters
-     * @param $expectedResult
+     * @param array $parameters
+     * @param array $expectedResult
      */
-    public function testSelect($parameters, $expectedResult)
+    public function testSelect(array $parameters, $expectedResult)
     {
         $builder = \Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
         $builder->makePartial();
 
-        $response = call_user_func_array([$builder, 'select'], $parameters);
+        $response = null;
+        $callback = [$builder, 'select'];
+        if (is_callable($callback)) {
+            $response = call_user_func_array($callback, $parameters);
+        }
 
         $this->assertEquals($response, $builder);
 
