@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<ruleset name="My PHPMD rule set" xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0
+                     http://pmd.sf.net/ruleset_xml_schema.xsd"
+         xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>
+        My custom rule set that checks my code...
+    </description>
+
+    <!-- We explicitly ignore this rule as we do access $_POST, $_GET, $_SESSION and $_FILES -->
+    <!-- <rule ref="rulesets/controversial.xml/Superglobals" /> -->
+
+    <rule ref="rulesets/controversial.xml/CamelCaseClassName"/>
+    <rule ref="rulesets/controversial.xml/CamelCasePropertyName"/>
+    <rule ref="rulesets/controversial.xml/CamelCaseMethodName"/>
+    <rule ref="rulesets/controversial.xml/CamelCaseParameterName"/>
+    <rule ref="rulesets/controversial.xml/CamelCaseVariableName"/>
+
+    <rule ref="rulesets/design.xml/EvalExpression"/>
+    <rule ref="rulesets/design.xml/GotoStatement"/>
+
+    <!--<rule ref="rulesets/design.xml/NumberOfChildren" />-->
+
+
+    <rule ref="rulesets/design.xml/DepthOfInheritance"/>
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects">
+        <priority>1</priority>
+        <properties>
+            <property name="minimum" value="20"/>
+        </properties>
+    </rule>
+
+    <!-- Import the entire cyclomatic complexity rule -->
+    <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
+        <priority>1</priority>
+        <properties>
+            <property name="reportLevel" value="50"/>
+        </properties>
+    </rule>
+
+    <!--<rule ref="rulesets/codesize.xml/NPathComplexity" />-->
+    <rule ref="rulesets/codesize.xml/ExcessiveMethodLength">
+        <priority>1</priority>
+        <properties>
+            <property name="minimum" value="100"/>
+            <property name="ignore-whitespace" value="true"/>
+        </properties>
+    </rule>
+
+
+    <rule ref="rulesets/codesize.xml/ExcessiveClassLength">
+        <priority>1</priority>
+        <properties>
+            <property name="minimum" value="1500"/>
+            <property name="ignore-whitespace" value="true"/>
+        </properties>
+    </rule>
+
+
+    <rule ref="rulesets/codesize.xml/ExcessiveParameterList"/>
+    <rule ref="rulesets/codesize.xml/ExcessivePublicCount"/>
+    <rule ref="rulesets/codesize.xml/TooManyFields"/>
+    <rule ref="rulesets/codesize.xml/TooManyMethods"/>
+
+    <rule ref="rulesets/codesize.xml/ExcessiveClassComplexity">
+        <priority>1</priority>
+        <properties>
+            <property name="maximum" value="80"/>
+        </properties>
+    </rule>
+
+</ruleset>
