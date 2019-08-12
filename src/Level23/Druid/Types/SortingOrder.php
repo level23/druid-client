@@ -15,12 +15,13 @@ use MyCLabs\Enum\Enum;
  * @method static self VERSION()
  *
  * @package Level23\Druid\Types
+ * @codeCoverageIgnore
  */
 class SortingOrder extends Enum
 {
     private const LEXICOGRAPHIC = 'lexicographic';
-    private const ALPHANUMERIC = 'alphanumeric';
-    private const NUMERIC      = 'numeric';
-    private const STRLEN       = 'strlen';
-    private const VERSION      = 'version';
+    private const ALPHANUMERIC  = 'alphanumeric';
+    private const NUMERIC       = 'numeric';
+    private const STRLEN        = 'strlen';
+    private const VERSION       = 'version';
 }

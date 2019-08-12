@@ -1,5 +1,9 @@
 # Druid-Client
 
+[![pipeline status](https://git.level23.nl/packages/druid-client/badges/master/pipeline.svg)](https://git.level23.nl/packages/druid-client/commits/master)
+[![coverage report](https://git.level23.nl/packages/druid-client/badges/master/coverage.svg)](https://git.level23.nl/packages/druid-client/commits/master)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
+
 
 The goal of this project is to make it easy to select data from druid.
 
@@ -46,3 +50,10 @@ $response = $client->query('traffic-hits')
 ```
 
 More info to come!
+
+For testing/building, run:
+```
+infection --threads=4
+
+ant phpstan
+```

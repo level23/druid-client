@@ -14,6 +14,7 @@ use MyCLabs\Enum\Enum;
  * @method static self LE()
  *
  * @package Level23\Druid\Types
+ * @codeCoverageIgnore
  */
 class BoundOperator extends Enum
 {

@@ -21,6 +21,7 @@ use MyCLabs\Enum\Enum;
  * @method static self YEAR()
  *
  * @package Level23\Druid\Types
+ * @codeCoverageIgnore
  */
 class Granularity extends Enum
 {

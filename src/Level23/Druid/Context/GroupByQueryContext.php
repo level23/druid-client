@@ -5,34 +5,8 @@ namespace Level23\Druid\Context;
 
 use InvalidArgumentException;
 
-class GroupByQueryContext implements ContextInterface
+class GroupByQueryContext extends QueryContext implements ContextInterface
 {
-    /**
-     * GroupByQueryContext constructor.
-     *
-     * @param array $properties
-     */
-    public function __construct(array $properties)
-    {
-        foreach ($properties as $key => $value) {
-
-            if (!property_exists($this, $key)) {
-                throw new InvalidArgumentException(
-                    'Setting ' . $key . ' was not found in the groupBy query context'
-                );
-            }
-
-            if (!is_scalar($value)) {
-                throw new InvalidArgumentException(
-                    'Invalid value ' . var_export($value, true) .
-                    ' for ' . $key . ' for the groupBy query context'
-                );
-            }
-
-            $this->$key = $value;
-        }
-    }
-
     /**
      * @var string
      *
@@ -172,9 +146,9 @@ class GroupByQueryContext implements ContextInterface
      */
     public function getContext(): array
     {
-        $result = [
-            'groupByStrategy' => $this->groupByStrategy,
-        ];
+        $result = parent::getContext();
+
+        $result['groupByStrategy'] = $this->groupByStrategy;
 
         if ($this->groupByStrategy == 'v1') {
             $properties = [
