@@ -28,5 +28,7 @@ class JavascriptAggregatorTest extends TestCase
             'fnCombine'   => $fnCombine,
             'fnReset'     => $fnReset,
         ], $aggregator->getAggregator());
+
+        $this->assertEquals('total', $aggregator->getOutputName());
     }
 }

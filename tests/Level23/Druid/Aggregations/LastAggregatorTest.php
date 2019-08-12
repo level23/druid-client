@@ -36,5 +36,7 @@ class LastAggregatorTest extends TestCase
             'name'      => 'dim123',
             'fieldName' => 'abc',
         ], $aggregator->getAggregator());
+
+        $this->assertEquals('dim123', $aggregator->getOutputName());
     }
 }

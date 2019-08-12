@@ -14,5 +14,7 @@ class CountAggregatorTest extends TestCase
             'type' => 'count',
             'name' => 'numberOfThings'
         ], $aggregator->getAggregator());
+
+        $this->assertEquals('numberOfThings', $aggregator->getOutputName());
     }
 }

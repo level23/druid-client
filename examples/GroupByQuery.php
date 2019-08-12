@@ -5,14 +5,13 @@ ini_set('display_errors', 'On');
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use Carbon\Carbon;
 use Level23\Druid\DruidClient;
 use Level23\Druid\QueryBuilder;
 
 $client = new DruidClient('http://127.0.0.1:8888/druid/v2');
 
 $response = $client->query('traffic-hits')
-    ->interval(Carbon::now()->subDay(), Carbon::now())
+    ->interval(new DateTime("now - 1 day"), new DateTime())
     ->select('browser')
     ->select('country_iso', 'Country')
     ->select(['mccmnc' => 'operator_code'])

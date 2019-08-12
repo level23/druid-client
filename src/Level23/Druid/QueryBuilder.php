@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Level23\Druid;
 
 use ArrayObject;
-use Carbon\Carbon;
 use Closure;
+use DateTime;
 use InvalidArgumentException;
 use Level23\Druid\Aggregations\CountAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
@@ -176,19 +176,20 @@ class QueryBuilder
      * Add an interval, eg the date where we want to select data from.
      * This can be an Carbon or DateTime object, or a string which can be parsed to a datetime.
      *
-     * @param \Carbon\Carbon|string $start
-     * @param \Carbon\Carbon|string $stop
+     * @param \DateTime|string $start
+     * @param \DateTime|string $stop
      *
      * @return $this
+     * @throws \Exception
      */
     public function interval($start, $stop): QueryBuilder
     {
-        if (!$start instanceof Carbon) {
-            $start = Carbon::parse($start);
+        if (!$start instanceof DateTime) {
+            $start = new DateTime($start);
         }
 
-        if (!$stop instanceof Carbon) {
-            $stop = Carbon::parse($stop);
+        if (!$stop instanceof DateTime) {
+            $stop = new DateTime($stop);
         }
 
         $this->intervals->add(new Interval($start, $stop));
