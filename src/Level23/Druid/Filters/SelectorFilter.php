@@ -17,7 +17,7 @@ class SelectorFilter implements FilterInterface
     protected $value;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
      */
     protected $extractionFunction;
 

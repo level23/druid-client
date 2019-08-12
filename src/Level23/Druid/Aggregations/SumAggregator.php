@@ -27,12 +27,12 @@ class SumAggregator implements AggregatorInterface
     /**
      * constructor.
      *
-     * @param string                        $metricName
-     * @param string                        $outputName     When not given, we will use the same name as the metric.
-     * @param \Level23\Druid\Types\DataType $type           The type of field. This can either be "long", "float" or
+     * @param string          $metricName
+     * @param string          $outputName                   When not given, we will use the same name as the metric.
+     * @param DataType|string $type                         The type of field. This can either be "long", "float" or
      *                                                      "double"
      */
-    public function __construct(string $metricName, string $outputName = '', DataType $type = null)
+    public function __construct(string $metricName, string $outputName = '', $type = 'long')
     {
         $this->metricName = $metricName;
         $this->outputName = $outputName ?: $metricName;
@@ -59,5 +59,15 @@ class SumAggregator implements AggregatorInterface
             'name'      => $this->outputName,
             'fieldName' => $this->metricName,
         ];
+    }
+
+    /**
+     * Return how this aggregation will be outputted in the query results.
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->outputName;
     }
 }

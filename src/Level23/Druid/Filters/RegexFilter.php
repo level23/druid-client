@@ -27,7 +27,7 @@ class RegexFilter implements FilterInterface
     protected $pattern;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
      */
     protected $extractionFunction;
 

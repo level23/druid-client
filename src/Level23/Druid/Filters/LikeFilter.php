@@ -31,7 +31,7 @@ class LikeFilter implements FilterInterface
     protected $escapeCharacter;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
      */
     protected $extractionFunction;
 

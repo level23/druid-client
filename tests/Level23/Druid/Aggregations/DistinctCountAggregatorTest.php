@@ -7,15 +7,35 @@ use tests\TestCase;
 
 class DistinctCountAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function dataProvider(): array
     {
-        $aggregator = new DistinctCountAggregator('abc', 'dim123', 32768);
+        return [
+            ['dimension', 'abc', 32768],
+            ['dimension', 'abc', null],
+        ];
+    }
+
+    /**
+     * @param string   $outputName
+     * @param string   $dimension
+     * @param int|null $size
+     *
+     * @dataProvider dataProvider
+     */
+    public function testAggregator(string $dimension, string $outputName, int $size = null)
+    {
+        if ($size) {
+            $aggregator = new DistinctCountAggregator($outputName, $dimension, $size);
+        } else {
+            $aggregator = new DistinctCountAggregator($outputName, $dimension);
+        }
+
         $this->assertEquals([
             'type'               => 'thetaSketch',
-            'name'               => 'abc',
-            'fieldName'          => 'dim123',
+            'fieldName'          => $outputName,
+            'name'               => $dimension,
             'isInputThetaSketch' => false,
-            'size'               => 32768,
+            'size'               => ($size ?: 16384),
         ], $aggregator->getAggregator());
     }
 }

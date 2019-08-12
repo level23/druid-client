@@ -3,23 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-class OrFilter implements FilterInterface
+class OrFilter extends AndFilter
 {
-    /**
-     * @var array|\Level23\Druid\Filters\FilterInterface[]
-     */
-    protected $filters;
-
-    /**
-     * OrFilter constructor.
-     *
-     * @param array $filters List of DruidFilter classes.
-     */
-    public function __construct(array $filters)
-    {
-        $this->filters = $filters;
-    }
-
     /**
      * Return the filter as it can be used in the druid query.
      *
@@ -27,15 +12,10 @@ class OrFilter implements FilterInterface
      */
     public function getFilter(): array
     {
-        $fields = [];
+        $result = parent::getFilter();
 
-        foreach ($this->filters as $filter) {
-            $fields[] = $filter->getFilter();
-        }
+        $result['type'] = 'or';
 
-        return [
-            'type'   => 'or',
-            'fields' => $fields,
-        ];
+        return $result;
     }
 }

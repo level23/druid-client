@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\Dimensions;
 
@@ -22,7 +23,7 @@ class LookupDimension implements DimensionInterface
     /**
      * @var bool
      */
-    protected $replaceMissingValue;
+    protected $retainMissingValue;
 
     /**
      * @var string|null
@@ -44,20 +45,20 @@ class LookupDimension implements DimensionInterface
      * @param string      $dimension
      * @param string      $registeredLookupFunction
      * @param string      $outputName
-     * @param bool        $replaceMissingValue
+     * @param bool        $retainMissingValue
      * @param string|null $replaceMissingValueWith
      */
     public function __construct(
         string $dimension,
         string $registeredLookupFunction,
         string $outputName = '',
-        bool $replaceMissingValue = false,
+        bool $retainMissingValue = false,
         ?string $replaceMissingValueWith = null
     ) {
         $this->dimension                = $dimension;
         $this->outputName               = $outputName ?: $dimension;
         $this->registeredLookupFunction = $registeredLookupFunction;
-        $this->replaceMissingValue      = $replaceMissingValue;
+        $this->retainMissingValue       = $retainMissingValue;
         $this->replaceMissingValueWith  = $replaceMissingValueWith;
     }
 
@@ -77,8 +78,8 @@ class LookupDimension implements DimensionInterface
 
         if (!empty($this->replaceMissingValueWith)) {
             $result['replaceMissingValueWith'] = $this->replaceMissingValueWith;
-        } elseif ($this->replaceMissingValue) {
-            $result['replaceMissingValue'] = $this->replaceMissingValue;
+        } elseif ($this->retainMissingValue) {
+            $result['retainMissingValue'] = $this->retainMissingValue;
         }
 
         return $result;

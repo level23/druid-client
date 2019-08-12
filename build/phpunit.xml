@@ -2,6 +2,7 @@
 <phpunit bootstrap="../tests/bootstrap.php"
          backupGlobals="false"
          backupStaticAttributes="false"
+         executionOrder="default"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"

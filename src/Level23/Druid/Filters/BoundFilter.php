@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
+use InvalidArgumentException;
 use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
 use Level23\Druid\Types\BoundOperator;
 use Level23\Druid\Types\SortingOrder;
@@ -48,7 +49,7 @@ class BoundFilter implements FilterInterface
      * @param string                           $dimension The dimension to filter on
      * @param BoundOperator|string             $operator  The operator to use. Use ">", ">=", "<", or "<=" Or use the
      *                                                    BoundOperator constants.
-     * @param string                           $value     The value to compare with. This can either be an numerig or a
+     * @param string                           $value     The value to compare with. This can either be an numeric or a
      *                                                    string.
      * @param SortingOrder|null                $ordering  Specifies the sorting order to use when comparing values
      *                                                    against the bound.
@@ -61,6 +62,14 @@ class BoundFilter implements FilterInterface
         SortingOrder $ordering = null,
         ExtractionFunctionInterface $extractionFunction = null
     ) {
+
+        if (is_string($operator) && !BoundOperator::isValid($operator)) {
+            throw new InvalidArgumentException(
+                'Invalid operator given: ' . $operator .
+                '. Valid options are: ' . implode(',', BoundOperator::values())
+            );
+        }
+
         $this->dimension          = $dimension;
         $this->operator           = $operator;
         $this->value              = $value;
@@ -78,7 +87,7 @@ class BoundFilter implements FilterInterface
         $result = [
             'type'      => 'bound',
             'dimension' => $this->dimension,
-            'ordering'  => $this->ordering->getValue(),
+            'ordering'  => (string)$this->ordering,
         ];
 
         switch ($this->operator) {

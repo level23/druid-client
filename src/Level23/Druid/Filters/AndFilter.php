@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-class AndFilter implements FilterInterface
+class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
 {
     /**
      * @var array|\Level23\Druid\Filters\FilterInterface[]
@@ -18,6 +18,18 @@ class AndFilter implements FilterInterface
     public function __construct(array $filters)
     {
         $this->filters = $filters;
+    }
+
+    /**
+     * @param \Level23\Druid\Filters\FilterInterface $filter
+     *
+     * @return $this
+     */
+    public function addFilter(FilterInterface $filter)
+    {
+        $this->filters[] = $filter;
+
+        return $this;
     }
 
     /**
@@ -37,5 +49,15 @@ class AndFilter implements FilterInterface
             'type'   => 'and',
             'fields' => $fields,
         ];
+    }
+
+    /**
+     * Return all filters which are used by this logical expression filter.
+     *
+     * @return array
+     */
+    public function getFilters(): array
+    {
+        return $this->filters;
     }
 }

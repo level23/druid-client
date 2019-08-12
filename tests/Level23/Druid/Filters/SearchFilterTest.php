@@ -15,30 +15,36 @@ class SearchFilterTest extends TestCase
             ['name', 'Piet', true],
             ['name', ['Piet', 'Klaas'], true],
             ['name', ['Piet', 'Klaas'], false],
+            ['name', ['Piet', 'Klaas'], null],
         ];
     }
 
     /**
      * @dataProvider dataProvider
-     * @param string $dimension
+     *
+     * @param string       $dimension
      * @param string|array $valueOrValues
-     * @param bool $caseSensitive
+     * @param bool         $caseSensitive
      */
-    public function testFilter(string $dimension, $valueOrValues, bool $caseSensitive)
+    public function testFilter(string $dimension, $valueOrValues, ?bool $caseSensitive)
     {
-        $filter = new SearchFilter($dimension, $valueOrValues, $caseSensitive);
+        if ($caseSensitive !== null) {
+            $filter = new SearchFilter($dimension, $valueOrValues, $caseSensitive);
+        } else {
+            $filter = new SearchFilter($dimension, $valueOrValues);
+        }
 
         if (is_array($valueOrValues)) {
             $expectedQuery = [
                 'type'          => 'fragment',
                 'values'        => $valueOrValues,
-                'caseSensitive' => $caseSensitive,
+                'caseSensitive' => ($caseSensitive ?:false),
             ];
         } else {
             $expectedQuery = [
                 'type'          => 'contains',
                 'value'         => $valueOrValues,
-                'caseSensitive' => $caseSensitive,
+                'caseSensitive' => ($caseSensitive ?:false),
             ];
         }
 

@@ -1,10 +1,8 @@
 {
-  "name": "level23/txtmsg-client",
-  "description": "Client for txtmsg.io api",
+  "name": "level23/druid-client",
+  "description": "Druid client for executing queries.",
   "keywords": [
-    "leve23",
-    "txtmsg.io",
-    "sms"
+    "level23"
   ],
   "license": "MIT",
   "type": "project",
@@ -12,8 +10,8 @@
     "php": ">=7.2",
     "ext-json": "*",
     "guzzlehttp/guzzle": "^6.3",
-    "illuminate/support": "~5.5|~5.6|~5.7|~5.8",
-    "myclabs/php-enum": "^1.7"
+    "myclabs/php-enum": "^1.7",
+    "nesbot/carbon": "^2.22"
   },
   "require-dev": {
     "mockery/mockery": "^1.2",

@@ -7,6 +7,7 @@ use MyCLabs\Enum\Enum;
 
 /**
  * Class SortingOrder
+ *
  * @method static self LEXICOGRAPHIC()
  * @method static self ALPHANUMERIC()
  * @method static self NUMERIC()

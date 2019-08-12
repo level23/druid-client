@@ -16,13 +16,15 @@ class SumAggregatorTest extends TestCase
             [DataType::DOUBLE()],
             [DataType::FLOAT()],
             [DataType::STRING(), true],
+            ["asDF", true],
+            ["LONG"]
         ];
     }
 
     /**
      * @dataProvider  dataProvider
      *
-     * @param DataType $type
+     * @param DataType|string $type
      * @param bool     $expectException
      */
     public function testAggregator($type, bool $expectException = false)
@@ -33,7 +35,7 @@ class SumAggregatorTest extends TestCase
 
         $aggregator = new SumAggregator('abc', 'dim123', $type);
         $this->assertEquals([
-            'type'      => $type . 'Sum',
+            'type'      => strtolower($type) . 'Sum',
             'name'      => 'dim123',
             'fieldName' => 'abc',
         ], $aggregator->getAggregator());
