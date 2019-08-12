@@ -18,7 +18,7 @@
          timeoutForLargeTests="60"
          verbose="true">
     <testsuites>
-        <testsuite name="enrichment">
+        <testsuite name="phpunit">
             <directory suffix="Test.php">../tests/</directory>
         </testsuite>
     </testsuites>

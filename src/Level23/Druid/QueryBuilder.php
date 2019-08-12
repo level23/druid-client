@@ -19,6 +19,8 @@ use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\Context\GroupByQueryContext;
+use Level23\Druid\Context\TimeSeriesQueryContext;
+use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\LookupDimension;
@@ -786,7 +788,7 @@ class QueryBuilder
         );
 
         if (count($context) > 0) {
-            $query->setContext(new GroupByQueryContext($context));
+            $query->setContext(new TimeSeriesQueryContext($context));
         }
 
         if ($this->filter) {
@@ -850,7 +852,7 @@ class QueryBuilder
         }
 
         if (count($context) > 0) {
-            $query->setContext(new GroupByQueryContext($context));
+            $query->setContext(new TopNQueryContext($context));
         }
 
         if ($this->filter) {

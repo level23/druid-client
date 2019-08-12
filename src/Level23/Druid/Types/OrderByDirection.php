@@ -12,6 +12,7 @@ use MyCLabs\Enum\Enum;
  * @method static self DESC()
  *
  * @package Level23\Druid\Types
+ * @codeCoverageIgnore
  */
 class OrderByDirection extends Enum
 {

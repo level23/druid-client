@@ -13,6 +13,7 @@ use MyCLabs\Enum\Enum;
  * @method static self DOUBLE()
  *
  * @package Level23\Druid\Types
+ * @codeCoverageIgnore 
  */
 class DataType extends Enum
 {
