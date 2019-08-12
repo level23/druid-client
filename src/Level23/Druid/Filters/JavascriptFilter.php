@@ -28,7 +28,7 @@ class JavascriptFilter implements FilterInterface
     protected $javascriptFunction;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
      */
     protected $extractionFunction;
 

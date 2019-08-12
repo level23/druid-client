@@ -29,11 +29,11 @@ class DistinctCountAggregator implements AggregatorInterface
     /**
      * CountAggregator constructor.
      *
-     * @param string $outputName
      * @param string $dimension
+     * @param string $outputName
      * @param int    $size
      */
-    public function __construct(string $outputName, string $dimension, int $size = 16384)
+    public function __construct(string $dimension, string $outputName, int $size = 16384)
     {
         $this->outputName = $outputName;
         $this->dimension  = $dimension;
@@ -54,5 +54,15 @@ class DistinctCountAggregator implements AggregatorInterface
             'isInputThetaSketch' => false,
             'size'               => $this->size,
         ];
+    }
+
+    /**
+     * Return how this aggregation will be outputted in the query results.
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->outputName;
     }
 }

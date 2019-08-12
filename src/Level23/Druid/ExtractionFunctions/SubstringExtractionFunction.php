@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\ExtractionFunctions;
 
@@ -41,14 +42,12 @@ class SubstringExtractionFunction implements ExtractionFunctionInterface
      * RegexExtractionFunction constructor.
      *
      * @param int      $index
-     * @param int|null $lenght
+     * @param int|null $length
      */
-    public function __construct(
-        int $index,
-        ?int $lenght = null
-    ) {
+    public function __construct(int $index, ?int $length = null)
+    {
         $this->index  = $index;
-        $this->length = $lenght;
+        $this->length = $length;
     }
 
     /**

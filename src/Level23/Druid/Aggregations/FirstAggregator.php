@@ -18,4 +18,14 @@ class FirstAggregator extends SumAggregator
             'fieldName' => $this->metricName,
         ];
     }
+
+    /**
+     * Return how this aggregation will be outputted in the query results.
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->outputName;
+    }
 }

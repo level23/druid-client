@@ -8,3 +8,4 @@ build/logs/
 vendor/
 composer.lock
 build/.phpunit.result.cache
+infection.log

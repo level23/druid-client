@@ -78,4 +78,14 @@ class JavascriptAggregator implements AggregatorInterface
             'fnReset'     => $this->fnReset,
         ];
     }
+
+    /**
+     * Return how this aggregation will be outputted in the query results.
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->outputName;
+    }
 }

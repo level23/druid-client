@@ -31,7 +31,7 @@ class IntervalFilter implements FilterInterface
     protected $intervals;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
      */
     protected $extractionFunction;
 

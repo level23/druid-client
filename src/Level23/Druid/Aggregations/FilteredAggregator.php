@@ -58,4 +58,14 @@ class FilteredAggregator implements AggregatorInterface
             'aggregator' => $this->aggregator->getAggregator(),
         ];
     }
+
+    /**
+     * Return how this aggregation will be outputted in the query results.
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->aggregator->getOutputName();
+    }
 }

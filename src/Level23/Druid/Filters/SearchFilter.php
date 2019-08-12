@@ -20,7 +20,7 @@ class SearchFilter implements FilterInterface
     protected $dimension;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface
+     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
      */
     protected $extractionFunction;
 
@@ -37,9 +37,12 @@ class SearchFilter implements FilterInterface
     /**
      * SearchFilter constructor.
      *
-     * @param string                                                              $dimension
-     * @param string|string[]|array                                               $valueOrValues
-     * @param bool                                                                $caseSensitive
+     * When an array of values are given, we expect the dimension value contains all
+     * of the values specified in this search query spec.
+     *
+     * @param string                           $dimension
+     * @param string|string[]|array            $valueOrValues
+     * @param bool                             $caseSensitive
      * @param ExtractionFunctionInterface|null $extractionFunction
      */
     public function __construct(
