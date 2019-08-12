@@ -40,6 +40,9 @@ class DruidClientTest extends TestCase
 
     /**
      * Test the wherein
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
      */
     public function testWhereIn()
     {
@@ -99,6 +102,7 @@ class DruidClientTest extends TestCase
      */
     public function testSelect(array $parameters, $expectedResult)
     {
+        /** @var QueryBuilder|\Mockery\MockInterface $builder */
         $builder = \Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
         $builder->makePartial();
 
