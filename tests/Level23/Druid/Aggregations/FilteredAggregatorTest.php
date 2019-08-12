@@ -21,5 +21,7 @@ class FilteredAggregatorTest extends TestCase
             'filter'     => $filter->getFilter(),
             'aggregator' => $sum->getAggregator(),
         ], $aggregator->getAggregator());
+
+        $this->assertEquals('total_calls', $aggregator->getOutputName());
     }
 }
