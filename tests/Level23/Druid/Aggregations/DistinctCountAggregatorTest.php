@@ -25,17 +25,19 @@ class DistinctCountAggregatorTest extends TestCase
     public function testAggregator(string $dimension, string $outputName, int $size = null)
     {
         if ($size) {
-            $aggregator = new DistinctCountAggregator($outputName, $dimension, $size);
+            $aggregator = new DistinctCountAggregator($dimension, $outputName, $size);
         } else {
-            $aggregator = new DistinctCountAggregator($outputName, $dimension);
+            $aggregator = new DistinctCountAggregator($dimension, $outputName);
         }
 
         $this->assertEquals([
             'type'               => 'thetaSketch',
-            'fieldName'          => $outputName,
-            'name'               => $dimension,
+            'fieldName'          => $dimension,
+            'name'               => $outputName,
             'isInputThetaSketch' => false,
             'size'               => ($size ?: 16384),
         ], $aggregator->getAggregator());
+
+        $this->assertEquals($outputName, $aggregator->getOutputName());
     }
 }
