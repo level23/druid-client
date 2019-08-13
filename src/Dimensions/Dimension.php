@@ -20,7 +20,7 @@ class Dimension implements DimensionInterface
     protected $outputName;
 
     /**
-     * @var string|null
+     * @var string|DataType
      */
     protected $outputType;
 
