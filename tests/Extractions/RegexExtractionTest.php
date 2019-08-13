@@ -1,0 +1,37 @@
+<?php
+declare(strict_types=1);
+
+namespace tests\Level23\Druid\Extractions;
+
+use Level23\Druid\Extractions\RegexExtraction;
+use tests\TestCase;
+
+class RegexExtractionTest extends TestCase
+{
+    public function testExtractionWithDefaults()
+    {
+        $extraction = new RegexExtraction('^[0-9]*$');
+
+        $this->assertEquals([
+            'type'                    => 'regex',
+            'expr'                    => '^[0-9]*$',
+            'index'                   => 1,
+            'replaceMissingValue'     => false,
+            'replaceMissingValueWith' => null,
+        ], $extraction->getExtractionFunction());
+    }
+
+    public function testExtractionWithReplacement()
+    {
+        $extraction = new RegexExtraction('^[0-9]*$', 3, true, 'Unknown');
+
+        $this->assertEquals([
+            'type'                    => 'regex',
+            'expr'                    => '^[0-9]*$',
+            'index'                   => 3,
+            'replaceMissingValue'     => true,
+            'replaceMissingValueWith' => 'Unknown',
+
+        ], $extraction->getExtractionFunction());
+    }
+}
