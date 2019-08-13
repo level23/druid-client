@@ -110,6 +110,20 @@ trait HasHaving
     }
 
     /**
+     * Add a having filter
+     *
+     * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
+     * @param string|null                          $operator
+     * @param string|null                          $value
+     *
+     * @return \Level23\Druid\Concerns\HasHaving
+     */
+    public function orHaving($havingOrMetricOrClosure, $operator = null, $value = null)
+    {
+        return $this->having($havingOrMetricOrClosure, $operator, $value, 'or');
+    }
+
+    /**
      * @return \Level23\Druid\HavingFilters\HavingFilterInterface|null
      */
     public function getHaving(): ?HavingFilterInterface

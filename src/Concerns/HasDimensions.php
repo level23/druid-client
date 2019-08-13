@@ -106,9 +106,9 @@ trait HasDimensions
      *
      * @param string    $dimension               The dimension to select
      * @param string    $lookupFunction          The name of the lookup function to use
-     * @param string    $as                      The name as it will be used in the resultset. When empty, we will use
+     * @param string    $as                      The name as it will be used in the result set. When empty, we will use
      *                                           the original dimensions name.
-     * @param bool      $retainMissingValue      Should we keep values which cannot be found in the lookup funciton?
+     * @param bool      $retainMissingValue      Should we keep values which cannot be found in the lookup function?
      * @param string    $replaceMissingValueWith If missing items should be kept, they will be replaced with this value
      *                                           (or the original value if null).
      * @param string    $outputType

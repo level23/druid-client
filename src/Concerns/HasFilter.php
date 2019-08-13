@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
+use Level23\Druid\FilterQueryBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\FilterInterface;
@@ -16,8 +17,6 @@ use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Filters\SelectorFilter;
-use Level23\Druid\QueryBuilder;
-use Level23\Druid\FilterQueryBuilder;
 
 trait HasFilter
 {
@@ -95,7 +94,7 @@ trait HasFilter
 
         $this->addFilter(
             $filter,
-            $boolean == 'and' ? AndFilter::class : OrFilter::class
+            strtolower($boolean) == 'and' ? AndFilter::class : OrFilter::class
         );
 
         return $this;
@@ -125,9 +124,7 @@ trait HasFilter
     {
         $filter = new InFilter($dimension, $items);
 
-        $this->where($filter);
-
-        return $this;
+        return $this->where($filter);
     }
 
     /**
@@ -142,9 +139,7 @@ trait HasFilter
     {
         $filter = new NotFilter(new InFilter($dimension, $items));
 
-        $this->where($filter);
-
-        return $this;
+        return $this->where($filter);
     }
 
     /**
@@ -153,7 +148,7 @@ trait HasFilter
      * @param FilterInterface $filter
      * @param string          $type
      */
-    protected function addFilter(FilterInterface $filter, string $type)
+    protected function addFilter($filter, string $type)
     {
         if ($this->filter instanceof LogicalExpressionFilterInterface && $this->filter instanceof $type) {
             $this->filter->addFilter($filter);
@@ -167,7 +162,7 @@ trait HasFilter
     /**
      * @return \Level23\Druid\Filters\FilterInterface|null
      */
-    public function getFilter(): ?FilterInterface
+    public function getFilter()
     {
         return $this->filter;
     }
