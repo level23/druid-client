@@ -3,19 +3,17 @@ declare(strict_types=1);
 
 namespace Level23\Druid\HavingFilters;
 
-use Level23\Druid\Filters\FilterInterface;
-
 class NotHavingFilter implements HavingFilterInterface
 {
     /**
-     * @var \Level23\Druid\Filters\FilterInterface|\Level23\Druid\HavingFilters\HavingFilterInterface
+     * @var \Level23\Druid\HavingFilters\HavingFilterInterface
      */
     protected $filter;
 
     /**
      * NotHavingFilter constructor.
      *
-     * @param HavingFilterInterface|FilterInterface $filter
+     * @param HavingFilterInterface $filter
      */
     public function __construct($filter)
     {
@@ -29,18 +27,9 @@ class NotHavingFilter implements HavingFilterInterface
      */
     public function getHavingFilter(): array
     {
-        if ($this->filter instanceof HavingFilterInterface) {
-            $havingSpec = $this->filter->getHavingFilter();
-        } else {
-            $havingSpec = [
-                'type'   => 'filter',
-                'filter' => $this->filter->getFilter(),
-            ];
-        }
-
         return [
             'type'       => 'not',
-            'havingSpec' => $havingSpec,
+            'havingSpec' => $this->filter->getHavingFilter(),
         ];
     }
 }

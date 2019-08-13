@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class SearchFilter
@@ -20,7 +20,7 @@ class SearchFilter implements FilterInterface
     protected $dimension;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
@@ -40,16 +40,16 @@ class SearchFilter implements FilterInterface
      * When an array of values are given, we expect the dimension value contains all
      * of the values specified in this search query spec.
      *
-     * @param string                           $dimension
-     * @param string|string[]|array            $valueOrValues
-     * @param bool                             $caseSensitive
-     * @param ExtractionFunctionInterface|null $extractionFunction
+     * @param string                   $dimension
+     * @param string|string[]|array    $valueOrValues
+     * @param bool                     $caseSensitive
+     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         $valueOrValues,
         bool $caseSensitive = false,
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->extractionFunction = $extractionFunction;

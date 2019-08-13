@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\ExtractionFunctions;
+namespace Level23\Druid\Extractions;
 
 /**
- * Class TimeFormatExtractionFunction
+ * Class TimeFormatExtraction
  *
  * Time Format Extraction Function
  *
@@ -16,9 +16,9 @@ namespace Level23\Druid\ExtractionFunctions;
  *
  * For a regular dimension, it assumes the string is formatted in ISO-8601 date and time format.
  *
- * @package Level23\Druid\ExtractionFunctions
+ * @package Level23\Druid\Extractions
  */
-class TimeFormatExtractionFunction implements ExtractionFunctionInterface
+class TimeFormatExtraction implements ExtractionInterface
 {
     /**
      * @var string|null
@@ -46,7 +46,7 @@ class TimeFormatExtractionFunction implements ExtractionFunctionInterface
     protected $asMillis;
 
     /**
-     * TimeFormatExtractionFunction constructor.
+     * TimeFormatExtraction constructor.
      *
      * @param string|null $format         date time format for the resulting dimension value, in Joda Time
      *                                    DateTimeFormat, or null to use the default ISO8601 format.

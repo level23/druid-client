@@ -3,13 +3,18 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid;
 
-use Hamcrest\Core\IsInstanceOf;
-use Level23\Druid\Collections\DimensionCollection;
-use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Dimensions\DimensionInterface;
+use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use Hamcrest\Type\IsArray;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Filters\InFilter;
+use Level23\Druid\Exceptions\DruidCommunicationException;
+use Level23\Druid\Exceptions\DruidQueryException;
+use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\QueryBuilder;
+use Mockery;
 use tests\TestCase;
 
 class DruidClientTest extends TestCase
@@ -19,15 +24,9 @@ class DruidClientTest extends TestCase
      */
     protected $client;
 
-    /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $builder;
-
     public function setUp(): void
     {
-        $this->client  = new DruidClient([]);
-        $this->builder = \Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->client = new DruidClient([]);
     }
 
     public function testInvalidGranularity()
@@ -39,91 +38,185 @@ class DruidClientTest extends TestCase
     }
 
     /**
-     * Test the wherein
-     *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testWhereIn()
+    public function testQuery()
     {
-        $in = \Mockery::mock('overload:' . InFilter::class);
-        $in->shouldReceive('__construct')
+        $builder = Mockery::mock('overload:' . QueryBuilder::class);
+        $builder->shouldReceive('__construct')
             ->once()
-            ->with('country_iso', ['nl', 'be']);
+            ->with($this->client, 'randomDataSource', 'quarter');
 
-        $this->builder->makePartial();
-        $this->builder->shouldReceive('where')
-            ->once()
-            ->with(new IsInstanceOf(InFilter::class));
-
-        $this->builder->whereIn('country_iso', ['nl', 'be']);
+        $this->client->query('randomDataSource', 'quarter');
     }
 
-    /**
-     * Our data sets for our select method.
-     *
-     * @return array
-     */
-    public function selectDataProvider(): array
+    public function testLogHandler()
     {
-        $expected = [
-            'type'       => 'default',
-            'dimension'  => 'browser',
-            'outputName' => 'TheBrowser',
-            'outputType' => 'string',
-        ];
+        $counter    = 0;
+        $logHandler = function ($message) use (&$counter) {
+            $this->assertEquals($message, 'something');
+            $counter++;
+        };
 
-        $expectedLookup = [
-            'type'                    => 'lookup',
-            'dimension'               => 'country_iso',
-            'outputName'              => 'country',
-            'name'                    => 'countries',
-            'replaceMissingValueWith' => 'Unknown',
+        $client = Mockery::mock(DruidClient::class, [[], $logHandler]);
+        $client->makePartial();
+        /** @noinspection PhpUndefinedMethodInspection */
+        $client->shouldAllowMockingProtectedMethods()->log('something');
+
+        $this->assertEquals(1, $counter);
+    }
+
+    public function executeQueryDataProvider(): array
+    {
+        $response = [
+            'event' => [
+                'name' => 'john',
+                'cars' => 12,
+            ],
         ];
 
         return [
-            // give as first and second parameter
-            [['browser', 'TheBrowser'], $expected],
-            // give as array
-            [[['browser' => 'TheBrowser']], $expected],
-            [[new Dimension('browser', 'TheBrowser')], $expected],
-            [[new \ArrayObject(['browser' => 'TheBrowser'])], $expected],
-            [['country_iso', 'country', 'countries', true, 'Unknown'], $expectedLookup],
+            // Correct response
+            [
+                $response,
+                function () use ($response) {
+                    return new GuzzleResponse(200, [], (string)json_encode($response));
+                },
+                false,
+            ],
+            // Test incorrect http code
+            [
+                $response,
+                function () use ($response) {
+                    return new GuzzleResponse(500, [], (string)json_encode($response));
+                },
+                DruidQueryException::class,
+            ],
+            // Test a BadResponseException
+            [
+                $response,
+                function () {
+                    throw new BadResponseException(
+                        'Bad response',
+                        new GuzzleRequest('GET', '/druid/v1', [], '')
+                    );
+                },
+                DruidCommunicationException::class,
+            ],
+            // Test a RequestException
+            [
+                $response,
+                function () {
+                    throw new RequestException(
+                        'Request exception',
+                        new GuzzleRequest('GET', '/druid/v1', [], '')
+                    );
+                },
+                DruidCommunicationException::class,
+            ],
+            // Test a generic Exception
+            [
+                $response,
+                function () {
+                    throw new \Exception('Something went wrong!');
+                },
+                DruidQueryException::class,
+            ],
+
         ];
     }
 
     /**
-     * Test our select method with various types.
+     * @dataProvider executeQueryDataProvider
      *
-     * @dataProvider selectDataProvider
+     * @param callable $responseFunction
+     * @param mixed    $expectException
      *
-     * @param array $parameters
-     * @param array $expectedResult
+     * @throws \Level23\Druid\Exceptions\DruidException
+     * @throws \Level23\Druid\Exceptions\DruidQueryException
      */
-    public function testSelect(array $parameters, $expectedResult)
+    public function testExecuteDruidQuery(array $response, callable $responseFunction, $expectException)
     {
-        /** @var QueryBuilder|\Mockery\MockInterface $builder */
-        $builder = \Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
-        $builder->makePartial();
+        $queryArray = ['something' => 'here'];
 
-        $response = null;
-        $callback = [$builder, 'select'];
-        if (is_callable($callback)) {
-            $response = call_user_func_array($callback, $parameters);
+        $config = [
+            'broker_url'     => 'http://test.dev',
+            'guzzle_options' => ['strict' => false],
+        ];
+
+        if ($expectException) {
+            $this->expectException($expectException);
+            $this->expectExceptionCode(0);
         }
 
-        $this->assertEquals($response, $builder);
+        $query = Mockery::mock(GroupByQuery::class);
+        $query->shouldReceive('getQuery')
+            ->once()
+            ->andReturn($queryArray);
 
-        $collection = $builder->getDimensions();
+        $guzzle = Mockery::mock(GuzzleClient::class);
+        $guzzle->shouldReceive('post')
+            ->once()
+            ->with(
+                $config['broker_url'] . '/druid/v2',
+                new IsArray()
+            )
+            ->andReturnUsing(function ($url, $options) use ($responseFunction, $queryArray) {
+                $this->assertIsArray($options);
 
-        $this->assertInstanceOf(DimensionCollection::class, $collection);
-        $this->assertEquals(1, count($collection));
+                $this->assertEquals([
+                    'timeout'         => 60,
+                    'allow_redirects' => true,
+                    'connect_timeout' => 10,
 
-        /** @var \Level23\Druid\Dimensions\Dimension $dimension */
-        $dimension = $collection[0];
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                        'User-Agent'   => 'level23 druid client package',
+                    ],
+                    'strict'  => false,
+                    'body'    => json_encode($queryArray, JSON_PRETTY_PRINT),
+                ], $options);
 
-        $this->assertInstanceOf(DimensionInterface::class, $dimension);
+                $response = call_user_func($responseFunction, $url, $options);
 
-        $this->assertEquals($expectedResult, $dimension->getDimension());
+                return $response;
+            });
+
+        $client = Mockery::mock(DruidClient::class, [$config]);
+        $client->makePartial();
+
+        $expected = ['retries' => 2];
+
+        $this->assertArrayContainsSubset($expected, $client->getConfig());
+
+        $client->setGuzzleClient($guzzle);
+
+        $client->shouldAllowMockingProtectedMethods();
+
+        if (!$expectException) {
+            $client->shouldReceive('getEventData')
+                ->once()
+                ->with($response)
+                ->andReturn(['something' => 123]);
+        }
+
+        $druidResult = $client->executeDruidQuery($query);
+
+        if (!$expectException) {
+            $this->assertEquals(['something' => 123], $druidResult);
+        }
     }
+
+    //    public function testOptions()
+    //    {
+    //
+    //    }
+    //
+    //    public function testGetEventData()
+    //    {
+    //        $client = Mockery::mock(DruidClient::class, []);
+    //
+    //        //$this->assertEquals($client->getConfig());
+    //    }
 }

@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\ExtractionFunctions;
+namespace tests\Level23\Druid\Extractions;
 
-use Level23\Druid\ExtractionFunctions\PartialExtractionFunction;
+use Level23\Druid\Extractions\PartialExtraction;
 use tests\TestCase;
 
-class PartialExtractionFunctionTest extends TestCase
+class PartialExtractionTest extends TestCase
 {
     public function testExtractionFunction()
     {
         $regex              = '^[a-z]*$';
-        $extractionFunction = new PartialExtractionFunction($regex);
+        $extractionFunction = new PartialExtraction($regex);
 
         $expected = [
             'type' => 'partial',

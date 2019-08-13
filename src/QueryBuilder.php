@@ -3,74 +3,38 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
-use ArrayObject;
-use Closure;
-use DateTime;
 use InvalidArgumentException;
-use Level23\Druid\Aggregations\CountAggregator;
-use Level23\Druid\Aggregations\DistinctCountAggregator;
-use Level23\Druid\Aggregations\FirstAggregator;
-use Level23\Druid\Aggregations\LastAggregator;
-use Level23\Druid\Aggregations\MaxAggregator;
-use Level23\Druid\Aggregations\MinAggregator;
-use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Concerns\HasAggregations;
+use Level23\Druid\Concerns\HasDimensions;
+use Level23\Druid\Concerns\HasFilter;
+use Level23\Druid\Concerns\HasHaving;
+use Level23\Druid\Concerns\HasIntervals;
+use Level23\Druid\Concerns\HasLimit;
+use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
-use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
-use Level23\Druid\Dimensions\LookupDimension;
-use Level23\Druid\Exceptions\DruidException;
-use Level23\Druid\Filters\AndFilter;
-use Level23\Druid\Filters\BoundFilter;
-use Level23\Druid\Filters\FilterInterface;
-use Level23\Druid\Filters\InFilter;
-use Level23\Druid\Filters\JavascriptFilter;
-use Level23\Druid\Filters\LikeFilter;
-use Level23\Druid\Filters\LogicalExpressionFilterInterface;
-use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
-use Level23\Druid\Filters\NotFilter;
-use Level23\Druid\Filters\OrFilter;
-use Level23\Druid\Filters\RegexFilter;
-use Level23\Druid\Filters\SearchFilter;
-use Level23\Druid\Filters\SelectorFilter;
-use Level23\Druid\HavingFilters\AndHavingFilter;
-use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
-use Level23\Druid\HavingFilters\EqualToHavingFilter;
-use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
-use Level23\Druid\HavingFilters\HavingFilterInterface;
-use Level23\Druid\HavingFilters\LessThanHavingFilter;
-use Level23\Druid\HavingFilters\NotHavingFilter;
-use Level23\Druid\HavingFilters\OrHavingFilter;
-use Level23\Druid\HavingFilters\QueryHavingFilter;
-use Level23\Druid\Interval\Interval;
-use Level23\Druid\Limits\Limit;
 use Level23\Druid\Limits\LimitInterface;
-use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Queries\TopNQuery;
-use Level23\Druid\Types\DataType;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\OrderByDirection;
-use Level23\Druid\Types\SortingOrder;
 
 class QueryBuilder
 {
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasPostAggregations;
+
     /**
      * @var \Level23\Druid\DruidClient
      */
     protected $client;
-
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
 
     /**
      * @var string
@@ -78,41 +42,9 @@ class QueryBuilder
     protected $dataSource;
 
     /**
-     * @var \Level23\Druid\Collections\DimensionCollection
-     */
-    protected $dimensions;
-
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
-
-    /**
-     * @var \Level23\Druid\Collections\AggregationCollection
-     */
-    protected $aggregations;
-
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection
-     */
-    protected $postAggregations;
-
-    /**
      * @var string|\Level23\Druid\Types\Granularity
      */
     protected $granularity;
-
-    /**
-     * @var \Level23\Druid\Limits\LimitInterface|null
-     */
-    protected $limit;
-
-    /**
-     * @var HavingFilterInterface|null
-     */
-    protected $having;
-
-    public const DEFAULT_MAX_LIMIT = 999999;
 
     /**
      * QueryBuilder constructor.
@@ -130,446 +62,9 @@ class QueryBuilder
             );
         }
 
-        $this->client           = $client;
-        $this->dataSource       = $dataSource;
-        $this->dimensions       = new DimensionCollection();
-        $this->intervals        = new IntervalCollection();
-        $this->aggregations     = new AggregationCollection();
-        $this->postAggregations = new PostAggregationCollection();
-        $this->granularity      = $granularity;
-    }
-
-    /**
-     * Filter records where the given dimension exists in the given list of items
-     *
-     * @param string $dimension
-     * @param array  $items
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function whereIn(string $dimension, array $items): QueryBuilder
-    {
-        $filter = new InFilter($dimension, $items);
-
-        $this->where($filter);
-
-        return $this;
-    }
-
-    /**
-     * Filter records where the given dimension NOT exists in the given list of items
-     *
-     * @param string $dimension
-     * @param array  $items
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function whereNotIn(string $dimension, array $items): QueryBuilder
-    {
-        $filter = new NotFilter(new InFilter($dimension, $items));
-
-        $this->where($filter);
-
-        return $this;
-    }
-
-    /**
-     * Add an interval, eg the date where we want to select data from.
-     * This can be an Carbon or DateTime object, or a string which can be parsed to a datetime.
-     *
-     * @param \DateTime|string $start
-     * @param \DateTime|string $stop
-     *
-     * @return $this
-     * @throws \Level23\Druid\Exceptions\DruidException
-     */
-    public function interval($start, $stop): QueryBuilder
-    {
-        try {
-            if (!$start instanceof DateTime) {
-                $start = new DateTime($start);
-            }
-
-            if (!$stop instanceof DateTime) {
-                $stop = new DateTime($stop);
-            }
-        } catch (\Exception $exception) {
-            throw new DruidException($exception->getMessage(), 0, $exception);
-        }
-
-        $this->intervals->add(new Interval($start, $stop));
-
-        return $this;
-    }
-
-    /**
-     * Select a dimension from our statistics. Possible use a lookup function to find the
-     * real data which we want to use.
-     *
-     * @param array|\ArrayObject|string|DimensionInterface $dimensions
-     * @param string                                       $as                      When dimensions is a string (the
-     *                                                                              dimension), you can specify the
-     *                                                                              alias output name here.
-     *
-     * @param string                                       $lookupFunction          Optional, the lookup function which
-     *                                                                              you want to use
-     * @param bool                                         $retainMissingValue      Do you want to retain values which
-     *                                                                              cannot be found in the registered
-     *                                                                              lookup function?
-     * @param string                                       $replaceMissingValueWith If you want to retain missing
-     *                                                                              values, you can specify here what
-     *                                                                              you want to use.
-     *
-     * @return $this
-     */
-    public function select(
-        $dimensions,
-        string $as = '',
-        string $lookupFunction = '',
-        bool $retainMissingValue = false,
-        string $replaceMissingValueWith = ''
-    ): QueryBuilder {
-        if ($dimensions instanceof DimensionInterface) {
-            $this->dimensions->add($dimensions);
-        } elseif (is_string($dimensions) && !empty($lookupFunction)) {
-            $this->dimensions->add(new LookupDimension(
-                $dimensions,
-                $lookupFunction,
-                ($as ?: $dimensions),
-                $retainMissingValue,
-                $replaceMissingValueWith
-            ));
-        } elseif (is_string($dimensions) && empty($lookupFunction)) {
-            $this->dimensions->add(new Dimension($dimensions, ($as ?: $dimensions)));
-        } elseif ($dimensions instanceof ArrayObject) {
-            $this->dimensions->addFromArray($dimensions->getArrayCopy());
-        } elseif (is_array($dimensions)) {
-            $this->dimensions->addFromArray($dimensions);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Sum the given metric
-     *
-     * @param string          $metric
-     * @param string          $as
-     * @param string|DataType $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function sum(string $metric, string $as = '', $type = 'long'): QueryBuilder
-    {
-        $this->aggregations->add(new SumAggregator($metric, $as, $type));
-
-        return $this;
-    }
-
-    /**
-     * Shorthand for summing long's
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function longSum(string $metric, string $as = ''): QueryBuilder
-    {
-        return $this->sum($metric, $as, 'long');
-    }
-
-    /**
-     * Shorthand for summing doubles
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function doubleSum(string $metric, string $as = ''): QueryBuilder
-    {
-        return $this->sum($metric, $as, 'double');
-    }
-
-    /**
-     * Shorthand for summing floats
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function floatSum(string $metric, string $as = ''): QueryBuilder
-    {
-        return $this->sum($metric, $as, 'float');
-    }
-
-    /**
-     * Count the number of results and put it in a dimension with the given name.
-     *
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function count(string $as): QueryBuilder
-    {
-        $this->aggregations->add(new CountAggregator($as));
-
-        return $this;
-    }
-
-    /**
-     * Count the number of distinct values of a specific dimension.
-     * NOTE: The DataSketches Theta Sketch extension is required to run this aggregation.
-     *
-     * @param string $dimension
-     * @param string $as
-     * @param int    $size Must be a power of 2. Internally, size refers to the maximum number of entries sketch object
-     *                     will retain. Higher size means higher accuracy but more space to store sketches. Note that
-     *                     after you index with a particular size, druid will persist sketch in segments and you will
-     *                     use size greater or equal to that at query time. See the DataSketches site for details. In
-     *                     general, We recommend just sticking to default size.
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function distinctCount(string $dimension, string $as = '', $size = 16384): QueryBuilder
-    {
-        $this->aggregations->add(new DistinctCountAggregator($dimension, ($as ?: $dimension), $size));
-
-        return $this;
-    }
-
-    /**
-     * Get the minimum value for the given metric
-     *
-     * @param string $metric
-     * @param string $as
-     * @param string $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function min(string $metric, string $as = '', $type = 'long'): QueryBuilder
-    {
-        $this->aggregations->add(new MinAggregator($metric, $as, $type));
-
-        return $this;
-    }
-
-    /**
-     * Get the minimum value for the given metric using long as type
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function longMin(string $metric, string $as = '')
-    {
-        return $this->min($metric, $as, 'long');
-    }
-
-    /**
-     * Get the minimum value for the given metric using double as type
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function doubleMin(string $metric, string $as = '')
-    {
-        return $this->min($metric, $as, 'double');
-    }
-
-    /**
-     * Get the minimum value for the given metric using float as type
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function floatMin(string $metric, string $as = '')
-    {
-        return $this->min($metric, $as, 'float');
-    }
-
-    /**
-     * Get the maximum value for the given metric
-     *
-     * @param string $metric
-     * @param string $as
-     * @param string $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function max(string $metric, string $as = '', $type = 'long'): QueryBuilder
-    {
-        $this->aggregations->add(new MaxAggregator($metric, $as, $type));
-
-        return $this;
-    }
-
-    /**
-     * Get the maximum value for the given metric using long as type
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function longMax(string $metric, string $as = ''): QueryBuilder
-    {
-        return $this->max($metric, $as, 'long');
-    }
-
-    /**
-     * Get the maximum value for the given metric using float as type
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function floatMax(string $metric, string $as = ''): QueryBuilder
-    {
-        return $this->max($metric, $as, 'float');
-    }
-
-    /**
-     * Get the maximum value for the given metric using double as type
-     *
-     * @param string $metric
-     * @param string $as
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function doubleMax(string $metric, string $as = ''): QueryBuilder
-    {
-        return $this->max($metric, $as, 'double');
-    }
-
-    /**
-     * Get the first metric found based on the applied group-by filters.
-     * So if you group by the dimension "countries", you can get the first "metric" per country.
-     *
-     * NOTE: This is different then the ELOQUENT first() method!
-     *
-     * @param string $metric
-     * @param string $as
-     * @param string $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function first(string $metric, string $as = '', $type = 'long'): QueryBuilder
-    {
-        $this->aggregations->add(new FirstAggregator($metric, $as, $type));
-
-        return $this;
-    }
-
-    /**
-     * Get the last metric found
-     *
-     * @param string $metric
-     * @param string $as
-     * @param string $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function last(string $metric, string $as = '', $type = 'long'): QueryBuilder
-    {
-        $this->aggregations->add(new LastAggregator($metric, $as, $type));
-
-        return $this;
-    }
-
-    /**
-     * Filter our results where the given dimension matches the value based on the operator.
-     * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like', 'regex', 'javascript', 'in'
-     *
-     * @param string|\Level23\Druid\Filters\FilterInterface|\Closure $filterOrDimensionOrClosure
-     * @param string|null                                            $operator
-     * @param mixed                                                  $value
-     * @param string                                                 $boolean
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function where(
-        $filterOrDimensionOrClosure,
-        $operator = null,
-        $value = null,
-        $boolean = 'and'
-    ): QueryBuilder {
-        $filter = null;
-        if (is_string($filterOrDimensionOrClosure)) {
-            if ($value === null && !empty($operator)) {
-                $value    = $operator;
-                $operator = '=';
-            }
-
-            $operator = strtolower((string)$operator);
-
-            if ($operator == '=') {
-                $filter = new SelectorFilter($filterOrDimensionOrClosure, $value);
-            } elseif ($operator == '<>' || $operator == '!=') {
-                $filter = new NotFilter(new SelectorFilter($filterOrDimensionOrClosure, $value));
-            } elseif (in_array($operator, ['>', '>=', '<', '<='])) {
-                $filter = new BoundFilter($filterOrDimensionOrClosure, $operator, (string)$value);
-            } elseif ($operator == 'like') {
-                $filter = new LikeFilter($filterOrDimensionOrClosure, $value);
-            } elseif ($operator == 'javascript') {
-                $filter = new JavascriptFilter($filterOrDimensionOrClosure, $value);
-            } elseif ($operator == 'regex' || $operator == 'regexp') {
-                $filter = new RegexFilter($filterOrDimensionOrClosure, $value);
-            } elseif ($operator == 'search') {
-                $filter = new SearchFilter($filterOrDimensionOrClosure, $value);
-            } elseif ($operator == 'in') {
-                $filter = new InFilter($filterOrDimensionOrClosure, $value);
-            }
-        } elseif ($filterOrDimensionOrClosure instanceof FilterInterface) {
-            $filter = $filterOrDimensionOrClosure;
-        } elseif ($filterOrDimensionOrClosure instanceof Closure) {
-
-            // lets create a bew builder object where the user can mess around with
-            $obj = new QueryBuilder($this->client, $this->dataSource, $this->granularity);
-
-            // call the user function
-            call_user_func($filterOrDimensionOrClosure, $obj);
-
-            // Now retrieve the filter which was created and add it to our current filter set.
-            $filter = $obj->getFilter();
-        }
-
-        if ($filter === null) {
-            return $this;
-        }
-
-        if ($this->filter === null) {
-            $this->filter = $filter;
-
-            return $this;
-        }
-
-        $this->addFilter(
-            $filter,
-            $boolean == 'and' ? AndFilter::class : OrFilter::class
-        );
-
-        return $this;
-    }
-
-    /**
-     * @param string|FilterInterface $filterOrDimension
-     * @param string|null            $operator
-     * @param mixed|null             $value
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function orWhere($filterOrDimension, $operator = null, $value = null): QueryBuilder
-    {
-        return $this->where($filterOrDimension, $operator, $value, 'or');
+        $this->client      = $client;
+        $this->dataSource  = $dataSource;
+        $this->granularity = $granularity;
     }
 
     /**
@@ -669,234 +164,10 @@ class QueryBuilder
         return $this->client->executeDruidQuery($query);
     }
 
-    /**
-     * Limit out result by N records.
-     *
-     * @param int $limit
-     *
-     * @return $this
-     */
-    public function limit(int $limit): QueryBuilder
-    {
-        if ($this->limit instanceof LimitInterface) {
-            $this->limit->setLimit($limit);
-        } else {
-            $this->limit = new Limit($limit);
-        }
 
-        return $this;
-    }
 
-    /**
-     * Build our "having" part of the query.
-     *
-     * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like'
-     *
-     * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|null                          $operator
-     * @param string|null                          $value
-     * @param string                               $boolean
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function having(
-        $havingOrMetricOrClosure,
-        $operator = null,
-        $value = null,
-        $boolean = 'and'
-    ): QueryBuilder {
-        $having = null;
-
-        if ($value === null && !empty($operator)) {
-            $value    = $operator;
-            $operator = '=';
-        }
-
-        if (is_string($havingOrMetricOrClosure) && is_string($operator) && $value !== null) {
-            if ($operator == '=') {
-                $value = (string)$value;
-                /**
-                 * Check if this is a aggregator metric.
-                 */
-                $isAggregator = false;
-
-                foreach ($this->aggregations as $aggregation) {
-                    /** @var \Level23\Druid\Aggregations\AggregatorInterface $aggregation */
-                    if ($aggregation->getOutputName() == $havingOrMetricOrClosure) {
-                        $isAggregator = true;
-                        break;
-                    }
-                }
-
-                if ($isAggregator) {
-                    $having = new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value));
-                } else {
-                    $having = new DimensionSelectorHavingFilter($havingOrMetricOrClosure, $value);
-                }
-            } elseif ($operator == '<>' || $operator == '!=') {
-                $having = new NotHavingFilter(new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value)));
-            } elseif ($operator == '>') {
-                $having = new GreaterThanHavingFilter($havingOrMetricOrClosure, floatval($value));
-            } elseif ($operator == '<') {
-                $having = new LessThanHavingFilter($havingOrMetricOrClosure, floatval($value));
-            } elseif ($operator == '>=') {
-                $having = new OrHavingFilter(
-                    new GreaterThanHavingFilter($havingOrMetricOrClosure, floatval($value)),
-                    new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value))
-                );
-            } elseif ($operator == '<=') {
-                $having = new OrHavingFilter(
-                    new LessThanHavingFilter($havingOrMetricOrClosure, floatval($value)),
-                    new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value))
-                );
-            } elseif (strtolower($operator) == 'like') {
-                $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, $value));
-            }
-        } elseif ($havingOrMetricOrClosure instanceof FilterInterface) {
-            $having = new QueryHavingFilter($havingOrMetricOrClosure);
-        } elseif ($havingOrMetricOrClosure instanceof HavingFilterInterface) {
-            $having = $havingOrMetricOrClosure;
-        } elseif ($havingOrMetricOrClosure instanceof Closure) {
-
-            // lets create a bew builder object where the user can mess around with
-            $obj = new QueryBuilder($this->client, $this->dataSource, $this->granularity);
-
-            // call the user function
-            call_user_func($havingOrMetricOrClosure, $obj);
-
-            // Now retrieve the having filter which was created and add it to our current filter set.
-            /**
-             * @var HavingFilterInterface $filter
-             */
-            $having = $obj->getHaving();
-        }
-
-        if ($having === null) {
-            return $this;
-        }
-
-        if ($this->having === null) {
-            $this->having = $having;
-
-            return $this;
-        }
-
-        $this->addHaving(
-            $having,
-            $boolean == 'and' ? AndHavingFilter::class : OrHavingFilter::class
-        );
-
-        return $this;
-    }
-
-    /**
-     * @param string                  $dimension
-     * @param string|OrderByDirection $direction
-     * @param string|SortingOrder     $dimensionOrder
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    public function orderBy(string $dimension, $direction, $dimensionOrder = 'lexicographic'): QueryBuilder
-    {
-        if (is_string($direction)) {
-            $direction = strtolower($direction);
-            if ($direction == "asc") {
-                $direction = OrderByDirection::ASC();
-            } elseif ($direction == "desc") {
-                $direction = OrderByDirection::DESC();
-            }
-        }
-
-        $order = new OrderBy($dimension, $direction, $dimensionOrder);
-
-        if (!$this->limit) {
-            $this->limit = new Limit(self::DEFAULT_MAX_LIMIT);
-        }
-
-        $this->limit->addOrderBy($order);
-
-        return $this;
-    }
-
-    //<editor-fold desc="Getters">
-
-    /**
-     * @return \Level23\Druid\Filters\FilterInterface|null
-     */
-    public function getFilter(): ?FilterInterface
-    {
-        return $this->filter;
-    }
-
-    /**
-     * @return \Level23\Druid\HavingFilters\HavingFilterInterface|null
-     */
-    public function getHaving(): ?HavingFilterInterface
-    {
-        return $this->having;
-    }
-
-    /**
-     * @return \Level23\Druid\Collections\AggregationCollection
-     */
-    public function getAggregations(): AggregationCollection
-    {
-        return $this->aggregations;
-    }
-
-    /**
-     * @return \Level23\Druid\Collections\DimensionCollection
-     */
-    public function getDimensions(): DimensionCollection
-    {
-        return $this->dimensions;
-    }
-
-    //</editor-fold>
 
     //<editor-fold desc="Protected methods">
-
-    /**
-     * Helper method to add a filter
-     *
-     * @param FilterInterface $filter
-     * @param string          $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    protected function addFilter(FilterInterface $filter, string $type)
-    {
-        if ($this->filter instanceof LogicalExpressionFilterInterface && $this->filter instanceof $type) {
-            $this->filter->addFilter($filter);
-        } else {
-            $filters = [$this->filter, $filter];
-
-            $this->filter = new $type($filters);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Helper method to add a filter
-     *
-     * @param \Level23\Druid\HavingFilters\HavingFilterInterface $havingFilter
-     * @param string                                             $type
-     *
-     * @return \Level23\Druid\QueryBuilder
-     */
-    protected function addHaving(HavingFilterInterface $havingFilter, string $type)
-    {
-        if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
-            $this->having->addHavingFilter($havingFilter);
-        } else {
-            $filters = [$this->having, $havingFilter];
-
-            $this->having = new $type($filters);
-        }
-
-        return $this;
-    }
 
     /**
      * Build a timeseries query.
@@ -909,7 +180,7 @@ class QueryBuilder
     {
         $query = new TimeSeriesQuery(
             $this->dataSource,
-            $this->intervals,
+            new IntervalCollection(...$this->intervals),
             $this->granularity
         );
 
@@ -922,11 +193,11 @@ class QueryBuilder
         }
 
         if (count($this->aggregations) > 0) {
-            $query->setAggregations($this->aggregations);
+            $query->setAggregations(new AggregationCollection(...$this->aggregations));
         }
 
         if (count($this->postAggregations) > 0) {
-            $query->setPostAggregations($this->postAggregations);
+            $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
         }
 
         if ($this->limit) {
@@ -962,7 +233,7 @@ class QueryBuilder
         /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
         $query = new TopNQuery(
             $this->dataSource,
-            $this->intervals,
+            new IntervalCollection(...$this->intervals),
             $this->dimensions[0],
             $this->limit->getLimit(),
             $orderBy->getDimension(),
@@ -970,11 +241,11 @@ class QueryBuilder
         );
 
         if (count($this->aggregations) > 0) {
-            $query->setAggregations($this->aggregations);
+            $query->setAggregations(new AggregationCollection(...$this->aggregations));
         }
 
         if (count($this->postAggregations) > 0) {
-            $query->setPostAggregations($this->postAggregations);
+            $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
         }
 
         if (count($context) > 0) {
@@ -999,9 +270,9 @@ class QueryBuilder
     {
         $query = new GroupByQuery(
             $this->dataSource,
-            $this->dimensions,
-            $this->intervals,
-            $this->aggregations,
+            new DimensionCollection(...$this->dimensions),
+            new IntervalCollection(...$this->intervals),
+            new AggregationCollection(...$this->aggregations),
             $this->granularity
         );
 
@@ -1010,7 +281,7 @@ class QueryBuilder
         }
 
         if (count($this->postAggregations) > 0) {
-            $query->setPostAggregations($this->postAggregations);
+            $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
         }
 
         if ($this->filter) {
@@ -1055,7 +326,7 @@ class QueryBuilder
             } // Check if we can use a topN query.
             elseif (
                 $this->limit
-                && $this->limit->getLimit() != self::DEFAULT_MAX_LIMIT
+                && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT
                 && count($this->limit->getOrderByCollection()) == 1
             ) {
                 // We can use a topN!

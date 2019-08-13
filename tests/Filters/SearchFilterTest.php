@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
+use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Filters\SearchFilter;
 use tests\TestCase;
 
@@ -58,7 +58,7 @@ class SearchFilterTest extends TestCase
 
     public function testExtractionFunction()
     {
-        $extractionFunction = new LookupExtractionFunction(
+        $extractionFunction = new LookupExtraction(
             'full_username', false
         );
 

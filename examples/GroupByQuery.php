@@ -6,6 +6,7 @@ ini_set('display_errors', 'On');
 include __DIR__ . '/../vendor/autoload.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\QueryBuilder;
 
 $client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
@@ -16,7 +17,7 @@ $response = $client->query('traffic-hits')
     ->select('country_iso', 'Country')
     ->select(['mccmnc' => 'operator_code'])
     ->select('browser_version', 'browserVersie')
-    ->select('mccmnc', 'carrier', 'operator_title', true, 'Unknown operator')
+    ->select('mccmnc', 'carrier', new LookupExtraction('operator_title', true, 'Unknown operator'))
     ->sum('hits', 'total_hits')
     ->count('totals')
     //->distinctCount('promo_id')
