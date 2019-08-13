@@ -16,6 +16,7 @@
         "text": "infection.log"
     },
     "mutators": {
-        "@default": true
+        "@default": true,
+        "@function_signature": false
     }
 }
