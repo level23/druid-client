@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\ExtractionFunctions;
+namespace tests\Level23\Druid\Extractions;
 
 use Level23\Druid\Extractions\LookupExtraction;
 use tests\TestCase;
 
-class LookupExtractionFunctionTest extends TestCase
+class LookupExtractionTest extends TestCase
 {
     public function dataProvider(): array
     {

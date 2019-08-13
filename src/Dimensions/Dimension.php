@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\Dimensions;
 
@@ -45,7 +46,10 @@ class Dimension implements DimensionInterface
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;
 
-        $outputType = strtolower($outputType ?: DataType::STRING());
+        if (is_string($outputType)) {
+            $outputType = strtolower($outputType);
+        }
+        $outputType = $outputType ?: DataType::STRING();
 
         if (!in_array($outputType, ["string", "long", "float"])) {
             throw new InvalidArgumentException(
