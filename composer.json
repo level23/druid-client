@@ -21,7 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "": "src/"
+      "Level23\\Druid\\": "src/"
     }
   },
   "autoload-dev": {
