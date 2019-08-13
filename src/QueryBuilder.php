@@ -6,6 +6,7 @@ namespace Level23\Druid;
 use ArrayObject;
 use Closure;
 use DateTime;
+use Exception;
 use InvalidArgumentException;
 use Level23\Druid\Aggregations\CountAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
@@ -23,6 +24,7 @@ use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
+use Level23\Druid\Dimensions\LookupDimension;
 use Level23\Druid\Exceptions\DruidException;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Filters\AndFilter;
@@ -193,7 +195,7 @@ class QueryBuilder
             if (!$stop instanceof DateTime) {
                 $stop = new DateTime($stop);
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new DruidException($exception->getMessage(), 0, $exception);
         }
 
@@ -238,6 +240,34 @@ class QueryBuilder
         } elseif (is_array($dimensions)) {
             $this->dimensions->addFromArray($dimensions);
         }
+
+        return $this;
+    }
+
+    /**
+     *
+     * @param string $lookupFunction
+     * @param string $dimension
+     * @param string $as
+     * @param bool   $retainMissingValue
+     * @param string $replaceMissingValueWith
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function lookup(
+        string $lookupFunction,
+        string $dimension,
+        string $as = '',
+        bool $retainMissingValue = false,
+        string $replaceMissingValueWith = ''
+    ): QueryBuilder {
+        $this->dimensions->add(new LookupDimension(
+            $dimension,
+            $lookupFunction,
+            ($as ?: $dimension),
+            $retainMissingValue,
+            $replaceMissingValueWith
+        ));
 
         return $this;
     }
