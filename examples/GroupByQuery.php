@@ -8,7 +8,7 @@ include __DIR__ . '/../vendor/autoload.php';
 use Level23\Druid\DruidClient;
 use Level23\Druid\QueryBuilder;
 
-$client = new DruidClient('http://127.0.0.1:8888/druid/v2');
+$client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
 $response = $client->query('traffic-hits')
     ->interval(new DateTime("now - 1 day"), new DateTime())
