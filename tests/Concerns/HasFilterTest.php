@@ -62,10 +62,10 @@ class HasFilterTest extends TestCase
     /**
      * @dataProvider        whereDataProvider
      *
-     * @param $field
-     * @param $operator
-     * @param $value
-     * @param $boolean
+     * @param string      $field
+     * @param string      $operator
+     * @param string|null $value
+     * @param string      $boolean
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
