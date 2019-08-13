@@ -109,14 +109,10 @@ class TimeSeriesQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
-     *
-     * @return \Level23\Druid\Queries\TimeSeriesQuery
      */
-    public function setFilter(FilterInterface $filter): TimeSeriesQuery
+    public function setFilter(FilterInterface $filter)
     {
         $this->filter = $filter;
-
-        return $this;
     }
 
     /**
@@ -129,14 +125,10 @@ class TimeSeriesQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Collections\AggregationCollection $aggregations
-     *
-     * @return TimeSeriesQuery
      */
-    public function setAggregations(AggregationCollection $aggregations): TimeSeriesQuery
+    public function setAggregations(AggregationCollection $aggregations)
     {
         $this->aggregations = $aggregations;
-
-        return $this;
     }
 
     /**
@@ -149,13 +141,9 @@ class TimeSeriesQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Collections\PostAggregationCollection $postAggregations
-     *
-     * @return TimeSeriesQuery
      */
-    public function setPostAggregations(PostAggregationCollection $postAggregations): TimeSeriesQuery {
+    public function setPostAggregations(PostAggregationCollection $postAggregations) {
         $this->postAggregations = $postAggregations;
-
-        return $this;
     }
 
     /**

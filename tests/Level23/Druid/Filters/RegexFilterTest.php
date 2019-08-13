@@ -3,19 +3,44 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
+use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
 use Level23\Druid\Filters\RegexFilter;
 use tests\TestCase;
 
 class RegexFilterTest extends TestCase
 {
-    public function testFilter()
+    public function dataProvider(): array
     {
-        $filter = new RegexFilter('name', '^[a-z]*$');
+        return [
+            [true],
+            [false],
+        ];
+    }
 
-        $this->assertEquals([
+    /**
+     * @dataProvider dataProvider
+     *
+     * @param bool $useExtractionFunction
+     */
+    public function testFilter(bool $useExtractionFunction)
+    {
+        $extractionFunction = new LookupExtractionFunction(
+            'full_username', false
+        );
+
+        $expected = [
             'type'      => 'regex',
             'dimension' => 'name',
             'pattern'   => '^[a-z]*$',
-        ], $filter->getFilter());
+        ];
+
+        if ($useExtractionFunction) {
+            $filter                   = new RegexFilter('name', '^[a-z]*$', $extractionFunction);
+            $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
+        } else {
+            $filter = new RegexFilter('name', '^[a-z]*$');
+        }
+
+        $this->assertEquals($expected, $filter->getFilter());
     }
 }
