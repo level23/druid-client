@@ -26,7 +26,7 @@ class DruidClientTest extends TestCase
 
     public function setUp(): void
     {
-        $this->client  = new DruidClient('http://');
+        $this->client  = new DruidClient([]);
         $this->builder = \Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
     }
 
