@@ -2,7 +2,7 @@
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 class SelectorFilter implements FilterInterface
 {
@@ -17,21 +17,21 @@ class SelectorFilter implements FilterInterface
     protected $value;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
     /**
      * InFilter constructor.
      *
-     * @param string                           $dimension
-     * @param string                           $value
-     * @param ExtractionFunctionInterface|null $extractionFunction
+     * @param string                   $dimension
+     * @param string                   $value
+     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $value,
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->value              = $value;
         $this->dimension          = $dimension;

@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\ExtractionFunctions;
+namespace Level23\Druid\Extractions;
 
 /**
- * Class SubstringExtractionFunction
+ * Class SubstringExtraction
  *
  * Substring Extraction Function
  *
@@ -24,9 +24,9 @@ namespace Level23\Druid\ExtractionFunctions;
  *
  * { "type" : "substring", "index" : 3 }
  *
- * @package Level23\Druid\ExtractionFunctions
+ * @package Level23\Druid\Extractions
  */
-class SubstringExtractionFunction implements ExtractionFunctionInterface
+class SubstringExtraction implements ExtractionInterface
 {
     /**
      * @var int
@@ -39,7 +39,7 @@ class SubstringExtractionFunction implements ExtractionFunctionInterface
     protected $length;
 
     /**
-     * RegexExtractionFunction constructor.
+     * RegexExtraction constructor.
      *
      * @param int      $index
      * @param int|null $length

@@ -3,7 +3,7 @@
 namespace Level23\Druid\Dimensions;
 
 use InvalidArgumentException;
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Types\DataType;
 
 class Dimension implements DimensionInterface
@@ -24,23 +24,23 @@ class Dimension implements DimensionInterface
     protected $outputType;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
     /**
      * Dimension constructor.
      *
-     * @param string                           $dimension
-     * @param string                           $outputName
-     * @param string|DataType                  $outputType This can either be "long", "float" or "string"
-     * @param ExtractionFunctionInterface|null $extractionFunction
+     * @param string                   $dimension
+     * @param string                   $outputName
+     * @param string|DataType          $outputType This can either be "long", "float" or "string"
+     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $outputName = null,
         $outputType = "string",
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;

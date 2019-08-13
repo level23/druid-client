@@ -24,4 +24,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $property->setAccessible(true);
         return $property->getValue($object);
     }
+
+    public function assertArrayContainsSubset( array  $expectedSubset, array  $actualArray )
+    {
+        foreach ($expectedSubset as $key => $value) {
+            $this->assertArrayHasKey($key, $actualArray);
+            $this->assertSame($value, $actualArray[$key]);
+        }
+    }
 }

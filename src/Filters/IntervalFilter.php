@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class IntervalFilter
@@ -31,24 +31,24 @@ class IntervalFilter implements FilterInterface
     protected $intervals;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
     /**
      * IntervalFilter constructor.
      *
-     * @param string                           $dimension          The dimension to filter on
-     * @param array                            $intervals          A array containing ISO-8601 interval strings. This
+     * @param string                   $dimension                  The dimension to filter on
+     * @param array                    $intervals                  A array containing ISO-8601 interval strings. This
      *                                                             defines the time ranges to filter on.
-     * @param ExtractionFunctionInterface|null $extractionFunction If an extraction function is used with this filter,
+     * @param ExtractionInterface|null $extractionFunction         If an extraction function is used with this filter,
      *                                                             the extraction function should output values that
      *                                                             are parsable as long milliseconds.
      */
     public function __construct(
         string $dimension,
         array $intervals,
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->intervals          = $intervals;
         $this->dimension          = $dimension;

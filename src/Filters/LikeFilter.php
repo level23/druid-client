@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class LikeFilter
@@ -31,24 +31,24 @@ class LikeFilter implements FilterInterface
     protected $escapeCharacter;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
     /**
      * LikeFilter constructor.
      *
-     * @param string                           $dimension       The dimension to filter on
-     * @param string                           $pattern         LIKE pattern, such as "foo%" or "___bar".
-     * @param string                           $escapeCharacter An escape character that can be used to escape special
+     * @param string                   $dimension       The dimension to filter on
+     * @param string                   $pattern         LIKE pattern, such as "foo%" or "___bar".
+     * @param string                   $escapeCharacter An escape character that can be used to escape special
      *                                                          characters.
-     * @param ExtractionFunctionInterface|null $extractionFunction
+     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $pattern,
         string $escapeCharacter = '\\',
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->pattern            = $pattern;

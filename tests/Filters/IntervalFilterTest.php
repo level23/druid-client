@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
+use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Filters\IntervalFilter;
 use tests\TestCase;
 
@@ -26,7 +26,7 @@ class IntervalFilterTest extends TestCase
 
     public function testExtractionFunction()
     {
-        $extractionFunction = new LookupExtractionFunction(
+        $extractionFunction = new LookupExtraction(
             'singup_by_member', false
         );
 
