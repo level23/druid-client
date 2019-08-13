@@ -22,14 +22,10 @@ class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
 
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
-     *
-     * @return $this
      */
     public function addFilter(FilterInterface $filter)
     {
         $this->filters[] = $filter;
-
-        return $this;
     }
 
     /**

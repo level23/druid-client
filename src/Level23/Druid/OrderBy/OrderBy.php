@@ -83,6 +83,6 @@ class OrderBy implements OrderByInterface
      */
     public function getDirection(): OrderByDirection
     {
-        return ((string)$this->direction == "ascending" ? OrderByDirection::ASC() : OrderByDirection::DESC());
+        return ($this->direction == "ascending" ? OrderByDirection::ASC() : OrderByDirection::DESC());
     }
 }

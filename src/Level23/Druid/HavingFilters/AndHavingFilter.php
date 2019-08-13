@@ -50,14 +50,10 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
      * Add an extra filter to our logical expression filter.
      *
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
-     *
-     * @return $this
      */
     public function addHavingFilter(HavingFilterInterface $having)
     {
         $this->filters[] = $having;
-
-        return $this;
     }
 
     /**

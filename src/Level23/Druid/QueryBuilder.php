@@ -24,6 +24,7 @@ use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\LookupDimension;
+use Level23\Druid\Exceptions\DruidException;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\FilterInterface;
@@ -180,16 +181,20 @@ class QueryBuilder
      * @param \DateTime|string $stop
      *
      * @return $this
-     * @throws \Exception
+     * @throws \Level23\Druid\Exceptions\DruidException
      */
     public function interval($start, $stop): QueryBuilder
     {
-        if (!$start instanceof DateTime) {
-            $start = new DateTime($start);
-        }
+        try {
+            if (!$start instanceof DateTime) {
+                $start = new DateTime($start);
+            }
 
-        if (!$stop instanceof DateTime) {
-            $stop = new DateTime($stop);
+            if (!$stop instanceof DateTime) {
+                $stop = new DateTime($stop);
+            }
+        } catch (\Exception $exception) {
+            throw new DruidException($exception->getMessage(), 0, $exception);
         }
 
         $this->intervals->add(new Interval($start, $stop));
@@ -262,6 +267,45 @@ class QueryBuilder
     }
 
     /**
+     * Shorthand for summing long's
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function longSum(string $metric, string $as = ''): QueryBuilder
+    {
+        return $this->sum($metric, $as, 'long');
+    }
+
+    /**
+     * Shorthand for summing doubles
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function doubleSum(string $metric, string $as = ''): QueryBuilder
+    {
+        return $this->sum($metric, $as, 'double');
+    }
+
+    /**
+     * Shorthand for summing floats
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function floatSum(string $metric, string $as = ''): QueryBuilder
+    {
+        return $this->sum($metric, $as, 'float');
+    }
+
+    /**
      * Count the number of results and put it in a dimension with the given name.
      *
      * @param string $as
@@ -313,6 +357,45 @@ class QueryBuilder
     }
 
     /**
+     * Get the minimum value for the given metric using long as type
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function longMin(string $metric, string $as = '')
+    {
+        return $this->min($metric, $as, 'long');
+    }
+
+    /**
+     * Get the minimum value for the given metric using double as type
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function doubleMin(string $metric, string $as = '')
+    {
+        return $this->min($metric, $as, 'double');
+    }
+
+    /**
+     * Get the minimum value for the given metric using float as type
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function floatMin(string $metric, string $as = '')
+    {
+        return $this->min($metric, $as, 'float');
+    }
+
+    /**
      * Get the maximum value for the given metric
      *
      * @param string $metric
@@ -329,7 +412,49 @@ class QueryBuilder
     }
 
     /**
-     * Get the first metric found
+     * Get the maximum value for the given metric using long as type
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function longMax(string $metric, string $as = ''): QueryBuilder
+    {
+        return $this->max($metric, $as, 'long');
+    }
+
+    /**
+     * Get the maximum value for the given metric using float as type
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function floatMax(string $metric, string $as = ''): QueryBuilder
+    {
+        return $this->max($metric, $as, 'float');
+    }
+
+    /**
+     * Get the maximum value for the given metric using double as type
+     *
+     * @param string $metric
+     * @param string $as
+     *
+     * @return \Level23\Druid\QueryBuilder
+     */
+    public function doubleMax(string $metric, string $as = ''): QueryBuilder
+    {
+        return $this->max($metric, $as, 'double');
+    }
+
+    /**
+     * Get the first metric found based on the applied group-by filters.
+     * So if you group by the dimension "countries", you can get the first "metric" per country.
+     *
+     * NOTE: This is different then the ELOQUENT first() method!
      *
      * @param string $metric
      * @param string $as

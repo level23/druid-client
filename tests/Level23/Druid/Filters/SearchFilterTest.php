@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
+use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
 use Level23\Druid\Filters\SearchFilter;
 use tests\TestCase;
 
@@ -38,13 +39,13 @@ class SearchFilterTest extends TestCase
             $expectedQuery = [
                 'type'          => 'fragment',
                 'values'        => $valueOrValues,
-                'caseSensitive' => ($caseSensitive ?:false),
+                'caseSensitive' => ($caseSensitive ?: false),
             ];
         } else {
             $expectedQuery = [
                 'type'          => 'contains',
                 'value'         => $valueOrValues,
-                'caseSensitive' => ($caseSensitive ?:false),
+                'caseSensitive' => ($caseSensitive ?: false),
             ];
         }
 
@@ -52,6 +53,26 @@ class SearchFilterTest extends TestCase
             'type'      => 'search',
             'dimension' => $dimension,
             'query'     => $expectedQuery,
+        ], $filter->getFilter());
+    }
+
+    public function testExtractionFunction()
+    {
+        $extractionFunction = new LookupExtractionFunction(
+            'full_username', false
+        );
+
+        $filter = new SearchFilter('name', 'john', false, $extractionFunction);
+
+        $this->assertEquals([
+            'type'         => 'search',
+            'dimension'    => 'name',
+            'query'        => [
+                'type'          => 'contains',
+                'value'         => 'john',
+                'caseSensitive' => false,
+            ],
+            'extractionFn' => $extractionFunction->getExtractionFunction(),
         ], $filter->getFilter());
     }
 }
