@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\ExtractionFunctions;
 
-use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
+use Level23\Druid\Extractions\LookupExtraction;
 use tests\TestCase;
 
 class LookupExtractionFunctionTest extends TestCase
@@ -48,7 +48,7 @@ class LookupExtractionFunctionTest extends TestCase
         bool $optimize,
         ?bool $injective
     ) {
-        $extr     = new LookupExtractionFunction(
+        $extr     = new LookupExtraction(
             $lookup,
             $retainMissingValue,
             $replaceMissingValueWith,
@@ -76,7 +76,7 @@ class LookupExtractionFunctionTest extends TestCase
 
     public function testExtractionFunctionDefaults()
     {
-        $extr     = new LookupExtractionFunction('user');
+        $extr     = new LookupExtraction('user');
         $expected = [
             'type'               => 'registeredLookup',
             'lookup'             => "user",

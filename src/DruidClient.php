@@ -79,6 +79,16 @@ class DruidClient
     }
 
     /**
+     * Return the config options.
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+    /**
      * Log a message
      *
      * @param string $logMessage

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
+use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Types\SortingOrder;
 use tests\TestCase;
@@ -83,7 +83,7 @@ class BoundFilterTest extends TestCase
 
     public function testExtractionFunction()
     {
-        $extractionFunction = new LookupExtractionFunction(
+        $extractionFunction = new LookupExtraction(
             'age_by_member', false
         );
 

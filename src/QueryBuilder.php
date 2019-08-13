@@ -23,8 +23,8 @@ use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
-use Level23\Druid\Dimensions\LookupDimension;
 use Level23\Druid\Exceptions\DruidException;
+use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\FilterInterface;
@@ -206,41 +206,33 @@ class QueryBuilder
      * Select a dimension from our statistics. Possible use a lookup function to find the
      * real data which we want to use.
      *
-     * @param array|\ArrayObject|string|DimensionInterface $dimensions
-     * @param string                                       $as                      When dimensions is a string (the
+     * @param array|\ArrayObject|string|DimensionInterface   $dimensions
+     * @param string                                         $as                    When dimensions is a string (the
      *                                                                              dimension), you can specify the
      *                                                                              alias output name here.
-     *
-     * @param string                                       $lookupFunction          Optional, the lookup function which
-     *                                                                              you want to use
-     * @param bool                                         $retainMissingValue      Do you want to retain values which
-     *                                                                              cannot be found in the registered
-     *                                                                              lookup function?
-     * @param string                                       $replaceMissingValueWith If you want to retain missing
-     *                                                                              values, you can specify here what
-     *                                                                              you want to use.
+     * @param \Level23\Druid\Extractions\ExtractionInterface $extraction
+     * @param string|\Level23\Druid\Types\DataType           $outputType
      *
      * @return $this
      */
     public function select(
         $dimensions,
         string $as = '',
-        string $lookupFunction = '',
-        bool $retainMissingValue = false,
-        string $replaceMissingValueWith = ''
+        ExtractionInterface $extraction = null,
+        $outputType = 'string'
     ): QueryBuilder {
+
+        if (is_string($outputType) && !DataType::isValid($outputType)) {
+            throw new InvalidArgumentException(
+                'The given output type is invalid: ' . $outputType . '. ' .
+                'Allowed are: ' . implode(',', DataType::values())
+            );
+        }
+
         if ($dimensions instanceof DimensionInterface) {
             $this->dimensions->add($dimensions);
-        } elseif (is_string($dimensions) && !empty($lookupFunction)) {
-            $this->dimensions->add(new LookupDimension(
-                $dimensions,
-                $lookupFunction,
-                ($as ?: $dimensions),
-                $retainMissingValue,
-                $replaceMissingValueWith
-            ));
-        } elseif (is_string($dimensions) && empty($lookupFunction)) {
-            $this->dimensions->add(new Dimension($dimensions, ($as ?: $dimensions)));
+        } elseif (is_string($dimensions)) {
+            $this->dimensions->add(new Dimension($dimensions, ($as ?: $dimensions), $outputType, $extraction));
         } elseif ($dimensions instanceof ArrayObject) {
             $this->dimensions->addFromArray($dimensions->getArrayCopy());
         } elseif (is_array($dimensions)) {

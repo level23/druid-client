@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\ExtractionFunctions;
+namespace Level23\Druid\Extractions;
 
 /**
- * Class PartialExtractionFunction
+ * Class PartialExtraction
  *
  * Returns the dimension value unchanged if the regular expression matches, otherwise returns null.
  *
- * @package Level23\Druid\ExtractionFunctions
+ * @package Level23\Druid\Extractions
  */
-class PartialExtractionFunction implements ExtractionFunctionInterface
+class PartialExtraction implements ExtractionInterface
 {
     /**
      * @var string
@@ -18,7 +18,7 @@ class PartialExtractionFunction implements ExtractionFunctionInterface
     protected $regularExpression;
 
     /**
-     * PartialExtractionFunction constructor.
+     * PartialExtraction constructor.
      *
      * @param string $regularExpression A Java regex pattern
      *

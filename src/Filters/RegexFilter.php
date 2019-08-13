@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class RegexFilter
@@ -27,24 +27,24 @@ class RegexFilter implements FilterInterface
     protected $pattern;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
     /**
      * RegexFilter constructor.
      *
-     * @param string                           $dimension
-     * @param string                           $pattern A Java regex pattern
+     * @param string                   $dimension
+     * @param string                   $pattern A Java regex pattern
      *
-     * @param ExtractionFunctionInterface|null $extractionFunction
+     * @param ExtractionInterface|null $extractionFunction
      *
      * @see http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
      */
     public function __construct(
         string $dimension,
         string $pattern,
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->pattern            = $pattern;
         $this->dimension          = $dimension;
