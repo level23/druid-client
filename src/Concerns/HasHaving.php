@@ -116,7 +116,7 @@ trait HasHaving
      * @param string|null                          $operator
      * @param string|null                          $value
      *
-     * @return \Level23\Druid\Concerns\HasHaving
+     * @return $this
      */
     public function orHaving($havingOrMetricOrClosure, $operator = null, $value = null)
     {
