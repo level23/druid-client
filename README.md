@@ -23,10 +23,10 @@ use Carbon\Carbon;
 use Level23\Druid\DruidClient;
 use Level23\Druid\QueryBuilder;
 
-$client = new DruidClient('http://127.0.0.1:8888/druid/v2');
+$client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
 $response = $client->query('traffic-hits')
-    ->interval(Carbon::now()->subDay(), Carbon::now())
+    ->interval(new DateTime("now - 1 day"), new DateTime())
     ->select('browser')
     ->select('country_iso', 'Country')
     ->select(['mccmnc' => 'operator_code'])
@@ -34,12 +34,12 @@ $response = $client->query('traffic-hits')
     ->select('mccmnc', 'carrier', 'operator_title', true, 'Unknown operator')
     ->sum('hits', 'total_hits')
     ->count('totals')
-    ->distinctCount('promo_id')
+    //->distinctCount('promo_id')
     ->where('hits', '>', 1000)
     ->where('browser', 'Yandex.Browser')
-    ->orWhere('browser_version', 'like', '17.4.%')
+    ->orWhere('browser_version', '17.4.0')
     ->orWhere(function (QueryBuilder $builder) {
-        $builder->where('browser_version', 'regex', '^17\\.5\\.0$');
+        $builder->where('browser_version', '17.5.0');
         $builder->where('browser_version', '17.6.0');
     })
     ->whereIn('added', [1])
@@ -47,6 +47,7 @@ $response = $client->query('traffic-hits')
     ->having('total_hits', '>', 100000)
     ->orderBy('total_hits', 'desc')
     ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
+
 ```
 
 More info to come!
