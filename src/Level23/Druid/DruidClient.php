@@ -61,11 +61,8 @@ class DruidClient
      * @param array         $config The configuration for this client.
      * @param callable|null $logHandler
      */
-    public function __construct(
-        array $config,
-        callable $logHandler = null
-    ) {
-
+    public function __construct(array $config, callable $logHandler = null)
+    {
         $this->client     = new GuzzleClient();
         $this->logHandler = $logHandler;
         $this->config     = array_merge($this->config, $config);
