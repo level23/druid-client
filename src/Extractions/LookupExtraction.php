@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\ExtractionFunctions;
+namespace Level23\Druid\Extractions;
 
-class LookupExtractionFunction implements ExtractionFunctionInterface
+class LookupExtraction implements ExtractionInterface
 {
     /**
      * @var string
@@ -31,7 +31,7 @@ class LookupExtractionFunction implements ExtractionFunctionInterface
     protected $optimize;
 
     /**
-     * LookupExtractionFunction constructor.
+     * LookupExtraction constructor.
      *
      * @param string      $lookupName
      * @param bool        $retainMissingValue

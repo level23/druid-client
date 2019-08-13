@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\ExtractionFunctions;
+namespace Level23\Druid\Extractions;
 
 /**
- * Class SearchQueryExtractionFunction
+ * Class SearchQueryExtraction
  *
- * @package Level23\Druid\ExtractionFunctions
+ * @package Level23\Druid\Extractions
  */
-class SearchQueryExtractionFunction implements ExtractionFunctionInterface
+class SearchQueryExtraction implements ExtractionInterface
 {
     /**
      * @var array|string
@@ -21,7 +21,7 @@ class SearchQueryExtractionFunction implements ExtractionFunctionInterface
     protected $caseSensitive;
 
     /**
-     * SearchQueryExtractionFunction constructor.
+     * SearchQueryExtraction constructor.
      *
      * @param string|array $valueOrValues
      * @param bool         $caseSensitive

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class JavascriptFilter
@@ -28,21 +28,21 @@ class JavascriptFilter implements FilterInterface
     protected $javascriptFunction;
 
     /**
-     * @var \Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface|null
+     * @var \Level23\Druid\Extractions\ExtractionInterface|null
      */
     protected $extractionFunction;
 
     /**
      * JavascriptFilter constructor.
      *
-     * @param string                           $dimension
-     * @param string                           $javascriptFunction
-     * @param ExtractionFunctionInterface|null $extractionFunction
+     * @param string                   $dimension
+     * @param string                   $javascriptFunction
+     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $javascriptFunction,
-        ExtractionFunctionInterface $extractionFunction = null
+        ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->javascriptFunction = $javascriptFunction;

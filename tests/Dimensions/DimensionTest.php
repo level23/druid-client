@@ -4,15 +4,15 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Dimensions;
 
 use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\ExtractionFunctions\ExtractionFunctionInterface;
-use Level23\Druid\ExtractionFunctions\RegexExtractionFunction;
+use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\Extractions\RegexExtraction;
 use tests\TestCase;
 
 class DimensionTest extends TestCase
 {
     public function dataProvider(): array
     {
-        $extr = new RegexExtractionFunction("^([a-z]+)$");
+        $extr = new RegexExtraction("^([a-z]+)$");
 
         return [
             ["name", "full_name", "string", null, false],
@@ -28,17 +28,17 @@ class DimensionTest extends TestCase
     /**
      * @dataProvider dataProvider
      *
-     * @param string                           $dimension
-     * @param string|null                      $outputName
-     * @param string                           $type
-     * @param ExtractionFunctionInterface|null $extractionFunction
-     * @param bool                             $expectException
+     * @param string                   $dimension
+     * @param string|null              $outputName
+     * @param string                   $type
+     * @param ExtractionInterface|null $extractionFunction
+     * @param bool                     $expectException
      */
     public function testDimension(
         string $dimension,
         ?string $outputName,
         string $type,
-        ?ExtractionFunctionInterface $extractionFunction,
+        ?ExtractionInterface $extractionFunction,
         bool $expectException
     ) {
         if ($expectException) {

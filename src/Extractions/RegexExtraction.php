@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\ExtractionFunctions;
+namespace Level23\Druid\Extractions;
 
-class RegexExtractionFunction implements ExtractionFunctionInterface
+class RegexExtraction implements ExtractionInterface
 {
     /**
      * @var string
@@ -26,7 +26,7 @@ class RegexExtractionFunction implements ExtractionFunctionInterface
     protected $replaceMissingValueWith;
 
     /**
-     * RegexExtractionFunction constructor.
+     * RegexExtraction constructor.
      *
      * @param string      $regexp
      * @param int         $groupToExtract
