@@ -21,5 +21,19 @@ class AndFilterTest extends TestCase
             'type'   => 'and',
             'fields' => [$filter1->getFilter(), $filter2->getFilter(), $filter3->getFilter()],
         ], $filter->getFilter());
+
+        $filter4 = new SelectorFilter('car', 'bmw');
+
+        $filter->addFilter($filter4);
+
+        $this->assertEquals([
+            'type'   => 'and',
+            'fields' => [$filter1->getFilter(), $filter2->getFilter(), $filter3->getFilter(), $filter4->getFilter()],
+        ], $filter->getFilter());
+
+        $this->assertEquals(
+            [$filter1, $filter2, $filter3, $filter4],
+            $filter->getFilters()
+        );
     }
 }

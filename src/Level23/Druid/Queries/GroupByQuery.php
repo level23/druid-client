@@ -155,14 +155,10 @@ class GroupByQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
-     *
-     * @return GroupByQuery
      */
-    public function setFilter(FilterInterface $filter): GroupByQuery
+    public function setFilter(FilterInterface $filter)
     {
         $this->filter = $filter;
-
-        return $this;
     }
 
     /**
@@ -175,17 +171,13 @@ class GroupByQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Collections\AggregationCollection|array $aggregations
-     *
-     * @return GroupByQuery
      */
-    public function setAggregations($aggregations): GroupByQuery
+    public function setAggregations($aggregations)
     {
         if (is_array($aggregations)) {
             $aggregations = AggregationCollection::make($aggregations);
         }
         $this->aggregations = $aggregations;
-
-        return $this;
     }
 
     /**
@@ -198,18 +190,14 @@ class GroupByQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Collections\PostAggregationCollection|array $postAggregations
-     *
-     * @return GroupByQuery
      */
-    public function setPostAggregations($postAggregations): GroupByQuery
+    public function setPostAggregations($postAggregations)
     {
         if (is_array($postAggregations)) {
             $postAggregations = PostAggregationCollection::make($postAggregations);
         }
 
         $this->postAggregations = $postAggregations;
-
-        return $this;
     }
 
     /**
@@ -222,14 +210,10 @@ class GroupByQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
-     *
-     * @return GroupByQuery
      */
-    public function setHaving(HavingFilterInterface $having): GroupByQuery
+    public function setHaving(HavingFilterInterface $having)
     {
         $this->having = $having;
-
-        return $this;
     }
 
     /**
@@ -258,10 +242,8 @@ class GroupByQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Limits\LimitInterface|int $limit
-     *
-     * @return GroupByQuery
      */
-    public function setLimit($limit): GroupByQuery
+    public function setLimit($limit)
     {
         if (is_numeric($limit)) {
             $limit = new Limit($limit);
@@ -274,8 +256,6 @@ class GroupByQuery implements QueryInterface
         }
 
         $this->limit = $limit;
-
-        return $this;
     }
 
     /**

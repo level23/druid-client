@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
+use Level23\Druid\ExtractionFunctions\LookupExtractionFunction;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Types\SortingOrder;
 use tests\TestCase;
@@ -70,5 +71,38 @@ class BoundFilterTest extends TestCase
         $expected['ordering'] = ($ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC()))->getValue();
 
         $this->assertEquals($expected, $filter->getFilter());
+    }
+
+    public function testInvalidOperator()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid operator given');
+
+        new BoundFilter('age', 'is', '18');
+    }
+
+    public function testExtractionFunction()
+    {
+        $extractionFunction = new LookupExtractionFunction(
+            'age_by_member', false
+        );
+
+        $filter = new BoundFilter(
+            'member_id',
+            '>',
+            '18',
+            SortingOrder::ALPHANUMERIC(),
+            $extractionFunction
+        );
+
+        $this->assertEquals([
+            'type'         => 'bound',
+            'dimension'    => 'member_id',
+            'ordering'     => 'alphanumeric',
+            'lower'        => 18,
+            'lowerStrict'  => true,
+            'extractionFn' => $extractionFunction->getExtractionFunction(),
+        ], $filter->getFilter()
+        );
     }
 }
