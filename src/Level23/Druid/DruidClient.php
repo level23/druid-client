@@ -27,38 +27,58 @@ class DruidClient
     /**
      * @var array
      */
-    protected $guzzleDefaultOptions;
+    protected $config = [
+        /**
+         * domain + optional port. Don't add the api path like "/druid/v2"
+         */
+        'broker_url'      => '',
 
-    /**
-     * The number of times we will try to do a retry in case of a failure.
-     *
-     * @var int
-     */
-    public $retries = 2;
+        /**
+         * domain + optional port. Don't add the api path like "/druid/coordinator/v1"
+         */
+        'coordinator_url' => '',
 
-    /**
-     * @var string
-     */
-    protected $brokerEndpoint;
+        /**
+         * domain + optional port. Don't add the api path like "/druid/indexer/v1"
+         */
+        'overlord_url'    => '',
+
+        /**
+         * The number of times we will try to do a retry in case of a failure.
+         */
+        'retries'         => 2,
+
+        /**
+         * Optional give alternative options for our guzzle connection to druid, like timeouts, headers, authorisation, etc.
+         */
+        'guzzle_options'  => [],
+
+    ];
 
     /**
      * DruidService constructor.
      *
-     * @param string                  $brokerEndpoint
-     * @param \GuzzleHttp\Client|null $client
-     * @param array                   $guzzleDefaultOptions
-     * @param callable|null           $logHandler
+     * @param array         $config The configuration for this client.
+     * @param callable|null $logHandler
      */
     public function __construct(
-        string $brokerEndpoint,
-        GuzzleClient $client = null,
-        array $guzzleDefaultOptions = [],
+        array $config,
         callable $logHandler = null
     ) {
-        $this->client               = ($client ?? new GuzzleClient());
-        $this->logHandler           = $logHandler;
-        $this->guzzleDefaultOptions = $guzzleDefaultOptions;
-        $this->brokerEndpoint       = $brokerEndpoint;
+
+        $this->client     = new GuzzleClient();
+        $this->logHandler = $logHandler;
+        $this->config     = array_merge($this->config, $config);
+    }
+
+    /**
+     * Set a custom guzzle client which should be used.
+     *
+     * @param \GuzzleHttp\Client $client
+     */
+    public function setGuzzleClient(GuzzleClient $client)
+    {
+        $this->client = $client;
     }
 
     /**
@@ -92,7 +112,7 @@ class DruidClient
                 "Executing druid query:" . $jsonQuery
             );
 
-            $url = $this->brokerEndpoint;
+            $url = $this->config['broker_url'] . '/druid/v2';
 
             // these are our defaults.
             $options = [
@@ -106,7 +126,7 @@ class DruidClient
                 ],
             ];
 
-            $options = array_merge($options, $this->guzzleDefaultOptions);
+            $options = array_merge($options, $this->config['guzzle_options']);
 
             $options['body'] = $jsonQuery;
 
@@ -170,7 +190,7 @@ class DruidClient
                 continue;
             }
 
-            $obj = $result['event'];
+            $obj       = $result['event'];
             $results[] = $obj;
         }
 
