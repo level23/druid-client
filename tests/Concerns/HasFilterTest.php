@@ -219,6 +219,13 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
+    public function testInvalidArguments()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->builder->where(new \stdClass());
+    }
+
     /**
      * Test the whereNotIn
      *
@@ -236,6 +243,10 @@ class HasFilterTest extends TestCase
         $not->shouldReceive('__construct')
             ->once()
             ->with(new IsInstanceOf(InFilter::class));
+
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->andReturn($this->builder);
 
         $response = $this->builder->whereNotIn('age', [16, 17, 18]);
 
