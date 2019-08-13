@@ -167,8 +167,6 @@ class TopNQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Collections\PostAggregationCollection $postAggregations
-     *
-     * @return TopNQuery
      */
     public function setPostAggregations(PostAggregationCollection $postAggregations)
     {
