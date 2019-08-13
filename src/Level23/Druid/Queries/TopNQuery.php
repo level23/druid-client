@@ -135,14 +135,10 @@ class TopNQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
-     *
-     * @return TopNQuery
      */
-    public function setFilter(FilterInterface $filter): TopNQuery
+    public function setFilter(FilterInterface $filter)
     {
         $this->filter = $filter;
-
-        return $this;
     }
 
     /**
@@ -155,14 +151,10 @@ class TopNQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Collections\AggregationCollection $aggregations
-     *
-     * @return TopNQuery
      */
-    public function setAggregations(AggregationCollection $aggregations): TopNQuery
+    public function setAggregations(AggregationCollection $aggregations)
     {
         $this->aggregations = $aggregations;
-
-        return $this;
     }
 
     /**
@@ -178,11 +170,9 @@ class TopNQuery implements QueryInterface
      *
      * @return TopNQuery
      */
-    public function setPostAggregations(PostAggregationCollection $postAggregations): TopNQuery
+    public function setPostAggregations(PostAggregationCollection $postAggregations)
     {
         $this->postAggregations = $postAggregations;
-
-        return $this;
     }
 
     /**
@@ -195,14 +185,10 @@ class TopNQuery implements QueryInterface
 
     /**
      * @param \Level23\Druid\Context\ContextInterface $context
-     *
-     * @return TopNQuery
      */
-    public function setContext(ContextInterface $context): TopNQuery
+    public function setContext(ContextInterface $context)
     {
         $this->context = $context;
-
-        return $this;
     }
 
     /**

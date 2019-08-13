@@ -9,8 +9,6 @@ interface LogicalExpressionFilterInterface
      * Add an extra filter to our logical expression filter.
      *
      * @param \Level23\Druid\Filters\FilterInterface $filter
-     *
-     * @return $this
      */
     public function addFilter(FilterInterface $filter);
 
