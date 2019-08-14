@@ -13,7 +13,7 @@ class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
     /**
      * AndFilter constructor.
      *
-     * @param array $filters List of DruidFilter classes.
+     * @param array|\Level23\Druid\Filters\FilterInterface[] $filters List of DruidFilter classes.
      */
     public function __construct(array $filters)
     {

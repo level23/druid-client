@@ -15,9 +15,9 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
     /**
      * AndHavingFilter constructor.
      *
-     * @param HavingFilterInterface ...$filters
+     * @param array|\Level23\Druid\HavingFilters\HavingFilterInterface[] $filters
      */
-    public function __construct(...$filters)
+    public function __construct(array $filters)
     {
         $this->filters = $filters;
     }

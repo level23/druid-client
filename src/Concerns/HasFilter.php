@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
+use InvalidArgumentException;
 use Level23\Druid\FilterQueryBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
@@ -83,7 +84,9 @@ trait HasFilter
         }
 
         if ($filter === null) {
-            return $this;
+            throw new InvalidArgumentException(
+                'The arguments which you have supplied cannot be parsed: ' . var_export(func_get_args(), true)
+            );
         }
 
         if ($this->filter === null) {
