@@ -6,6 +6,7 @@ namespace tests\Level23\Druid\Concerns;
 use Level23\Druid\Aggregations\CountAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
 use Level23\Druid\Aggregations\FirstAggregator;
+use Level23\Druid\Aggregations\LastAggregator;
 use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;

@@ -19,7 +19,7 @@ use tests\TestCase;
 class HasDimensionsTest extends TestCase
 {
     /**
-     * @var QueryBuilder|\Mockery\MockInterface $builder
+     * @var QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface $builder
      */
     protected $builder;
 
