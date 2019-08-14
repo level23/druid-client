@@ -17,10 +17,10 @@ trait HasIntervals
 
     /**
      * Add an interval, eg the date where we want to select data from.
-     * This can be an Carbon or DateTime object, or a string which can be parsed to a datetime.
+     * This can be an Carbon or DateTime object, an unix timestamp or a string which can be parsed to a datetime.
      *
-     * @param \DateTime|string $start
-     * @param \DateTime|string $stop
+     * @param \DateTime|string|int $start
+     * @param \DateTime|string|int $stop
      *
      * @return $this
      * @throws \Level23\Druid\Exceptions\DruidException
@@ -28,12 +28,18 @@ trait HasIntervals
     public function interval($start, $stop)
     {
         try {
-            if (!$start instanceof DateTime) {
+            if (is_numeric($start)) {
+                $start = new DateTime("@$start");
+            } elseif (!$start instanceof DateTime) {
                 $start = new DateTime($start);
             }
 
-            if (!$stop instanceof DateTime) {
-                $stop = new DateTime($stop);
+            if (is_numeric($stop)) {
+                $stop = new DateTime("@$stop");
+            } else {
+                if (!$stop instanceof DateTime) {
+                    $stop = new DateTime($stop);
+                }
             }
         } catch (Exception $exception) {
             throw new DruidException($exception->getMessage(), 0, $exception);

@@ -71,4 +71,12 @@ trait HasLimit
 
         return $this;
     }
+
+    /**
+     * @return \Level23\Druid\Limits\LimitInterface|null
+     */
+    public function getLimit()
+    {
+        return $this->limit;
+    }
 }

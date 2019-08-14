@@ -194,17 +194,11 @@ class DruidClientTest extends TestCase
 
         $client->shouldAllowMockingProtectedMethods();
 
-        if (!$expectException) {
-            $client->shouldReceive('getEventData')
-                ->once()
-                ->with($response)
-                ->andReturn(['something' => 123]);
-        }
 
         $druidResult = $client->executeDruidQuery($query);
 
         if (!$expectException) {
-            $this->assertEquals(['something' => 123], $druidResult);
+            $this->assertEquals($response, $druidResult);
         }
     }
 
