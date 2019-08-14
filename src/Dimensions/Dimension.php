@@ -46,6 +46,12 @@ class Dimension implements DimensionInterface
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;
 
+        if ($this->outputName == '__time') {
+            throw new InvalidArgumentException(
+                '__time cannot be used as an output name for dimensions, aggregators, or post-aggregators.'
+            );
+        }
+
         if (is_string($outputType)) {
             $outputType = strtolower($outputType);
         }
@@ -66,13 +72,13 @@ class Dimension implements DimensionInterface
      *
      * @return array
      */
-    public function getDimension(): array
+    public function getDimensionForQuery(): array
     {
         $result = [
             'type'       => ($this->extractionFunction ? 'extraction' : 'default'),
             'dimension'  => $this->dimension,
-            'outputName' => $this->outputName,
             'outputType' => $this->outputType,
+            'outputName' => $this->outputName,
         ];
 
         if ($this->extractionFunction) {
@@ -80,5 +86,33 @@ class Dimension implements DimensionInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Return the name of the dimension which is selected.
+     *
+     * @return string
+     */
+    public function getDimension(): string
+    {
+        return $this->dimension;
+    }
+
+    /**
+     * Return the output name of this dimension
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->outputName;
+    }
+
+    /**
+     * @return \Level23\Druid\Extractions\ExtractionInterface|null
+     */
+    public function getExtractionFunction(): ?ExtractionInterface
+    {
+        return $this->extractionFunction;
     }
 }

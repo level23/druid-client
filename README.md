@@ -55,7 +55,7 @@ More info to come!
 
 For testing/building, run:
 ```
-infection --threads=4
+infection --threads=4 --only-covered
 
 ant phpstan
 ```

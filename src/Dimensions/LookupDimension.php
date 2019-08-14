@@ -67,7 +67,7 @@ class LookupDimension implements DimensionInterface
      *
      * @return array
      */
-    public function getDimension(): array
+    public function getDimensionForQuery(): array
     {
         $result = [
             'type'       => 'lookup',
@@ -83,5 +83,25 @@ class LookupDimension implements DimensionInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Return the name of the dimension which is selected.
+     *
+     * @return string
+     */
+    public function getDimension(): string
+    {
+        return $this->dimension;
+    }
+
+    /**
+     * Return the output name of this dimension
+     *
+     * @return string
+     */
+    public function getOutputName(): string
+    {
+        return $this->outputName;
     }
 }

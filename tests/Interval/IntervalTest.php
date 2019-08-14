@@ -19,5 +19,8 @@ class IntervalTest extends TestCase
             $start->format(DateTime::ATOM) . '/' . $stop->format(DateTime::ATOM),
             $interval->getInterval()
         );
+
+        $this->assertEquals($interval->getStart(), $start);
+        $this->assertEquals($interval->getStop(), $stop);
     }
 }

@@ -54,6 +54,11 @@ class TimeSeriesQuery implements QueryInterface
     protected $descending = false;
 
     /**
+     * @var string
+     */
+    protected $timeOutputName = 'timestamp';
+
+    /**
      * TimeSeriesQuery constructor.
      *
      * @param string             $dataSource
@@ -93,15 +98,15 @@ class TimeSeriesQuery implements QueryInterface
         }
 
         if ($this->aggregations) {
-            $query['aggregations'] = $this->aggregations->toArray();
+            $result['aggregations'] = $this->aggregations->toArray();
         }
 
         if ($this->postAggregations) {
-            $query['postAggregations'] = $this->postAggregations->toArray();
+            $result['postAggregations'] = $this->postAggregations->toArray();
         }
 
         if ($this->context) {
-            $query['context'] = $this->context->getContext();
+            $result['context'] = $this->context->getContext();
         }
 
         return $result;
@@ -142,7 +147,8 @@ class TimeSeriesQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Collections\PostAggregationCollection $postAggregations
      */
-    public function setPostAggregations(PostAggregationCollection $postAggregations) {
+    public function setPostAggregations(PostAggregationCollection $postAggregations)
+    {
         $this->postAggregations = $postAggregations;
     }
 
@@ -184,5 +190,49 @@ class TimeSeriesQuery implements QueryInterface
     public function setDescending(bool $descending): void
     {
         $this->descending = $descending;
+    }
+
+    /**
+     * Return the query type. For example "groupBy" or "timeseries"
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return 'timeseries';
+    }
+
+    /**
+     * Parse the response into something we can return to the user.
+     *
+     * @param array $response
+     *
+     * @return array
+     */
+    public function parseResponse(array $response): array
+    {
+        if (!$response) {
+            return [];
+        }
+
+        $results = [];
+
+        foreach ($response as $result) {
+            $result['result'][$this->timeOutputName] = $result['timestamp'];
+
+            $results[] = $result['result'];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Set the name which will be used in the resultset to store the timestamp in.
+     *
+     * @param string $timeOutputName
+     */
+    public function setTimeOutputName(string $timeOutputName): void
+    {
+        $this->timeOutputName = $timeOutputName;
     }
 }
