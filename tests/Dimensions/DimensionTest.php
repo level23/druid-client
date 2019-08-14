@@ -16,6 +16,7 @@ class DimensionTest extends TestCase
 
         return [
             ["name", "full_name", "string", null, false],
+            ["name", "__time", "string", null, true],
             ["name", null, "STRING", null, false],
             ["name", "full_name", "double", null, true],
             ["name", "full_name", "whatever", null, true],
@@ -61,6 +62,11 @@ class DimensionTest extends TestCase
             $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
         }
 
-        $this->assertEquals($expected, $dimensionObj->getDimension());
+        $this->assertEquals($expected, $dimensionObj->getDimensionForQuery());
+
+        $this->assertEquals(($outputName ?: $dimension), $dimensionObj->getOutputName());
+        $this->assertEquals($dimension, $dimensionObj->getDimension());
+
+        $this->assertEquals($extractionFunction, $dimensionObj->getExtractionFunction());
     }
 }
