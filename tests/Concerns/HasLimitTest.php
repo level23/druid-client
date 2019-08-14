@@ -6,6 +6,7 @@ namespace tests\Level23\Druid\Concerns;
 use Level23\Druid\Collections\OrderByCollection;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\Limit;
+use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\QueryBuilder;
 use Level23\Druid\Types\OrderByDirection;
@@ -54,12 +55,16 @@ class HasLimitTest extends TestCase
         $response = $this->builder->limit(15);
 
         $this->assertEquals($this->builder, $response);
-        $this->assertEquals(15, $this->builder->getLimit()->getLimit());
+        if ($this->builder->getLimit() instanceof LimitInterface) {
+            $this->assertEquals(15, $this->builder->getLimit()->getLimit());
+        }
 
         $response = $this->builder->limit(18);
 
         $this->assertEquals($this->builder, $response);
-        $this->assertEquals(18, $this->builder->getLimit()->getLimit());
+        if ($this->builder->getLimit() instanceof LimitInterface) {
+            $this->assertEquals(18, $this->builder->getLimit()->getLimit());
+        }
     }
 
     /**
