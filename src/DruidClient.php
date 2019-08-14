@@ -174,34 +174,7 @@ class DruidClient
             'Received druid result: ' . json_encode($result, JSON_PRETTY_PRINT)
         );
 
-        return $this->getEventData($result);
-    }
-
-    /**
-     * Get event data from result
-     *
-     * @param array $druidResults
-     *
-     * @return array
-     */
-    protected function getEventData($druidResults)
-    {
-        if (!$druidResults) {
-            return [];
-        }
-
-        $results = [];
-
-        foreach ($druidResults as $result) {
-            if (!isset($result['event'])) {
-                continue;
-            }
-
-            $obj       = $result['event'];
-            $results[] = $obj;
-        }
-
-        return $results;
+        return $result;
     }
 
     /**

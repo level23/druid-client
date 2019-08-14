@@ -34,4 +34,20 @@ class Interval implements IntervalInterface
     {
         return $this->start->format(DateTime::ATOM) . '/' . $this->stop->format(DateTime::ATOM);
     }
+
+    /**
+     * @return \DateTime
+     */
+    public function getStart(): \DateTime
+    {
+        return $this->start;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getStop(): \DateTime
+    {
+        return $this->stop;
+    }
 }

@@ -48,6 +48,21 @@ class HasIntervalsTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\DruidException
      */
+    public function testTimestamps()
+    {
+        $start = new DateTime('2019-01-01 00:00:00');
+        $stop  = new DateTime('2019-01-31 23:59:59');
+        $this->builder->interval($start->getTimestamp(), $stop->getTimestamp());
+
+        $this->assertEquals(
+            [new Interval($start, $stop)],
+            $this->builder->getIntervals()
+        );
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\DruidException
+     */
     public function testExceptionInCaseOfInvalidDate()
     {
         $this->expectException(DruidException::class);
