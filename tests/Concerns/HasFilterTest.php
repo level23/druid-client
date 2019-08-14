@@ -43,11 +43,13 @@ class HasFilterTest extends TestCase
     {
         return [
             ['name', '=', 'John', 'and'],
+            ['name', '=', 1, 'and'],
             ['name', 'John', null, 'and'],
             ['name', '!=', 'John', 'and'],
-            ['name', '<>', 'John', 'and'],
+            ['name', '!=', 1, 'and'],
+            ['name', '<>', 'John', 'AND'],
             ['age', '>', '18', 'and'],
-            ['age', '>=', '18', 'and'],
+            ['age', '>=', 18, 'and'],
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
             ['name', 'LiKE', 'John%', 'and'],
