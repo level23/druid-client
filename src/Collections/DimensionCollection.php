@@ -75,7 +75,7 @@ class DimensionCollection extends BaseCollection
         $result = [];
 
         foreach ($this->items as $dimension) {
-            $result[] = $dimension->getDimension();
+            $result[] = $dimension->getDimensionForQuery();
         }
 
         return $result;

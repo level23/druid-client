@@ -265,4 +265,35 @@ class GroupByQuery implements QueryInterface
     {
         return $this->limit;
     }
+
+    /**
+     * Return the query type. For example "groupBy" or "timeseries"
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return 'groupBy';
+    }
+
+    /**
+     * Parse the response into something we can return to the user.
+     *
+     * @param array $response
+     *
+     * @return array
+     */
+    public function parseResponse(array $response): array
+    {
+        if (!$response) {
+            return [];
+        }
+
+        $results = [];
+        foreach ($response as $result) {
+            $results[] = $result['event'];
+        }
+
+        return $results;
+    }
 }

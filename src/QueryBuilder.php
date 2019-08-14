@@ -18,7 +18,7 @@ use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
-use Level23\Druid\Dimensions\DimensionInterface;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryInterface;
@@ -80,7 +80,9 @@ class QueryBuilder
     {
         $query = $this->buildQueryAutomatic($context);
 
-        return $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeDruidQuery($query);
+
+        return $query->parseResponse($rawResponse);
     }
 
     /**
@@ -129,7 +131,9 @@ class QueryBuilder
     {
         $query = $this->buildTimeSeriesQuery($context);
 
-        return $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeDruidQuery($query);
+
+        return $query->parseResponse($rawResponse);
     }
 
     /**
@@ -145,7 +149,9 @@ class QueryBuilder
     {
         $query = $this->buildTopNQuery($context);
 
-        return $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeDruidQuery($query);
+
+        return $query->parseResponse($rawResponse);
     }
 
     /**
@@ -161,11 +167,10 @@ class QueryBuilder
     {
         $query = $this->buildGroupByQuery($context);
 
-        return $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeDruidQuery($query);
+
+        return $query->parseResponse($rawResponse);
     }
-
-
-
 
     //<editor-fold desc="Protected methods">
 
@@ -183,6 +188,15 @@ class QueryBuilder
             new IntervalCollection(...$this->intervals),
             $this->granularity
         );
+
+        // check if we want to use a different output name for the __time column
+        if (count($this->dimensions) == 1) {
+            $dimension = $this->dimensions[0];
+            // did we only retrieve the time dimension?
+            if ($dimension->getDimension() == '__time') {
+                $query->setTimeOutputName($dimension->getOutputName());
+            }
+        }
 
         if (count($context) > 0) {
             $query->setContext(new TimeSeriesQueryContext($context));
@@ -310,19 +324,20 @@ class QueryBuilder
      */
     protected function buildQueryAutomatic(array $context = []): QueryInterface
     {
-        $type = 'groupBy';
+        $query = null;
 
         /**
          * If we only have "grouped" by __time, then we can use a time series query.
          * This is preferred, because it's a lot faster then doing a group by query.
          */
         if (count($this->dimensions) == 1) {
-            /** @var DimensionInterface $dimension */
-            $config = $this->dimensions[0]->getDimension();
-
+            $dimension = $this->dimensions[0];
             // did we only retrieve the time dimension?
-            if ($config['dimension'] == '__time') {
-                $type = 'timeseries';
+            if ($dimension->getDimension() == '__time'
+                && $dimension instanceof Dimension
+                && $dimension->getExtractionFunction() === null
+            ) {
+                $query = $this->buildTimeSeriesQuery($context);
             } // Check if we can use a topN query.
             elseif (
                 $this->limit
@@ -330,23 +345,12 @@ class QueryBuilder
                 && count($this->limit->getOrderByCollection()) == 1
             ) {
                 // We can use a topN!
-                $type = 'topN';
+                $query = $this->buildTopNQuery($context);
             }
         }
 
-        switch ($type) {
-            case 'timeseries':
-                $query = $this->buildTimeSeriesQuery($context);
-                break;
-
-            case 'topN':
-                $query = $this->buildTopNQuery($context);
-                break;
-
-            default:
-            case 'groupBy':
-                $query = $this->buildGroupByQuery($context);
-                break;
+        if (!$query) {
+            $query = $this->buildGroupByQuery($context);
         }
 
         return $query;

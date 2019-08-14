@@ -16,12 +16,15 @@ class LookupDimensionTest extends TestCase
             'number'
         );
 
+        $this->assertEquals('number', $lookupDimension->getOutputName());
+        $this->assertEquals('number_id', $lookupDimension->getDimension());
+
         $this->assertEquals([
             'type'       => 'lookup',
             'dimension'  => 'number_id',
             'outputName' => 'number',
             'name'       => 'numbers',
-        ], $lookupDimension->getDimension());
+        ], $lookupDimension->getDimensionForQuery());
     }
 
     public function testDimensionWithRetainMissingValue()
@@ -39,7 +42,7 @@ class LookupDimensionTest extends TestCase
             'outputName'         => 'number',
             'name'               => 'numbers',
             'retainMissingValue' => true,
-        ], $lookupDimension->getDimension());
+        ], $lookupDimension->getDimensionForQuery());
     }
 
     public function testDimensionReplaceMissingWith()
@@ -58,6 +61,6 @@ class LookupDimensionTest extends TestCase
             'outputName'              => 'number',
             'name'                    => 'numbers',
             'replaceMissingValueWith' => 'pieter',
-        ], $lookupDimension->getDimension());
+        ], $lookupDimension->getDimensionForQuery());
     }
 }

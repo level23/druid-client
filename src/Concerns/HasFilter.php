@@ -53,9 +53,9 @@ trait HasFilter
             $operator = strtolower((string)$operator);
 
             if ($operator == '=') {
-                $filter = new SelectorFilter($filterOrDimensionOrClosure, $value);
+                $filter = new SelectorFilter($filterOrDimensionOrClosure, (string)$value);
             } elseif ($operator == '<>' || $operator == '!=') {
-                $filter = new NotFilter(new SelectorFilter($filterOrDimensionOrClosure, $value));
+                $filter = new NotFilter(new SelectorFilter($filterOrDimensionOrClosure, (string)$value));
             } elseif (in_array($operator, ['>', '>=', '<', '<='])) {
                 $filter = new BoundFilter($filterOrDimensionOrClosure, $operator, (string)$value);
             } elseif ($operator == 'like') {
@@ -68,6 +68,8 @@ trait HasFilter
                 $filter = new SearchFilter($filterOrDimensionOrClosure, $value);
             } elseif ($operator == 'in') {
                 $filter = new InFilter($filterOrDimensionOrClosure, $value);
+            } else {
+                $filter = null;
             }
         } elseif ($filterOrDimensionOrClosure instanceof FilterInterface) {
             $filter = $filterOrDimensionOrClosure;
