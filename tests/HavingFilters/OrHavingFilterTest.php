@@ -15,7 +15,7 @@ class OrHavingFilterTest extends TestCase
         $filter2 = new EqualToHavingFilter('cars', 0);
         $filter3 = new EqualToHavingFilter('horses', 4);
 
-        $filter = new OrHavingFilter($filter1, $filter2);
+        $filter = new OrHavingFilter([$filter1, $filter2]);
 
         $this->assertEquals([$filter1, $filter2], $filter->getHavingFilters());
 

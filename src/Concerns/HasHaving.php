@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
+use InvalidArgumentException;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
@@ -54,21 +55,22 @@ trait HasHaving
             if ($operator == '=') {
                 $having = new DimensionSelectorHavingFilter($havingOrMetricOrClosure, (string)$value);
             } elseif ($operator == '<>' || $operator == '!=') {
-                $having = new NotHavingFilter(new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value)));
+                $having = new NotHavingFilter(new DimensionSelectorHavingFilter($havingOrMetricOrClosure,
+                    (string)$value));
             } elseif ($operator == '>') {
                 $having = new GreaterThanHavingFilter($havingOrMetricOrClosure, floatval($value));
             } elseif ($operator == '<') {
                 $having = new LessThanHavingFilter($havingOrMetricOrClosure, floatval($value));
             } elseif ($operator == '>=') {
-                $having = new OrHavingFilter(
+                $having = new OrHavingFilter([
                     new GreaterThanHavingFilter($havingOrMetricOrClosure, floatval($value)),
                     new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value))
-                );
+                ]);
             } elseif ($operator == '<=') {
-                $having = new OrHavingFilter(
+                $having = new OrHavingFilter([
                     new LessThanHavingFilter($havingOrMetricOrClosure, floatval($value)),
                     new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value))
-                );
+                ]);
             } elseif (strtolower($operator) == 'like') {
                 $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, $value));
             }
@@ -92,7 +94,9 @@ trait HasHaving
         }
 
         if ($having === null) {
-            return $this;
+            throw new InvalidArgumentException(
+                'The arguments which you have supplied cannot be parsed: ' . var_export(func_get_args(), true)
+            );
         }
 
         if ($this->having === null) {
@@ -126,7 +130,7 @@ trait HasHaving
     /**
      * @return \Level23\Druid\HavingFilters\HavingFilterInterface|null
      */
-    public function getHaving(): ?HavingFilterInterface
+    public function getHaving()
     {
         return $this->having;
     }
@@ -137,14 +141,14 @@ trait HasHaving
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $havingFilter
      * @param string                                             $type
      */
-    protected function addHaving(HavingFilterInterface $havingFilter, string $type)
+    protected function addHaving($havingFilter, string $type)
     {
         if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
             $this->having->addHavingFilter($havingFilter);
         } else {
-            $filters = [$this->having, $havingFilter];
+            $havings = [$this->having, $havingFilter];
 
-            $this->having = new $type($filters);
+            $this->having = new $type($havings);
         }
     }
 }
