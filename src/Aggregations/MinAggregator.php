@@ -2,19 +2,15 @@
 
 namespace Level23\Druid\Aggregations;
 
-class MinAggregator extends SumAggregator
+class MinAggregator extends MethodAggregator
 {
     /**
-     * Return the aggregator as it can be used in a druid query.
+     * Returns the method for the type aggregation
      *
-     * @return array
+     * @return string
      */
-    public function toArray(): array
+    protected function getMethod(): string
     {
-        return [
-            'type'      => $this->type . 'Min',
-            'name'      => $this->outputName,
-            'fieldName' => $this->metricName,
-        ];
+        return 'min';
     }
 }

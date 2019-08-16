@@ -30,10 +30,5 @@ class AndFilterTest extends TestCase
             'type'   => 'and',
             'fields' => [$filter1->toArray(), $filter2->toArray(), $filter3->toArray(), $filter4->toArray()],
         ], $filter->toArray());
-
-        $this->assertEquals(
-            [$filter1, $filter2, $filter3, $filter4],
-            $filter->toArray()
-        );
     }
 }

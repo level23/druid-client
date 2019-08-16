@@ -27,7 +27,7 @@ class VirtualColumnCollectionTest extends TestCase
             'outputType' => 'string',
         ];
         $item     = Mockery::mock(VirtualColumn::class, ['country_iso', 'if(mccmnc > 0, country_iso, "")']);
-        $item->shouldReceive('getVirtualColumn')
+        $item->shouldReceive('toArray')
             ->once()
             ->andReturn($response);
 

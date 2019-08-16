@@ -198,16 +198,6 @@ class TopNQuery implements QueryInterface
     }
 
     /**
-     * Return the query type. For example "groupBy" or "timeseries"
-     *
-     * @return string
-     */
-    public function getType(): string
-    {
-        return 'topN';
-    }
-
-    /**
      * Parse the response into something we can return to the user.
      *
      * @param array $response
