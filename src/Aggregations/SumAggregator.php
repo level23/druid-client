@@ -2,9 +2,6 @@
 
 namespace Level23\Druid\Aggregations;
 
-use InvalidArgumentException;
-use Level23\Druid\Types\DataType;
-
 class SumAggregator extends MethodAggregator
 {
     /**

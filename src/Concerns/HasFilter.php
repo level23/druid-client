@@ -5,7 +5,9 @@ namespace Level23\Druid\Concerns;
 
 use Closure;
 use InvalidArgumentException;
-use Level23\Druid\FilterQueryBuilder;
+use Level23\Druid\ExtractionBuilder;
+use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\FilterBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\FilterInterface;
@@ -21,6 +23,8 @@ use Level23\Druid\Filters\SelectorFilter;
 
 trait HasFilter
 {
+    // use BuildsExtraction;
+
     /**
      * @var \Level23\Druid\Filters\FilterInterface|null
      */
@@ -33,6 +37,7 @@ trait HasFilter
      * @param string|\Level23\Druid\Filters\FilterInterface|\Closure $filterOrDimensionOrClosure
      * @param string|null                                            $operator
      * @param mixed                                                  $value
+     * @param \Closure|null                                          $extraction
      * @param string                                                 $boolean
      *
      * @return $this
@@ -41,6 +46,7 @@ trait HasFilter
         $filterOrDimensionOrClosure,
         $operator = null,
         $value = null,
+        Closure $extraction = null,
         $boolean = 'and'
     ) {
         $filter = null;
@@ -53,21 +59,37 @@ trait HasFilter
             $operator = strtolower((string)$operator);
 
             if ($operator == '=') {
-                $filter = new SelectorFilter($filterOrDimensionOrClosure, (string)$value);
+                $filter = new SelectorFilter(
+                    $filterOrDimensionOrClosure,
+                    (string)$value,
+                    $this->getExtraction($extraction)
+                );
             } elseif ($operator == '<>' || $operator == '!=') {
-                $filter = new NotFilter(new SelectorFilter($filterOrDimensionOrClosure, (string)$value));
+                $filter = new NotFilter(
+                    new SelectorFilter($filterOrDimensionOrClosure, (string)$value, $this->getExtraction($extraction))
+                );
             } elseif (in_array($operator, ['>', '>=', '<', '<='])) {
-                $filter = new BoundFilter($filterOrDimensionOrClosure, $operator, (string)$value);
+                $filter = new BoundFilter(
+                    $filterOrDimensionOrClosure,
+                    $operator,
+                    (string)$value,
+                    null,
+                    $this->getExtraction($extraction)
+                );
             } elseif ($operator == 'like') {
-                $filter = new LikeFilter($filterOrDimensionOrClosure, $value);
+                $filter = new LikeFilter(
+                    $filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction)
+                );
             } elseif ($operator == 'javascript') {
-                $filter = new JavascriptFilter($filterOrDimensionOrClosure, $value);
+                $filter = new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
             } elseif ($operator == 'regex' || $operator == 'regexp') {
-                $filter = new RegexFilter($filterOrDimensionOrClosure, $value);
+                $filter = new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
             } elseif ($operator == 'search') {
-                $filter = new SearchFilter($filterOrDimensionOrClosure, $value);
+                $filter = new SearchFilter(
+                    $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
+                );
             } elseif ($operator == 'in') {
-                $filter = new InFilter($filterOrDimensionOrClosure, $value);
+                $filter = new InFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
             } else {
                 $filter = null;
             }
@@ -76,13 +98,13 @@ trait HasFilter
         } elseif ($filterOrDimensionOrClosure instanceof Closure) {
 
             // lets create a bew builder object where the user can mess around with
-            $obj = new FilterQueryBuilder();
+            $builder = new FilterBuilder();
 
             // call the user function
-            call_user_func($filterOrDimensionOrClosure, $obj);
+            call_user_func($filterOrDimensionOrClosure, $builder);
 
             // Now retrieve the filter which was created and add it to our current filter set.
-            $filter = $obj->getFilter();
+            $filter = $builder->getFilter();
         }
 
         if ($filter === null) {
@@ -109,25 +131,28 @@ trait HasFilter
      * @param string|FilterInterface $filterOrDimension
      * @param string|null            $operator
      * @param mixed|null             $value
+     * @param \Closure|null          $extraction
      *
      * @return $this
      */
-    public function orWhere($filterOrDimension, $operator = null, $value = null)
+    public function orWhere($filterOrDimension, $operator = null, $value = null, Closure $extraction = null)
     {
-        return $this->where($filterOrDimension, $operator, $value, 'or');
+        return $this->where($filterOrDimension, $operator, $value, $extraction, 'or');
     }
 
     /**
      * Filter records where the given dimension exists in the given list of items
      *
-     * @param string $dimension
-     * @param array  $items
+     * @param string        $dimension
+     * @param array         $items
+     * @param \Closure|null $extraction
      *
      * @return $this
      */
-    public function whereIn(string $dimension, array $items)
+    public function whereIn(string $dimension, array $items, Closure $extraction = null)
     {
-        $filter = new InFilter($dimension, $items);
+
+        $filter = new InFilter($dimension, $items, $this->getExtraction($extraction));
 
         return $this->where($filter);
     }
@@ -135,14 +160,15 @@ trait HasFilter
     /**
      * Filter records where the given dimension NOT exists in the given list of items
      *
-     * @param string $dimension
-     * @param array  $items
+     * @param string        $dimension
+     * @param array         $items
+     * @param \Closure|null $extraction
      *
      * @return $this
      */
-    public function whereNotIn(string $dimension, array $items)
+    public function whereNotIn(string $dimension, array $items, Closure $extraction = null)
     {
-        $filter = new NotFilter(new InFilter($dimension, $items));
+        $filter = new NotFilter(new InFilter($dimension, $items, $this->getExtraction($extraction)));
 
         return $this->where($filter);
     }
@@ -170,5 +196,22 @@ trait HasFilter
     public function getFilter()
     {
         return $this->filter;
+    }
+
+    /**
+     * @param \Closure|null $extraction
+     *
+     * @return \Level23\Druid\Extractions\ExtractionInterface|null
+     */
+    private function getExtraction(?Closure $extraction): ?ExtractionInterface
+    {
+        if (empty($extraction)) {
+            return null;
+        }
+
+        $builder = new ExtractionBuilder();
+        call_user_func($extraction, $builder);
+
+        return $builder->getExtraction();
     }
 }

@@ -30,19 +30,20 @@ class RegexExtraction implements ExtractionInterface
      *
      * @param string      $regexp
      * @param int         $groupToExtract
-     * @param bool        $replaceMissingValue
-     * @param string|null $replaceMissingValueWith
+     * @param bool|string $keepMissing When true, we will keep values which are not matched by the regexp. The value
+     *                                 will be null. If false, the missing items will not be kept in the result set. If
+     *                                 this is a string, we will keep the missing values and replace them with the
+     *                                 string value.
      */
     public function __construct(
         string $regexp,
         $groupToExtract = 1,
-        $replaceMissingValue = false,
-        string $replaceMissingValueWith = null
+        $keepMissing = false
     ) {
         $this->regexp                  = $regexp;
         $this->groupToExtract          = $groupToExtract;
-        $this->replaceMissingValue     = $replaceMissingValue;
-        $this->replaceMissingValueWith = $replaceMissingValueWith;
+        $this->replaceMissingValue     = is_string($keepMissing) ? true : $keepMissing;
+        $this->replaceMissingValueWith = is_string($keepMissing) ? $keepMissing : null;
     }
 
     /**

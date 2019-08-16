@@ -206,20 +206,13 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($parsedResult, $response);
     }
 
-    public function buildQueryDataProvider(): array
-    {
-        return [
-            [true, false],
-            [false, true],
-            [false, false],
-        ];
-    }
-
     /**
-     * @dataProvider buildQueryDataProvider
-     *
      * @param bool $isTimeseries
      * @param bool $isTopNQuery
+     *
+     * @testWith [true, false]
+     *           [false, true]
+     *           [false, false]
      */
     public function testBuildQuery(bool $isTimeseries, bool $isTopNQuery)
     {
