@@ -47,7 +47,7 @@ class DruidServiceProvider extends ServiceProvider
      */
     protected function registerDruidClient()
     {
-        $this->app->singleton('druid', function ($app) {
+        $this->app->singleton(DruidClient::class, function ($app) {
             $client = new DruidClient($this->app['config']['druid']);
             $client->setLogger($this->app['log']);
 
