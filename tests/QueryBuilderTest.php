@@ -211,6 +211,7 @@ class QueryBuilderTest extends TestCase
         return [
             [true, false],
             [false, true],
+            [false, false],
         ];
     }
 
