@@ -4,14 +4,12 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Concerns;
 
 use ArrayObject;
+use InvalidArgumentException;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\LookupDimension;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Extractions\CascadeExtraction;
-use Level23\Druid\Extractions\LookupExtraction;
-use Level23\Druid\Extractions\SubstringExtraction;
-use Level23\Druid\Extractions\TimeFormatExtraction;
+use Level23\Druid\ExtractionBuilder;
 use Level23\Druid\QueryBuilder;
 use Level23\Druid\Types\DataType;
 use Mockery;
@@ -62,17 +60,17 @@ class HasDimensionsTest extends TestCase
 
         return [
             // give as first and second parameter
-            [['browser', 'TheBrowser', 'string'], $expected],
+            [['browser', 'TheBrowser', null, 'string'], $expected],
             // give as array
             [[['browser' => 'TheBrowser']], $expected],
             // give as array (simple)
             [[['browser']], $expectedSimple],
 
             // incorrect output type
-            [['browser', 'TheBrowser', 'something'], $expected, true],
+            [['browser', 'TheBrowser', null, 'something'], $expected, true],
             [[new Dimension('browser', 'TheBrowser')], $expected],
             [[new ArrayObject(['browser' => 'TheBrowser'])], $expected],
-            [['country_iso', 'country', DataType::LONG()], $expectedLong],
+            [['country_iso', 'country', null, DataType::LONG()], $expectedLong],
         ];
     }
 
@@ -88,7 +86,7 @@ class HasDimensionsTest extends TestCase
     public function testSelect(array $parameters, $expectedResult, bool $expectException = false)
     {
         if ($expectException) {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
         }
 
         $response = null;
@@ -110,68 +108,6 @@ class HasDimensionsTest extends TestCase
         $this->assertInstanceOf(DimensionInterface::class, $dimension);
 
         $this->assertEquals($expectedResult, $dimension->toArray());
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExtractTimeFormat()
-    {
-        $format = 'yyyy-MM-dd HH:00:00';
-
-        Mockery::mock('overload:' . TimeFormatExtraction::class)
-            ->shouldReceive('__construct')
-            ->with($format, 'quarter', 'fr', 'Europe/Amsterdam', false)
-            ->once();
-
-        Mockery::mock('overload:' . Dimension::class)
-            ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $as, $type, $extractionFunction) {
-                $this->assertEquals('__time', $dimension);
-                $this->assertEquals('datetime', $as);
-                $this->assertEquals(DataType::STRING(), $type);
-                $this->assertInstanceOf(TimeFormatExtraction::class, $extractionFunction);
-            })
-            ->once();
-
-        $response = $this->builder->extractTimeFormat(
-            '__time',
-            $format,
-            'datetime',
-            'quarter',
-            'Europe/Amsterdam',
-            'fr',
-            false
-        );
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExtractTimeFormatDefaults()
-    {
-        Mockery::mock('overload:' . TimeFormatExtraction::class)
-            ->shouldReceive('__construct')
-            ->with(null, null, null, null, null)
-            ->once();
-
-        Mockery::mock('overload:' . Dimension::class)
-            ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $as, $type, $extractionFunction) {
-                $this->assertEquals('datetime', $dimension);
-                $this->assertEquals('datetime', $as);
-                $this->assertEquals(DataType::STRING(), $type);
-                $this->assertInstanceOf(TimeFormatExtraction::class, $extractionFunction);
-            })
-            ->once();
-
-        $response = $this->builder->extractTimeFormat('datetime');
-
-        $this->assertEquals($this->builder, $response);
     }
 
     /**
@@ -224,121 +160,14 @@ class HasDimensionsTest extends TestCase
         $this->builder->lookup('full_name', 'name');
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExtractLookup()
+    public function testSelectWithExtraction()
     {
-        Mockery::mock('overload:' . LookupExtraction::class)
-            ->shouldReceive('__construct')
-            ->with('full_name', true, 'John Doe', false, true)
-            ->once();
+        $counter = 0;
+        $this->builder->select('user_id', 'username', function (ExtractionBuilder $builder) use (&$counter) {
+            $counter++;
+            $builder->lookup('user', false);
+        });
 
-        Mockery::mock('overload:' . Dimension::class)
-            ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $as, $type, $extractionFunction) {
-                $this->assertEquals('name', $dimension);
-                $this->assertEquals('display_name', $as);
-                $this->assertEquals('long', $type);
-                $this->assertInstanceOf(LookupExtraction::class, $extractionFunction);
-            })
-            ->once();
-
-        $response = $this->builder->extractLookup(
-            'name',
-            'full_name',
-            'display_name',
-            true,
-            'John Doe',
-            'long',
-            false,
-            true
-        );
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExtractLookupDefaults()
-    {
-        Mockery::mock('overload:' . LookupExtraction::class)
-            ->shouldReceive('__construct')
-            ->with('full_name', false, '', true, null)
-            ->once();
-
-        Mockery::mock('overload:' . Dimension::class)
-            ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $as, $type, $extractionFunction) {
-                $this->assertEquals('name', $dimension);
-                $this->assertEquals('name', $as);
-                $this->assertEquals('string', $type);
-                $this->assertInstanceOf(LookupExtraction::class, $extractionFunction);
-            })
-            ->once();
-
-        $response = $this->builder->extractLookup('name', 'full_name');
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExtractCascade()
-    {
-        $extractions = [
-            new LookupExtraction('company_name'),
-            new SubstringExtraction(2, 5),
-        ];
-
-        Mockery::mock('overload:' . CascadeExtraction::class)
-            ->shouldReceive('__construct')
-            ->with($extractions)
-            ->once();
-
-        Mockery::mock('overload:' . Dimension::class)
-            ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $as, $type, $extractionFunction) {
-                $this->assertEquals('company_id', $dimension);
-                $this->assertEquals('company', $as);
-                $this->assertEquals('long', $type);
-                $this->assertInstanceOf(CascadeExtraction::class, $extractionFunction);
-            })
-            ->once();
-
-        $response = $this->builder->extractCascade('company_id', 'company', $extractions, 'long');
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testExtractCascadeDefaults()
-    {
-        Mockery::mock('overload:' . CascadeExtraction::class)
-            ->shouldReceive('__construct')
-            ->with([])
-            ->once();
-
-        Mockery::mock('overload:' . Dimension::class)
-            ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $as, $type, $extractionFunction) {
-                $this->assertEquals('company_id', $dimension);
-                $this->assertEquals('company_id', $as);
-                $this->assertEquals('string', $type);
-                $this->assertInstanceOf(CascadeExtraction::class, $extractionFunction);
-            })
-            ->once();
-
-        $response = $this->builder->extractCascade('company_id');
-
-        $this->assertEquals($this->builder, $response);
+        $this->assertEquals(1, $counter);
     }
 }

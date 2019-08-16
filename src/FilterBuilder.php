@@ -5,7 +5,7 @@ namespace Level23\Druid;
 
 use Level23\Druid\Concerns\HasFilter;
 
-class FilterQueryBuilder
+class FilterBuilder
 {
     use HasFilter;
 }

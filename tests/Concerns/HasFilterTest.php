@@ -7,7 +7,8 @@ use Exception;
 use Hamcrest\Core\IsInstanceOf;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use Level23\Druid\FilterQueryBuilder;
+use Level23\Druid\ExtractionBuilder;
+use Level23\Druid\FilterBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\InFilter;
@@ -95,7 +96,7 @@ class HasFilterTest extends TestCase
 
                 Mockery::mock('overload:' . SelectorFilter::class)
                     ->shouldReceive('__construct')
-                    ->with($field, $testingValue)
+                    ->with($field, $testingValue, null)
                     ->once();
 
                 break;
@@ -107,18 +108,32 @@ class HasFilterTest extends TestCase
                 $class = BoundFilter::class;
                 Mockery::mock('overload:' . BoundFilter::class)
                     ->shouldReceive('__construct')
-                    ->with($field, $testingOperator, (string)$testingValue)
+                    ->with($field, $testingOperator, (string)$testingValue, null, null)
+                    ->once();
+                break;
+
+            case 'like':
+                $class = LikeFilter::class;
+                Mockery::mock('overload:' . LikeFilter::class)
+                    ->shouldReceive('__construct')
+                    ->with($field, (string)$testingValue, '\\', null)
+                    ->once();
+                break;
+
+            case 'search':
+                $class = SearchFilter::class;
+                Mockery::mock('overload:' . SearchFilter::class)
+                    ->shouldReceive('__construct')
+                    ->with($field, $testingValue, false, null)
                     ->once();
                 break;
 
             default:
                 $types = [
                     '='          => SelectorFilter::class,
-                    'like'       => LikeFilter::class,
                     'javascript' => JavascriptFilter::class,
                     'regex'      => RegexFilter::class,
                     'regexp'     => RegexFilter::class,
-                    'search'     => SearchFilter::class,
                     'in'         => InFilter::class,
                 ];
 
@@ -130,18 +145,18 @@ class HasFilterTest extends TestCase
 
                 Mockery::mock('overload:' . $class)
                     ->shouldReceive('__construct')
-                    ->with($field, $testingValue)
+                    ->with($field, $testingValue, null)
                     ->once();
                 break;
         }
 
-        $response = $this->builder->where($field, $operator, $value, $boolean);
+        $response = $this->builder->where($field, $operator, $value, null, $boolean);
         $this->assertEquals($this->builder, $response);
 
         $this->assertInstanceOf($class, $this->builder->getFilter());
 
         // add another
-        $this->builder->where($field, $operator, $value, $boolean);
+        $this->builder->where($field, $operator, $value, null, $boolean);
 
         if (strtolower($boolean) == 'and') {
             $this->assertInstanceOf(AndFilter::class, $this->builder->getFilter());
@@ -179,7 +194,7 @@ class HasFilterTest extends TestCase
         $where = new SelectorFilter('name', 'John');
 
         $counter  = 0;
-        $response = $this->builder->where(function (FilterQueryBuilder $builder) use (&$counter, $where) {
+        $response = $this->builder->where(function (FilterBuilder $builder) use (&$counter, $where) {
             $counter++;
             $builder->where($where);
         });
@@ -201,7 +216,7 @@ class HasFilterTest extends TestCase
         $in = Mockery::mock('overload:' . InFilter::class);
         $in->shouldReceive('__construct')
             ->once()
-            ->with('country_iso', ['nl', 'be']);
+            ->with('country_iso', ['nl', 'be'], null);
 
         $this->builder->shouldReceive('where')
             ->once()
@@ -218,7 +233,7 @@ class HasFilterTest extends TestCase
     public function testOrWhere()
     {
         $this->builder->shouldReceive('where')
-            ->with('name', '=', 'John', 'or')
+            ->with('name', '=', 'John', null, 'or')
             ->once()
             ->andReturn($this->builder);
 
@@ -245,7 +260,7 @@ class HasFilterTest extends TestCase
         $in = Mockery::mock('overload:' . InFilter::class);
         $in->shouldReceive('__construct')
             ->once()
-            ->with('age', [16, 17, 18]);
+            ->with('age', [16, 17, 18], null);
 
         $not = Mockery::mock('overload:' . NotFilter::class);
         $not->shouldReceive('__construct')
@@ -259,5 +274,16 @@ class HasFilterTest extends TestCase
         $response = $this->builder->whereNotIn('age', [16, 17, 18]);
 
         $this->assertEquals($this->builder, $response);
+    }
+
+    public function testWhereUsingExtraction()
+    {
+        $counter = 0;
+        $this->builder->whereIn('user_id', ['bob', 'john'], function (ExtractionBuilder $builder) use (&$counter) {
+            $counter++;
+            $builder->lookup('username', false);
+        });
+
+        $this->assertEquals(1, $counter);
     }
 }

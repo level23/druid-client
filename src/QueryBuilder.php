@@ -8,6 +8,7 @@ use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Concerns\BuildsExtraction;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Concerns\HasDimensions;
 use Level23\Druid\Concerns\HasFilter;
