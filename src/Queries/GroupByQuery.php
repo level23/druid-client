@@ -194,7 +194,7 @@ class GroupByQuery implements QueryInterface
     public function setPostAggregations($postAggregations)
     {
         if (is_array($postAggregations)) {
-            $postAggregations = PostAggregationCollection::make($postAggregations);
+            $postAggregations = new PostAggregationCollection(...$postAggregations);
         }
 
         $this->postAggregations = $postAggregations;

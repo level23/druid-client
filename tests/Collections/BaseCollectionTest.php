@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
+use ArrayIterator;
+use InvalidArgumentException;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Collections\AggregationCollection;
 use tests\TestCase;
@@ -15,7 +17,7 @@ class BaseCollectionTest extends TestCase
         $collection = new AggregationCollection();
         $iterator   = $collection->getIterator();
 
-        $this->assertInstanceOf(\ArrayIterator::class, $iterator);
+        $this->assertInstanceOf(ArrayIterator::class, $iterator);
         $this->assertEquals([], $iterator->getArrayCopy());
 
         $item = new SumAggregator('items');
@@ -23,7 +25,7 @@ class BaseCollectionTest extends TestCase
         $collection->add($item);
 
         $iterator = $collection->getIterator();
-        $this->assertInstanceOf(\ArrayIterator::class, $iterator);
+        $this->assertInstanceOf(ArrayIterator::class, $iterator);
 
         $this->assertEquals([$item], $iterator->getArrayCopy());
     }
@@ -37,7 +39,7 @@ class BaseCollectionTest extends TestCase
 
         $this->assertEquals($collection->offsetGet(0), $item);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('We only accept instances of type');
         $collection->add('hallo');
     }
@@ -81,7 +83,7 @@ class BaseCollectionTest extends TestCase
 
     public function testOffsetSetIncorrectType()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('We only accept');
 
         $collection = new AggregationCollection();
