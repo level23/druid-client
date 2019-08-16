@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
+use Exception;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\NotFilter;
@@ -136,7 +138,7 @@ class HasHavingTest extends TestCase
                 ];
 
                 if (!array_key_exists($testingOperator, $types)) {
-                    throw new \Exception('Unknown operator ' . $testingOperator);
+                    throw new Exception('Unknown operator ' . $testingOperator);
                 }
 
                 $class = $types[$testingOperator];
@@ -165,9 +167,9 @@ class HasHavingTest extends TestCase
 
     public function testInvalidArguments()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
-        $this->builder->having(new \stdClass());
+        $this->builder->having(null);
     }
 
     public function testHavingWithQueryFilter()

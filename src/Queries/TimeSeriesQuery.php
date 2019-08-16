@@ -227,7 +227,7 @@ class TimeSeriesQuery implements QueryInterface
     }
 
     /**
-     * Set the name which will be used in the resultset to store the timestamp in.
+     * Set the name which will be used in the result set to store the timestamp in.
      *
      * @param string $timeOutputName
      */
