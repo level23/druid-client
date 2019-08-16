@@ -3,20 +3,20 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid;
 
-use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ServerException;
-use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use GuzzleHttp\Psr7\Response as GuzzleResponse;
-use Hamcrest\Type\IsArray;
-use Level23\Druid\DruidClient;
-use Level23\Druid\Exceptions\QueryResponseException;
-use Level23\Druid\Queries\GroupByQuery;
-use Level23\Druid\QueryBuilder;
 use Mockery;
 use tests\TestCase;
+use Hamcrest\Type\IsArray;
+use Psr\Log\LoggerInterface;
+use Level23\Druid\DruidClient;
+use Level23\Druid\QueryBuilder;
+use GuzzleHttp\Client as GuzzleClient;
+use Level23\Druid\Queries\GroupByQuery;
+use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
 {
@@ -88,13 +88,13 @@ class DruidClientTest extends TestCase
             // Test incorrect http code
             [
                 $response,
-                function () use ($response) {
+                function () {
                     throw new ServerException(
                         'Unknow exception',
                         new GuzzleRequest('GET', '/druid/v1', [], ''),
                         new GuzzleResponse(500, [], (string)json_encode([
-                            'error' => 'Unknown exception',
-                            'errorMessage' => 'Some query error'
+                            'error'        => 'Unknown exception',
+                            'errorMessage' => 'Some query error',
                         ]))
                     );
                 },
@@ -111,7 +111,7 @@ class DruidClientTest extends TestCase
                     );
                 },
                 BadResponseException::class,
-                0
+                0,
             ],
             // Test a RequestException
             [
@@ -123,7 +123,7 @@ class DruidClientTest extends TestCase
                     );
                 },
                 RequestException::class,
-                0
+                0,
             ],
             // Test a generic Exception
             [
@@ -132,7 +132,7 @@ class DruidClientTest extends TestCase
                     throw new \Exception('Something went wrong!');
                 },
                 \Exception::class,
-                0
+                0,
             ],
 
         ];
@@ -144,7 +144,7 @@ class DruidClientTest extends TestCase
      * @param array    $response
      * @param callable $responseFunction
      * @param mixed    $expectException
-     * @param          $exceptionCode
+     * @param int      $exceptionCode
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
