@@ -74,10 +74,10 @@ trait HasDimensions
 
     /**
      *
-     * @param string $lookupFunction
-     * @param string $dimension
-     * @param string $as
-     * @param bool   $replaceMissingValue
+     * @param string      $lookupFunction
+     * @param string      $dimension
+     * @param string      $as
+     * @param bool|string $replaceMissingValue
      *
      * @return $this
      */
