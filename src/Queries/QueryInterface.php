@@ -22,13 +22,6 @@ interface QueryInterface
     public function setContext(ContextInterface $context);
 
     /**
-     * Return the query type. For example "groupBy" or "timeseries"
-     *
-     * @return string
-     */
-    public function getType(): string;
-
-    /**
      * Parse the response into something we can return to the user.
      *
      * @param array $response

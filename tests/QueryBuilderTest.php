@@ -80,7 +80,7 @@ class QueryBuilderTest extends TestCase
             ->once()
             ->andReturn($query);
 
-        $query->shouldReceive('getQuery')
+        $query->shouldReceive('toArray')
             ->once()
             ->andReturn($result);
 
@@ -102,7 +102,7 @@ class QueryBuilderTest extends TestCase
             ->once()
             ->andReturn($query);
 
-        $query->shouldReceive('getQuery')
+        $query->shouldReceive('toArray')
             ->once()
             ->andReturn($result);
 

@@ -26,7 +26,7 @@ class OrderByCollectionTest extends TestCase
             'dimensionOrder' => 'lexicographic',
         ];
         $item     = Mockery::mock(OrderBy::class, ['age']);
-        $item->shouldReceive('getOrderBy')
+        $item->shouldReceive('toArray')
             ->once()
             ->andReturn($response);
 

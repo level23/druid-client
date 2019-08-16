@@ -26,7 +26,7 @@ class PostAggregationCollectionTest extends TestCase
             'fieldName' => 'age',
         ];
         $item     = Mockery::mock(FieldAccessPostAggregator::class, ['age', 'newAge']);
-        $item->shouldReceive('getPostAggregator')
+        $item->shouldReceive('toArray')
             ->once()
             ->andReturn($response);
 

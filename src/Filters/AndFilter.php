@@ -46,14 +46,4 @@ class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
             'fields' => $fields,
         ];
     }
-
-    /**
-     * Return all filters which are used by this logical expression filter.
-     *
-     * @return array
-     */
-    public function getFilters(): array
-    {
-        return $this->filters;
-    }
 }
