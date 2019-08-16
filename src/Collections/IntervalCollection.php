@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Collections;
 
-use Level23\Druid\Interval\Interval;
 use Level23\Druid\Interval\IntervalInterface;
 
 class IntervalCollection extends BaseCollection
@@ -16,14 +15,6 @@ class IntervalCollection extends BaseCollection
     public function __construct(IntervalInterface ...$intervals)
     {
         $this->items = $intervals;
-    }
-
-    /**
-     * @param \Level23\Druid\Interval\Interval $interval
-     */
-    public function add(Interval $interval)
-    {
-        $this->items[] = $interval;
     }
 
     /**
@@ -45,6 +36,6 @@ class IntervalCollection extends BaseCollection
      */
     public function getType(): string
     {
-        return IntervalCollection::class;
+        return IntervalInterface::class;
     }
 }

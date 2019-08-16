@@ -174,7 +174,11 @@ class GroupByQuery implements QueryInterface
      */
     public function setAggregations($aggregations)
     {
-        $this->aggregations = is_array($aggregations) ? new AggregationCollection(...$aggregations) : $aggregations;
+        if (is_array($aggregations)) {
+            $aggregations = new AggregationCollection(...$aggregations);
+        }
+
+        $this->aggregations = $aggregations;
     }
 
     /**
@@ -191,7 +195,7 @@ class GroupByQuery implements QueryInterface
     public function setPostAggregations($postAggregations)
     {
         if (is_array($postAggregations)) {
-            $postAggregations = PostAggregationCollection::make($postAggregations);
+            $postAggregations = new PostAggregationCollection(...$postAggregations);
         }
 
         $this->postAggregations = $postAggregations;
@@ -282,15 +286,8 @@ class GroupByQuery implements QueryInterface
      */
     public function parseResponse(array $response): array
     {
-        if (!$response) {
-            return [];
-        }
-
-        $results = [];
-        foreach ($response as $result) {
-            $results[] = $result['event'];
-        }
-
-        return $results;
+        return array_map(function ($row) {
+            return $row['event'];
+        }, $response);
     }
 }

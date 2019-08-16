@@ -23,14 +23,6 @@ class AggregationCollection extends BaseCollection
     }
 
     /**
-     * @param \Level23\Druid\Aggregations\AggregatorInterface $aggregator
-     */
-    public function add(AggregatorInterface $aggregator)
-    {
-        $this->items[] = $aggregator;
-    }
-
-    /**
      * Return an array representation of our items
      *
      * @return array
