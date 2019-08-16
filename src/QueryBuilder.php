@@ -90,15 +90,13 @@ class QueryBuilder
      * @param array $context
      *
      * @return string
+     * @throws \InvalidArgumentException if the JSON cannot be encoded.
      */
     public function toJson(array $context = []): string
     {
         $query = $this->buildQuery($context);
 
-        $json = json_encode($query->getQuery(), JSON_PRETTY_PRINT);
-        if ($json === false) {
-            return "";
-        }
+        $json = \GuzzleHttp\json_encode($query->getQuery(), JSON_PRETTY_PRINT);
 
         return $json;
     }
@@ -210,13 +208,13 @@ class QueryBuilder
             $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
         }
 
-        if(!$this->limit) {
-            return  $query;
+        if (!$this->limit) {
+            return $query;
         }
 
         $orderByCollection = $this->limit->getOrderByCollection();
 
-        if(count($orderByCollection) != 1) {
+        if (count($orderByCollection) != 1) {
             return $query;
         }
 
@@ -330,12 +328,12 @@ class QueryBuilder
          * If we only have "grouped" by __time, then we can use a time series query.
          * This is preferred, because it's a lot faster then doing a group by query.
          */
-        if($this->isTimeSeriesQuery()) {
+        if ($this->isTimeSeriesQuery()) {
             return $this->buildTimeSeriesQuery($context);
         }
 
         // Check if we can use a topN query.
-        if($this->isTopNQuery()) {
+        if ($this->isTopNQuery()) {
             return $this->buildTopNQuery($context);
         }
 
@@ -349,7 +347,7 @@ class QueryBuilder
      */
     protected function isTimeSeriesQuery()
     {
-        if(count($this->dimensions) != 1) {
+        if (count($this->dimensions) != 1) {
             return false;
         }
 
@@ -365,7 +363,7 @@ class QueryBuilder
      */
     protected function isTopNQuery()
     {
-        if(count($this->dimensions) != 1) {
+        if (count($this->dimensions) != 1) {
             return false;
         }
 
@@ -373,7 +371,6 @@ class QueryBuilder
             && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT
             && count($this->limit->getOrderByCollection()) == 1;
     }
-
     //</editor-fold>
 }
 

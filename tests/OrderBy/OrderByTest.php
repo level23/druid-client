@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\OrderBy;
 
+use InvalidArgumentException;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Types\SortingOrder;
@@ -34,7 +35,7 @@ class OrderByTest extends TestCase
     public function testOrderBy(string $dimension, $direction, $sorting, $expectException = false)
     {
         if ($expectException) {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
         }
 
         $orderBy = new OrderBy($dimension, $direction, $sorting);
