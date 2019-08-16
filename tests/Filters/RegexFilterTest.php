@@ -36,11 +36,11 @@ class RegexFilterTest extends TestCase
 
         if ($useExtractionFunction) {
             $filter                   = new RegexFilter('name', '^[a-z]*$', $extractionFunction);
-            $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
+            $expected['extractionFn'] = $extractionFunction->toArray();
         } else {
             $filter = new RegexFilter('name', '^[a-z]*$');
         }
 
-        $this->assertEquals($expected, $filter->getFilter());
+        $this->assertEquals($expected, $filter->toArray());
     }
 }

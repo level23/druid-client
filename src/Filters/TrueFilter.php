@@ -18,7 +18,7 @@ class TrueFilter implements FilterInterface
      *
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         return [
             'type' => 'true',

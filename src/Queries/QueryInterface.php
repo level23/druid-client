@@ -12,7 +12,7 @@ interface QueryInterface
      *
      * @return array
      */
-    public function getQuery(): array;
+    public function toArray(): array;
 
     /**
      * Set the query context
@@ -20,13 +20,6 @@ interface QueryInterface
      * @param \Level23\Druid\Context\ContextInterface $context
      */
     public function setContext(ContextInterface $context);
-
-    /**
-     * Return the query type. For example "groupBy" or "timeseries"
-     *
-     * @return string
-     */
-    public function getType(): string;
 
     /**
      * Parse the response into something we can return to the user.

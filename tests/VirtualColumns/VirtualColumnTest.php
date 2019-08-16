@@ -18,7 +18,7 @@ class VirtualColumnTest extends TestCase
             'name'       => 'country_iso',
             'expression' => 'if(mccmnc > 0, country_iso, "")',
             'outputType' => 'string',
-        ], $column->getVirtualColumn()
+        ], $column->toArray()
         );
     }
 
@@ -31,7 +31,7 @@ class VirtualColumnTest extends TestCase
             'name'       => 'country_iso',
             'expression' => 'if(mccmnc > 0, country_iso, "")',
             'outputType' => 'float',
-        ], $column->getVirtualColumn()
+        ], $column->toArray()
         );
     }
 

@@ -18,17 +18,15 @@ class IntervalCollection extends BaseCollection
     }
 
     /**
+     * Return an array representation of our items
+     *
      * @return array
      */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $interval) {
-            $result[] = $interval->getInterval();
-        }
-
-        return $result;
+        return array_map(function(IntervalInterface $item) {
+            return $item->getInterval();
+        }, $this->items);
     }
 
     /**

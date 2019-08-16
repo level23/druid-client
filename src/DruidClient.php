@@ -68,7 +68,7 @@ class DruidClient
      */
     public function executeQuery(QueryInterface $druidQuery)
     {
-        $query = $druidQuery->getQuery();
+        $query = $druidQuery->toArray();
 
         $this->log('Executing druid query', ['query' => $query]);
 

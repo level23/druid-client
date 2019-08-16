@@ -164,8 +164,7 @@ trait HasDimensions
      * @param string $lookupFunction
      * @param string $dimension
      * @param string $as
-     * @param bool   $retainMissingValue
-     * @param string $replaceMissingValueWith
+     * @param bool   $replaceMissingValue
      *
      * @return $this
      */
@@ -173,15 +172,13 @@ trait HasDimensions
         string $lookupFunction,
         string $dimension,
         string $as = '',
-        bool $retainMissingValue = false,
-        string $replaceMissingValueWith = ''
+        $replaceMissingValue = false
     ) {
         $this->dimensions[] = new LookupDimension(
             $dimension,
             $lookupFunction,
             ($as ?: $dimension),
-            $retainMissingValue,
-            $replaceMissingValueWith
+            $replaceMissingValue
         );
 
         return $this;

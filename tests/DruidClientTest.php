@@ -165,7 +165,7 @@ class DruidClientTest extends TestCase
         }
 
         $query = Mockery::mock(GroupByQuery::class);
-        $query->shouldReceive('getQuery')
+        $query->shouldReceive('toArray')
             ->once()
             ->andReturn($queryArray);
 

@@ -10,12 +10,5 @@ interface AggregatorInterface
      *
      * @return array
      */
-    public function getAggregator(): array;
-
-    /**
-     * Return how this aggregation will be outputted in the query results.
-     *
-     * @return string
-     */
-    public function getOutputName(): string;
+    public function toArray(): array;
 }

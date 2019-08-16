@@ -27,12 +27,12 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
      *
      * @return array
      */
-    public function getHavingFilter(): array
+    public function toArray(): array
     {
         $havingSpecs = [];
 
         foreach ($this->filters as $filter) {
-            $havingSpecs[] = $filter->getHavingFilter();
+            $havingSpecs[] = $filter->toArray();
         }
 
         return [

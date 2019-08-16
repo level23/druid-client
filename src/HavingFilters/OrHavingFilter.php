@@ -10,9 +10,9 @@ class OrHavingFilter extends AndHavingFilter
      *
      * @return array
      */
-    public function getHavingFilter(): array
+    public function toArray(): array
     {
-        $result = parent::getHavingFilter();
+        $result = parent::toArray();
 
         $result['type'] = 'or';
 

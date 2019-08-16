@@ -60,10 +60,10 @@ class DimensionTest extends TestCase
         ];
 
         if ($extractionFunction) {
-            $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
+            $expected['extractionFn'] = $extractionFunction->toArray();
         }
 
-        $this->assertEquals($expected, $dimensionObj->getDimensionForQuery());
+        $this->assertEquals($expected, $dimensionObj->toArray());
 
         $this->assertEquals(($outputName ?: $dimension), $dimensionObj->getOutputName());
         $this->assertEquals($dimension, $dimensionObj->getDimension());

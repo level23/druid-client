@@ -71,7 +71,7 @@ class ContextTest extends TestCase
         }
 
         if ($object instanceof ContextInterface) {
-            $this->assertEquals($properties, $object->getContext());
+            $this->assertEquals($properties, $object->toArray());
         }
     }
 

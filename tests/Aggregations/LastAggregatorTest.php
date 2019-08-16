@@ -32,12 +32,11 @@ class LastAggregatorTest extends TestCase
         }
 
         $aggregator = new LastAggregator('abc', 'dim123', $type);
+
         $this->assertEquals([
             'type'      => $type . 'Last',
             'name'      => 'dim123',
             'fieldName' => 'abc',
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals('dim123', $aggregator->getOutputName());
+        ], $aggregator->toArray());
     }
 }

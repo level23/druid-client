@@ -45,7 +45,7 @@ class DistinctCountAggregator implements AggregatorInterface
      *
      * @return array
      */
-    public function getAggregator(): array
+    public function toArray(): array
     {
         return [
             'type'               => 'thetaSketch',
@@ -54,15 +54,5 @@ class DistinctCountAggregator implements AggregatorInterface
             'isInputThetaSketch' => false,
             'size'               => $this->size,
         ];
-    }
-
-    /**
-     * Return how this aggregation will be outputted in the query results.
-     *
-     * @return string
-     */
-    public function getOutputName(): string
-    {
-        return $this->outputName;
     }
 }

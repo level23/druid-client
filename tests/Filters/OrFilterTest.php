@@ -19,7 +19,7 @@ class OrFilterTest extends TestCase
 
         $this->assertEquals([
             'type'   => 'or',
-            'fields' => [$filter1->getFilter(), $filter2->getFilter(), $filter3->getFilter()],
-        ], $filter->getFilter());
+            'fields' => [$filter1->toArray(), $filter2->toArray(), $filter3->toArray()],
+        ], $filter->toArray());
     }
 }

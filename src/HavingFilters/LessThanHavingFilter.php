@@ -32,7 +32,7 @@ class LessThanHavingFilter implements HavingFilterInterface
      *
      * @return array
      */
-    public function getHavingFilter(): array
+    public function toArray(): array
     {
         return [
             'type'        => 'lessThan',

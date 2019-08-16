@@ -14,6 +14,6 @@ class TrueFilterTest extends TestCase
 
         $this->assertEquals([
             'type' => 'true',
-        ], $filter->getFilter());
+        ], $filter->toArray());
     }
 }

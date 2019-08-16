@@ -26,7 +26,7 @@ class AggregationCollectionTest extends TestCase
             'fieldName' => 'items',
         ];
         $item     = Mockery::mock(SumAggregator::class, ['items']);
-        $item->shouldReceive('getAggregator')
+        $item->shouldReceive('toArray')
             ->once()
             ->andReturn($response);
 

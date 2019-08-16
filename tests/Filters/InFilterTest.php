@@ -16,6 +16,6 @@ class InFilterTest extends TestCase
             'type'      => 'in',
             'dimension' => 'name',
             'values'    => ['Piet', 'Jan', 'Klaas'],
-        ], $filter->getFilter());
+        ], $filter->toArray());
     }
 }

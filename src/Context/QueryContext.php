@@ -169,7 +169,7 @@ class QueryContext implements ContextInterface
      *
      * @return array
      */
-    public function getContext(): array
+    public function toArray(): array
     {
         $result = [];
 
