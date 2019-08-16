@@ -285,15 +285,8 @@ class GroupByQuery implements QueryInterface
      */
     public function parseResponse(array $response): array
     {
-        if (!$response) {
-            return [];
-        }
-
-        $results = [];
-        foreach ($response as $result) {
-            $results[] = $result['event'];
-        }
-
-        return $results;
+        return array_map(function ($row) {
+            return $row['event'];
+        }, $response);
     }
 }
