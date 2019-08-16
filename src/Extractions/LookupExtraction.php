@@ -34,28 +34,29 @@ class LookupExtraction implements ExtractionInterface
      * LookupExtraction constructor.
      *
      * @param string      $lookupName
-     * @param bool        $retainMissingValue
-     * @param string|null $replaceMissingValueWith
+     * @param bool|string $keepMissing When true, we will keep values which are not known in the lookup function. The
+     *                                 original value will be kept. If false, the missing items will not be kept in the
+     *                                 result set. If this is a string, we will keep the missing values and replace them
+     *                                 with the string value.
      * @param bool        $optimize
-     * @param bool|null   $injective A property of injective can override the lookup's own sense of whether or not it
-     *                               is
-     *                               injective. If left unspecified, Druid will use the registered
-     *                               cluster-wide lookup configuration.
+     * @param bool|null   $injective   A property of injective can override the lookup's own sense of whether or not it
+     *                                 is
+     *                                 injective. If left unspecified, Druid will use the registered
+     *                                 cluster-wide lookup configuration.
      *
      * For  more information about injective, see:
      * https://druid.apache.org/docs/latest/querying/lookups.html#query-execution
      */
     public function __construct(
         string $lookupName,
-        bool $retainMissingValue = true,
-        ?string $replaceMissingValueWith = null,
+        $keepMissing = true,
         bool $optimize = true,
         ?bool $injective = null
 
     ) {
         $this->lookupName              = $lookupName;
-        $this->retainMissingValue      = $retainMissingValue;
-        $this->replaceMissingValueWith = $replaceMissingValueWith;
+        $this->retainMissingValue      = is_string($keepMissing) ? true : $keepMissing;
+        $this->replaceMissingValueWith = is_string($keepMissing) ? $keepMissing : null;
         $this->injective               = $injective;
         $this->optimize                = $optimize;
     }
@@ -77,7 +78,7 @@ class LookupExtraction implements ExtractionInterface
             $result['injective'] = $this->injective;
         }
 
-        if (!empty($this->replaceMissingValueWith)) {
+        if ($this->replaceMissingValueWith !== null) {
             $result['replaceMissingValueWith'] = $this->replaceMissingValueWith;
         } elseif ($this->retainMissingValue) {
             $result['retainMissingValue'] = $this->retainMissingValue;
