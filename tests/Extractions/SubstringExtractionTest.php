@@ -14,7 +14,7 @@ class SubstringExtractionTest extends TestCase
         $this->assertEquals([
             'type'  => 'substring',
             'index' => 4,
-        ], $extraction->getExtractionFunction());
+        ], $extraction->toArray());
 
         $extraction = new SubstringExtraction(6, 2);
 
@@ -22,6 +22,6 @@ class SubstringExtractionTest extends TestCase
             'type'   => 'substring',
             'index'  => 6,
             'length' => 2,
-        ], $extraction->getExtractionFunction());
+        ], $extraction->toArray());
     }
 }

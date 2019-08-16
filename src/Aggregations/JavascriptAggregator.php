@@ -67,7 +67,7 @@ class JavascriptAggregator implements AggregatorInterface
      *
      * @return array
      */
-    public function getAggregator(): array
+    public function toArray(): array
     {
         return [
             'type'        => 'javascript',

@@ -16,6 +16,6 @@ class DimensionSelectorHavingFilterTest extends TestCase
             'type'      => 'dimSelector',
             'dimension' => 'name',
             'value'     => 'John',
-        ], $filter->getHavingFilter());
+        ], $filter->toArray());
     }
 }

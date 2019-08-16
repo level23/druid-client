@@ -31,7 +31,7 @@ class InFilter implements FilterInterface
      * Return the filter as it can be used in the druid query.
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         return [
             'type'      => 'in',

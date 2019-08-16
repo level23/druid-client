@@ -29,7 +29,7 @@ class Limit implements LimitInterface
      *
      * @return array
      */
-    public function getLimitForQuery(): array
+    public function toArray(): array
     {
         $result = [
             'type'    => 'default',

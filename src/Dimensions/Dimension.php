@@ -72,7 +72,7 @@ class Dimension implements DimensionInterface
      *
      * @return array
      */
-    public function getDimensionForQuery(): array
+    public function toArray(): array
     {
         $result = [
             'type'       => ($this->extractionFunction ? 'extraction' : 'default'),
@@ -82,7 +82,7 @@ class Dimension implements DimensionInterface
         ];
 
         if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->getExtractionFunction();
+            $result['extractionFn'] = $this->extractionFunction->toArray();
         }
 
         return $result;

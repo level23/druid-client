@@ -19,9 +19,9 @@ class TopNQueryContext extends QueryContext implements ContextInterface
      *
      * @return array
      */
-    public function getContext(): array
+    public function toArray(): array
     {
-        $result = parent::getContext();
+        $result = parent::toArray();
 
         if( $this->minTopNThreshold !== null ) {
             $result['minTopNThreshold'] = $this->minTopNThreshold;

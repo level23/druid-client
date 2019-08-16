@@ -109,7 +109,7 @@ class HasDimensionsTest extends TestCase
 
         $this->assertInstanceOf(DimensionInterface::class, $dimension);
 
-        $this->assertEquals($expectedResult, $dimension->getDimensionForQuery());
+        $this->assertEquals($expectedResult, $dimension->toArray());
     }
 
     /**
@@ -186,18 +186,16 @@ class HasDimensionsTest extends TestCase
                 $dimension,
                 $lookupFunction,
                 $as,
-                $retainMissingValue,
-                $replaceMissingValueWith
+                $replaceMissingValue
             ) {
                 $this->assertEquals('name', $dimension);
                 $this->assertEquals('display_name', $as);
                 $this->assertEquals('full_name', $lookupFunction);
-                $this->assertEquals(true, $retainMissingValue);
-                $this->assertEquals('John Doe', $replaceMissingValueWith);
+                $this->assertEquals('John Doe', $replaceMissingValue);
             })
             ->once();
 
-        $response = $this->builder->lookup('full_name', 'name', 'display_name', true, 'John Doe');
+        $response = $this->builder->lookup('full_name', 'name', 'display_name', 'John Doe');
 
         $this->assertEquals($this->builder, $response);
     }
@@ -214,14 +212,12 @@ class HasDimensionsTest extends TestCase
                 $dimension,
                 $lookupFunction,
                 $as,
-                $retainMissingValue,
-                $replaceMissingValueWith
+                $replaceMissingValue
             ) {
                 $this->assertEquals('name', $dimension);
                 $this->assertEquals('name', $as);
                 $this->assertEquals('full_name', $lookupFunction);
-                $this->assertEquals(false, $retainMissingValue);
-                $this->assertEquals('', $replaceMissingValueWith);
+                $this->assertEquals(false, $replaceMissingValue);
             })
             ->once();
 

@@ -26,11 +26,11 @@ class NotFilter implements FilterInterface
      *
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         return [
             'type'   => 'not',
-            'field' => $this->filter->getFilter(),
+            'field' => $this->filter->toArray(),
         ];
     }
 }

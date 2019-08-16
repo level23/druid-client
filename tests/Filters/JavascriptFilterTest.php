@@ -38,11 +38,11 @@ class JavascriptFilterTest extends TestCase
 
         if ($useExtractionFunction) {
             $filter                   = new JavascriptFilter('name', $function, $extractionFunction);
-            $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
+            $expected['extractionFn'] = $extractionFunction->toArray();
         } else {
             $filter = new JavascriptFilter('name', $function);
         }
 
-        $this->assertEquals($expected, $filter->getFilter());
+        $this->assertEquals($expected, $filter->toArray());
     }
 }

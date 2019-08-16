@@ -54,7 +54,7 @@ class JavascriptFilter implements FilterInterface
      *
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         $result = [
             'type'      => 'javascript',
@@ -63,7 +63,7 @@ class JavascriptFilter implements FilterInterface
         ];
 
         if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->getExtractionFunction();
+            $result['extractionFn'] = $this->extractionFunction->toArray();
         }
 
         return $result;

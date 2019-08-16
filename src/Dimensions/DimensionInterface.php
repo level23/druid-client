@@ -11,7 +11,7 @@ interface DimensionInterface
      *
      * @return array
      */
-    public function getDimensionForQuery(): array;
+    public function toArray(): array;
 
     /**
      * Return the name of the dimension which is selected.

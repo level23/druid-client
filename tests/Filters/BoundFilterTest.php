@@ -71,7 +71,7 @@ class BoundFilterTest extends TestCase
 
         $expected['ordering'] = ($ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC()))->getValue();
 
-        $this->assertEquals($expected, $filter->getFilter());
+        $this->assertEquals($expected, $filter->toArray());
     }
 
     public function testInvalidOperator()
@@ -102,8 +102,8 @@ class BoundFilterTest extends TestCase
             'ordering'     => 'alphanumeric',
             'lower'        => 18,
             'lowerStrict'  => true,
-            'extractionFn' => $extractionFunction->getExtractionFunction(),
-        ], $filter->getFilter()
+            'extractionFn' => $extractionFunction->toArray(),
+        ], $filter->toArray()
         );
     }
 }

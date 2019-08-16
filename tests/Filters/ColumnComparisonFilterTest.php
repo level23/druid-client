@@ -18,6 +18,6 @@ class ColumnComparisonFilterTest extends TestCase
                 'name',
                 'first_name',
             ],
-        ], $filter->getFilter());
+        ], $filter->toArray());
     }
 }

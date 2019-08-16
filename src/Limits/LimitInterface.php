@@ -13,7 +13,7 @@ interface LimitInterface
      *
      * @return array
      */
-    public function getLimitForQuery(): array;
+    public function toArray(): array;
 
     /**
      * @param int $limit
