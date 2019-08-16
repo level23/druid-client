@@ -102,20 +102,20 @@ class TopNQuery implements QueryInterface
      *
      * @return array
      */
-    public function getQuery(): array
+    public function toArray(): array
     {
         $result = [
             'queryType'   => 'topN',
             'dataSource'  => $this->dataSource,
             'intervals'   => $this->intervals->toArray(),
             'granularity' => $this->granularity,
-            'dimension'   => $this->dimension->getDimensionForQuery(),
+            'dimension'   => $this->dimension->toArray(),
             'threshold'   => $this->threshold,
             'metric'      => $this->metric,
         ];
 
         if ($this->filter) {
-            $result['filter'] = $this->filter->getFilter();
+            $result['filter'] = $this->filter->toArray();
         }
 
         if ($this->aggregations) {
@@ -127,7 +127,7 @@ class TopNQuery implements QueryInterface
         }
 
         if ($this->context) {
-            $result['context'] = $this->context->getContext();
+            $result['context'] = $this->context->toArray();
         }
 
         return $result;
@@ -195,16 +195,6 @@ class TopNQuery implements QueryInterface
     public function getContext(): ?ContextInterface
     {
         return $this->context;
-    }
-
-    /**
-     * Return the query type. For example "groupBy" or "timeseries"
-     *
-     * @return string
-     */
-    public function getType(): string
-    {
-        return 'topN';
     }
 
     /**

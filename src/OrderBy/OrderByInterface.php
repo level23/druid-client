@@ -12,7 +12,7 @@ interface OrderByInterface
      *
      * @return array
      */
-    public function getOrderBy(): array;
+    public function toArray(): array;
 
     /**
      * The dimension where we should order on.

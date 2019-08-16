@@ -14,8 +14,8 @@ class DruidQueryExceptionTest extends TestCase
     {
         $query = new TimeSeriesQuery('iets', new IntervalCollection(), 'all');
 
-        $exception = new QueryResponseException($query->getQuery());
+        $exception = new QueryResponseException($query->toArray());
 
-        $this->assertEquals($query->getQuery(), $exception->getQuery());
+        $this->assertEquals($query->toArray(), $exception->getQuery());
     }
 }

@@ -13,17 +13,15 @@ class PostAggregationCollection extends BaseCollection
     }
 
     /**
+     * Return an array representation of our items
+     *
      * @return array
      */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $postAggregation) {
-            $result[] = $postAggregation->getPostAggregator();
-        }
-
-        return $result;
+        return array_map(function(PostAggregatorInterface $item) {
+            return $item->toArray();
+        }, $this->items);
     }
 
     /**

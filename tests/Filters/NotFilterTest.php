@@ -17,7 +17,7 @@ class NotFilterTest extends TestCase
 
         $this->assertEquals([
             'type'  => 'not',
-            'field' => $filterName->getFilter(),
-        ], $filter->getFilter());
+            'field' => $filterName->toArray(),
+        ], $filter->toArray());
     }
 }

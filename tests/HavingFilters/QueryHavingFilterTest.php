@@ -16,7 +16,7 @@ class QueryHavingFilterTest extends TestCase
 
         $this->assertEquals([
             'type'   => 'filter',
-            'filter' => $inFilter->getFilter(),
-        ], $filter->getHavingFilter());
+            'filter' => $inFilter->toArray(),
+        ], $filter->toArray());
     }
 }

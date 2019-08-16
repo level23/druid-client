@@ -18,17 +18,15 @@ class OrderByCollection extends BaseCollection
     }
 
     /**
+     * Return an array representation of our items
+     *
      * @return array
      */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $orderBy) {
-            $result[] = $orderBy->getOrderBy();
-        }
-
-        return $result;
+        return array_map(function(OrderByInterface $item) {
+            return $item->toArray();
+        }, $this->items);
     }
 
     /**

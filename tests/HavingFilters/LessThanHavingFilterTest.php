@@ -16,6 +16,6 @@ class LessThanHavingFilterTest extends TestCase
             'type'        => 'lessThan',
             'aggregation' => 'age',
             'value'       => 16,
-        ], $filter->getHavingFilter());
+        ], $filter->toArray());
     }
 }

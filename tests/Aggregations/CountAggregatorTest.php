@@ -9,12 +9,13 @@ class CountAggregatorTest extends TestCase
 {
     public function testAggregator()
     {
-        $aggregator = new CountAggregator('numberOfThings');
+        $name = 'numberOfThings';
+
+        $aggregator = new CountAggregator($name);
+
         $this->assertEquals( [
             'type' => 'count',
-            'name' => 'numberOfThings'
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals('numberOfThings', $aggregator->getOutputName());
+            'name' => $name
+        ], $aggregator->toArray());
     }
 }

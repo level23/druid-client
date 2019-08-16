@@ -57,7 +57,7 @@ class OrderBy implements OrderByInterface
      *
      * @return array
      */
-    public function getOrderBy(): array
+    public function toArray(): array
     {
         return [
             'dimension'      => $this->dimension,

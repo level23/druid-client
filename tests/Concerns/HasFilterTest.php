@@ -163,8 +163,12 @@ class HasFilterTest extends TestCase
         $this->assertInstanceOf(AndFilter::class, $this->builder->getFilter());
 
         $filter = $this->builder->getFilter();
+
         if ($filter instanceof AndFilter) {
-            $this->assertEquals(3, count($filter->getFilters()));
+
+            $filters = $filter->toArray();
+
+            $this->assertEquals(3, count($filters['fields']));
         }
 
         $this->assertEquals($this->builder, $response);

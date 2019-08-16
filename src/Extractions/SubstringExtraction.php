@@ -55,7 +55,7 @@ class SubstringExtraction implements ExtractionInterface
      *
      * @return array
      */
-    public function getExtractionFunction(): array
+    public function toArray(): array
     {
         $response = [
             'type'  => 'substring',

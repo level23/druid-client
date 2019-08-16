@@ -27,14 +27,15 @@ class DimensionCollection extends BaseCollection
         return DimensionInterface::class;
     }
 
+    /**
+     * Return an array representation of our items
+     *
+     * @return array
+     */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $dimension) {
-            $result[] = $dimension->getDimensionForQuery();
-        }
-
-        return $result;
+        return array_map(function(DimensionInterface $item) {
+            return $item->toArray();
+        }, $this->items);
     }
 }

@@ -18,7 +18,7 @@ class RegexExtractionTest extends TestCase
             'index'                   => 1,
             'replaceMissingValue'     => false,
             'replaceMissingValueWith' => null,
-        ], $extraction->getExtractionFunction());
+        ], $extraction->toArray());
     }
 
     public function testExtractionWithReplacement()
@@ -32,6 +32,6 @@ class RegexExtractionTest extends TestCase
             'replaceMissingValue'     => true,
             'replaceMissingValueWith' => 'Unknown',
 
-        ], $extraction->getExtractionFunction());
+        ], $extraction->toArray());
     }
 }

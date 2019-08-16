@@ -29,12 +29,8 @@ class AggregationCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $aggregator) {
-            $result[] = $aggregator->getAggregator();
-        }
-
-        return $result;
+        return array_map(function(AggregatorInterface $item) {
+            return $item->toArray();
+        }, $this->items);
     }
 }

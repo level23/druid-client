@@ -10,5 +10,5 @@ interface PostAggregatorInterface
      *
      * @return array
      */
-    public function getPostAggregator(): array;
+    public function toArray(): array;
 }

@@ -26,7 +26,7 @@ class DimensionCollectionTest extends TestCase
             'outputName' => 'age',
         ];
         $item     = Mockery::mock(Dimension::class, ['age']);
-        $item->shouldReceive('getDimensionForQuery')
+        $item->shouldReceive('toArray')
             ->once()
             ->andReturn($response);
 

@@ -34,12 +34,11 @@ class SumAggregatorTest extends TestCase
         }
 
         $aggregator = new SumAggregator('abc', 'dim123', $type);
+
         $this->assertEquals([
             'type'      => strtolower($type) . 'Sum',
             'name'      => 'dim123',
             'fieldName' => 'abc',
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals('dim123', $aggregator->getOutputName());
+        ], $aggregator->toArray());
     }
 }

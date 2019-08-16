@@ -53,7 +53,7 @@ class SearchFilterTest extends TestCase
             'type'      => 'search',
             'dimension' => $dimension,
             'query'     => $expectedQuery,
-        ], $filter->getFilter());
+        ], $filter->toArray());
     }
 
     public function testExtractionFunction()
@@ -72,7 +72,7 @@ class SearchFilterTest extends TestCase
                 'value'         => 'john',
                 'caseSensitive' => false,
             ],
-            'extractionFn' => $extractionFunction->getExtractionFunction(),
-        ], $filter->getFilter());
+            'extractionFn' => $extractionFunction->toArray(),
+        ], $filter->toArray());
     }
 }

@@ -1,31 +1,16 @@
 <?php
-declare(strict_types=1);
 
 namespace Level23\Druid\Aggregations;
 
-class FirstAggregator extends SumAggregator
+class FirstAggregator extends MethodAggregator
 {
     /**
-     * Return the aggregator as it can be used in a druid query.
-     *
-     * @return array
-     */
-    public function getAggregator(): array
-    {
-        return [
-            'type'      => $this->type . 'First',
-            'name'      => $this->outputName,
-            'fieldName' => $this->metricName,
-        ];
-    }
-
-    /**
-     * Return how this aggregation will be outputted in the query results.
+     * Returns the method for the type aggregation
      *
      * @return string
      */
-    public function getOutputName(): string
+    protected function getMethod(): string
     {
-        return $this->outputName;
+        return 'first';
     }
 }

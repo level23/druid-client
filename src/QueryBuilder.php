@@ -96,7 +96,7 @@ class QueryBuilder
     {
         $query = $this->buildQuery($context);
 
-        $json = \GuzzleHttp\json_encode($query->getQuery(), JSON_PRETTY_PRINT);
+        $json = \GuzzleHttp\json_encode($query->toArray(), JSON_PRETTY_PRINT);
 
         return $json;
     }
@@ -110,9 +110,7 @@ class QueryBuilder
      */
     public function toArray(array $context = []): array
     {
-        $query = $this->buildQuery($context);
-
-        return $query->getQuery();
+        return $this->buildQuery($context)->toArray();
     }
 
     /**

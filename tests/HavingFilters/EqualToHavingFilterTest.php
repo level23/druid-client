@@ -16,6 +16,6 @@ class EqualToHavingFilterTest extends TestCase
             'type'        => 'equalTo',
             'aggregation' => 'age',
             'value'       => 16,
-        ], $filter->getHavingFilter());
+        ], $filter->toArray());
     }
 }
