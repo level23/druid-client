@@ -2,19 +2,15 @@
 
 namespace Level23\Druid\Aggregations;
 
-class MaxAggregator extends SumAggregator
+class MaxAggregator extends MethodAggregator
 {
     /**
-     * Return the aggregator as it can be used in a druid query.
+     * Returns the method for the type aggregation
      *
-     * @return array
+     * @return string
      */
-    public function toArray(): array
+    protected function getMethod(): string
     {
-        return [
-            'type'      => $this->type . 'Max',
-            'name'      => $this->outputName,
-            'fieldName' => $this->metricName,
-        ];
+        return 'max';
     }
 }

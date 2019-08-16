@@ -2,19 +2,15 @@
 
 namespace Level23\Druid\Aggregations;
 
-class LastAggregator extends SumAggregator
+class LastAggregator extends MethodAggregator
 {
     /**
-     * Return the aggregator as it can be used in a druid query.
+     * Returns the method for the type aggregation
      *
-     * @return array
+     * @return string
      */
-    public function toArray(): array
+    protected function getMethod(): string
     {
-        return [
-            'type'      => $this->type . 'Last',
-            'name'      => $this->outputName,
-            'fieldName' => $this->metricName,
-        ];
+        return 'last';
     }
 }

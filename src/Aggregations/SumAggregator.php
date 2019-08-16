@@ -5,59 +5,15 @@ namespace Level23\Druid\Aggregations;
 use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
 
-class SumAggregator implements AggregatorInterface
+class SumAggregator extends MethodAggregator
 {
     /**
-     * @var string
-     */
-    protected $outputName;
-
-    /**
-     * @var string
-     */
-    protected $metricName;
-
-    /**
-     * The type of field. This can either be "long", "float" or "double"
+     * Returns the method for the type aggregation
      *
-     * @var string
+     * @return string
      */
-    protected $type;
-
-    /**
-     * constructor.
-     *
-     * @param string          $metricName
-     * @param string          $outputName                   When not given, we will use the same name as the metric.
-     * @param DataType|string $type                         The type of field. This can either be "long", "float" or
-     *                                                      "double"
-     */
-    public function __construct(string $metricName, string $outputName = '', $type = 'long')
+    protected function getMethod(): string
     {
-        $this->metricName = $metricName;
-        $this->outputName = $outputName ?: $metricName;
-
-        $type = strtolower($type ?: DataType::LONG());
-        if (!in_array($type, ['long', 'float', 'double'])) {
-            throw new InvalidArgumentException(
-                'Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"'
-            );
-        }
-
-        $this->type = $type;
-    }
-
-    /**
-     * Return the aggregator as it can be used in a druid query.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            'type'      => $this->type . 'Sum',
-            'name'      => $this->outputName,
-            'fieldName' => $this->metricName,
-        ];
+        return 'sum';
     }
 }
