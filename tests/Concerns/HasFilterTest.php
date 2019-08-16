@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
+use Exception;
 use Hamcrest\Core\IsInstanceOf;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\FilterQueryBuilder;
 use Level23\Druid\Filters\AndFilter;
@@ -121,7 +123,7 @@ class HasFilterTest extends TestCase
                 ];
 
                 if (!array_key_exists($testingOperator, $types)) {
-                    throw new \Exception('Unknown operator ' . $testingOperator);
+                    throw new Exception('Unknown operator ' . $testingOperator);
                 }
 
                 $class = $types[$testingOperator];
@@ -223,9 +225,9 @@ class HasFilterTest extends TestCase
 
     public function testInvalidArguments()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
-        $this->builder->where(new \stdClass());
+        $this->builder->where(null);
     }
 
     /**

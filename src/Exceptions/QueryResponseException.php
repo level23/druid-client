@@ -2,9 +2,10 @@
 
 namespace Level23\Druid\Exceptions;
 
+use Exception;
 use Throwable;
 
-class QueryResponseException extends \Exception
+class QueryResponseException extends Exception
 {
     /**
      * @var array

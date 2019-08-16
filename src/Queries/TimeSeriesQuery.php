@@ -211,23 +211,15 @@ class TimeSeriesQuery implements QueryInterface
      */
     public function parseResponse(array $response): array
     {
-        if (!$response) {
-            return [];
-        }
+        return array_map(function ($row) {
+            $row['result'][$this->timeOutputName] = $row['timestamp'];
 
-        $results = [];
-
-        foreach ($response as $result) {
-            $result['result'][$this->timeOutputName] = $result['timestamp'];
-
-            $results[] = $result['result'];
-        }
-
-        return $results;
+            return $row['result'];
+        }, $response);
     }
 
     /**
-     * Set the name which will be used in the resultset to store the timestamp in.
+     * Set the name which will be used in the result set to store the timestamp in.
      *
      * @param string $timeOutputName
      */
