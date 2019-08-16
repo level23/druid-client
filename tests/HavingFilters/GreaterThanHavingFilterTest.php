@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\HavingFilters;
 
-use Level23\Druid\HavingFilters\EqualToHavingFilter;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
 use tests\TestCase;
 
