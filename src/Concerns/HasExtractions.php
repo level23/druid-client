@@ -120,11 +120,11 @@ trait HasExtractions
      * @return $this;
      */
     public function timeFormat(
-        ?string $format = null,
-        ?string $granularity = null,
-        ?string $locale = null,
-        ?string $timeZone = null,
-        ?bool $asMilliseconds = null
+        string $format = null,
+        string $granularity = null,
+        string $locale = null,
+        string $timeZone = null,
+        bool $asMilliseconds = null
     ) {
         $this->addExtraction(new TimeFormatExtraction($format, $granularity, $locale, $timeZone, $asMilliseconds));
 
