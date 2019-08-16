@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\VirtualColumns;
 
+use InvalidArgumentException;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use tests\TestCase;
 
@@ -36,7 +37,7 @@ class VirtualColumnTest extends TestCase
 
     public function testIncorrectType()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         new VirtualColumn('a', 'b', 'blaat');
     }

@@ -1,10 +1,16 @@
 <?php
+/** @noinspection PhpUnusedParameterInspection */
+/** @noinspection PhpUndefinedNamespaceInspection */
+/** @noinspection PhpUndefinedMethodInspection */
+/** @noinspection PhpUndefinedFunctionInspection */
+/** @noinspection PhpUndefinedFieldInspection */
+/** @noinspection PhpUndefinedClassInspection */
 
 namespace Level23\Druid;
 
+use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
-use Illuminate\Foundation\Application as LaravelApplication;
 
 class DruidServiceProvider extends ServiceProvider
 {
@@ -29,7 +35,7 @@ class DruidServiceProvider extends ServiceProvider
      */
     protected function setupConfig()
     {
-        $source = realpath(__DIR__.'/../config/config.php');
+        $source = realpath(__DIR__ . '/../config/config.php');
 
         if ($this->app instanceof LaravelApplication) {
             $this->publishes([$source => config_path('druid.php')]);
