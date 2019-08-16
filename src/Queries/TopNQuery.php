@@ -216,7 +216,17 @@ class TopNQuery implements QueryInterface
      */
     public function parseResponse(array $response): array
     {
-        return $response;
+        if (!$response) {
+            return [];
+        }
+
+        $results = [];
+
+        foreach ($response as $result) {
+            $results[] = $result['result'];
+        }
+
+        return $results;
     }
 }
 
