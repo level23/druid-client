@@ -7,13 +7,20 @@ use tests\TestCase;
 
 class DistinctCountAggregatorTest extends TestCase
 {
+    public function dataProvider(): array
+    {
+        return [
+            ['dimension', 'abc', 32768],
+            ['dimension', 'abc', null],
+        ];
+    }
+
     /**
      * @param string   $outputName
      * @param string   $dimension
      * @param int|null $size
      *
-     * @testWith ['dimension', 'abc', 32768],
-     *           ['dimension', 'abc', null],
+     * @dataProvider dataProvider
      */
     public function testAggregator(string $dimension, string $outputName, int $size = null)
     {
