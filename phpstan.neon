@@ -5,6 +5,8 @@ parameters:
       - vendor/phpstan/phpstan-mockery/extension.neon
     ignoreErrors:
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
+    excludes_analyse:
+      - src/DruidServiceProvider.php
     paths:
       - tests
       - src

@@ -19,7 +19,6 @@ class Interval implements IntervalInterface
 
     public function __construct(DateTime $start, DateTime $stop)
     {
-
         $this->start = $start;
         $this->stop  = $stop;
     }
