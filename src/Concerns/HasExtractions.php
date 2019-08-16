@@ -21,20 +21,24 @@ trait HasExtractions
 
     /**
      * @param string      $lookupName
-     * @param bool|string $keepMissing When true, we will keep values which are not known in the lookup function. The
-     *                                 original value will be kept. If false, the missing items will not be kept in the
-     *                                 result set. If this is a string, we will keep the missing values and replace them
-     *                                 with the string value.
+     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     *                                         function. The original value will be kept. If false, the missing items
+     *                                         will not be kept in the result set. If this is a string, we will keep
+     *                                         the missing values and replace them with the string value.
      * @param bool        $optimize
-     * @param bool|null   $injective   A property of injective can override the lookup's own sense of whether or not it
-     *                                 is injective. If left unspecified, Druid will use the registered cluster-wide
-     *                                 lookup configuration.
+     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
+     *                                         or not it is injective. If left unspecified, Druid will use the
+     *                                         registered cluster-wide lookup configuration.
      *
      * @return $this
      */
-    public function lookup(string $lookupName, $keepMissing = true, bool $optimize = true, ?bool $injective = null)
-    {
-        $this->addExtraction(new LookupExtraction($lookupName, $keepMissing, $optimize, $injective));
+    public function lookup(
+        string $lookupName,
+        $replaceMissingValue = true,
+        bool $optimize = true,
+        ?bool $injective = null
+    ) {
+        $this->addExtraction(new LookupExtraction($lookupName, $replaceMissingValue, $optimize, $injective));
 
         return $this;
     }
@@ -57,16 +61,16 @@ trait HasExtractions
      *
      * @param string      $regexp
      * @param int         $groupToExtract
-     * @param bool|string $keepMissing When true, we will keep values which are not matched by the regexp. The
+     * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
      *                                 value will be null. If false, the missing items will not be kept in the
      *                                 result set. If this is a string, we will keep the missing values and replace them
      *                                 with the string value.
      *
      * @return $this
      */
-    public function regex(string $regexp, $groupToExtract = 1, $keepMissing = true)
+    public function regex(string $regexp, $groupToExtract = 1, $replaceMissingValue = true)
     {
-        $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $keepMissing));
+        $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $replaceMissingValue));
 
         return $this;
     }
