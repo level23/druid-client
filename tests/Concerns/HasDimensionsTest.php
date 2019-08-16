@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
+use ArrayObject;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\LookupDimension;
@@ -27,7 +28,7 @@ class HasDimensionsTest extends TestCase
     {
         $client = new DruidClient([]);
 
-        $this->builder = \Mockery::mock(QueryBuilder::class, [$client, 'test', 'all']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$client, 'test', 'all']);
         $this->builder->makePartial();
     }
 
@@ -70,7 +71,7 @@ class HasDimensionsTest extends TestCase
             // incorrect output type
             [['browser', 'TheBrowser', 'something'], $expected, true],
             [[new Dimension('browser', 'TheBrowser')], $expected],
-            [[new \ArrayObject(['browser' => 'TheBrowser'])], $expected],
+            [[new ArrayObject(['browser' => 'TheBrowser'])], $expected],
             [['country_iso', 'country', DataType::LONG()], $expectedLong],
         ];
     }
@@ -82,6 +83,7 @@ class HasDimensionsTest extends TestCase
      *
      * @param array $parameters
      * @param array $expectedResult
+     * @param bool  $expectException
      */
     public function testSelect(array $parameters, $expectedResult, bool $expectException = false)
     {

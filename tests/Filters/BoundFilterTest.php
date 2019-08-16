@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
+use InvalidArgumentException;
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Types\SortingOrder;
@@ -75,7 +76,7 @@ class BoundFilterTest extends TestCase
 
     public function testInvalidOperator()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid operator given');
 
         new BoundFilter('age', 'is', '18');
