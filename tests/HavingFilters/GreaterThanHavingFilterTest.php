@@ -17,6 +17,6 @@ class GreaterThanHavingFilterTest extends TestCase
             'type'        => 'greaterThan',
             'aggregation' => 'age',
             'value'       => 16,
-        ], $filter->getHavingFilter());
+        ], $filter->toArray());
     }
 }

@@ -12,15 +12,16 @@ class VirtualColumnCollection extends BaseCollection
         $this->items = $virtualColumns;
     }
 
+    /**
+     * Return an array representation of our items
+     *
+     * @return array
+     */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $virtualColumn) {
-            $result[] = $virtualColumn->getVirtualColumn();
-        }
-
-        return $result;
+        return array_map(function(VirtualColumnInterface $item) {
+            return $item->toArray();
+        }, $this->items);
     }
 
     /**

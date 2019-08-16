@@ -29,12 +29,12 @@ class CascadeExtraction implements ExtractionInterface
      *
      * @return array
      */
-    public function getExtractionFunction(): array
+    public function toArray(): array
     {
         $functions = [];
 
         foreach ($this->extractions as $extraction) {
-            $functions[] = $extraction->getExtractionFunction();
+            $functions[] = $extraction->toArray();
         }
 
         return [

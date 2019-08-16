@@ -15,13 +15,13 @@ class SearchQueryExtractionTest extends TestCase
             'type'           => 'contains',
             'case_sensitive' => true,
             'value'         => 'john',
-        ],$extraction->getExtractionFunction());
+        ],$extraction->toArray());
 
         $extraction = new SearchQueryExtraction(['john', 'doe']);
         $this->assertEquals([
             'type'           => 'fragment',
             'case_sensitive' => false,
             'values'         => ['john', 'doe'],
-        ],$extraction->getExtractionFunction());
+        ],$extraction->toArray());
     }
 }

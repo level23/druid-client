@@ -36,8 +36,6 @@ class DistinctCountAggregatorTest extends TestCase
             'name'               => $outputName,
             'isInputThetaSketch' => false,
             'size'               => ($size ?: 16384),
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals($outputName, $aggregator->getOutputName());
+        ], $aggregator->toArray());
     }
 }

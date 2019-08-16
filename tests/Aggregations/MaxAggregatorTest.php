@@ -31,12 +31,11 @@ class MaxAggregatorTest extends TestCase
         }
 
         $aggregator = new MaxAggregator('abc', 'dim123', $type);
+
         $this->assertEquals([
             'type'      => $type . 'Max',
             'name'      => 'dim123',
             'fieldName' => 'abc',
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals('dim123', $aggregator->getOutputName());
+        ], $aggregator->toArray());
     }
 }

@@ -51,7 +51,7 @@ class VirtualColumn implements VirtualColumnInterface
      *
      * @return array
      */
-    public function getVirtualColumn(): array
+    public function toArray(): array
     {
         return [
             'type'       => 'expression',

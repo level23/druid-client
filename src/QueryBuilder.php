@@ -95,7 +95,7 @@ class QueryBuilder
     {
         $query = $this->buildQuery($context);
 
-        $json = json_encode($query->getQuery(), JSON_PRETTY_PRINT);
+        $json = json_encode($query->toArray(), JSON_PRETTY_PRINT);
         if ($json === false) {
             return "";
         }
@@ -114,7 +114,7 @@ class QueryBuilder
     {
         $query = $this->buildQuery($context);
 
-        return $query->getQuery();
+        return $query->toArray();
     }
 
     /**
@@ -286,9 +286,9 @@ class QueryBuilder
     {
         $query = new GroupByQuery(
             $this->dataSource,
-            new DimensionCollection(...$this->dimensions),
-            new IntervalCollection(...$this->intervals),
-            new AggregationCollection(...$this->aggregations),
+            new DimensionCollection($this->dimensions),
+            new IntervalCollection($this->intervals),
+            new AggregationCollection($this->aggregations),
             $this->granularity
         );
 
@@ -297,7 +297,7 @@ class QueryBuilder
         }
 
         if (count($this->postAggregations) > 0) {
-            $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
+            $query->setPostAggregations(new PostAggregationCollection($this->postAggregations));
         }
 
         if ($this->filter) {

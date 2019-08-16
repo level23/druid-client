@@ -20,7 +20,7 @@ class LimitTest extends TestCase
             'type'    => 'default',
             'limit'   => 2715,
             'columns' => [],
-        ], $limit->getLimitForQuery());
+        ], $limit->toArray());
 
         $this->assertEquals(2715, $limit->getLimit());
 
@@ -45,7 +45,7 @@ class LimitTest extends TestCase
                     'dimensionOrder' => SortingOrder::NUMERIC()->getValue(),
                 ],
             ],
-        ], $limit->getLimitForQuery());
+        ], $limit->toArray());
 
         $collection = $limit->getOrderByCollection();
         $this->assertInstanceOf(OrderByCollection::class, $collection);

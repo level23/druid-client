@@ -22,11 +22,11 @@ class QueryHavingFilter implements HavingFilterInterface
      *
      * @return array
      */
-    public function getHavingFilter(): array
+    public function toArray(): array
     {
         return [
             'type'   => 'filter',
-            'filter' => $this->filter->getFilter(),
+            'filter' => $this->filter->toArray(),
         ];
     }
 }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Context;
 
+use Level23\Druid\Arrayable;
 use InvalidArgumentException;
 
 /**
@@ -12,7 +13,7 @@ use InvalidArgumentException;
  *
  * @package Level23\Druid\Context
  */
-class QueryContext implements ContextInterface
+class QueryContext implements ContextInterface, Arrayable
 {
     /**
      * GroupByQueryContext constructor.
@@ -169,7 +170,7 @@ class QueryContext implements ContextInterface
      *
      * @return array
      */
-    public function getContext(): array
+    public function toArray(): array
     {
         $result = [];
 
