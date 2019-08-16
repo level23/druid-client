@@ -12,18 +12,15 @@ class LookupExtractionTest extends TestCase
     {
         $arguments = [];
         foreach (['numbers'] as $lookup) {
-            foreach ([true, false] as $retainMissingValue) {
-                foreach ([null, 'UNKNOWN'] as $replaceMissingValueWith) {
-                    foreach ([true, false] as $optimize) {
-                        foreach ([null, true, false] as $injective) {
-                            $arguments[] = [
-                                $lookup,
-                                $retainMissingValue,
-                                $replaceMissingValueWith,
-                                $optimize,
-                                $injective,
-                            ];
-                        }
+            foreach ([true, false, 'UNKNOWN'] as $keepMissing) {
+                foreach ([true, false] as $optimize) {
+                    foreach ([null, true, false] as $injective) {
+                        $arguments[] = [
+                            $lookup,
+                            $keepMissing,
+                            $optimize,
+                            $injective,
+                        ];
                     }
                 }
             }
@@ -36,22 +33,19 @@ class LookupExtractionTest extends TestCase
      * @dataProvider dataProvider
      *
      * @param string      $lookup
-     * @param bool        $retainMissingValue
-     * @param string|null $replaceMissingValueWith
+     * @param string|bool $keepMissing
      * @param bool        $optimize
      * @param bool|null   $injective
      */
     public function testExtractionFunction(
         string $lookup,
-        bool $retainMissingValue,
-        ?string $replaceMissingValueWith,
+        $keepMissing,
         bool $optimize,
         ?bool $injective
     ) {
         $extr     = new LookupExtraction(
             $lookup,
-            $retainMissingValue,
-            $replaceMissingValueWith,
+            $keepMissing,
             $optimize,
             $injective
         );
@@ -65,10 +59,10 @@ class LookupExtractionTest extends TestCase
             $expected['injective'] = $injective;
         }
 
-        if (!empty($replaceMissingValueWith)) {
-            $expected['replaceMissingValueWith'] = $replaceMissingValueWith;
-        } elseif ($retainMissingValue) {
-            $expected['retainMissingValue'] = $retainMissingValue;
+        if (is_string($keepMissing)) {
+            $expected['replaceMissingValueWith'] = $keepMissing;
+        } elseif ($keepMissing) {
+            $expected['retainMissingValue'] = $keepMissing;
         }
 
         $this->assertEquals($expected, $extr->toArray());

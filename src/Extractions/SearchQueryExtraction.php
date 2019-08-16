@@ -28,7 +28,6 @@ class SearchQueryExtraction implements ExtractionInterface
      */
     public function __construct($valueOrValues, bool $caseSensitive = false)
     {
-
         $this->valueOrValues = $valueOrValues;
         $this->caseSensitive = $caseSensitive;
     }

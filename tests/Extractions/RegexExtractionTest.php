@@ -23,7 +23,7 @@ class RegexExtractionTest extends TestCase
 
     public function testExtractionWithReplacement()
     {
-        $extraction = new RegexExtraction('^[0-9]*$', 3, true, 'Unknown');
+        $extraction = new RegexExtraction('^[0-9]*$', 3, 'Unknown');
 
         $this->assertEquals([
             'type'                    => 'regex',
