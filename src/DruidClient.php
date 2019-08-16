@@ -97,7 +97,13 @@ class DruidClient
             return $this->parseResponse($response);
         } catch (ServerException $exception) {
 
-            $error = $this->parseResponse($exception->getResponse());
+            $response = $exception->getResponse();
+
+            if(!$response instanceof ResponseInterface) {
+                throw $exception;
+            }
+
+            $error = $this->parseResponse($response);
 
             // When its not a formatted error response from druid we rethrow the original exception
             if (!isset($error['error'], $error['errorMessage'])) {
@@ -137,8 +143,8 @@ class DruidClient
     /**
      * Get the value of the config key
      *
-     * @param      $key
-     * @param null $default
+     * @param string $key
+     * @param mixed  $default
      *
      * @return mixed|null
      */
