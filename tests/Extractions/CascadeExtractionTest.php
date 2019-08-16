@@ -23,10 +23,10 @@ class CascadeExtractionTest extends TestCase
         $this->assertEquals([
             'type'          => 'cascade',
             'extractionFns' => [
-                $substr->getExtractionFunction(),
-                $regex->getExtractionFunction(),
-                $search->getExtractionFunction(),
+                $substr->toArray(),
+                $regex->toArray(),
+                $search->toArray(),
             ],
-        ], $extraction->getExtractionFunction());
+        ], $extraction->toArray());
     }
 }

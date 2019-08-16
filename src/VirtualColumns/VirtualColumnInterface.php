@@ -10,5 +10,5 @@ interface VirtualColumnInterface
      *
      * @return array
      */
-    public function getVirtualColumn(): array;
+    public function toArray(): array;
 }

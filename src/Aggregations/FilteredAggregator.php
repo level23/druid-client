@@ -50,22 +50,12 @@ class FilteredAggregator implements AggregatorInterface
      *
      * @return array
      */
-    public function getAggregator(): array
+    public function toArray(): array
     {
         return [
             'type'       => 'filtered',
-            'filter'     => $this->filter->getFilter(),
-            'aggregator' => $this->aggregator->getAggregator(),
+            'filter'     => $this->filter->toArray(),
+            'aggregator' => $this->aggregator->toArray(),
         ];
-    }
-
-    /**
-     * Return how this aggregation will be outputted in the query results.
-     *
-     * @return string
-     */
-    public function getOutputName(): string
-    {
-        return $this->aggregator->getOutputName();
     }
 }

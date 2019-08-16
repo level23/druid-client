@@ -58,6 +58,6 @@ class TimeFormatExtractionTest extends TestCase
             }
         }
 
-        $this->assertEquals($expected, $extraction->getExtractionFunction());
+        $this->assertEquals($expected, $extraction->toArray());
     }
 }

@@ -83,7 +83,7 @@ class TimeSeriesQuery implements QueryInterface
      *
      * @return array
      */
-    public function getQuery(): array
+    public function toArray(): array
     {
         $result = [
             'queryType'   => 'timeseries',
@@ -94,7 +94,7 @@ class TimeSeriesQuery implements QueryInterface
         ];
 
         if ($this->filter) {
-            $result['filter'] = $this->filter->getFilter();
+            $result['filter'] = $this->filter->toArray();
         }
 
         if ($this->aggregations) {
@@ -106,7 +106,7 @@ class TimeSeriesQuery implements QueryInterface
         }
 
         if ($this->context) {
-            $result['context'] = $this->context->getContext();
+            $result['context'] = $this->context->toArray();
         }
 
         return $result;

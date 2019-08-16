@@ -19,8 +19,8 @@ class AndFilterTest extends TestCase
 
         $this->assertEquals([
             'type'   => 'and',
-            'fields' => [$filter1->getFilter(), $filter2->getFilter(), $filter3->getFilter()],
-        ], $filter->getFilter());
+            'fields' => [$filter1->toArray(), $filter2->toArray(), $filter3->toArray()],
+        ], $filter->toArray());
 
         $filter4 = new SelectorFilter('car', 'bmw');
 
@@ -28,12 +28,12 @@ class AndFilterTest extends TestCase
 
         $this->assertEquals([
             'type'   => 'and',
-            'fields' => [$filter1->getFilter(), $filter2->getFilter(), $filter3->getFilter(), $filter4->getFilter()],
-        ], $filter->getFilter());
+            'fields' => [$filter1->toArray(), $filter2->toArray(), $filter3->toArray(), $filter4->toArray()],
+        ], $filter->toArray());
 
         $this->assertEquals(
             [$filter1, $filter2, $filter3, $filter4],
-            $filter->getFilters()
+            $filter->toArray()
         );
     }
 }

@@ -34,7 +34,7 @@ class PartialExtraction implements ExtractionInterface
      *
      * @return array
      */
-    public function getExtractionFunction(): array
+    public function toArray(): array
     {
         $response = [
             'type' => 'partial',

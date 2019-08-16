@@ -32,7 +32,7 @@ class FieldAccessPostAggregator implements PostAggregatorInterface
      *
      * @return array
      */
-    public function getPostAggregator(): array
+    public function toArray(): array
     {
         return [
             'type'      => ($this->finalizing ? 'finalizingFieldAccess' : 'fieldAccess'),

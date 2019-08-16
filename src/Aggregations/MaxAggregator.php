@@ -9,22 +9,12 @@ class MaxAggregator extends SumAggregator
      *
      * @return array
      */
-    public function getAggregator(): array
+    public function toArray(): array
     {
         return [
             'type'      => $this->type . 'Max',
             'name'      => $this->outputName,
             'fieldName' => $this->metricName,
         ];
-    }
-
-    /**
-     * Return how this aggregation will be outputted in the query results.
-     *
-     * @return string
-     */
-    public function getOutputName(): string
-    {
-        return $this->outputName;
     }
 }

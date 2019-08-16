@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Collections;
 
+use Countable;
 use ArrayAccess;
 use ArrayIterator;
-use Countable;
-use InvalidArgumentException;
 use IteratorAggregate;
+use InvalidArgumentException;
 
 abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countable
 {

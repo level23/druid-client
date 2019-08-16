@@ -46,7 +46,7 @@ class OrderByTest extends TestCase
             'dimension'      => $dimension,
             'direction'      => $direction,
             'dimensionOrder' => $sorting,
-        ], $orderBy->getOrderBy());
+        ], $orderBy->toArray());
     }
 
     public function testDefaults()
@@ -57,6 +57,6 @@ class OrderByTest extends TestCase
             'dimension'      => 'name',
             'direction'      => 'ascending',
             'dimensionOrder' => 'lexicographic',
-        ], $orderBy->getOrderBy());
+        ], $orderBy->toArray());
     }
 }

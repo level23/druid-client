@@ -60,7 +60,7 @@ class IntervalFilter implements FilterInterface
      *
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         $result = [
             'type'      => 'interval',
@@ -69,7 +69,7 @@ class IntervalFilter implements FilterInterface
         ];
 
         if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->getExtractionFunction();
+            $result['extractionFn'] = $this->extractionFunction->toArray();
         }
 
         return $result;

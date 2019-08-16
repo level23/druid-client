@@ -25,11 +25,11 @@ class NotHavingFilter implements HavingFilterInterface
      *
      * @return array
      */
-    public function getHavingFilter(): array
+    public function toArray(): array
     {
         return [
             'type'       => 'not',
-            'havingSpec' => $this->filter->getHavingFilter(),
+            'havingSpec' => $this->filter->toArray(),
         ];
     }
 }
