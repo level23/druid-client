@@ -238,11 +238,24 @@ class QueryBuilder
     protected function buildTopNQuery(array $context = []): TopNQuery
     {
         if (!$this->limit instanceof LimitInterface) {
-            throw new InvalidArgumentException('You should specify a limit to make use of a top query');
+            throw new InvalidArgumentException(
+                'You should specify a limit to make use of a top query'
+            );
         }
 
         $orderByCollection = $this->limit->getOrderByCollection();
-        $orderBy           = $orderByCollection[0];
+        if (count($orderByCollection) == 0) {
+            throw new InvalidArgumentException(
+                'You should specify a an order by direction to make use of a top query'
+            );
+        }
+
+        /**
+         * @var \Level23\Druid\OrderBy\OrderBy $orderBy
+         */
+        $orderBy = $orderByCollection[0];
+
+        $metric = $orderBy->getDimension();
 
         /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
         $query = new TopNQuery(
@@ -250,7 +263,7 @@ class QueryBuilder
             new IntervalCollection(...$this->intervals),
             $this->dimensions[0],
             $this->limit->getLimit(),
-            $orderBy->getDimension(),
+            $metric,
             $this->granularity
         );
 
