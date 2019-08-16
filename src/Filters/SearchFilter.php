@@ -62,7 +62,7 @@ class SearchFilter implements FilterInterface
      *
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         if (is_array($this->value)) {
             $query = [
@@ -85,7 +85,7 @@ class SearchFilter implements FilterInterface
         ];
 
         if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->getExtractionFunction();
+            $result['extractionFn'] = $this->extractionFunction->toArray();
         }
 
         return $result;

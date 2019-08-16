@@ -110,7 +110,7 @@ class GroupByQuery implements QueryInterface
      *
      * @return array
      */
-    public function getQuery(): array
+    public function toArray(): array
     {
         $query = [
             'queryType'   => 'groupBy',
@@ -121,7 +121,7 @@ class GroupByQuery implements QueryInterface
         ];
 
         if ($this->filter) {
-            $query['filter'] = $this->filter->getFilter();
+            $query['filter'] = $this->filter->toArray();
         }
 
         if ($this->aggregations) {
@@ -137,15 +137,15 @@ class GroupByQuery implements QueryInterface
         }
 
         if ($this->having) {
-            $query['having'] = $this->having->getHavingFilter();
+            $query['having'] = $this->having->toArray();
         }
 
         if ($this->context) {
-            $query['context'] = $this->context->getContext();
+            $query['context'] = $this->context->toArray();
         }
 
         if ($this->limit) {
-            $query['limitSpec'] = $this->limit->getLimitForQuery();
+            $query['limitSpec'] = $this->limit->toArray();
         }
 
         // @todo: subtotalsSpec
@@ -174,10 +174,7 @@ class GroupByQuery implements QueryInterface
      */
     public function setAggregations($aggregations)
     {
-        if (is_array($aggregations)) {
-            $aggregations = AggregationCollection::make($aggregations);
-        }
-        $this->aggregations = $aggregations;
+        $this->aggregations = is_array($aggregations) ? new AggregationCollection(...$aggregations) : $aggregations;
     }
 
     /**

@@ -25,10 +25,10 @@ class AndHavingFilterTest extends TestCase
         $this->assertEquals([
             'type'        => 'and',
             'havingSpecs' => [
-                $filter1->getHavingFilter(),
-                $filter2->getHavingFilter(),
-                $filter3->getHavingFilter(),
+                $filter1->toArray(),
+                $filter2->toArray(),
+                $filter3->toArray(),
             ],
-        ], $filter->getHavingFilter());
+        ], $filter->toArray());
     }
 }

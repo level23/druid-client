@@ -12,7 +12,7 @@ interface QueryInterface
      *
      * @return array
      */
-    public function getQuery(): array;
+    public function toArray(): array;
 
     /**
      * Set the query context

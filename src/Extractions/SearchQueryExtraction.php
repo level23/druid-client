@@ -38,7 +38,7 @@ class SearchQueryExtraction implements ExtractionInterface
      *
      * @return array
      */
-    public function getExtractionFunction(): array
+    public function toArray(): array
     {
         if (is_array($this->valueOrValues)) {
             $response = [

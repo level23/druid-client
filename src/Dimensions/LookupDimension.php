@@ -21,45 +21,35 @@ class LookupDimension implements DimensionInterface
     protected $registeredLookupFunction;
 
     /**
-     * @var bool
+     * @var bool|string
      */
-    protected $retainMissingValue;
-
-    /**
-     * @var string|null
-     */
-    protected $replaceMissingValueWith;
+    protected $replaceMissingValue;
 
     /**
      * DefaultDimension constructor.
      *
      * A property of retainMissingValue and replaceMissingValueWith can be specified at query
      * time to hint how to handle missing values. Setting replaceMissingValueWith to "" has the
-     * same effect as setting it to null or omitting the property. Setting retainMissingValue to true
-     * will use the dimension's original value if it is not found in the lookup. The default values are
-     * replaceMissingValueWith = null and retainMissingValue = false which causes missing values to be
-     * treated as missing.
-     *
-     * It is illegal to set retainMissingValue = true and also specify a replaceMissingValueWith.
+     * same effect as setting it to null or omitting the property. Setting replaceMissingValue to
+     * true will use the dimension's original value if it is not found in the lookup. If you set
+     * it to a string it wil replace the missing value with that string. It defaults to false
+     * which will ignore the value.
      *
      * @param string      $dimension
      * @param string      $registeredLookupFunction
      * @param string      $outputName
-     * @param bool        $retainMissingValue
-     * @param string|null $replaceMissingValueWith
+     * @param bool|string $replaceMissingValue
      */
     public function __construct(
         string $dimension,
         string $registeredLookupFunction,
         string $outputName = '',
-        bool $retainMissingValue = false,
-        ?string $replaceMissingValueWith = null
+        $replaceMissingValue = false
     ) {
         $this->dimension                = $dimension;
         $this->outputName               = $outputName ?: $dimension;
         $this->registeredLookupFunction = $registeredLookupFunction;
-        $this->retainMissingValue       = $retainMissingValue;
-        $this->replaceMissingValueWith  = $replaceMissingValueWith;
+        $this->replaceMissingValue      = $replaceMissingValue;
     }
 
     /**
@@ -67,7 +57,7 @@ class LookupDimension implements DimensionInterface
      *
      * @return array
      */
-    public function getDimensionForQuery(): array
+    public function toArray(): array
     {
         $result = [
             'type'       => 'lookup',
@@ -76,10 +66,10 @@ class LookupDimension implements DimensionInterface
             'name'       => $this->registeredLookupFunction,
         ];
 
-        if (!empty($this->replaceMissingValueWith)) {
-            $result['replaceMissingValueWith'] = $this->replaceMissingValueWith;
-        } elseif ($this->retainMissingValue) {
-            $result['retainMissingValue'] = $this->retainMissingValue;
+        if ($this->replaceMissingValue === true) {
+            $result['retainMissingValue'] = true;
+        } elseif (is_string($this->replaceMissingValue)) {
+            $result['replaceMissingValueWith'] = $this->replaceMissingValue;
         }
 
         return $result;

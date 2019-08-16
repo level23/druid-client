@@ -31,12 +31,11 @@ class FirstAggregatorTest extends TestCase
         }
 
         $aggregator = new FirstAggregator('abc', 'dim123', $type);
+
         $this->assertEquals([
             'type'      => $type . 'First',
             'name'      => 'dim123',
             'fieldName' => 'abc',
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals('dim123', $aggregator->getOutputName());
+        ], $aggregator->toArray());
     }
 }

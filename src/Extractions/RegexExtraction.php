@@ -50,7 +50,7 @@ class RegexExtraction implements ExtractionInterface
      *
      * @return array
      */
-    public function getExtractionFunction(): array
+    public function toArray(): array
     {
         return [
             'type'                    => 'regex',

@@ -37,12 +37,12 @@ class LikeFilterTest extends TestCase
 
         if ($useExtractionFunction) {
             $filter                   = new LikeFilter('name', 'D%', '#', $extractionFunction);
-            $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
+            $expected['extractionFn'] = $extractionFunction->toArray();
         } else {
             $filter = new LikeFilter('name', 'D%', '#');
         }
 
-        $this->assertEquals($expected, $filter->getFilter());
+        $this->assertEquals($expected, $filter->toArray());
     }
 
     public function testEscapeDefaultCharacter()
@@ -54,6 +54,6 @@ class LikeFilterTest extends TestCase
             'dimension' => 'name',
             'pattern'   => 'D%',
             'escape'    => '\\',
-        ], $filter->getFilter());
+        ], $filter->toArray());
     }
 }

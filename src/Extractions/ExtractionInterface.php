@@ -9,5 +9,5 @@ interface ExtractionInterface
      * Return the Extraction Function so it can be used in a druid query.
      * @return array
      */
-    public function getExtractionFunction(): array;
+    public function toArray(): array;
 }

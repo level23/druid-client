@@ -17,7 +17,7 @@ class NotHavingFilterTest extends TestCase
 
         $this->assertEquals([
             'type'       => 'not',
-            'havingSpec' => $lessFilter->getHavingFilter(),
-        ], $filter->getHavingFilter());
+            'havingSpec' => $lessFilter->toArray(),
+        ], $filter->toArray());
     }
 }

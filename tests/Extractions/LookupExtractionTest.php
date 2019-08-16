@@ -71,7 +71,7 @@ class LookupExtractionTest extends TestCase
             $expected['retainMissingValue'] = $retainMissingValue;
         }
 
-        $this->assertEquals($expected, $extr->getExtractionFunction());
+        $this->assertEquals($expected, $extr->toArray());
     }
 
     public function testExtractionFunctionDefaults()
@@ -84,6 +84,6 @@ class LookupExtractionTest extends TestCase
             'retainMissingValue' => true,
         ];
 
-        $this->assertEquals($expected, $extr->getExtractionFunction());
+        $this->assertEquals($expected, $extr->toArray());
     }
 }

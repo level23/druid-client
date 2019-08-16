@@ -33,12 +33,12 @@ class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
      *
      * @return array
      */
-    public function getFilter(): array
+    public function toArray(): array
     {
         $fields = [];
 
         foreach ($this->filters as $filter) {
-            $fields[] = $filter->getFilter();
+            $fields[] = $filter->toArray();
         }
 
         return [

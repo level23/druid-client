@@ -21,7 +21,7 @@ class IntervalFilterTest extends TestCase
             'type'      => 'interval',
             'dimension' => '__time',
             'intervals' => $intervals,
-        ], $filter->getFilter());
+        ], $filter->toArray());
     }
 
     public function testExtractionFunction()
@@ -41,7 +41,7 @@ class IntervalFilterTest extends TestCase
             'type'         => 'interval',
             'dimension'    => 'member_id',
             'intervals'    => $intervals,
-            'extractionFn' => $extractionFunction->getExtractionFunction(),
-        ], $filter->getFilter());
+            'extractionFn' => $extractionFunction->toArray(),
+        ], $filter->toArray());
     }
 }

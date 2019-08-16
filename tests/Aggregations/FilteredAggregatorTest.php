@@ -12,16 +12,23 @@ class FilteredAggregatorTest extends TestCase
 {
     public function testAggregator()
     {
-        $filter = new InFilter('member_id', [1, 2, 6, 112]);
-        $sum    = new SumAggregator('calls', 'total_calls', DataType::LONG());
+        $aggregator = new FilteredAggregator(
+            new InFilter('member_id', [1, 2, 6, 112]),
+            new SumAggregator('calls', 'total_calls', DataType::LONG())
+        );
 
-        $aggregator = new FilteredAggregator($filter, $sum);
         $this->assertEquals([
             'type'       => 'filtered',
-            'filter'     => $filter->getFilter(),
-            'aggregator' => $sum->getAggregator(),
-        ], $aggregator->getAggregator());
-
-        $this->assertEquals('total_calls', $aggregator->getOutputName());
+            'filter'     => [
+                'type'      => 'in',
+                'dimension' => 'member_id',
+                'values'    => [1, 2, 6, 112],
+            ],
+            'aggregator' => [
+                'type'      => 'longSum',
+                'name'      => 'total_calls',
+                'fieldName' => 'calls',
+            ],
+        ], $aggregator->toArray());
     }
 }

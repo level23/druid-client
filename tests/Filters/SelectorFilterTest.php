@@ -36,11 +36,11 @@ class SelectorFilterTest extends TestCase
 
         if ($useExtractionFunction) {
             $filter                   = new SelectorFilter('name', 'Piet', $extractionFunction);
-            $expected['extractionFn'] = $extractionFunction->getExtractionFunction();
+            $expected['extractionFn'] = $extractionFunction->toArray();
         } else {
             $filter = new SelectorFilter('name', 'Piet');
         }
 
-        $this->assertEquals($expected, $filter->getFilter());
+        $this->assertEquals($expected, $filter->toArray());
     }
 }

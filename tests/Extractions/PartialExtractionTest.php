@@ -18,6 +18,6 @@ class PartialExtractionTest extends TestCase
             'expr' => $regex,
         ];
 
-        $this->assertEquals($expected, $extractionFunction->getExtractionFunction());
+        $this->assertEquals($expected, $extractionFunction->toArray());
     }
 }

@@ -12,7 +12,7 @@ $client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
 $response = $client->query('traffic-hits')
     ->interval(new DateTime("now - 1 day"), new DateTime())
-    ->lookup('operator_title', 'mccmnc', 'carrier', true, 'Unknown')
+    ->lookup('operator_title', 'mccmnc', 'carrier', 'Unknown')
     ->extractTimeFormat('__time', 'yyyy-MM-dd HH:00:00', 'datetime')
     ->select('browser')
     ->select('country_iso', 'Country')

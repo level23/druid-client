@@ -107,7 +107,7 @@ class HasDimensionsTest extends TestCase
 
         $this->assertInstanceOf(DimensionInterface::class, $dimension);
 
-        $this->assertEquals($expectedResult, $dimension->getDimensionForQuery());
+        $this->assertEquals($expectedResult, $dimension->toArray());
     }
 
     /**
@@ -195,7 +195,7 @@ class HasDimensionsTest extends TestCase
             })
             ->once();
 
-        $response = $this->builder->lookup('full_name', 'name', 'display_name', true, 'John Doe');
+        $response = $this->builder->lookup('full_name', 'name', 'display_name', 'John Doe');
 
         $this->assertEquals($this->builder, $response);
     }

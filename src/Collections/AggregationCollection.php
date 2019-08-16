@@ -31,31 +31,14 @@ class AggregationCollection extends BaseCollection
     }
 
     /**
-     * Make a aggregation collection of the given array.
-     * We expect that the items in the array are objects of the AggregatorInterface
-     *
-     * @param array $aggregations
-     *
-     * @return \Level23\Druid\Collections\AggregationCollection
-     */
-    public static function make(array $aggregations): AggregationCollection
-    {
-        return new AggregationCollection(...$aggregations);
-    }
-
-    /**
      * Return an array representation of our items
      *
      * @return array
      */
     public function toArray(): array
     {
-        $result = [];
-
-        foreach ($this->items as $aggregator) {
-            $result[] = $aggregator->getAggregator();
-        }
-
-        return $result;
+        return array_map(function(AggregatorInterface $item) {
+            return $item->toArray();
+        }, $this->items);
     }
 }
