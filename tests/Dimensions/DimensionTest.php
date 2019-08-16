@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Dimensions;
 
+use InvalidArgumentException;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\RegexExtraction;
@@ -43,7 +44,7 @@ class DimensionTest extends TestCase
         bool $expectException
     ) {
         if ($expectException) {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
         }
 
         if (!empty($type) || $extractionFunction !== null) {
