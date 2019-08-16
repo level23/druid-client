@@ -23,27 +23,6 @@ class AggregationCollection extends BaseCollection
     }
 
     /**
-     * @param \Level23\Druid\Aggregations\AggregatorInterface $aggregator
-     */
-    public function add(AggregatorInterface $aggregator)
-    {
-        $this->items[] = $aggregator;
-    }
-
-    /**
-     * Make a aggregation collection of the given array.
-     * We expect that the items in the array are objects of the AggregatorInterface
-     *
-     * @param array $aggregations
-     *
-     * @return \Level23\Druid\Collections\AggregationCollection
-     */
-    public static function make(array $aggregations): AggregationCollection
-    {
-        return new AggregationCollection(...$aggregations);
-    }
-
-    /**
      * Return an array representation of our items
      *
      * @return array

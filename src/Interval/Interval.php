@@ -37,7 +37,7 @@ class Interval implements IntervalInterface
     /**
      * @return \DateTime
      */
-    public function getStart(): \DateTime
+    public function getStart(): DateTime
     {
         return $this->start;
     }
@@ -45,7 +45,7 @@ class Interval implements IntervalInterface
     /**
      * @return \DateTime
      */
-    public function getStop(): \DateTime
+    public function getStop(): DateTime
     {
         return $this->stop;
     }
