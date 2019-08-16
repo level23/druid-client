@@ -20,7 +20,7 @@ ini_set('display_errors', 'On');
 include __DIR__ . '/../vendor/autoload.php';
 
 use Level23\Druid\DruidClient;
-use Level23\Druid\FilterQueryBuilder;
+use Level23\Druid\FilterBuilder;
 
 $client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
@@ -38,7 +38,7 @@ $response = $client->query('traffic-hits')
     ->where('hits', '>', 1000)
     ->where('browser', 'Yandex.Browser')
     ->orWhere('browser_version', '17.4.0')
-    ->orWhere(function (FilterQueryBuilder $builder) {
+    ->orWhere(function (FilterBuilder $builder) {
         $builder->where('browser_version', '17.5.0');
         $builder->where('browser_version', '17.6.0');
     })
