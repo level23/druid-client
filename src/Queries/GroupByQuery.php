@@ -175,7 +175,7 @@ class GroupByQuery implements QueryInterface
     public function setAggregations($aggregations)
     {
         if (is_array($aggregations)) {
-            $aggregations = AggregationCollection::make($aggregations);
+            $aggregations = new AggregationCollection(...$aggregations);
         }
         $this->aggregations = $aggregations;
     }
@@ -194,7 +194,7 @@ class GroupByQuery implements QueryInterface
     public function setPostAggregations($postAggregations)
     {
         if (is_array($postAggregations)) {
-            $postAggregations = PostAggregationCollection::make($postAggregations);
+            $postAggregations = new PostAggregationCollection(...$postAggregations);
         }
 
         $this->postAggregations = $postAggregations;
