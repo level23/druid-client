@@ -2,6 +2,7 @@
 
 namespace tests\Level23\Druid\Context;
 
+use InvalidArgumentException;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
@@ -83,7 +84,7 @@ class ContextTest extends TestCase
 
     public function testNonExistingProperty()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('was not found in the');
 
         new GroupByQueryContext(['prio' => 1]);
@@ -91,7 +92,7 @@ class ContextTest extends TestCase
 
     public function testNonScalarValue()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid value');
         new GroupByQueryContext(['priority' => ['oops']]);
     }
