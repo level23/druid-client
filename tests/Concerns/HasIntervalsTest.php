@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Concerns;
 
 use DateTime;
+use Exception;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Exceptions\DruidException;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\QueryBuilder;
 use Mockery;
@@ -31,7 +31,7 @@ class HasIntervalsTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\DruidException
+     * @throws \Exception
      */
     public function testIntervals()
     {
@@ -46,7 +46,7 @@ class HasIntervalsTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\DruidException
+     * @throws \Exception
      */
     public function testTimestamps()
     {
@@ -61,11 +61,14 @@ class HasIntervalsTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\DruidException
+     * @throws \Exception
      */
     public function testExceptionInCaseOfInvalidDate()
     {
-        $this->expectException(DruidException::class);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage(
+            'DateTime::__construct(): Failed to parse time string (hoi) at position 0 (h): The timezone could not be found in the database'
+        );
 
         $this->builder->interval("hoi", "doei");
     }

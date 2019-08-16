@@ -73,14 +73,13 @@ class QueryBuilder
      * @param array $context
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\DruidException
-     * @throws \Level23\Druid\Exceptions\DruidQueryException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function execute(array $context = []): array
     {
-        $query = $this->buildQueryAutomatic($context);
+        $query = $this->buildQuery($context);
 
-        $rawResponse = $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
     }
@@ -94,7 +93,7 @@ class QueryBuilder
      */
     public function toJson(array $context = []): string
     {
-        $query = $this->buildQueryAutomatic($context);
+        $query = $this->buildQuery($context);
 
         $json = json_encode($query->getQuery(), JSON_PRETTY_PRINT);
         if ($json === false) {
@@ -113,7 +112,7 @@ class QueryBuilder
      */
     public function toArray(array $context = []): array
     {
-        $query = $this->buildQueryAutomatic($context);
+        $query = $this->buildQuery($context);
 
         return $query->getQuery();
     }
@@ -124,14 +123,13 @@ class QueryBuilder
      * @param array $context
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\DruidException
-     * @throws \Level23\Druid\Exceptions\DruidQueryException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function timeseries(array $context = [])
     {
         $query = $this->buildTimeSeriesQuery($context);
 
-        $rawResponse = $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
     }
@@ -142,14 +140,13 @@ class QueryBuilder
      * @param array $context
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\DruidException
-     * @throws \Level23\Druid\Exceptions\DruidQueryException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function topN(array $context = [])
     {
         $query = $this->buildTopNQuery($context);
 
-        $rawResponse = $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
     }
@@ -160,14 +157,13 @@ class QueryBuilder
      * @param array $context
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\DruidException
-     * @throws \Level23\Druid\Exceptions\DruidQueryException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function groupBy(array $context = [])
     {
         $query = $this->buildGroupByQuery($context);
 
-        $rawResponse = $this->client->executeDruidQuery($query);
+        $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
     }
@@ -214,15 +210,21 @@ class QueryBuilder
             $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
         }
 
-        if ($this->limit) {
-            $orderByCollection = $this->limit->getOrderByCollection();
-            if (count($orderByCollection) == 1) {
-                /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
-                $orderBy = $orderByCollection[0];
-                if ($orderBy->getDimension() == '__time' && $orderBy->getDirection() === OrderByDirection::DESC()) {
-                    $query->setDescending(true);
-                }
-            }
+        if(!$this->limit) {
+            return  $query;
+        }
+
+        $orderByCollection = $this->limit->getOrderByCollection();
+
+        if(count($orderByCollection) != 1) {
+            return $query;
+        }
+
+        /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
+        $orderBy = $orderByCollection[0];
+
+        if ($orderBy->getDimension() == '__time' && $orderBy->getDirection() === OrderByDirection::DESC()) {
+            $query->setDescending(true);
         }
 
         return $query;
@@ -235,7 +237,7 @@ class QueryBuilder
      *
      * @return TopNQuery
      */
-    public function buildTopNQuery(array $context = []): TopNQuery
+    protected function buildTopNQuery(array $context = []): TopNQuery
     {
         if (!$this->limit instanceof LimitInterface) {
             throw new InvalidArgumentException('You should specify a limit to make use of a top query');
@@ -322,39 +324,56 @@ class QueryBuilder
      *
      * @return \Level23\Druid\Queries\QueryInterface
      */
-    protected function buildQueryAutomatic(array $context = []): QueryInterface
+    protected function buildQuery(array $context = []): QueryInterface
     {
-        $query = null;
-
         /**
          * If we only have "grouped" by __time, then we can use a time series query.
          * This is preferred, because it's a lot faster then doing a group by query.
          */
-        if (count($this->dimensions) == 1) {
-            $dimension = $this->dimensions[0];
-            // did we only retrieve the time dimension?
-            if ($dimension->getDimension() == '__time'
-                && $dimension instanceof Dimension
-                && $dimension->getExtractionFunction() === null
-            ) {
-                $query = $this->buildTimeSeriesQuery($context);
-            } // Check if we can use a topN query.
-            elseif (
-                $this->limit
-                && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT
-                && count($this->limit->getOrderByCollection()) == 1
-            ) {
-                // We can use a topN!
-                $query = $this->buildTopNQuery($context);
-            }
+        if($this->isTimeSeriesQuery()) {
+            return $this->buildTimeSeriesQuery($context);
         }
 
-        if (!$query) {
-            $query = $this->buildGroupByQuery($context);
+        // Check if we can use a topN query.
+        if($this->isTopNQuery()) {
+            return $this->buildTopNQuery($context);
         }
 
-        return $query;
+        return $this->buildGroupByQuery($context);
     }
+
+    /**
+     * Determine if the current query is a timeseries query
+     *
+     * @return bool
+     */
+    protected function isTimeSeriesQuery()
+    {
+        if(count($this->dimensions) != 1) {
+            return false;
+        }
+
+        return $this->dimensions[0]->getDimension() == '__time'
+            && $this->dimensions[0] instanceof Dimension
+            && $this->dimensions[0]->getExtractionFunction() === null;
+    }
+
+    /**
+     * Determine if the current query is topN query
+     *
+     * @return bool
+     */
+    protected function isTopNQuery()
+    {
+        if(count($this->dimensions) != 1) {
+            return false;
+        }
+
+        return $this->limit
+            && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT
+            && count($this->limit->getOrderByCollection()) == 1;
+    }
+
     //</editor-fold>
 }
 
