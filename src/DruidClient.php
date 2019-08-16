@@ -3,178 +3,46 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
-use Exception;
+use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Exception\RequestException;
-use Level23\Druid\Exceptions\DruidCommunicationException;
-use Level23\Druid\Exceptions\DruidException;
-use Level23\Druid\Exceptions\DruidQueryException;
+use Psr\Http\Message\ResponseInterface;
 use Level23\Druid\Queries\QueryInterface;
+use GuzzleHttp\Exception\ServerException;
+use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClient
 {
     /**
-     * @var \GuzzleHttp\Client
+     * @var GuzzleClient
      */
     protected $client;
 
     /**
-     * @var callable|null
+     * @var LoggerInterface|null
      */
-    protected $logHandler;
+    protected $logger = null;
 
     /**
      * @var array
      */
     protected $config = [
-        /**
-         * domain + optional port. Don't add the api path like "/druid/v2"
-         */
-        'broker_url'      => '',
-
-        /**
-         * domain + optional port. Don't add the api path like "/druid/coordinator/v1"
-         */
-        'coordinator_url' => '',
-
-        /**
-         * domain + optional port. Don't add the api path like "/druid/indexer/v1"
-         */
-        'overlord_url'    => '',
-
-        /**
-         * The number of times we will try to do a retry in case of a failure.
-         */
-        'retries'         => 2,
-
-        /**
-         * Optional give alternative options for our guzzle connection to druid, like timeouts, headers, authorisation, etc.
-         */
-        'guzzle_options'  => [],
-
+        'broker_url'      => '', // domain + optional port. Don't add the api path like "/druid/v2"
+        'coordinator_url' => '', // domain + optional port. Don't add the api path like "/druid/coordinator/v1"
+        'overlord_url'    => '', // domain + optional port. Don't add the api path like "/druid/indexer/v1"
+        'retries'         => 2, // The number of times we will try to do a retry in case of a failure.
     ];
 
     /**
      * DruidService constructor.
      *
-     * @param array         $config The configuration for this client.
-     * @param callable|null $logHandler
+     * @param array                   $config The configuration for this client.
+     * @param \GuzzleHttp\Client|null $client
      */
-    public function __construct(array $config, callable $logHandler = null)
+    public function __construct(array $config, GuzzleClient $client = null)
     {
-        $this->client     = new GuzzleClient();
-        $this->logHandler = $logHandler;
-        $this->config     = array_merge($this->config, $config);
-    }
+        $this->config = array_merge($this->config, $config);
 
-    /**
-     * Set a custom guzzle client which should be used.
-     *
-     * @param \GuzzleHttp\Client $client
-     */
-    public function setGuzzleClient(GuzzleClient $client)
-    {
-        $this->client = $client;
-    }
-
-    /**
-     * Return the config options.
-     *
-     * @return array
-     */
-    public function getConfig(): array
-    {
-        return $this->config;
-    }
-
-    /**
-     * Log a message
-     *
-     * @param string $logMessage
-     */
-    protected function log(string $logMessage)
-    {
-        if ($this->logHandler) {
-            call_user_func($this->logHandler, $logMessage);
-        }
-    }
-
-    /**
-     * Execute a druid query and return the response.
-     *
-     * @param \Level23\Druid\Queries\QueryInterface $query
-     *
-     * @return array
-     * @throws \Level23\Druid\Exceptions\DruidException
-     * @throws \Level23\Druid\Exceptions\DruidQueryException
-     */
-    public function executeDruidQuery(QueryInterface $query)
-    {
-        # Retry
-        try {
-            $jsonQuery = json_encode($query->getQuery(), JSON_PRETTY_PRINT);
-
-            $this->log(
-                "Executing druid query:" . $jsonQuery
-            );
-
-            $url = $this->config['broker_url'] . '/druid/v2';
-
-            // these are our defaults.
-            $options = [
-                'timeout'         => 60,
-                'allow_redirects' => true,
-                'connect_timeout' => 10,
-
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'User-Agent'   => 'level23 druid client package',
-                ],
-            ];
-
-            $options = array_merge($options, $this->config['guzzle_options']);
-
-            $options['body'] = $jsonQuery;
-
-            try {
-                $response = $this->client->post($url, $options);
-            } catch (BadResponseException $badResponseException) {
-                throw new DruidCommunicationException(
-                    $badResponseException->getMessage(),
-                    0,
-                    $badResponseException
-                );
-            } catch (RequestException $requestException) {
-                throw new DruidCommunicationException(
-                    $requestException->getMessage(),
-                    0,
-                    $requestException
-                );
-            }
-
-            if ($response->getStatusCode() != 200) {
-                throw new DruidQueryException(
-                    $query,
-                    'Error, failed to do a druid query due to incorrect HTTP code ' .
-                    $response->getStatusCode() . '. Response: ' . $response->getBody()->getContents()
-                );
-            }
-        } catch (Exception $exception) {
-            if ($exception instanceof DruidException) {
-                throw $exception;
-            } else {
-                throw new DruidQueryException($query, $exception->getMessage(), 0, $exception);
-            }
-        }
-
-        $result = json_decode($response->getBody()->getContents(), true) ?: [];
-
-        $this->log(
-            'Received druid result: ' . json_encode($result, JSON_PRETTY_PRINT)
-        );
-
-        return $result;
+        $this->client = $client ?: $this->makeGuzzleClient();
     }
 
     /**
@@ -188,5 +56,132 @@ class DruidClient
     public function query(string $dataSource, $granularity = 'all'): QueryBuilder
     {
         return new QueryBuilder($this, $dataSource, $granularity);
+    }
+
+    /**
+     * Execute a druid query and return the response.
+     *
+     * @param \Level23\Druid\Queries\QueryInterface $druidQuery
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function executeQuery(QueryInterface $druidQuery)
+    {
+        $query = $druidQuery->getQuery();
+
+        $this->log('Executing druid query', ['query' => $query]);
+
+        $result = $this->executeRawQuery($query);
+
+        $this->log('Received druid response', ['response' => $result]);
+
+        return $result;
+    }
+
+    /**
+     * Execute a raw druid query and return the response.
+     *
+     * @param array $query
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function executeRawQuery(array $query): array
+    {
+        try {
+            $response = $this->client->post('druid/v2', [
+                'json' => $query,
+            ]);
+
+            return $this->parseResponse($response);
+        } catch (ServerException $exception) {
+
+            $error = $this->parseResponse($exception->getResponse());
+
+            // When its not a formatted error response from druid we rethrow the original exception
+            if (!isset($error['error'], $error['errorMessage'])) {
+                throw $exception;
+            }
+
+            throw new QueryResponseException(
+                $query,
+                sprintf('%s: %s', $error['error'], $error['errorMessage']),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     *
+     * @return DruidClient
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
+    }
+
+    /**
+     * Set a custom guzzle client which should be used.
+     *
+     * @param GuzzleClient $client
+     */
+    public function setGuzzleClient(GuzzleClient $client)
+    {
+        $this->client = $client;
+    }
+
+    /**
+     * Get the value of the config key
+     *
+     * @param      $key
+     * @param null $default
+     *
+     * @return mixed|null
+     */
+    protected function config($key, $default = null)
+    {
+        return $this->config[$key] ?? $default;
+    }
+
+    /**
+     * @return \GuzzleHttp\Client
+     */
+    protected function makeGuzzleClient(): GuzzleClient
+    {
+        return new GuzzleClient([
+            'base_uri'        => $this->config('broker_url'),
+            'timeout'         => 60,
+            'connect_timeout' => 10,
+            'headers'         => [
+                'User-Agent' => 'level23 druid client package',
+            ],
+        ]);
+    }
+
+    /**
+     * @param \Psr\Http\Message\ResponseInterface $response
+     *
+     * @return array
+     */
+    protected function parseResponse(ResponseInterface $response)
+    {
+        return \GuzzleHttp\json_decode($response->getBody()->getContents(), true) ?: [];
+    }
+
+    /**
+     * Log a message
+     *
+     * @param string $message
+     * @param array  $context
+     */
+    protected function log(string $message, array $context = [])
+    {
+        if ($this->logger) {
+            $this->logger->info($message, $context);
+        }
     }
 }

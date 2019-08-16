@@ -13,11 +13,15 @@
     "myclabs/php-enum": "^1.7"
   },
   "require-dev": {
+    "illuminate/support": "~5.0",
     "mockery/mockery": "^1.2",
     "phpstan/phpstan": "^0.11.9",
     "phpstan/phpstan-mockery": "^0.11.2",
     "phpunit/phpunit": "^8.2",
     "timeweb/phpstan-enum": "^2.2"
+  },
+  "suggest": {
+    "psr/log": "Required for using the log handler"
   },
   "autoload": {
     "psr-4": {
@@ -35,5 +39,15 @@
     "optimize-autoloader": true
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Level23\\Druid\\DruidServiceProvider"
+      ],
+      "aliases": {
+        "Druid": "Level23\\Druid\\Facades\\Druid"
+      }
+    }
+  },
 }
