@@ -13,19 +13,6 @@ class PostAggregationCollection extends BaseCollection
     }
 
     /**
-     * Make a post-aggregation collection of the given array.
-     * We expect that the items in the array are objects of the PostAggregatorInterface
-     *
-     * @param array $postAggregations
-     *
-     * @return \Level23\Druid\Collections\PostAggregationCollection
-     */
-    public static function make(array $postAggregations): PostAggregationCollection
-    {
-        return new PostAggregationCollection(...$postAggregations);
-    }
-
-    /**
      * @return array
      */
     public function toArray(): array
