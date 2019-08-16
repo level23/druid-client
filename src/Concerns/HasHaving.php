@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
+use Level23\Druid\HavingBuilder;
 use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
@@ -17,7 +18,6 @@ use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\NotHavingFilter;
 use Level23\Druid\HavingFilters\OrHavingFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
-use Level23\Druid\HavingQueryBuilder;
 
 trait HasHaving
 {
@@ -81,7 +81,7 @@ trait HasHaving
         } elseif ($havingOrMetricOrClosure instanceof Closure) {
 
             // lets create a bew builder object where the user can mess around with
-            $obj = new HavingQueryBuilder();
+            $obj = new HavingBuilder();
 
             // call the user function
             call_user_func($havingOrMetricOrClosure, $obj);
