@@ -9,18 +9,10 @@ use tests\TestCase;
 
 class JavascriptFilterTest extends TestCase
 {
-    public function dataProvider(): array
-    {
-        return [
-            [true],
-            [false],
-        ];
-    }
-
     /**
-     * @dataProvider dataProvider
-     *
      * @param bool $useExtractionFunction
+     * @testWith [true]
+     *           [false]
      */
     public function testFilter(bool $useExtractionFunction)
     {
