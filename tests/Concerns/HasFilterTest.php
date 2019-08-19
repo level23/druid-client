@@ -13,6 +13,7 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\InFilter;
+use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\NotFilter;
@@ -20,6 +21,7 @@ use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Filters\SelectorFilter;
+use Level23\Druid\Interval\Interval;
 use Level23\Druid\QueryBuilder;
 use Mockery;
 use tests\TestCase;
@@ -79,7 +81,6 @@ class HasFilterTest extends TestCase
 
         return Mockery::mock($builder);
     }
-
 
     /**
      * @dataProvider        whereDataProvider
@@ -240,6 +241,30 @@ class HasFilterTest extends TestCase
             ->andReturn($this->builder);
 
         $response = $this->builder->whereIn('country_iso', ['nl', 'be']);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * @throws \Exception
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereInterval()
+    {
+        $interval = new Interval('now', 'tomorrow');
+
+        $filter = $this->getFilterMock(IntervalFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->andReturnUsing(function ($dimension, $intervals, $extraction) use ($interval) {
+                $this->assertEquals('__time', $dimension);
+                $this->assertIsArray($intervals);
+                $this->assertEquals($interval, $intervals[0]);
+                $this->assertNull($extraction);
+            });
+
+        $response = $this->builder->whereInterval('__time', $interval->getStart(), $interval->getStop(), null);
 
         $this->assertEquals($this->builder, $response);
     }

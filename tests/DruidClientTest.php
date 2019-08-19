@@ -173,7 +173,7 @@ class DruidClientTest extends TestCase
         $guzzle->shouldReceive('post')
             ->once()
             ->with(
-                'druid/v2',
+                'http://test.dev/druid/v2',
                 new IsArray()
             )
             ->andReturnUsing(function ($url, $options) use ($responseFunction, $queryArray) {
