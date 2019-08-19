@@ -11,6 +11,7 @@ use Level23\Druid\ExtractionBuilder;
 use Level23\Druid\FilterBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
+use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Filters\LikeFilter;
@@ -65,6 +66,22 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * @param string $class
+     *
+     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected function getFilterMock(string $class)
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName($class);
+        $builder->addTarget(FilterInterface::class);
+
+        return Mockery::mock($builder);
+    }
+
+
+    /**
      * @dataProvider        whereDataProvider
      *
      * @param string      $field
@@ -90,11 +107,11 @@ class HasFilterTest extends TestCase
             case '<>':
             case '!=':
                 $class = NotFilter::class;
-                Mockery::mock('overload:' . NotFilter::class)
+                $this->getFilterMock(NotFilter::class)
                     ->shouldReceive('__construct')
                     ->once();
 
-                Mockery::mock('overload:' . SelectorFilter::class)
+                $this->getFilterMock(SelectorFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingValue, null)
                     ->once();
@@ -106,7 +123,7 @@ class HasFilterTest extends TestCase
             case '<':
             case'<=':
                 $class = BoundFilter::class;
-                Mockery::mock('overload:' . BoundFilter::class)
+                $this->getFilterMock(BoundFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingOperator, (string)$testingValue, null, null)
                     ->once();
@@ -114,7 +131,7 @@ class HasFilterTest extends TestCase
 
             case 'like':
                 $class = LikeFilter::class;
-                Mockery::mock('overload:' . LikeFilter::class)
+                $this->getFilterMock(LikeFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, (string)$testingValue, '\\', null)
                     ->once();
@@ -122,7 +139,7 @@ class HasFilterTest extends TestCase
 
             case 'search':
                 $class = SearchFilter::class;
-                Mockery::mock('overload:' . SearchFilter::class)
+                $this->getFilterMock(SearchFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingValue, false, null)
                     ->once();
@@ -143,7 +160,7 @@ class HasFilterTest extends TestCase
 
                 $class = $types[$testingOperator];
 
-                Mockery::mock('overload:' . $class)
+                $this->getFilterMock($class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingValue, null)
                     ->once();
@@ -213,7 +230,7 @@ class HasFilterTest extends TestCase
      */
     public function testWhereIn()
     {
-        $in = Mockery::mock('overload:' . InFilter::class);
+        $in = $this->getFilterMock(InFilter::class);
         $in->shouldReceive('__construct')
             ->once()
             ->with('country_iso', ['nl', 'be'], null);
@@ -257,12 +274,12 @@ class HasFilterTest extends TestCase
      */
     public function testWhereNotIn()
     {
-        $in = Mockery::mock('overload:' . InFilter::class);
+        $in = $this->getFilterMock(InFilter::class);
         $in->shouldReceive('__construct')
             ->once()
             ->with('age', [16, 17, 18], null);
 
-        $not = Mockery::mock('overload:' . NotFilter::class);
+        $not = $this->getFilterMock(NotFilter::class);
         $not->shouldReceive('__construct')
             ->once()
             ->with(new IsInstanceOf(InFilter::class));

@@ -5,6 +5,7 @@ namespace tests\Level23\Druid\Concerns;
 
 use Level23\Druid\ExtractionBuilder;
 use Level23\Druid\Extractions\CascadeExtraction;
+use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Extractions\PartialExtraction;
 use Level23\Druid\Extractions\RegexExtraction;
@@ -17,12 +18,27 @@ use tests\TestCase;
 class HasExtractions extends TestCase
 {
     /**
+     * @param string $class
+     *
+     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected function getExtractionMock(string $class)
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName($class);
+        $builder->addTarget(ExtractionInterface::class);
+
+        return Mockery::mock($builder);
+    }
+
+    /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
     public function testLookup()
     {
-        Mockery::mock('overload:' . LookupExtraction::class)
+        $this->getExtractionMock(LookupExtraction::class)
             ->shouldReceive('__construct')
             ->with('username', 'Unknown', false, true);
 
@@ -36,7 +52,7 @@ class HasExtractions extends TestCase
      */
     public function testLookupDefaults()
     {
-        Mockery::mock('overload:' . LookupExtraction::class)
+        $this->getExtractionMock(LookupExtraction::class)
             ->shouldReceive('__construct')
             ->with('username', true, true, null);
 
@@ -50,7 +66,7 @@ class HasExtractions extends TestCase
      */
     public function testPartial()
     {
-        Mockery::mock('overload:' . PartialExtraction::class)
+        $this->getExtractionMock(PartialExtraction::class)
             ->shouldReceive('__construct')
             ->with('[a-z]{1,9}');
 
@@ -64,7 +80,7 @@ class HasExtractions extends TestCase
      */
     public function testRegex()
     {
-        Mockery::mock('overload:' . RegexExtraction::class)
+        $this->getExtractionMock(RegexExtraction::class)
             ->shouldReceive('__construct')
             ->with('[a-z]{1,9}', 2, false);
 
@@ -78,7 +94,7 @@ class HasExtractions extends TestCase
      */
     public function testRegexDefaults()
     {
-        Mockery::mock('overload:' . RegexExtraction::class)
+        $this->getExtractionMock(RegexExtraction::class)
             ->shouldReceive('__construct')
             ->with('[a-z]{1,9}', 1, true);
 
@@ -92,7 +108,7 @@ class HasExtractions extends TestCase
      */
     public function testSearchQuery()
     {
-        Mockery::mock('overload:' . SearchQueryExtraction::class)
+        $this->getExtractionMock(SearchQueryExtraction::class)
             ->shouldReceive('__construct')
             ->with('john', true);
 
@@ -106,7 +122,7 @@ class HasExtractions extends TestCase
      */
     public function testSearchQueryDefaults()
     {
-        Mockery::mock('overload:' . SearchQueryExtraction::class)
+        $this->getExtractionMock(SearchQueryExtraction::class)
             ->shouldReceive('__construct')
             ->with(['john', 'ben'], false);
 
@@ -120,7 +136,7 @@ class HasExtractions extends TestCase
      */
     public function testSubstring()
     {
-        Mockery::mock('overload:' . SubstringExtraction::class)
+        $this->getExtractionMock(SubstringExtraction::class)
             ->shouldReceive('__construct')
             ->with(2, 2);
 
@@ -134,7 +150,7 @@ class HasExtractions extends TestCase
      */
     public function testSubstringDefaults()
     {
-        Mockery::mock('overload:' . SubstringExtraction::class)
+        $this->getExtractionMock(SubstringExtraction::class)
             ->shouldReceive('__construct')
             ->with(2, null);
 
@@ -148,7 +164,7 @@ class HasExtractions extends TestCase
      */
     public function testTimeFormat()
     {
-        Mockery::mock('overload:' . TimeFormatExtraction::class)
+        $this->getExtractionMock(TimeFormatExtraction::class)
             ->shouldReceive('__construct')
             ->with('yyyy-MM-dd HH:00:00', 'hour', 'fr', 'Europe/Amsterdam', false);
 
@@ -162,7 +178,7 @@ class HasExtractions extends TestCase
      */
     public function testTimeFormatWithDefaults()
     {
-        Mockery::mock('overload:' . TimeFormatExtraction::class)
+        $this->getExtractionMock(TimeFormatExtraction::class)
             ->shouldReceive('__construct')
             ->with(null, null, null, null, null);
 

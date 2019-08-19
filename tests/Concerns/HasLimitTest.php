@@ -34,12 +34,27 @@ class HasLimitTest extends TestCase
     }
 
     /**
+     * @param string $class
+     *
+     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected function getLimitMock(string $class)
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName($class);
+        $builder->addTarget(LimitInterface::class);
+
+        return Mockery::mock($builder);
+    }
+
+    /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
     public function testLimit()
     {
-        Mockery::mock('overload:' . Limit::class)
+        $this->getLimitMock(Limit::class)
             ->shouldReceive('__construct')
             ->with(15)
             ->once();
