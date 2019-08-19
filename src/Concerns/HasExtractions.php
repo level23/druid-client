@@ -136,7 +136,7 @@ trait HasExtractions
      *
      * @param \Level23\Druid\Extractions\ExtractionInterface $extraction
      */
-    protected function addExtraction($extraction)
+    protected function addExtraction(ExtractionInterface $extraction)
     {
         if ($this->extraction === null) {
             $this->extraction = $extraction;

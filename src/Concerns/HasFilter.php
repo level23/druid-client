@@ -24,7 +24,6 @@ use Level23\Druid\Filters\SelectorFilter;
 trait HasFilter
 {
     // use BuildsExtraction;
-
     /**
      * @var \Level23\Druid\Filters\FilterInterface|null
      */
@@ -179,7 +178,7 @@ trait HasFilter
      * @param FilterInterface $filter
      * @param string          $type
      */
-    protected function addFilter($filter, string $type)
+    protected function addFilter(FilterInterface $filter, string $type)
     {
         if ($this->filter instanceof LogicalExpressionFilterInterface && $this->filter instanceof $type) {
             $this->filter->addFilter($filter);
