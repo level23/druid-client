@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
-use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ServerException;
 use InvalidArgumentException;
@@ -86,7 +85,8 @@ class DruidClient
     /**
      * Execute a raw druid query and return the response.
      *
-     * @param array $postData
+     * @param string $url The url where to send the "query" to.
+     * @param array  $postData
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
@@ -406,7 +406,7 @@ class DruidClient
         // First, validate the given from and to. Make sure that these
         // match the beginning and end of an interval.
         if (!self::isValidInterval($start, $stop, $dataSource, $sampleInterval)) {
-            throw new Exception(
+            throw new InvalidArgumentException(
                 'Error, invalid dates given. Please supply a complete interval!'
             );
         }
@@ -501,7 +501,9 @@ class DruidClient
         $structure = $this->getStructureForDataSourceInterval($dataSource, $sampleInterval);
 
         if (!$structure) {
-            throw new Exception('We failed to get a druid structure for datasource ' . $dataSource);
+            throw new QueryResponseException(
+                [], 'We failed to get a druid structure for datasource ' . $dataSource
+            );
         }
 
         $dimensionSpec = [];
