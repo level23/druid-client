@@ -64,12 +64,12 @@ trait HasHaving
             } elseif ($operator == '>=') {
                 $having = new OrHavingFilter([
                     new GreaterThanHavingFilter($havingOrMetricOrClosure, floatval($value)),
-                    new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value))
+                    new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value)),
                 ]);
             } elseif ($operator == '<=') {
                 $having = new OrHavingFilter([
                     new LessThanHavingFilter($havingOrMetricOrClosure, floatval($value)),
-                    new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value))
+                    new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value)),
                 ]);
             } elseif (strtolower($operator) == 'like') {
                 $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, $value));
@@ -130,7 +130,7 @@ trait HasHaving
     /**
      * @return \Level23\Druid\HavingFilters\HavingFilterInterface|null
      */
-    public function getHaving()
+    public function getHaving(): ?HavingFilterInterface
     {
         return $this->having;
     }
@@ -141,7 +141,7 @@ trait HasHaving
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $havingFilter
      * @param string                                             $type
      */
-    protected function addHaving($havingFilter, string $type)
+    protected function addHaving(HavingFilterInterface $havingFilter, string $type)
     {
         if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
             $this->having->addHavingFilter($havingFilter);

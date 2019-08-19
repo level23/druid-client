@@ -40,7 +40,7 @@ trait HasIntervals
     /**
      * @return array|\Level23\Druid\Interval\IntervalInterface[]
      */
-    public function getIntervals()
+    public function getIntervals(): array
     {
         return $this->intervals;
     }
