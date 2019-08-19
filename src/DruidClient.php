@@ -299,7 +299,7 @@ class DruidClient
      * @return array
      * @throws \Exception
      */
-    protected function getStructureForDataSourceInterval(string $dataSource, string $interval)
+    public function getStructureForDataSourceInterval(string $dataSource, string $interval)
     {
         $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals/' . urlencode($interval) . '?full';
 
@@ -401,7 +401,7 @@ class DruidClient
      * @return false|mixed|string
      * @throws \Exception
      */
-    public function compactSegments($dataSource, $start, $stop, $segmentGranularity = 'day', $test = false)
+    public function compactSegments(string $dataSource, $start, $stop, $segmentGranularity = 'day', $test = false)
     {
         // First, validate the given from and to. Make sure that these
         // match the beginning and end of an interval.
@@ -431,7 +431,7 @@ class DruidClient
             ],
         ];
 
-        $url = 'http://127.0.0.1:8888/druid/indexer/v1/task';
+        $url = $this->config('overlord_url') . '/druid/indexer/v1/task';
 
         if ($test) {
             return \GuzzleHttp\json_encode($job, JSON_PRETTY_PRINT);
@@ -446,7 +446,7 @@ class DruidClient
     /**
      * Create a re-index task for druid.
      *
-     * The $from and $to dates are checked if they match a valid interval. Otherwise there is a
+     * The $start and $stop dates are checked if they match a valid interval. Otherwise there is a
      * risk to of data loss.
      *
      * We will return an string with the task job identifier, or an exception is thrown in case of an error.
