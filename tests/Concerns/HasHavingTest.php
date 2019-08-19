@@ -6,6 +6,7 @@ namespace tests\Level23\Druid\Concerns;
 use Exception;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\HavingBuilder;
@@ -13,6 +14,7 @@ use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
+use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\NotHavingFilter;
 use Level23\Druid\HavingFilters\OrHavingFilter;
@@ -38,6 +40,36 @@ class HasHavingTest extends TestCase
         $this->client  = new DruidClient([]);
         $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
         $this->builder->makePartial();
+    }
+
+    /**
+     * @param string $class
+     *
+     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected function getFilterMock(string $class)
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName($class);
+        $builder->addTarget(FilterInterface::class);
+
+        return Mockery::mock($builder);
+    }
+
+    /**
+     * @param string $class
+     *
+     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected function getHavingMock(string $class)
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName($class);
+        $builder->addTarget(HavingFilterInterface::class);
+
+        return Mockery::mock($builder);
     }
 
     public function whereDataProvider(): array
@@ -81,11 +113,11 @@ class HasHavingTest extends TestCase
             case '<>':
             case '!=':
                 $class = NotHavingFilter::class;
-                Mockery::mock('overload:' . NotFilter::class)
+                $this->getFilterMock(NotFilter::class)
                     ->shouldReceive('__construct')
                     ->once();
 
-                Mockery::mock('overload:' . DimensionSelectorHavingFilter::class)
+                $this->getHavingMock(DimensionSelectorHavingFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingValue)
                     ->once();
@@ -94,12 +126,12 @@ class HasHavingTest extends TestCase
 
             case '>=':
                 $class = OrHavingFilter::class;
-                Mockery::mock('overload:' . GreaterThanHavingFilter::class)
+                $this->getHavingMock(GreaterThanHavingFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, floatval($testingValue))
                     ->once();
 
-                Mockery::mock('overload:' . EqualToHavingFilter::class)
+                $this->getHavingMock(EqualToHavingFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, floatval($testingValue))
                     ->once();
@@ -107,12 +139,12 @@ class HasHavingTest extends TestCase
 
             case '<=':
                 $class = OrHavingFilter::class;
-                Mockery::mock('overload:' . LessThanHavingFilter::class)
+                $this->getHavingMock(LessThanHavingFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, floatval($testingValue))
                     ->once();
 
-                Mockery::mock('overload:' . EqualToHavingFilter::class)
+                $this->getHavingMock(EqualToHavingFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, floatval($testingValue))
                     ->once();
@@ -120,11 +152,11 @@ class HasHavingTest extends TestCase
 
             case 'like':
                 $class = QueryHavingFilter::class;
-                Mockery::mock('overload:' . QueryHavingFilter::class)
+                $this->getHavingMock(QueryHavingFilter::class)
                     ->shouldReceive('__construct')
                     ->once();
 
-                Mockery::mock('overload:' . LikeFilter::class)
+                $this->getFilterMock(LikeFilter::class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingValue)
                     ->once();
@@ -143,7 +175,7 @@ class HasHavingTest extends TestCase
 
                 $class = $types[$testingOperator];
 
-                Mockery::mock('overload:' . $class)
+                $this->getHavingMock($class)
                     ->shouldReceive('__construct')
                     ->with($field, $testingValue)
                     ->once();
