@@ -299,7 +299,7 @@ class DruidClient
      * @return array
      * @throws \Exception
      */
-    public function getStructureForDataSourceInterval(string $dataSource, string $interval)
+    public function getStructureForDataSourceInterval(string $dataSource, string $interval): array
     {
         $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals/' . urlencode($interval) . '?full';
 
@@ -398,11 +398,16 @@ class DruidClient
      * @param string|Granularity   $segmentGranularity
      * @param bool                 $test
      *
-     * @return false|mixed|string
+     * @return string
      * @throws \Exception
      */
-    public function compactSegments(string $dataSource, $start, $stop, $segmentGranularity = 'day', $test = false)
-    {
+    public function compactSegments(
+        string $dataSource,
+        $start,
+        $stop,
+        $segmentGranularity = 'day',
+        $test = false
+    ): string {
         // First, validate the given from and to. Make sure that these
         // match the beginning and end of an interval.
         if (!self::isValidInterval($start, $stop, $dataSource, $sampleInterval)) {
@@ -473,7 +478,7 @@ class DruidClient
         $queryGranularity = 'fifteen_minute',
         array $transformSpec = [],
         bool $test = false
-    ) {
+    ): string {
 
         // First, validate the given from and to. Make sure that these
         // match the beginning and end of an interval.
