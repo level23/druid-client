@@ -17,8 +17,24 @@ class Interval implements IntervalInterface
      */
     protected $stop;
 
-    public function __construct(DateTime $start, DateTime $stop)
+    /**
+     * Interval constructor.
+     *
+     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     *
+     * @throws \Exception
+     */
+    public function __construct($start, $stop)
     {
+        if (!$start instanceof DateTime) {
+            $start = new DateTime(is_numeric($start) ? "@$start" : $start);
+        }
+
+        if (!$stop instanceof DateTime) {
+            $stop = new DateTime(is_numeric($stop) ? "@$stop" : $stop);
+        }
+
         $this->start = $start;
         $this->stop  = $stop;
     }
@@ -31,7 +47,7 @@ class Interval implements IntervalInterface
      */
     public function getInterval(): string
     {
-        return $this->start->format(DateTime::ATOM) . '/' . $this->stop->format(DateTime::ATOM);
+        return $this->start->format('Y-m-d\TH:i:s.000\Z') . '/' . $this->stop->format('Y-m-d\TH:i:s.000\Z');
     }
 
     /**

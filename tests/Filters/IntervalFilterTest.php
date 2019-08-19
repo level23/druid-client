@@ -5,6 +5,7 @@ namespace tests\Level23\Druid\Filters;
 
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Filters\IntervalFilter;
+use Level23\Druid\Interval\Interval;
 use tests\TestCase;
 
 class IntervalFilterTest extends TestCase
@@ -12,15 +13,18 @@ class IntervalFilterTest extends TestCase
     public function testFilter()
     {
         $intervals = [
-            "2014-10-01T00:00:00.000Z/2014-10-07T00:00:00.000Z",
-            "2014-11-15T00:00:00.000Z/2014-11-16T00:00:00.000Z",
+            new Interval("2014-10-01T00:00:00.000Z", "2014-10-07T00:00:00.000Z"),
+            new Interval("2014-11-15T00:00:00.000Z", "2014-11-16T00:00:00.000Z"),
         ];
         $filter    = new IntervalFilter('__time', $intervals);
 
         $this->assertEquals([
             'type'      => 'interval',
             'dimension' => '__time',
-            'intervals' => $intervals,
+            'intervals' => [
+                '2014-10-01T00:00:00.000Z/2014-10-07T00:00:00.000Z',
+                '2014-11-15T00:00:00.000Z/2014-11-16T00:00:00.000Z',
+            ],
         ], $filter->toArray());
     }
 
@@ -31,16 +35,18 @@ class IntervalFilterTest extends TestCase
         );
 
         $intervals = [
-            "2014-10-01T00:00:00.000Z/2014-10-07T00:00:00.000Z",
-            "2014-11-15T00:00:00.000Z/2014-11-16T00:00:00.000Z",
+            new Interval("2014-10-01T00:00:00.000Z", "2014-10-07T00:00:00.000Z"),
+            new Interval("2014-11-15T00:00:00.000Z", "2014-11-16T00:00:00.000Z"),
         ];
-
-        $filter = new IntervalFilter('member_id', $intervals, $extractionFunction);
+        $filter    = new IntervalFilter('__time', $intervals, $extractionFunction);
 
         $this->assertEquals([
             'type'         => 'interval',
-            'dimension'    => 'member_id',
-            'intervals'    => $intervals,
+            'dimension'    => '__time',
+            'intervals'    => [
+                '2014-10-01T00:00:00.000Z/2014-10-07T00:00:00.000Z',
+                '2014-11-15T00:00:00.000Z/2014-11-16T00:00:00.000Z',
+            ],
             'extractionFn' => $extractionFunction->toArray(),
         ], $filter->toArray());
     }

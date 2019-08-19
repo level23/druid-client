@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use DateTime;
 use Level23\Druid\Interval\Interval;
 
 trait HasIntervals
@@ -24,14 +23,6 @@ trait HasIntervals
      */
     public function interval($start, $stop)
     {
-        if (!$start instanceof DateTime) {
-            $start = new DateTime(is_numeric($start) ? "@$start" : $start);
-        }
-
-        if (!$stop instanceof DateTime) {
-            $stop = new DateTime(is_numeric($stop) ? "@$stop" : $stop);
-        }
-
         $this->intervals[] = new Interval($start, $stop);
 
         return $this;
