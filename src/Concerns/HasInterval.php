@@ -15,8 +15,8 @@ trait HasInterval
     /**
      * Set the interval, eg the date where we want to select data from.
      *
-     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
      *
      * @return $this
      * @throws \Exception
