@@ -8,17 +8,13 @@ include __DIR__ . '/../vendor/autoload.php';
 use Level23\Druid\DruidClient;
 
 $client = new DruidClient([
-    'broker_url'     => 'http://127.0.0.1:8888',
-    'guzzle_options' => [
-        'timeout'         => 5,
-        'connect_timeout' => 5,
-    ],
-], function ($logMsg) {
-    //echo "[" . $logMsg . "]\n\n";
-});
+    'broker_url'      => 'http://127.0.0.1:8888',
+    'coordinator_url' => 'http://127.0.0.1:8888',
+    'overlord_url'    => 'http://127.0.0.1:8888',
+]);
 
 $response = $client->query('my_counters', 'hour')
-    ->interval(strtotime("now - 2 hours"), strtotime('tomorrow'))
+    ->interval("now - 2 hours", 'tomorrow')
     ->longSum('releases')
     ->longSum('messages')
     ->doubleSum('reward_eur')

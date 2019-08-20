@@ -17,6 +17,7 @@ class CascadeExtraction implements ExtractionInterface
 
     /**
      * Add an extraction function to our list of functions to apply.
+     *
      * @param \Level23\Druid\Extractions\ExtractionInterface $extraction
      */
     public function addExtraction(ExtractionInterface $extraction)
@@ -31,15 +32,11 @@ class CascadeExtraction implements ExtractionInterface
      */
     public function toArray(): array
     {
-        $functions = [];
-
-        foreach ($this->extractions as $extraction) {
-            $functions[] = $extraction->toArray();
-        }
-
         return [
             'type'          => 'cascade',
-            'extractionFns' => $functions,
+            'extractionFns' => array_map(function (ExtractionInterface $extraction) {
+                return $extraction->toArray();
+            }, $this->extractions),
         ];
     }
 }

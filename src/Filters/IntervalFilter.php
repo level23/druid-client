@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Filters;
 
 use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\Interval\IntervalInterface;
 
 /**
  * Class IntervalFilter
@@ -26,7 +27,7 @@ class IntervalFilter implements FilterInterface
     protected $dimension;
 
     /**
-     * @var array
+     * @var array|\Level23\Druid\Interval\IntervalInterface[]
      */
     protected $intervals;
 
@@ -38,10 +39,10 @@ class IntervalFilter implements FilterInterface
     /**
      * IntervalFilter constructor.
      *
-     * @param string                   $dimension                  The dimension to filter on
-     * @param array                    $intervals                  A array containing ISO-8601 interval strings. This
+     * @param string                    $dimension                 The dimension to filter on
+     * @param array|IntervalInterface[] $intervals                 A array containing Interval objects. This
      *                                                             defines the time ranges to filter on.
-     * @param ExtractionInterface|null $extractionFunction         If an extraction function is used with this filter,
+     * @param ExtractionInterface|null  $extractionFunction        If an extraction function is used with this filter,
      *                                                             the extraction function should output values that
      *                                                             are parsable as long milliseconds.
      */
@@ -62,10 +63,15 @@ class IntervalFilter implements FilterInterface
      */
     public function toArray(): array
     {
+        $intervals = [];
+        foreach ($this->intervals as $interval) {
+            $intervals[] = $interval->getInterval();
+        }
+
         $result = [
             'type'      => 'interval',
             'dimension' => $this->dimension,
-            'intervals' => $this->intervals,
+            'intervals' => $intervals,
         ];
 
         if ($this->extractionFunction) {

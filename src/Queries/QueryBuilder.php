@@ -17,17 +17,20 @@ use Level23\Druid\Concerns\HasIntervals;
 use Level23\Druid\Concerns\HasLimit;
 use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Concerns\HasVirtualColumns;
-use Level23\Druid\Context\GroupByQueryContext;
+use Level23\Druid\Context\GroupByV1QueryContext;
+use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryInterface;
+use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\OrderByDirection;
+use Level23\Druid\VirtualColumns\VirtualColumn;
 
 class QueryBuilder
 {
@@ -70,6 +73,30 @@ class QueryBuilder
     }
 
     /**
+     * Create a virtual column and select the result.
+     *
+     * Virtual columns are queryable column "views" created from a set of columns during a query.
+     *
+     * A virtual column can potentially draw from multiple underlying columns, although a virtual column always
+     * presents itself as a single column.
+     *
+     * @param string $expression
+     * @param string $as
+     * @param string $outputType
+     *
+     * @return $this
+     * @see https://druid.apache.org/docs/latest/misc/math-expr.html
+     */
+    public function selectVirtual(string $expression, string $as, $outputType = 'string')
+    {
+        $this->virtualColumns[] = new VirtualColumn($as, $expression, $outputType);
+
+        $this->select($as);
+
+        return $this;
+    }
+
+    /**
      * Execute a druid query. We will try to detect the best possible query type possible.
      *
      * @param array $context
@@ -80,6 +107,21 @@ class QueryBuilder
     public function execute(array $context = []): array
     {
         $query = $this->buildQuery($context);
+
+        $rawResponse = $this->client->executeQuery($query);
+
+        return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * Do a segment metadata query and return the response
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function segmentMetadata(): array
+    {
+        $query = new SegmentMetadataQuery($this->dataSource, new IntervalCollection(...$this->intervals));
 
         $rawResponse = $this->client->executeQuery($query);
 
@@ -152,14 +194,31 @@ class QueryBuilder
     /**
      * Return the group by query
      *
-     * @param array $context
+     * @param array|GroupByV2QueryContext|GroupByV1QueryContext $context
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function groupBy(array $context = [])
+    public function groupBy($context = [])
     {
-        $query = $this->buildGroupByQuery($context);
+        $query = $this->buildGroupByQuery($context, 'v2');
+
+        $rawResponse = $this->client->executeQuery($query);
+
+        return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * Return the group by query
+     *
+     * @param array|GroupByV2QueryContext|GroupByV1QueryContext $context
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function groupByV1($context = [])
+    {
+        $query = $this->buildGroupByQuery($context, 'v1');
 
         $rawResponse = $this->client->executeQuery($query);
 
@@ -289,11 +348,12 @@ class QueryBuilder
     /**
      * Build the group by query
      *
-     * @param array $context
+     * @param array|GroupByV2QueryContext|GroupByV1QueryContext $context
+     * @param string                                            $type
      *
      * @return GroupByQuery
      */
-    public function buildGroupByQuery(array $context = []): GroupByQuery
+    protected function buildGroupByQuery($context = [], string $type = 'v2'): GroupByQuery
     {
         $query = new GroupByQuery(
             $this->dataSource,
@@ -303,9 +363,20 @@ class QueryBuilder
             $this->granularity
         );
 
-        if (count($context) > 0) {
-            $query->setContext(new GroupByQueryContext($context));
+        if (is_array($context)) {
+            switch ($type) {
+                case 'v1':
+                    $context = new GroupByV1QueryContext($context);
+                    break;
+
+                default:
+                case 'v2':
+                    $context = new GroupByV2QueryContext($context);
+                    break;
+            }
         }
+
+        $query->setContext($context);
 
         if (count($this->postAggregations) > 0) {
             $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));

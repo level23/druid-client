@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use DateTime;
 use Level23\Druid\Interval\Interval;
 
 trait HasIntervals
@@ -17,21 +16,15 @@ trait HasIntervals
      * Add an interval, eg the date where we want to select data from.
      *
      * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
+     *                                    or a raw interval format as returned by druid.
      * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     *                                    or null if $start contains a raw interval string.
      *
      * @return $this
      * @throws \Exception
      */
-    public function interval($start, $stop)
+    public function interval($start, $stop = null)
     {
-        if (!$start instanceof DateTime) {
-            $start = new DateTime(is_numeric($start) ? "@$start" : $start);
-        }
-
-        if (!$stop instanceof DateTime) {
-            $stop = new DateTime(is_numeric($stop) ? "@$stop" : $stop);
-        }
-
         $this->intervals[] = new Interval($start, $stop);
 
         return $this;

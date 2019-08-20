@@ -12,6 +12,7 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\InFilter;
+use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
@@ -20,6 +21,7 @@ use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Filters\SelectorFilter;
+use Level23\Druid\Interval\Interval;
 
 trait HasFilter
 {
@@ -168,6 +170,28 @@ trait HasFilter
     public function whereNotIn(string $dimension, array $items, Closure $extraction = null)
     {
         $filter = new NotFilter(new InFilter($dimension, $items, $this->getExtraction($extraction)));
+
+        return $this->where($filter);
+    }
+
+    /**
+     * Apply a where filter using a interval.
+     *
+     * @param string               $dimension
+     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \Closure|null        $extraction
+     *
+     * @return $this
+     * @throws \Exception
+     */
+    public function whereInterval(string $dimension, $start, $stop, Closure $extraction = null)
+    {
+        $filter = new IntervalFilter(
+            $dimension,
+            [new Interval($start, $stop)],
+            $this->getExtraction($extraction)
+        );
 
         return $this->where($filter);
     }

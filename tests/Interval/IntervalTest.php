@@ -9,18 +9,22 @@ use tests\TestCase;
 
 class IntervalTest extends TestCase
 {
+    /**
+     * @throws \Exception
+     */
     public function testInterval()
     {
+        $format   = 'Y-m-d\TH:i:s.000\Z';
         $start    = new DateTime('yesterday');
         $stop     = new DateTime('now - 1 minute');
-        $interval = new Interval($start, $stop);
+        $interval = new Interval($start->getTimestamp(), $stop->getTimestamp());
 
         $this->assertEquals(
-            $start->format(DateTime::ATOM) . '/' . $stop->format(DateTime::ATOM),
+            $start->format($format) . '/' . $stop->format($format),
             $interval->getInterval()
         );
 
-        $this->assertEquals($interval->getStart(), $start);
-        $this->assertEquals($interval->getStop(), $stop);
+        $this->assertEquals($interval->getStart()->format($format), $start->format($format));
+        $this->assertEquals($interval->getStop()->format($format), $stop->format($format));
     }
 }

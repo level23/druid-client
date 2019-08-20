@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Context;
 
-use InvalidArgumentException;
-
 /**
  * Class QueryContext
  *
@@ -12,64 +10,66 @@ use InvalidArgumentException;
  *
  * @package Level23\Druid\Context
  */
-class QueryContext implements ContextInterface
+class QueryContext extends Context implements ContextInterface
 {
-    /**
-     * GroupByQueryContext constructor.
-     *
-     * @param array $properties
-     */
-    public function __construct(array $properties)
-    {
-        foreach ($properties as $key => $value) {
-
-            if (!property_exists($this, $key)) {
-                throw new InvalidArgumentException(
-                    'Setting ' . $key . ' was not found in the ' . __CLASS__ . ' query context'
-                );
-            }
-
-            if (!is_scalar($value)) {
-                throw new InvalidArgumentException(
-                    'Invalid value ' . var_export($value, true) .
-                    ' for ' . $key . ' for the groupBy query context'
-                );
-            }
-
-            $this->$key = $value;
-        }
-    }
-
     /**
      * Query timeout in millis, beyond which unfinished queries will be cancelled. 0 timeout means no timeout. To set
      * the default timeout, see Broker configuration
      *
-     * @var int
+     * @param int $timeout
+     *
+     * @return $this;
      */
-    public $timeout;
+    public function setTimeout(int $timeout)
+    {
+        $this->properties['timeout'] = $timeout;
+
+        return $this;
+    }
 
     /**
      * Query Priority. Queries with higher priority get precedence for computational resources.
      *
-     * @var int
+     * @param int $priority
+     *
+     * @return $this;
      */
-    public $priority;
+    public function setPriority(int $priority)
+    {
+        $this->properties['priority'] = $priority;
+
+        return $this;
+    }
 
     /**
      * Unique identifier given to this query. If a query ID is set or known, this can be used to cancel the query
      *
-     * @var string
+     * @param string $queryId
+     *
+     * @return $this;
      */
-    public $queryId;
+    public function setQueryId(string $queryId)
+    {
+        $this->properties['queryId'] = $queryId;
+
+        return $this;
+    }
 
     /**
      * Flag indicating whether to leverage the query cache for this query. When set to false, it disables reading from
      * the query cache for this query. When set to true, Apache Druid (incubating) uses druid.broker.cache.useCache or
      * druid.historical.cache.useCache to determine whether or not to read from the query cache
      *
-     * @var bool
+     * @param bool $useCache
+     *
+     * @return $this;
      */
-    public $useCache;
+    public function setUseCache(bool $useCache)
+    {
+        $this->properties['useCache'] = $useCache;
+
+        return $this;
+    }
 
     /**
      * Flag indicating whether to save the results of the query to the query cache. Primarily used for debugging. When
@@ -77,18 +77,32 @@ class QueryContext implements ContextInterface
      * druid.broker.cache.populateCache or druid.historical.cache.populateCache to determine whether or not to save the
      * results of this query to the query cache
      *
-     * @var bool
+     * @param bool $populateCache
+     *
+     * @return $this;
      */
-    public $populateCache;
+    public function setPopulateCache(bool $populateCache)
+    {
+        $this->properties['populateCache'] = $populateCache;
+
+        return $this;
+    }
 
     /**
      * Flag indicating whether to leverage the result level cache for this query. When set to false, it disables
      * reading from the query cache for this query. When set to true, Druid uses druid.broker.cache.useResultLevelCache
      * to determine whether or not to read from the result-level query cache
      *
-     * @var bool
+     * @param bool $useResultLevelCache
+     *
+     * @return $this;
      */
-    public $useResultLevelCache;
+    public function setUseResultLevelCache(bool $useResultLevelCache)
+    {
+        $this->properties['useResultLevelCache'] = $useResultLevelCache;
+
+        return $this;
+    }
 
     /**
      * Flag indicating whether to save the results of the query to the result level cache. Primarily used for
@@ -96,26 +110,47 @@ class QueryContext implements ContextInterface
      * Druid uses druid.broker.cache.populateResultLevelCache to determine whether or not to save the results of this
      * query to the result-level query cache
      *
-     * @var bool
+     * @param bool $populateResultLevelCache
+     *
+     * @return $this;
      */
-    public $populateResultLevelCache;
+    public function setPopulateResultLevelCache(bool $populateResultLevelCache)
+    {
+        $this->properties['populateResultLevelCache'] = $populateResultLevelCache;
+
+        return $this;
+    }
 
     /**
      * Return "by segment" results. Primarily used for debugging, setting it to true returns results associated with
      * the data segment they came from
      *
-     * @var bool
+     * @param bool $bySegment
+     *
+     * @return $this;
      */
-    public $bySegment;
+    public function setBySegment(bool $bySegment)
+    {
+        $this->properties['bySegment'] = $bySegment;
+
+        return $this;
+    }
 
     /**
      * Flag indicating whether to "finalize" aggregation results. Primarily used for debugging. For instance, the
      * hyperUnique aggregator will return the full HyperLogLog sketch instead of the estimated cardinality when this
      * flag is set to false
      *
-     * @var bool
+     * @param bool $finalize
+     *
+     * @return $this;
      */
-    public $finalize;
+    public function setFinalize(bool $finalize)
+    {
+        $this->properties['finalize'] = $finalize;
+
+        return $this;
+    }
 
     /**
      * At the Broker process level, long interval queries (of any type) may be broken into shorter interval queries to
@@ -127,75 +162,75 @@ class QueryContext implements ContextInterface
      * chunkPeriod by default, although they do if using the legacy "v1" engine. This context is deprecated since it's
      * only useful for groupBy "v1", and will be removed in the future releases.
      *
-     * @var string
+     * @param string $chunkPeriod
+     *
+     * @return $this;
      */
-    public $chunkPeriod;
+    public function setChunkPeriod(string $chunkPeriod)
+    {
+        $this->properties['chunkPeriod'] = $chunkPeriod;
+
+        return $this;
+    }
 
     /**
-     * Maximum number of bytes gathered from data processes such as Historicals and realtime processes to execute a
+     * Maximum number of bytes gathered from data processes such as historicals and realtime processes to execute a
      * query. This parameter can be used to further reduce maxScatterGatherBytes limit at query time. See Broker
      * configuration for more details.
      *
-     * @var int
+     * @param int $maxScatterGatherBytes
+     *
+     * @return $this;
      */
-    public $maxScatterGatherBytes;
+    public function setMaxScatterGatherBytes(int $maxScatterGatherBytes)
+    {
+        $this->properties['maxScatterGatherBytes'] = $maxScatterGatherBytes;
+
+        return $this;
+    }
 
     /**
-     * Maximum number of bytes queued per query before exerting backpressure on the channel to the data server. Similar
-     * to maxScatterGatherBytes, except unlike that configuration, this one will trigger backpressure rather than query
+     * Maximum number of bytes queued per query before exerting back pressure on the channel to the data server. Similar
+     * to maxScatterGatherBytes, except unlike that configuration, this one will trigger back pressure rather than query
      * failure. Zero means disabled.
      *
-     * @var int
+     * @param int $maxQueuedBytes
+     *
+     * @return $this;
      */
-    public $maxQueuedBytes;
+    public function setMaxQueuedBytes(int $maxQueuedBytes)
+    {
+        $this->properties['maxQueuedBytes'] = $maxQueuedBytes;
+
+        return $this;
+    }
 
     /**
      * If true, DateTime is serialized as long in the result returned by Broker and the data transportation between
      * Broker and compute process
      *
-     * @var bool
+     * @param bool $serializeDateTimeAsLong
+     *
+     * @return $this;
      */
-    public $serializeDateTimeAsLong;
+    public function setSerializeDateTimeAsLong(bool $serializeDateTimeAsLong)
+    {
+        $this->properties['serializeDateTimeAsLong'] = $serializeDateTimeAsLong;
+
+        return $this;
+    }
 
     /**
      * If true, DateTime is serialized as long in the data transportation between Broker and compute process
      *
-     * @var bool
-     */
-    public $serializeDateTimeAsLongInner;
-
-    /**
-     * Return the context as it can be used in the druid query.
+     * @param bool $serializeDateTimeAsLongInner
      *
-     * @return array
+     * @return $this;
      */
-    public function toArray(): array
+    public function setSerializeDateTimeAsLongInner(bool $serializeDateTimeAsLongInner)
     {
-        $result = [];
+        $this->properties['serializeDateTimeAsLongInner'] = $serializeDateTimeAsLongInner;
 
-        $properties = [
-            'timeout',
-            'priority',
-            'queryId',
-            'useCache',
-            'populateCache',
-            'useResultLevelCache',
-            'populateResultLevelCache',
-            'bySegment',
-            'finalize',
-            'chunkPeriod',
-            'maxScatterGatherBytes',
-            'maxQueuedBytes',
-            'serializeDateTimeAsLong',
-            'serializeDateTimeAsLongInner',
-        ];
-
-        foreach ($properties as $property) {
-            if ($this->$property !== null) {
-                $result[$property] = $this->$property;
-            }
-        }
-
-        return $result;
+        return $this;
     }
 }
