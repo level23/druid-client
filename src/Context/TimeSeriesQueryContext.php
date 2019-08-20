@@ -10,23 +10,14 @@ class TimeSeriesQueryContext extends QueryContext implements ContextInterface
      *
      * Default: false
      *
-     * @var bool
-     */
-    public $skipEmptyBuckets;
-
-    /**
-     * Return the context as it can be used in the druid query.
+     * @param bool $skipEmptyBuckets
      *
-     * @return array
+     * @return $this;
      */
-    public function toArray(): array
+    public function setSkipEmptyBuckets(bool $skipEmptyBuckets)
     {
-        $result = parent::toArray();
+        $this->properties['skipEmptyBuckets'] = $skipEmptyBuckets;
 
-        if ($this->skipEmptyBuckets !== null) {
-            $result['skipEmptyBuckets'] = $this->skipEmptyBuckets;
-        }
-
-        return $result;
+        return $this;
     }
 }

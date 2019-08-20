@@ -45,7 +45,7 @@ trait HasDimensions
         Closure $extraction = null,
         $outputType = 'string'
     ) {
-        if (is_string($outputType) && !DataType::isValid($outputType)) {
+        if (is_string($outputType) && !DataType::isValid($outputType = strtolower($outputType))) {
             throw new InvalidArgumentException(
                 'The given output type is invalid: ' . $outputType . '. ' .
                 'Allowed are: ' . implode(',', DataType::values())

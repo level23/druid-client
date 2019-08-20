@@ -17,8 +17,37 @@ class Interval implements IntervalInterface
      */
     protected $stop;
 
-    public function __construct(DateTime $start, DateTime $stop)
+    /**
+     * Interval constructor.
+     *
+     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     *
+     * @throws \Exception
+     */
+    public function __construct($start, $stop = null)
     {
+        // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+        if (is_string($start)
+            && $stop === null
+            && preg_match(
+                '/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)$/',
+                $start,
+                $matches
+            )
+        ) {
+            $start = $matches[1];
+            $stop  = $matches[2];
+        }
+
+        if (!$start instanceof DateTime) {
+            $start = new DateTime(is_numeric($start) ? "@$start" : $start);
+        }
+
+        if (!$stop instanceof DateTime) {
+            $stop = new DateTime(is_numeric($stop) ? "@$stop" : $stop);
+        }
+
         $this->start = $start;
         $this->stop  = $stop;
     }
@@ -31,7 +60,7 @@ class Interval implements IntervalInterface
      */
     public function getInterval(): string
     {
-        return $this->start->format(DateTime::ATOM) . '/' . $this->stop->format(DateTime::ATOM);
+        return $this->start->format('Y-m-d\TH:i:s.000\Z') . '/' . $this->stop->format('Y-m-d\TH:i:s.000\Z');
     }
 
     /**

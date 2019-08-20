@@ -187,7 +187,7 @@ class QueryBuilderTest extends TestCase
         $parsedResult = ['result' => 'here'];
 
         $this->builder->shouldReceive('buildGroupByQuery')
-            ->with($context)
+            ->with($context, 'v2')
             ->once()
             ->andReturn($query);
 
