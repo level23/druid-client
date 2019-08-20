@@ -353,7 +353,7 @@ class QueryBuilder
      *
      * @return GroupByQuery
      */
-    protected function buildGroupByQuery(array $context = [], string $type = 'v2'): GroupByQuery
+    protected function buildGroupByQuery($context = [], string $type = 'v2'): GroupByQuery
     {
         $query = new GroupByQuery(
             $this->dataSource,
