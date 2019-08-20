@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\Concerns;
+namespace Level23\Druid\Tasks;
 
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Interval\IntervalInterface;
 
-trait HasIntervalValidation
+abstract class TaskBuilder
 {
     /**
      * @var DruidClient
@@ -54,4 +54,59 @@ trait HasIntervalValidation
             'Valid intervals: ' . implode(', ', $intervals)
         );
     }
+
+    /**
+     * Execute the index task. We will return the task identifier.
+     *
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
+     * @return string
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function execute($context = [])
+    {
+        $task = $this->buildTask($context);
+
+        return $this->client->executeTask($task);
+    }
+
+    /**
+     * Execute the index task. We will return the task identifier.
+     *
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
+     * @return string
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function toJson($context = []): string
+    {
+        $task = $this->buildTask($context);
+
+        $json = \GuzzleHttp\json_encode($task->toArray(), JSON_PRETTY_PRINT);
+
+        return $json;
+    }
+
+    /**
+     * Return the task as array
+     *
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function toArray($context = []): array
+    {
+        $task = $this->buildTask($context);
+
+        return $task->toArray();
+    }
+
+    /**
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
+     * @return \Level23\Druid\Tasks\TaskInterface
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    abstract protected function buildTask($context): TaskInterface;
 }

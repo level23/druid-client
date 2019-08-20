@@ -7,7 +7,11 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ServerException;
 use Level23\Druid\Exceptions\QueryResponseException;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Queries\QueryInterface;
+use Level23\Druid\Tasks\CompactTaskBuilder;
+use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Tasks\TaskInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -53,7 +57,7 @@ class DruidClient
      * @param string                                  $dataSource
      * @param string|\Level23\Druid\Types\Granularity $granularity
      *
-     * @return \Level23\Druid\QueryBuilder
+     * @return \Level23\Druid\Queries\QueryBuilder
      */
     public function query(string $dataSource, $granularity = 'all'): QueryBuilder
     {
@@ -93,7 +97,7 @@ class DruidClient
     {
         $payload = $task->toArray();
 
-        $this->log('Executing druid task', ['task' => $payload]);
+        $this->log('Executing druid task', ['TaskBuilder' => $payload]);
 
         $result = $this->executeRawRequest(
             'post',
@@ -103,7 +107,7 @@ class DruidClient
 
         $this->log('Received task response', ['response' => $result]);
 
-        return $result['task'];
+        return $result['TaskBuilder'];
     }
 
     /**
@@ -230,7 +234,7 @@ class DruidClient
     }
 
     /**
-     * @return \Level23\Druid\MetadataBuilder
+     * @return \Level23\Druid\Metadata\MetadataBuilder
      */
     public function metadata(): MetadataBuilder
     {
@@ -280,7 +284,7 @@ class DruidClient
      *
      * @param string $dataSource
      *
-     * @return \Level23\Druid\CompactTaskBuilder
+     * @return \Level23\Druid\Tasks\CompactTaskBuilder
      */
     public function compact(string $dataSource): CompactTaskBuilder
     {
@@ -299,7 +303,7 @@ class DruidClient
      *
      * @param string $dataSource
      *
-     * @return \Level23\Druid\IndexTaskBuilder
+     * @return \Level23\Druid\Tasks\IndexTaskBuilder
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function reindex(string $dataSource): IndexTaskBuilder

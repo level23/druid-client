@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid;
+namespace Level23\Druid\Queries;
 
 use InvalidArgumentException;
 use Level23\Druid\Collections\AggregationCollection;
@@ -22,12 +22,8 @@ use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\LimitInterface;
-use Level23\Druid\Queries\GroupByQuery;
-use Level23\Druid\Queries\QueryInterface;
-use Level23\Druid\Queries\SegmentMetadataQuery;
-use Level23\Druid\Queries\TimeSeriesQuery;
-use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\VirtualColumns\VirtualColumn;
