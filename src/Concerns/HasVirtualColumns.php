@@ -23,14 +23,14 @@ trait HasVirtualColumns
      *
      * Virtual columns can be used as dimensions or as inputs to aggregators.
      *
-     * @param string $as
      * @param string $expression
+     * @param string $as
      * @param string $outputType
      *
      * @return $this
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function virtualColumn(string $as, string $expression, $outputType = 'string')
+    public function virtualColumn(string $expression, string $as, $outputType = 'string')
     {
         $this->virtualColumns[] = new VirtualColumn($as, $expression, $outputType);
 
