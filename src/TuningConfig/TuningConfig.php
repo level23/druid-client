@@ -111,7 +111,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: Not specified, the value from druid.peon.defaultSegmentWriteOutMediumFactory.type is used
      *
-     * @var
+     * @var string
      */
     public $segmentWriteOutMediumFactory;
 

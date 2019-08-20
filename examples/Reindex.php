@@ -13,24 +13,17 @@ $client = new DruidClient([
     'overlord_url'    => 'http://127.0.0.1:8888',
 ]);
 
-// Retrieve all intervals.
-$response = $client->intervals('traffic-conversions');
-
-// get our first interval.
-$interval = array_key_first($response);
-
-list($start, $stop) = explode('/', $interval);
-
 // Build our reindex task
 $taskId = $client->reindex('traffic-conversions')
-    ->interval($start, $stop)
+    ->interval('2019-04-14T00:00:00.000Z', '2019-04-15T00:00:00.000Z')
     ->segmentGranularity('day')
     ->queryGranularity('day')
     ->rollup()
-    ->transform(function (\Level23\Druid\TransformBuilder $builder) {
-        $builder->transform('new_age', 'age+1');
-        $builder->where('age', '>', 16);
-    });
+    //    ->transform(function (\Level23\Druid\TransformBuilder $builder) {
+    //        $builder->transform('new_age', 'age+1');
+    //        $builder->where('age', '>', 16);
+    //    })
+    ->execute();
 
 echo "Inserted task with id: " . $taskId . "\n";
 

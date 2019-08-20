@@ -21,7 +21,7 @@ trait HasInterval
      * @return $this
      * @throws \Exception
      */
-    public function interval($start, $stop)
+    public function interval($start, $stop = null)
     {
         $this->interval = new Interval($start, $stop);
 

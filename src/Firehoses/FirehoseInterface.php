@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\Tasks;
+namespace Level23\Druid\Firehoses;
 
 interface FirehoseInterface
 {

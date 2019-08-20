@@ -24,10 +24,12 @@ use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryInterface;
+use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\OrderByDirection;
+use Level23\Druid\VirtualColumns\VirtualColumn;
 
 class QueryBuilder
 {
@@ -70,6 +72,30 @@ class QueryBuilder
     }
 
     /**
+     * Create a virtual column and select the result.
+     *
+     * Virtual columns are queryable column "views" created from a set of columns during a query.
+     *
+     * A virtual column can potentially draw from multiple underlying columns, although a virtual column always
+     * presents itself as a single column.
+     *
+     * @param string $expression
+     * @param string $as
+     * @param string $outputType
+     *
+     * @return $this
+     * @see https://druid.apache.org/docs/latest/misc/math-expr.html
+     */
+    public function selectVirtual(string $expression, string $as, $outputType = 'string')
+    {
+        $this->virtualColumns[] = new VirtualColumn($as, $expression, $outputType);
+
+        $this->select($as);
+
+        return $this;
+    }
+
+    /**
      * Execute a druid query. We will try to detect the best possible query type possible.
      *
      * @param array $context
@@ -80,6 +106,21 @@ class QueryBuilder
     public function execute(array $context = []): array
     {
         $query = $this->buildQuery($context);
+
+        $rawResponse = $this->client->executeQuery($query);
+
+        return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * Do a segment metadata query and return the response
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function segmentMetadata(): array
+    {
+        $query = new SegmentMetadataQuery($this->dataSource, new IntervalCollection(...$this->intervals));
 
         $rawResponse = $this->client->executeQuery($query);
 

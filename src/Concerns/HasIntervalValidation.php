@@ -31,9 +31,9 @@ trait HasIntervalValidation
         $foundTo   = false;
 
         // Get all intervals and check if our interval is among them.
-        $intervals = $this->client->intervals($dataSource);
+        $intervals = array_keys($this->client->metadata()->intervals($dataSource));
 
-        foreach ($intervals as $dateStr => $info) {
+        foreach ($intervals as $dateStr) {
 
             if (!$foundFrom) {
                 if (substr($dateStr, 0, strlen($fromStr)) === $fromStr) {
@@ -53,7 +53,9 @@ trait HasIntervalValidation
         }
 
         throw new InvalidArgumentException(
-            'Error, invalid interval given. The given dates do not match a complete interval!'
+            'Error, invalid interval given. The given dates do not match a complete interval!' . PHP_EOL .
+            'Given interval: ' . $interval->getInterval() . PHP_EOL .
+            'Valid intervals: ' . implode(', ', $intervals)
         );
     }
 }

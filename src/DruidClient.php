@@ -6,8 +6,8 @@ namespace Level23\Druid;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ServerException;
 use Level23\Druid\Exceptions\QueryResponseException;
+use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Queries\QueryInterface;
-use Level23\Druid\Tasks\IngestSegmentFirehose;
 use Level23\Druid\Tasks\TaskInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -182,7 +182,7 @@ class DruidClient
      *
      * @return mixed|null
      */
-    protected function config($key, $default = null)
+    public function config($key, $default = null)
     {
         return $this->config[$key] ?? $default;
     }
@@ -225,122 +225,11 @@ class DruidClient
     }
 
     /**
-     * Return all intervals for the given dataSource.
-     * Return an array containing the interval.
-     *
-     * We will store the result in static cache to prevent multiple requests.
-     *
-     * Example response:
-     * [
-     *   "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => [ "size": 75208, "count": 4 ],
-     *   "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => [ "size": 161870, "count": 8 ],
-     * ]
-     *
-     * @param string $dataSource
-     *
-     * @return array
-     *
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @return \Level23\Druid\MetadataBuilder
      */
-    public function intervals(string $dataSource): array
+    public function metadata(): MetadataBuilder
     {
-        static $intervals = [];
-
-        if (!array_key_exists($dataSource, $intervals)) {
-            $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals?simple';
-
-            $intervals[$dataSource] = $this->executeRawRequest($url);
-        }
-
-        return $intervals[$dataSource];
-    }
-
-    /**
-     * Return a list with dimensions and metrics.
-     * Example response:
-     * Array
-     * (
-     *    [datasource] => traffic-conversions
-     *    [interval] => 2019-02-11T00:00:00.000Z/2019-02-12T00:00:00.000Z
-     *    [metrics] => Array
-     *    (
-     *      [conversion_time] => LONG
-     *      [conversions] => LONG
-     *      [revenue_external] => DOUBLE
-     *      [revenue_internal] => DOUBLE
-     *    )
-     *    [dimensions] => Array
-     *    (
-     *      [added] => LONG
-     *      [country_iso] => STRING
-     *      [flags] => LONG
-     *      [mccmnc] => STRING
-     *      [offer_id] => LONG
-     *      [product_type_id] => LONG
-     *      [promo_id] => LONG
-     *      [promo_info] => STRING
-     *      [test_data_id] => LONG
-     *      [test_data_reason] => LONG
-     *      [third_party_id] => LONG
-     *    )
-     * )
-     *
-     *
-     * @param string $dataSource
-     * @param string $interval
-     *
-     * @return array
-     * @throws \Exception
-     */
-    public function getStructureForDataSourceInterval(string $dataSource, string $interval): array
-    {
-        $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals/' . urlencode($interval) . '?full';
-
-        // Retrieve the specs for the given datasource and interval
-        $specs = $this->executeRawRequest($url);
-        if (!$specs) {
-            return [];
-        }
-
-        $list = reset($specs);
-        if (!$list) {
-            return [];
-        }
-
-        $data = reset($list);
-
-        $dimensions = explode(',', $data['metadata']['dimensions']);
-        $metrics    = explode(',', $data['metadata']['metrics']);
-
-        $returnData = [
-            'datasource' => $dataSource,
-            'interval'   => $interval,
-            'metrics'    => [],
-            'dimensions' => [],
-        ];
-
-        $query = [
-            'queryType'  => 'segmentMetadata',
-            'dataSource' => $dataSource,
-            'intervals'  => [$interval],
-        ];
-
-        $response = $this->executeRawRequest($url, $query);
-
-        if (empty($response[0]['columns'])) {
-            return [];
-        }
-
-        foreach ($response[0]['columns'] as $column => $info) {
-            if (in_array($column, $dimensions)) {
-                $returnData['dimensions'][$column] = $info['type'];
-            }
-            if (in_array($column, $metrics)) {
-                $returnData['metrics'][$column] = $info['type'];
-            }
-        }
-
-        return $returnData;
+        return new MetadataBuilder($this);
     }
 
     /**
@@ -403,15 +292,25 @@ class DruidClient
      * Example:
      * "index_traffic-conversions-2019-03-18T16:26:05.186Z"
      *
-     * @param string               $dataSource
-     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param string $dataSource
      *
-     * @return string
-     * @throws \Exception
+     * @return \Level23\Druid\IndexTaskBuilder
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function reindex(string $dataSource): IndexTaskBuilder
     {
-        return new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
+        $structure = $this->metadata()->structure($dataSource);
+
+        $builder = new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
+
+        foreach ($structure->dimensions as $dimension => $type) {
+            $builder->dimension($dimension, $type);
+        }
+
+        foreach ($structure->metrics as $metric => $type) {
+            $builder->sum($metric, $metric, $type);
+        }
+
+        return $builder;
     }
 }
