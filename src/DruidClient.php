@@ -5,11 +5,10 @@ namespace Level23\Druid;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ServerException;
-use InvalidArgumentException;
 use Level23\Druid\Exceptions\QueryResponseException;
-use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\QueryInterface;
-use Level23\Druid\Types\Granularity;
+use Level23\Druid\Tasks\IngestSegmentFirehose;
+use Level23\Druid\Tasks\TaskInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
@@ -69,13 +68,13 @@ class DruidClient
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function executeQuery(QueryInterface $druidQuery)
+    public function executeQuery(QueryInterface $druidQuery): array
     {
         $query = $druidQuery->toArray();
 
         $this->log('Executing druid query', ['query' => $query]);
 
-        $result = $this->executeRawQuery($this->config('broker_url') . '/druid/v2', $query);
+        $result = $this->executeRawRequest($this->config('broker_url') . '/druid/v2', $query);
 
         $this->log('Received druid response', ['response' => $result]);
 
@@ -83,15 +82,38 @@ class DruidClient
     }
 
     /**
-     * Execute a raw druid query and return the response.
+     * Execute a druid task and return the response.
      *
-     * @param string $url The url where to send the "query" to.
-     * @param array  $postData
+     * @param \Level23\Druid\Tasks\TaskInterface $task
+     *
+     * @return string The task identifier
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function executeTask(TaskInterface $task): string
+    {
+        $payload = $task->toArray();
+
+        $this->log('Executing druid task', ['task' => $payload]);
+
+        $result = $this->executeRawRequest(
+            $this->config('overlord_url') . '/druid/indexer/v1/task', $payload
+        );
+
+        $this->log('Received task response', ['response' => $result]);
+
+        return $result['task'];
+    }
+
+    /**
+     * Execute a raw druid request and return the response.
+     *
+     * @param string $url      The url where to send the "query" to.
+     * @param array  $postData The json data to POST. If not given, we will do a GET request.
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function executeRawQuery(string $url, array $postData = null): array
+    public function executeRawRequest(string $url, array $postData = null): array
     {
         try {
             if ($postData) {
@@ -100,6 +122,10 @@ class DruidClient
                 ]);
             } else {
                 $response = $this->client->get($url);
+            }
+
+            if ($response->getStatusCode() == 204) {
+                throw new QueryResponseException($postData ?: [], $response->getReasonPhrase());
             }
 
             return $this->parseResponse($response);
@@ -199,67 +225,34 @@ class DruidClient
     }
 
     /**
-     * Return all intervals for the given dataSource
+     * Return all intervals for the given dataSource.
+     * Return an array containing the interval.
+     *
+     * We will store the result in static cache to prevent multiple requests.
+     *
+     * Example response:
+     * [
+     *   "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => [ "size": 75208, "count": 4 ],
+     *   "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => [ "size": 161870, "count": 8 ],
+     * ]
      *
      * @param string $dataSource
      *
      * @return array
+     *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function getIntervalsFor(string $dataSource): array
+    public function intervals(string $dataSource): array
     {
-        $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals?simple';
+        static $intervals = [];
 
-        return $this->executeRawQuery($url);
-    }
+        if (!array_key_exists($dataSource, $intervals)) {
+            $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals?simple';
 
-    /**
-     * Check if the given dates are valid start/end dates for an interval.
-     *
-     * @param \DateTime|string|int $start          DateTime object, unix timestamp or string accepted by
-     *                                             DateTime::__construct
-     * @param \DateTime|string|int $stop           DateTime object, unix timestamp or string accepted by
-     *                                             DateTime::__construct
-     * @param string               $dataSource     The dataSource
-     * @param string               $sampleInterval This parameter is filled by the first matched interval, which can be
-     *                                             used as an example.
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    public function isValidInterval($start, $stop, string $dataSource, &$sampleInterval = "")
-    {
-        $interval = new Interval($start, $stop);
-
-        $fromStr = $interval->getStart()->format('Y-m-d\TH:i:s.000\Z');
-        $toStr   = $interval->getStop()->format('Y-m-d\TH:i:s.000\Z');
-
-        $foundFrom = false;
-        $foundTo   = false;
-
-        // Get all intervals and check if our interval is among them.
-        $intervals = $this->getIntervalsFor($dataSource);
-        foreach ($intervals as $dateStr => $info) {
-
-            if (!$foundFrom) {
-                if (substr($dateStr, 0, strlen($fromStr)) === $fromStr) {
-                    $sampleInterval = $dateStr;
-                    $foundFrom      = true;
-                }
-            }
-
-            if (!$foundTo) {
-                if (substr($dateStr, -strlen($toStr)) === $toStr) {
-                    $foundTo = true;
-                }
-            }
-
-            if ($foundFrom && $foundTo) {
-                return true;
-            }
+            $intervals[$dataSource] = $this->executeRawRequest($url);
         }
 
-        return false;
+        return $intervals[$dataSource];
     }
 
     /**
@@ -304,7 +297,7 @@ class DruidClient
         $url = $this->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals/' . urlencode($interval) . '?full';
 
         // Retrieve the specs for the given datasource and interval
-        $specs = $this->executeRawQuery($url);
+        $specs = $this->executeRawRequest($url);
         if (!$specs) {
             return [];
         }
@@ -332,7 +325,7 @@ class DruidClient
             'intervals'  => [$interval],
         ];
 
-        $response = $this->executeRawQuery($url, $query);
+        $response = $this->executeRawRequest($url, $query);
 
         if (empty($response[0]['columns'])) {
             return [];
@@ -353,99 +346,51 @@ class DruidClient
     /**
      * Fetch the status of a druid task. We will return an array like this:
      *
-     *Array
-     *(
-     *    [task] => index_traffic-conversions-TEST2_2019-03-18T16:26:05.186Z
-     *    [status] => Array
+     * [
+     *    [id] => index_traffic-conversions-TEST2_2019-03-18T16:26:05.186Z
+     *    [type] => index
+     *    [createdTime] => 2019-03-18T16:26:05.202Z
+     *    [queueInsertionTime] => 1970-01-01T00:00:00.000Z
+     *    [statusCode] => SUCCESS
+     *    [status] => SUCCESS
+     *    [runnerStatusCode] => WAITING
+     *    [duration] => 10255
+     *    [location] => Array
      *        (
-     *            [id] => index_traffic-conversions-TEST2_2019-03-18T16:26:05.186Z
-     *            [type] => index
-     *            [createdTime] => 2019-03-18T16:26:05.202Z
-     *            [queueInsertionTime] => 1970-01-01T00:00:00.000Z
-     *            [statusCode] => SUCCESS
-     *            [status] => SUCCESS
-     *            [runnerStatusCode] => WAITING
-     *            [duration] => 10255
-     *            [location] => Array
-     *                (
-     *                    [host] =>
-     *                    [port] => -1
-     *                    [tlsPort] => -1
-     *                )
-     *
-     *
-     *            [dataSource] => traffic-conversions-TEST2
-     *            [errorMsg] =>
-     *
+     *            [host] =>
+     *            [port] => -1
+     *            [tlsPort] => -1
      *        )
-     * )
+     *
+     *
+     *    [dataSource] => traffic-conversions-TEST2
+     *    [errorMsg] =>
+     * ]
+     *
      * @param string $taskId
      *
      * @return array
      * @throws \Exception
      */
-    public function getTaskStatus(string $taskId): array
+    public function taskStatus(string $taskId): array
     {
         $url = $this->config('overlord_url') . '/druid/indexer/v1/task/' . urlencode($taskId) . '/status';
 
-        return $this->executeRawQuery($url);
+        $response = $this->executeRawRequest($url);
+
+        return $response['status'] ?: [];
     }
 
     /**
-     * @param string               $dataSource
-     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param string|Granularity   $segmentGranularity
-     * @param bool                 $test
+     * Build a new compact task.
      *
-     * @return string
-     * @throws \Exception
+     * @param string $dataSource
+     *
+     * @return \Level23\Druid\CompactTaskBuilder
      */
-    public function compactSegments(
-        string $dataSource,
-        $start,
-        $stop,
-        $segmentGranularity = 'day',
-        $test = false
-    ): string {
-        // First, validate the given from and to. Make sure that these
-        // match the beginning and end of an interval.
-        if (!self::isValidInterval($start, $stop, $dataSource, $sampleInterval)) {
-            throw new InvalidArgumentException(
-                'Error, invalid dates given. Please supply a complete interval!'
-            );
-        }
-
-        if (is_string($segmentGranularity) && !Granularity::isValid($segmentGranularity)) {
-            throw new InvalidArgumentException(
-                'Error, invalid segment granularity given: ' . $segmentGranularity
-            );
-        }
-
-        $interval = new Interval($start, $stop);
-
-        $job = [
-            'type'               => 'compact',
-            'dataSource'         => $dataSource,
-            'interval'           => $interval->getInterval(),
-            'segmentGranularity' => $segmentGranularity,
-            'tuningConfig'       => [
-                'type'                => 'index',
-                'targetPartitionSize' => 50000000,
-                'maxRowsInMemory'     => 50000,
-            ],
-        ];
-
-        $url = $this->config('overlord_url') . '/druid/indexer/v1/task';
-
-        if ($test) {
-            return \GuzzleHttp\json_encode($job, JSON_PRETTY_PRINT);
-        }
-
-        // insert the task and return the task id.
-        $task = $this->executeRawQuery($url, $job);
-
-        return $task['task'];
+    public function compact(string $dataSource): CompactTaskBuilder
+    {
+        return new CompactTaskBuilder($this, $dataSource);
     }
 
     /**
@@ -461,131 +406,12 @@ class DruidClient
      * @param string               $dataSource
      * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
      * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param string|Granularity   $segmentGranularity
-     * @param string|Granularity   $queryGranularity
-     * @param array                $transformSpec
-     * @param bool                 $test  When set to true, we will not really execute the job. However, we will return
-     *                                    the JSON which should have been executed.
      *
      * @return string
      * @throws \Exception
      */
-    public function reindex(
-        string $dataSource,
-        $start,
-        $stop,
-        $segmentGranularity = 'day',
-        $queryGranularity = 'fifteen_minute',
-        array $transformSpec = [],
-        bool $test = false
-    ): string {
-
-        // First, validate the given from and to. Make sure that these
-        // match the beginning and end of an interval.
-        if (!$this->isValidInterval($start, $stop, $dataSource, $sampleInterval)) {
-            throw new InvalidArgumentException(
-                'Error, invalid dates given. Please supply a complete interval!'
-            );
-        }
-
-        if (is_string($segmentGranularity) && !Granularity::isValid($segmentGranularity)) {
-            throw new InvalidArgumentException(
-                'Error, invalid segment granularity given: ' . $segmentGranularity
-            );
-        }
-
-        if (is_string($queryGranularity) && !Granularity::isValid($queryGranularity)) {
-            throw new InvalidArgumentException(
-                'Error, invalid query granularity given: ' . $queryGranularity
-            );
-        }
-
-        $interval = new Interval($start, $stop);
-
-        // Get the structure of the given data source.
-        $structure = $this->getStructureForDataSourceInterval($dataSource, $sampleInterval);
-
-        if (!$structure) {
-            throw new QueryResponseException(
-                [], 'We failed to get a druid structure for datasource ' . $dataSource
-            );
-        }
-
-        $dimensionSpec = [];
-        $metricSpec    = [];
-
-        foreach ($structure['dimensions'] as $field => $type) {
-            $dimensionSpec[] = [
-                'name' => $field,
-                'type' => $type,
-            ];
-        }
-
-        foreach ($structure['metrics'] as $field => $type) {
-            $metricSpec[] = [
-                'name'      => $field,
-                'fieldName' => $field,
-                'type'      => strtolower($type) . 'Sum',
-            ];
-        }
-
-        $query = [
-            'type' => 'index',
-            'spec' => [
-                'ioConfig'     => [
-                    'type'             => 'index',
-                    'firehose'         => [
-                        'type'       => 'ingestSegment',
-                        'dataSource' => $structure['datasource'],
-                        'interval'   => $interval->getInterval(),
-                    ],
-                    'appendToExisting' => false,
-                ],
-                'tuningConfig' => [
-                    'type'                      => 'index',
-                    'targetPartitionSize'       => 5000000,
-                    'maxRowsInMemory'           => 500000,
-                    'forceExtendableShardSpecs' => true,
-                ],
-                'dataSchema'   => [
-                    'dataSource'      => $structure['datasource'],
-                    'parser'          => [
-                        'type'      => 'string',
-                        'parseSpec' => [
-                            'format'         => 'json',
-                            'timestampSpec'  => [
-                                'column' => '__time',
-                                'format' => 'auto',
-                            ],
-                            'dimensionsSpec' => [
-                                'dimensions' => $dimensionSpec,
-                            ],
-                        ],
-                    ],
-                    'metricsSpec'     => $metricSpec,
-                    'granularitySpec' => [
-                        'type'               => 'uniform',
-                        'segmentGranularity' => $segmentGranularity,
-                        'queryGranularity'   => $queryGranularity,
-                        'rollup'             => true,
-                        'intervals'          => [
-                            $interval->getInterval(),
-                        ],
-                    ],
-                    'transformSpec'   => (sizeof($transformSpec) > 0 ? $transformSpec : null),
-                ],
-            ],
-        ];
-
-        $url = $this->config('overlord_url') . '/druid/indexer/v1/task';
-
-        if ($test) {
-            return \GuzzleHttp\json_encode($query, JSON_PRETTY_PRINT);
-        }
-
-        // insert the task and return the task id.
-        $task = $this->executeRawQuery($url, $query);
-
-        return $task['task'];
+    public function reindex(string $dataSource): IndexTaskBuilder
+    {
+        return new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
     }
 }
