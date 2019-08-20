@@ -23,6 +23,9 @@ trait HasVirtualColumns
      *
      * Virtual columns can be used as dimensions or as inputs to aggregators.
      *
+     * NOTE: virtual columns are NOT automatically added to your output. You should select it separately if you want to
+     * add it also to your output. Use selectVirtual to do both at once.
+     *
      * @param string $expression
      * @param string $as
      * @param string $outputType

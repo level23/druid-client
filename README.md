@@ -21,13 +21,16 @@ include __DIR__ . '/../vendor/autoload.php';
 
 use Level23\Druid\DruidClient;
 use Level23\Druid\FilterBuilder;
+use Level23\Druid\ExtractionBuilder;
 
 $client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
 $response = $client->query('traffic-hits')
     ->interval(new DateTime("now - 1 day"), new DateTime())
-    ->lookup('operator_title', 'mccmnc', 'carrier', true, 'Unknown')
-    ->extractTimeFormat('__time', 'yyyy-MM-dd HH:00:00', 'datetime')
+    ->lookup('operator_title', 'mccmnc', 'carrier', 'Unknown')
+    ->select('__time', 'datetime', function( ExtractionBuilder $builder) {
+        $builder->timeFormat('yyyy-MM-dd HH:00:00');
+    })
     ->select('browser')
     ->select('country_iso', 'Country')
     ->select(['mccmnc' => 'operator_code'])
