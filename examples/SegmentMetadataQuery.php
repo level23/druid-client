@@ -11,10 +11,17 @@ $client = new DruidClient([
     'broker_url'      => 'http://127.0.0.1:8888',
     'coordinator_url' => 'http://127.0.0.1:8888',
     'overlord_url'    => 'http://127.0.0.1:8888',
-
 ]);
 
+// Retrieve all intervals.
 $response = $client->metadata()->intervals('traffic-conversions');
-print_r($response);
 
-//  php -f examples/GroupByQuery.php | curl -X 'POST' -H 'Content-Type:application/json' -d @- http://127.0.0.1:8888/druid/v2 | jq
+// get our first interval.
+$interval = array_key_first($response);
+
+// Build our compact task.
+$structure = $client->query('traffic-conversions')
+    ->interval($interval)
+    ->segmentMetadata();
+
+print_r($structure);

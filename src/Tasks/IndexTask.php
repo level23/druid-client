@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tasks;
 
+use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Context\TaskContext;
+use Level23\Druid\Firehoses\FirehoseInterface;
 use Level23\Druid\Granularities\GranularityInterface;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
@@ -26,7 +28,7 @@ class IndexTask implements TaskInterface
     protected $appendToExisting = false;
 
     /**
-     * @var \Level23\Druid\Tasks\FirehoseInterface
+     * @var \Level23\Druid\Firehoses\FirehoseInterface
      */
     protected $firehose;
 
@@ -46,15 +48,27 @@ class IndexTask implements TaskInterface
     protected $transformSpec;
 
     /**
+     * @var \Level23\Druid\Collections\AggregationCollection|null
+     */
+    protected $aggregations;
+
+    /**
+     * @var array
+     */
+    protected $dimensions;
+
+    /**
      * IndexTask constructor.
      *
      *
-     * @param string                                            $dateSource
-     * @param \Level23\Druid\Tasks\FirehoseInterface            $firehose
-     * @param \Level23\Druid\Granularities\GranularityInterface $granularity
-     * @param \Level23\Druid\Transforms\TransformSpec|null      $transformSpec
-     * @param \Level23\Druid\TuningConfig\TuningConfig|null     $tuningConfig
-     * @param \Level23\Druid\Context\TaskContext|null           $context
+     * @param string                                                $dateSource
+     * @param \Level23\Druid\Firehoses\FirehoseInterface            $firehose
+     * @param \Level23\Druid\Granularities\GranularityInterface     $granularity
+     * @param \Level23\Druid\Transforms\TransformSpec|null          $transformSpec
+     * @param \Level23\Druid\TuningConfig\TuningConfig|null         $tuningConfig
+     * @param \Level23\Druid\Context\TaskContext|null               $context
+     * @param \Level23\Druid\Collections\AggregationCollection|null $aggregations
+     * @param array                                                 $dimensions
      */
     public function __construct(
         string $dateSource,
@@ -62,7 +76,9 @@ class IndexTask implements TaskInterface
         GranularityInterface $granularity,
         TransformSpec $transformSpec = null,
         TuningConfig $tuningConfig = null,
-        TaskContext $context = null
+        TaskContext $context = null,
+        AggregationCollection $aggregations = null,
+        array $dimensions = []
     ) {
         $this->tuningConfig  = $tuningConfig;
         $this->context       = $context;
@@ -70,6 +86,8 @@ class IndexTask implements TaskInterface
         $this->dateSource    = $dateSource;
         $this->granularity   = $granularity;
         $this->transformSpec = $transformSpec;
+        $this->aggregations  = $aggregations;
+        $this->dimensions    = $dimensions;
     }
 
     /**
@@ -87,14 +105,17 @@ class IndexTask implements TaskInterface
                     'parser'          => [
                         'type'      => 'string',
                         'parseSpec' => [
-                            'format'        => 'json',
-                            'timestampSpec' => [
+                            'format'         => 'json',
+                            'timestampSpec'  => [
                                 'column' => '__time',
                                 'format' => 'auto',
                             ],
+                            'dimensionsSpec' => [
+                                'dimensions' => $this->dimensions,
+                            ],
                         ],
                     ],
-                    'metricSpec'      => [],
+                    'metricsSpec'     => ($this->aggregations ? $this->aggregations->toArray() : null),
                     'granularitySpec' => $this->granularity->toArray(),
                     'transformSpec'   => ($this->transformSpec ? $this->transformSpec->toArray() : null),
                 ],

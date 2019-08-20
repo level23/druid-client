@@ -3,21 +3,33 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
+use Closure;
+use InvalidArgumentException;
+use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Concerns\HasInterval;
 use Level23\Druid\Concerns\HasIntervalValidation;
 use Level23\Druid\Concerns\HasQueryGranularity;
 use Level23\Druid\Concerns\HasSegmentGranularity;
 use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Context\TaskContext;
+use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Tasks\IndexTask;
-use Level23\Druid\Tasks\IngestSegmentFirehose;
+use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Transforms\TransformSpec;
+use Level23\Druid\Types\DataType;
 
 class IndexTaskBuilder
 {
-    use HasSegmentGranularity, HasQueryGranularity, HasInterval, HasIntervalValidation, HasTuningConfig;
+    use HasSegmentGranularity, HasQueryGranularity, HasInterval, HasIntervalValidation, HasTuningConfig, HasAggregations;
+
+    /**
+     * @var array
+     */
+    protected $dimensions = [];
 
     /**
      * @var bool
@@ -30,7 +42,7 @@ class IndexTaskBuilder
     protected $dataSource;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $firehoseType;
 
@@ -52,11 +64,43 @@ class IndexTaskBuilder
      */
     protected $granularityType = UniformGranularity::class;
 
+    /**
+     * IndexTaskBuilder constructor.
+     *
+     * @param \Level23\Druid\DruidClient $client
+     * @param string                     $dataSource
+     * @param string|null                $firehoseType
+     */
     public function __construct(DruidClient $client, string $dataSource, string $firehoseType = null)
     {
         $this->client       = $client;
         $this->dataSource   = $dataSource;
         $this->firehoseType = $firehoseType;
+    }
+
+    /**
+     * Add a dimension.
+     *
+     * @param string                               $name
+     * @param string|\Level23\Druid\Types\DataType $type
+     *
+     * @return $this
+     */
+    public function dimension(string $name, $type = 'string')
+    {
+        if (is_string($type)) {
+            $type = strtolower($type);
+            if (!DataType::isValid($type)) {
+                throw new InvalidArgumentException(
+                    'The given output type is invalid: ' . $type . '. ' .
+                    'Allowed are: ' . implode(',', DataType::values())
+                );
+            }
+        }
+
+        $this->dimensions[] = ['name' => $name, 'type' => $type];
+
+        return $this;
     }
 
     /**
@@ -77,23 +121,80 @@ class IndexTaskBuilder
      *
      * @param \Level23\Druid\Context\TaskContext|array $context
      *
+     * @return string
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function execute($context = [])
+    {
+        $task = $this->buildTask($context);
+
+        return $this->client->executeTask($task);
+    }
+
+    /**
+     * Execute the index task. We will return the task identifier.
+     *
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
+     * @return string
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function toJson($context = []): string
+    {
+        $task = $this->buildTask($context);
+
+        $json = \GuzzleHttp\json_encode($task->toArray(), JSON_PRETTY_PRINT);
+
+        return $json;
+    }
+
+    /**
+     * Return the task as array
+     *
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function execute($context)
+    public function toArray($context = []): array
     {
+        $task = $this->buildTask($context);
+
+        return $task->toArray();
+    }
+
+    /**
+     * @param \Level23\Druid\Context\TaskContext|array $context
+     *
+     * @return \Level23\Druid\Tasks\TaskInterface
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    protected function buildTask($context): TaskInterface
+    {
+        if ($this->queryGranularity === null) {
+            throw new InvalidArgumentException('You have to specify a queryGranularity value!');
+        }
+
+        if ($this->interval === null) {
+            throw new InvalidArgumentException('You have to specify an interval!');
+        }
+
         if ($this->granularityType == ArbitraryGranularity::class) {
             $granularity = new ArbitraryGranularity(
                 $this->queryGranularity,
                 $this->rollup,
-                [$this->interval]
+                new IntervalCollection($this->interval)
             );
         } else {
+            if ($this->segmentGranularity === null) {
+                throw new InvalidArgumentException('You have to specify a segmentGranularity value!');
+            }
+
             $granularity = new UniformGranularity(
                 $this->segmentGranularity,
                 $this->queryGranularity,
                 $this->rollup,
-                [$this->interval]
+                new IntervalCollection($this->interval)
             );
         }
 
@@ -109,6 +210,10 @@ class IndexTaskBuilder
                 break;
         }
 
+        if ($firehose === null) {
+            throw new InvalidArgumentException('No firehose known. Currently we only support re-indexing.');
+        }
+
         if (!$context instanceof TaskContext) {
             $context = new TaskContext($context);
         }
@@ -119,10 +224,12 @@ class IndexTaskBuilder
             $granularity,
             $this->transformSpec,
             $this->tuningConfig,
-            $context
+            $context,
+            new AggregationCollection(... $this->aggregations),
+            $this->dimensions
         );
 
-        return $this->client->executeTask($task);
+        return $task;
     }
 
     /**
@@ -136,7 +243,7 @@ class IndexTaskBuilder
      *
      * @return $this
      */
-    public function transform(\Closure $transformBuilder)
+    public function transform(Closure $transformBuilder)
     {
         $builder = new TransformBuilder();
         call_user_func($transformBuilder, $builder);

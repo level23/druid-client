@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Granularities;
 
+use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Types\Granularity;
+
 class ArbitraryGranularity implements GranularityInterface
 {
     /**
@@ -16,18 +19,18 @@ class ArbitraryGranularity implements GranularityInterface
     protected $rollup;
 
     /**
-     * @var array|\Level23\Druid\Interval\IntervalInterface[]
+     * @var IntervalCollection
      */
     protected $intervals;
 
     /**
      * UniformGranularity constructor.
      *
-     * @param string|\Level23\Druid\Types\Granularity $queryGranularity
-     * @param bool                                    $rollup
-     * @param array                                   $intervals
+     * @param string|Granularity $queryGranularity
+     * @param bool               $rollup
+     * @param IntervalCollection $intervals
      */
-    public function __construct($queryGranularity, bool $rollup, array $intervals)
+    public function __construct($queryGranularity, bool $rollup, IntervalCollection $intervals)
     {
         $this->queryGranularity = $queryGranularity;
         $this->rollup           = $rollup;
@@ -41,6 +44,11 @@ class ArbitraryGranularity implements GranularityInterface
      */
     public function toArray(): array
     {
-        return [];
+        return [
+            'type'             => 'arbitrary',
+            'queryGranularity' => $this->queryGranularity,
+            'rollup'           => $this->rollup,
+            'intervals'        => $this->intervals->toArray(),
+        ];
     }
 }

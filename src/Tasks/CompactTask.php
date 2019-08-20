@@ -20,22 +20,22 @@ class CompactTask implements TaskInterface
     protected $interval;
 
     /**
-     * @var null
+     * @var string|\Level23\Druid\Types\Granularity|null
      */
     protected $segmentGranularity;
 
     /**
-     * @var \Level23\Druid\TuningConfig\TuningConfigInterface
+     * @var \Level23\Druid\TuningConfig\TuningConfigInterface|null
      */
     protected $tuningConfig;
 
     /**
-     * @var \Level23\Druid\Context\TaskContext
+     * @var \Level23\Druid\Context\TaskContext|null
      */
     protected $context;
 
     /**
-     * @var int
+     * @var int|null
      */
     protected $targetCompactionSizeBytes;
 
@@ -55,15 +55,16 @@ class CompactTask implements TaskInterface
      * Compaction tasks will exit with a failure status code, without doing anything, if the interval you specify has
      * no data segments loaded in it (or if the interval you specify is empty).
      *
-     * @param string                                         $dataSource
-     * @param \Level23\Druid\Interval\IntervalInterface|null $interval
-     * @param null|string|\Level23\Druid\Types\Granularity   $segmentGranularity
-     * @param \Level23\Druid\TuningConfig\TuningConfig|null  $tuningConfig
-     * @param \Level23\Druid\Context\TaskContext|null        $context
+     * @param string                                        $dataSource
+     * @param \Level23\Druid\Interval\IntervalInterface     $interval
+     * @param null|string|\Level23\Druid\Types\Granularity  $segmentGranularity
+     * @param \Level23\Druid\TuningConfig\TuningConfig|null $tuningConfig
+     * @param \Level23\Druid\Context\TaskContext|null       $context
+     * @param int|null                                      $targetCompactionSizeBytes
      */
     public function __construct(
         string $dataSource,
-        IntervalInterface $interval = null,
+        IntervalInterface $interval,
         $segmentGranularity = null,
         TuningConfig $tuningConfig = null,
         TaskContext $context = null,
@@ -98,7 +99,7 @@ class CompactTask implements TaskInterface
             $result['targetCompactionSizeBytes'] = $this->targetCompactionSizeBytes;
         }
 
-        if ($this->tuningConfig) {
+        if ($this->tuningConfig instanceof TuningConfig) {
             $this->tuningConfig->type = 'index';
             $result['tuningConfig']   = $this->tuningConfig->toArray();
         }

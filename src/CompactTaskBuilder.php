@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
+use InvalidArgumentException;
 use Level23\Druid\Concerns\HasInterval;
 use Level23\Druid\Concerns\HasIntervalValidation;
 use Level23\Druid\Concerns\HasSegmentGranularity;
 use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Context\TaskContext;
+use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Tasks\CompactTask;
 
 class CompactTaskBuilder
@@ -56,8 +58,12 @@ class CompactTaskBuilder
      */
     public function execute($taskContext = null)
     {
-        if ($taskContext && !$taskContext instanceof TaskContext) {
+        if (is_array($taskContext)) {
             $taskContext = new TaskContext($taskContext);
+        }
+
+        if (!$this->interval instanceof IntervalInterface) {
+            throw new InvalidArgumentException('You have to specify an interval!');
         }
 
         // First, validate the given from and to. Make sure that these
