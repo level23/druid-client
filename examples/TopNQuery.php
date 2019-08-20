@@ -8,11 +8,13 @@ include __DIR__ . '/../vendor/autoload.php';
 use Level23\Druid\DruidClient;
 
 $client = new DruidClient([
-    'broker_url'     => 'https://stats.moportals.com',
+    'broker_url'      => 'http://127.0.0.1:8888',
+    'coordinator_url' => 'http://127.0.0.1:8888',
+    'overlord_url'    => 'http://127.0.0.1:8888',
 ]);
 
 $response = $client->query('sms-counters', 'all')
-    ->interval(strtotime("now - 2 hours"), strtotime('tomorrow'))
+    ->interval("now - 2 hours", 'tomorrow')
     ->longSum('releases')
     ->select('destination')
     ->limit(10)
