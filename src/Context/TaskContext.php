@@ -3,17 +3,22 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Context;
 
-use InvalidArgumentException;
-
-class TaskContext implements ContextInterface
+class TaskContext extends Context implements ContextInterface
 {
     /**
      * task lock timeout in millisecond. For more details, see Locking.
      * Default: 300000
      *
-     * @var int
+     * @param int $taskLockTimeout
+     *
+     * @return $this;
      */
-    public $taskLockTimeout;
+    public function setTaskLockTimeout(int $taskLockTimeout)
+    {
+        $this->properties['taskLockTimeout'] = $taskLockTimeout;
+
+        return $this;
+    }
 
     /**
      * Different based on task types.
@@ -23,56 +28,14 @@ class TaskContext implements ContextInterface
      * Merge/Append/Compaction task    25
      * Other tasks    0
      *
-     * @var int
-     */
-    public $priority;
-
-    /**
-     * TaskContext constructor.
+     * @param int $priority
      *
-     * @param array $properties
+     * @return $this;
      */
-    public function __construct(array $properties)
+    public function setPriority(int $priority)
     {
-        foreach ($properties as $key => $value) {
+        $this->properties['priority'] = $priority;
 
-            if (!property_exists($this, $key)) {
-                throw new InvalidArgumentException(
-                    'Setting ' . $key . ' was not found in the ' . __CLASS__ . ' context'
-                );
-            }
-
-            if (!is_scalar($value)) {
-                throw new InvalidArgumentException(
-                    'Invalid value ' . var_export($value, true) .
-                    ' for ' . $key . ' for the task context'
-                );
-            }
-
-            $this->$key = $value;
-        }
-    }
-
-    /**
-     * Return the context as it can be used in the druid query.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        $result = [];
-
-        $properties = [
-            'taskLockTimeout',
-            'priority',
-        ];
-
-        foreach ($properties as $property) {
-            if ($this->$property !== null) {
-                $result[$property] = $this->$property;
-            }
-        }
-
-        return $result;
+        return $this;
     }
 }

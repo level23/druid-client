@@ -43,7 +43,7 @@ class MetadataBuilder
         if (!array_key_exists($dataSource, $intervals)) {
             $url = $this->client->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals?simple';
 
-            $intervals[$dataSource] = $this->client->executeRawRequest($url);
+            $intervals[$dataSource] = $this->client->executeRawRequest('get', $url);
         }
 
         return $intervals[$dataSource];
@@ -114,7 +114,7 @@ class MetadataBuilder
     {
         $url = 'http://127.0.0.1:8888/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals/' . urlencode($interval) . '?full';
 
-        return $this->client->executeRawRequest($url);
+        return $this->client->executeRawRequest('get', $url);
     }
 
     /**

@@ -36,16 +36,12 @@ class TransformSpec
      */
     public function toArray(): array
     {
-        $transforms = [];
-
-        foreach ($this->transforms as $transform) {
-            $transforms[] = $transform->toArray();
-        }
-
         $result = [];
 
         if ($this->transforms) {
-            $result['transforms'] = $transforms;
+            $result['transforms'] = array_map(function (TransformInterface $item) {
+                return $item->toArray();
+            }, $this->transforms);
         }
 
         if ($this->filter) {

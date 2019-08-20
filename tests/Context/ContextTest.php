@@ -4,7 +4,8 @@ namespace tests\Level23\Druid\Context;
 
 use InvalidArgumentException;
 use Level23\Druid\Context\ContextInterface;
-use Level23\Druid\Context\GroupByQueryContext;
+use Level23\Druid\Context\GroupByV1QueryContext;
+use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
 use tests\TestCase;
@@ -14,8 +15,8 @@ class ContextTest extends TestCase
     public function dataProvider(): array
     {
         return [
-            [GroupByQueryContext::class, 'v1'],
-            [GroupByQueryContext::class, 'v2'],
+            [GroupByV1QueryContext::class, ['groupByStrategy' => 'v1']],
+            [GroupByV2QueryContext::class, ['groupByStrategy' => 'v2']],
             [TopNQueryContext::class],
             [TimeSeriesQueryContext::class],
         ];
@@ -26,49 +27,52 @@ class ContextTest extends TestCase
      *
      * @param string $class
      * @param string $version
+     *
+     * @throws \ReflectionException
+     * @throws \Exception
      */
-    public function testContext(string $class, string $version = '')
+    public function testContext(string $class, array $extra = [])
     {
-        $object     = new $class([]);
-        $properties = get_object_vars($object);
+        $methods = get_class_methods($class);
 
-        foreach ($properties as $property => $value) {
-            if ($property == 'groupByStrategy' && $object instanceof GroupByQueryContext) {
-                $word = $version;
-            } else {
-                $word = $this->getRandomWord();
+        $object = new $class([]);
+
+        $properties = [];
+
+        foreach ($methods as $method) {
+            if (substr($method, 0, 3) != 'set') {
+                continue;
             }
 
-            $object->$property     = $word;
-            $properties[$property] = $word;
+            $property = lcfirst(substr($method, 3));
+
+            $reflection = new \ReflectionMethod($class, $method);
+            $parameters = $reflection->getParameters();
+
+            switch ($parameters[0]->getType()) {
+                case 'int':
+                    $value = rand(1, 1000);
+                    break;
+
+                case 'string':
+                    $value = $this->getRandomWord();
+                    break;
+
+                case 'bool':
+                    $value = array_rand([true, false]);
+                    break;
+
+                default:
+                    throw new \Exception('Unknown type: ' . $parameters[0]->getType());
+            }
+
+            $properties[$property] = $value;
+
+            // call our setter.
+            $object->$method($value);
         }
 
-        if ($object instanceof GroupByQueryContext) {
-
-            if ($object->groupByStrategy == 'v2') {
-                $unset = [
-                    'maxIntermediateRows',
-                    'maxResults',
-                    'useOffheap',
-                ];
-            } else {
-                $unset = [
-                    'bufferGrouperInitialBuckets',
-                    'bufferGrouperMaxLoadFactor',
-                    'forceHashAggregation',
-                    'intermediateCombineDegree',
-                    'numParallelCombineThreads',
-                    'sortByDimsFirst',
-                    'forceLimitPushDown',
-                    'maxMergingDictionarySize',
-                    'maxOnDiskStorage',
-                ];
-            }
-
-            foreach ($unset as $p) {
-                unset($properties[$p]);
-            }
-        }
+        $properties = array_merge($properties, $extra);
 
         if ($object instanceof ContextInterface) {
             $this->assertEquals($properties, $object->toArray());
@@ -77,24 +81,25 @@ class ContextTest extends TestCase
 
     public function testSettingValueUsingConstructor()
     {
-        $context = new GroupByQueryContext(['timeout' => 6271]);
+        $context = new GroupByV2QueryContext(['timeout' => 6271]);
 
-        $this->assertEquals(6271, $context->timeout);
+        $response = $context->toArray();
+        $this->assertEquals(6271, $response['timeout']);
     }
 
     public function testNonExistingProperty()
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('was not found in the');
+        $this->expectExceptionMessage('was not found in ');
 
-        new GroupByQueryContext(['prio' => 1]);
+        new GroupByV2QueryContext(['prio' => 1]);
     }
 
     public function testNonScalarValue()
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid value');
-        new GroupByQueryContext(['priority' => ['oops']]);
+        new GroupByV2QueryContext(['priority' => ['oops']]);
     }
 
     protected function getRandomWord()
