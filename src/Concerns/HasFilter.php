@@ -177,15 +177,17 @@ trait HasFilter
     /**
      * Apply a where filter using a interval.
      *
-     * @param string               $dimension
-     * @param \DateTime|string|int $start DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param \DateTime|string|int $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param \Closure|null        $extraction
+     * @param string                    $dimension
+     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by DateTime::__construct
+     *                                    or a raw interval string as required by druid.
+     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     *                                    or null when $start contains an raw interval string.
+     * @param \Closure|null             $extraction
      *
      * @return $this
      * @throws \Exception
      */
-    public function whereInterval(string $dimension, $start, $stop, Closure $extraction = null)
+    public function whereInterval(string $dimension, $start, $stop = null, Closure $extraction = null)
     {
         $filter = new IntervalFilter(
             $dimension,
