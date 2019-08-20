@@ -26,10 +26,9 @@ class ContextTest extends TestCase
      * @dataProvider dataProvider
      *
      * @param string $class
-     * @param string $version
+     * @param array  $extra
      *
      * @throws \ReflectionException
-     * @throws \Exception
      */
     public function testContext(string $class, array $extra = [])
     {
