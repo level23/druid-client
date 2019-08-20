@@ -35,16 +35,12 @@ trait HasIntervalValidation
 
         foreach ($intervals as $dateStr) {
 
-            if (!$foundFrom) {
-                if (substr($dateStr, 0, strlen($fromStr)) === $fromStr) {
-                    $foundFrom = true;
-                }
+            if (!$foundFrom && substr($dateStr, 0, strlen($fromStr)) === $fromStr) {
+                $foundFrom = true;
             }
 
-            if (!$foundTo) {
-                if (substr($dateStr, -strlen($toStr)) === $toStr) {
-                    $foundTo = true;
-                }
+            if (!$foundTo && substr($dateStr, -strlen($toStr)) === $toStr) {
+                $foundTo = true;
             }
 
             if ($foundFrom && $foundTo) {
