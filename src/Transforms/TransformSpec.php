@@ -13,7 +13,7 @@ class TransformSpec
     protected $transforms;
 
     /**
-     * @var \Level23\Druid\Filters\FilterInterface
+     * @var \Level23\Druid\Filters\FilterInterface|null
      */
     protected $filter;
 

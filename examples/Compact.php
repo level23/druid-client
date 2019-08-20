@@ -14,7 +14,7 @@ $client = new DruidClient([
 ]);
 
 // Retrieve all intervals.
-$response = $client->intervals('traffic-conversions');
+$response = $client->metadata()->intervals('traffic-conversions');
 
 // get our first interval.
 $interval = array_key_first($response);

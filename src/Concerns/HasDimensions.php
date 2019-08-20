@@ -45,11 +45,14 @@ trait HasDimensions
         Closure $extraction = null,
         $outputType = 'string'
     ) {
-        if (is_string($outputType) && !DataType::isValid($outputType)) {
-            throw new InvalidArgumentException(
-                'The given output type is invalid: ' . $outputType . '. ' .
-                'Allowed are: ' . implode(',', DataType::values())
-            );
+        if (is_string($outputType)) {
+            $outputType = strtolower($outputType);
+            if (!DataType::isValid($outputType)) {
+                throw new InvalidArgumentException(
+                    'The given output type is invalid: ' . $outputType . '. ' .
+                    'Allowed are: ' . implode(',', DataType::values())
+                );
+            }
         }
 
         if (is_string($dimension)) {
