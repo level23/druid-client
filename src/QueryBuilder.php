@@ -8,6 +8,7 @@ use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Concerns\HasDimensions;
 use Level23\Druid\Concerns\HasFilter;
@@ -15,6 +16,7 @@ use Level23\Druid\Concerns\HasHaving;
 use Level23\Druid\Concerns\HasIntervals;
 use Level23\Druid\Concerns\HasLimit;
 use Level23\Druid\Concerns\HasPostAggregations;
+use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
@@ -29,7 +31,7 @@ use Level23\Druid\Types\OrderByDirection;
 
 class QueryBuilder
 {
-    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasPostAggregations;
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasPostAggregations, HasVirtualColumns;
 
     /**
      * @var \Level23\Druid\DruidClient
@@ -315,6 +317,10 @@ class QueryBuilder
 
         if ($this->limit) {
             $query->setLimit($this->limit);
+        }
+
+        if (count($this->virtualColumns) > 0) {
+            $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
         }
 
         // @todo : subtotalsSpec
