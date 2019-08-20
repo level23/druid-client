@@ -29,15 +29,11 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
      */
     public function toArray(): array
     {
-        $havingSpecs = [];
-
-        foreach ($this->filters as $filter) {
-            $havingSpecs[] = $filter->toArray();
-        }
-
         return [
             'type'        => 'and',
-            'havingSpecs' => $havingSpecs,
+            'havingSpecs' => array_map(function (HavingFilterInterface $filter) {
+                return $filter->toArray();
+            }, $this->filters),
         ];
     }
 

@@ -9,24 +9,15 @@ class TopNQueryContext extends QueryContext implements ContextInterface
      * The top minTopNThreshold local results from each segment are returned for merging to determine the global topN.
      *
      * Default: 1000
-     * @var int
-     */
-    public $minTopNThreshold;
-
-
-    /**
-     * Return the context as it can be used in the druid query.
      *
-     * @return array
+     * @param int $minTopNThreshold
+     *
+     * @return $this;
      */
-    public function toArray(): array
+    public function setMinTopNThreshold(int $minTopNThreshold)
     {
-        $result = parent::toArray();
+        $this->properties['minTopNThreshold'] = $minTopNThreshold;
 
-        if( $this->minTopNThreshold !== null ) {
-            $result['minTopNThreshold'] = $this->minTopNThreshold;
-        }
-
-        return $result;
+        return $this;
     }
 }

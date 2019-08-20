@@ -74,7 +74,7 @@ class DruidClient
 
         $this->log('Executing druid query', ['query' => $query]);
 
-        $result = $this->executeRawRequest($this->config('broker_url') . '/druid/v2', $query);
+        $result = $this->executeRawRequest('post', $this->config('broker_url') . '/druid/v2', $query);
 
         $this->log('Received druid response', ['response' => $result]);
 
@@ -96,7 +96,9 @@ class DruidClient
         $this->log('Executing druid task', ['task' => $payload]);
 
         $result = $this->executeRawRequest(
-            $this->config('overlord_url') . '/druid/indexer/v1/task', $payload
+            'post',
+            $this->config('overlord_url') . '/druid/indexer/v1/task',
+            $payload
         );
 
         $this->log('Received task response', ['response' => $result]);
@@ -107,25 +109,28 @@ class DruidClient
     /**
      * Execute a raw druid request and return the response.
      *
-     * @param string $url      The url where to send the "query" to.
-     * @param array  $postData The json data to POST. If not given, we will do a GET request.
+     * @param string $method POST or GET
+     * @param string $url    The url where to send the "query" to.
+     * @param array  $data   The data to POST or GET.
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function executeRawRequest(string $url, array $postData = null): array
+    public function executeRawRequest(string $method, string $url, array $data = null): array
     {
         try {
-            if ($postData) {
+            if (strtolower($method) == 'post') {
                 $response = $this->client->post($url, [
-                    'json' => $postData,
+                    'json' => $data,
                 ]);
             } else {
-                $response = $this->client->get($url);
+                $response = $this->client->get($url, [
+                    'query' => $data,
+                ]);
             }
 
             if ($response->getStatusCode() == 204) {
-                throw new QueryResponseException($postData ?: [], $response->getReasonPhrase());
+                return [];
             }
 
             return $this->parseResponse($response);
@@ -145,7 +150,7 @@ class DruidClient
             }
 
             throw new QueryResponseException(
-                $postData ?: [],
+                $data ?: [],
                 sprintf('%s: %s', $error['error'], $error['errorMessage']),
                 $exception
             );
@@ -265,7 +270,7 @@ class DruidClient
     {
         $url = $this->config('overlord_url') . '/druid/indexer/v1/task/' . urlencode($taskId) . '/status';
 
-        $response = $this->executeRawRequest($url);
+        $response = $this->executeRawRequest('get', $url);
 
         return $response['status'] ?: [];
     }
