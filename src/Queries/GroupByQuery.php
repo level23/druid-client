@@ -8,6 +8,7 @@ use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
@@ -279,5 +280,13 @@ class GroupByQuery implements QueryInterface
         return array_map(function ($row) {
             return $row['event'];
         }, $response);
+    }
+
+    /**
+     * @param \Level23\Druid\Collections\VirtualColumnCollection $virtualColumns
+     */
+    public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
+    {
+        $this->virtualColumns = $virtualColumns;
     }
 }
