@@ -5,11 +5,11 @@ namespace Level23\Druid\Concerns;
 
 use Closure;
 use InvalidArgumentException;
-use Level23\Druid\ExtractionBuilder;
+use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\ExtractionInterface;
-use Level23\Druid\FilterBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
+use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\IntervalFilter;

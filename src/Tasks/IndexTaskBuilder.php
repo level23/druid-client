@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid;
+namespace Level23\Druid\Tasks;
 
 use Closure;
 use InvalidArgumentException;
@@ -9,22 +9,21 @@ use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Concerns\HasInterval;
-use Level23\Druid\Concerns\HasIntervalValidation;
 use Level23\Druid\Concerns\HasQueryGranularity;
 use Level23\Druid\Concerns\HasSegmentGranularity;
 use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Context\TaskContext;
+use Level23\Druid\DruidClient;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 use Level23\Druid\Granularities\UniformGranularity;
-use Level23\Druid\Tasks\IndexTask;
-use Level23\Druid\Tasks\TaskInterface;
+use Level23\Druid\Transforms\TransformBuilder;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Types\DataType;
 
-class IndexTaskBuilder
+class IndexTaskBuilder extends TaskBuilder
 {
-    use HasSegmentGranularity, HasQueryGranularity, HasInterval, HasIntervalValidation, HasTuningConfig, HasAggregations;
+    use HasSegmentGranularity, HasQueryGranularity, HasInterval, HasTuningConfig, HasAggregations;
 
     /**
      * @var array
@@ -111,53 +110,6 @@ class IndexTaskBuilder
         $this->append = true;
 
         return $this;
-    }
-
-    /**
-     * Execute the index task. We will return the task identifier.
-     *
-     * @param \Level23\Druid\Context\TaskContext|array $context
-     *
-     * @return string
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
-     */
-    public function execute($context = [])
-    {
-        $task = $this->buildTask($context);
-
-        return $this->client->executeTask($task);
-    }
-
-    /**
-     * Execute the index task. We will return the task identifier.
-     *
-     * @param \Level23\Druid\Context\TaskContext|array $context
-     *
-     * @return string
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
-     */
-    public function toJson($context = []): string
-    {
-        $task = $this->buildTask($context);
-
-        $json = \GuzzleHttp\json_encode($task->toArray(), JSON_PRETTY_PRINT);
-
-        return $json;
-    }
-
-    /**
-     * Return the task as array
-     *
-     * @param \Level23\Druid\Context\TaskContext|array $context
-     *
-     * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
-     */
-    public function toArray($context = []): array
-    {
-        $task = $this->buildTask($context);
-
-        return $task->toArray();
     }
 
     /**
