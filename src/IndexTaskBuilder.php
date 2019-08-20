@@ -88,14 +88,11 @@ class IndexTaskBuilder
      */
     public function dimension(string $name, $type = 'string')
     {
-        if (is_string($type)) {
-            $type = strtolower($type);
-            if (!DataType::isValid($type)) {
-                throw new InvalidArgumentException(
-                    'The given output type is invalid: ' . $type . '. ' .
-                    'Allowed are: ' . implode(',', DataType::values())
-                );
-            }
+        if (is_string($type) && !DataType::isValid($type = strtolower($type))) {
+            throw new InvalidArgumentException(
+                'The given output type is invalid: ' . $type . '. ' .
+                'Allowed are: ' . implode(',', DataType::values())
+            );
         }
 
         $this->dimensions[] = ['name' => $name, 'type' => $type];
