@@ -9,4 +9,3 @@ vendor/
 composer.lock
 build/.phpunit.result.cache
 infection.log
-pre-commit-hook.sh
