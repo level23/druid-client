@@ -9,13 +9,7 @@ use Level23\Druid\DruidClient;
 
 $client = new DruidClient([
     'broker_url'     => 'https://stats.moportals.com',
-    'guzzle_options' => [
-        'timeout'         => 5,
-        'connect_timeout' => 5,
-    ],
-], function ($logMsg) {
-    //echo "[" . $logMsg . "]\n\n";
-});
+]);
 
 $response = $client->query('sms-counters', 'hour')
     ->interval(strtotime("now - 2 hours"), strtotime('tomorrow'))
