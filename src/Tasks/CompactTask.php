@@ -100,8 +100,8 @@ class CompactTask implements TaskInterface
         }
 
         if ($this->tuningConfig instanceof TuningConfig) {
-            $this->tuningConfig->type = 'index';
-            $result['tuningConfig']   = $this->tuningConfig->toArray();
+            $this->tuningConfig->setType('index');
+            $result['tuningConfig'] = $this->tuningConfig->toArray();
         }
 
         if ($this->context) {

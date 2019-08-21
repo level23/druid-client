@@ -13,7 +13,7 @@ abstract class Context
     protected $properties = [];
 
     /**
-     * GroupByV2QueryContext constructor.
+     * Context constructor.
      *
      * @param array $properties
      */
