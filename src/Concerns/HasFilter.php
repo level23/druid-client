@@ -156,7 +156,6 @@ trait HasFilter
      */
     public function whereIn(string $dimension, array $items, Closure $extraction = null)
     {
-
         $filter = new InFilter($dimension, $items, $this->getExtraction($extraction));
 
         return $this->where($filter);
