@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
+use InvalidArgumentException;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Extractions\ExtractionInterface;
 
@@ -37,7 +38,7 @@ class BetweenFilter implements FilterInterface
     protected $maxValue;
 
     /**
-     * @var \Level23\Druid\Types\SortingOrder|null
+     * @var \Level23\Druid\Types\SortingOrder|string|null
      */
     protected $ordering;
 
@@ -52,7 +53,7 @@ class BetweenFilter implements FilterInterface
      * @param string                   $dimension         The dimension to filter on
      * @param int|string               $minValue
      * @param int|string               $maxValue
-     * @param SortingOrder|null        $ordering          Specifies the sorting order to use when comparing values
+     * @param SortingOrder|null|string $ordering          Specifies the sorting order to use when comparing values
      *                                                    against the bound.
      * @param ExtractionInterface|null $extractionFunction
      */
@@ -60,9 +61,16 @@ class BetweenFilter implements FilterInterface
         string $dimension,
         $minValue,
         $maxValue,
-        SortingOrder $ordering = null,
+        $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
+        if (is_string($ordering) && !SortingOrder::isValid($ordering)) {
+            throw new InvalidArgumentException(
+                'The given sorting order is invalid: ' . $ordering . '. ' .
+                'Allowed are: ' . implode(',', SortingOrder::values())
+            );
+        }
+
         $this->dimension          = $dimension;
         $this->ordering           = $ordering ?: (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC());
         $this->extractionFunction = $extractionFunction;
