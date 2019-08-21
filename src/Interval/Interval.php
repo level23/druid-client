@@ -32,18 +32,12 @@ class Interval implements IntervalInterface
     {
         // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
         if (is_string($start) && $stop === null) {
-            if (preg_match(
-                '/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|\+\d{2}:\d{2}))\/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|\+\d{2}:\d{2}))$/',
-                $start,
-                $matches
-            )) {
-                $start = $matches[1];
-                $stop  = $matches[3];
+            if (strpos($start, '/') !== false) {
+                list($start, $stop) = explode('/', $start, 2);
             } else {
                 throw new InvalidArgumentException(
-                    'You should supply a valid start and stop date, ' .
-                    'or a valid interval range like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z ' .
-                    'in the $start parameter.'
+                    'Invalid interval given: ' . $start . '. ' .
+                    'You should supply a valid interval (start and stop date) which is split by a forward slash (/).'
                 );
             }
         }
