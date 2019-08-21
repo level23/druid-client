@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid;
+namespace Level23\Druid\Metadata;
 
+use Level23\Druid\DruidClient;
 use Level23\Druid\Exceptions\QueryResponseException;
-use Level23\Druid\Metadata\Structure;
 
 class MetadataBuilder
 {

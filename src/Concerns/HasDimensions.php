@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\LookupDimension;
-use Level23\Druid\ExtractionBuilder;
+use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Types\DataType;
 
 trait HasDimensions

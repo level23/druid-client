@@ -14,7 +14,7 @@ use Level23\Druid\Aggregations\LastAggregator;
 use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
-use Level23\Druid\FilterBuilder;
+use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Types\DataType;
 
