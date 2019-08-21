@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
-use Level23\Druid\Collections\OrderByCollection;
-use Level23\Druid\OrderBy\OrderBy;
-use Level23\Druid\OrderBy\OrderByInterface;
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\OrderBy\OrderBy;
+use Level23\Druid\OrderBy\OrderByInterface;
+use Level23\Druid\Collections\OrderByCollection;
 
 class OrderByCollectionTest extends TestCase
 {

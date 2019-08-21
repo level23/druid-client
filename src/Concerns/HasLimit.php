@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Level23\Druid\Limits\Limit;
-use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\OrderBy\OrderBy;
-use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Types\SortingOrder;
+use Level23\Druid\Limits\LimitInterface;
+use Level23\Druid\Types\OrderByDirection;
 
 trait HasLimit
 {

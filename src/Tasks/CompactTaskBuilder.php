@@ -4,12 +4,12 @@ declare(strict_types=1);
 namespace Level23\Druid\Tasks;
 
 use InvalidArgumentException;
-use Level23\Druid\Concerns\HasInterval;
-use Level23\Druid\Concerns\HasSegmentGranularity;
-use Level23\Druid\Concerns\HasTuningConfig;
-use Level23\Druid\Context\TaskContext;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Context\TaskContext;
+use Level23\Druid\Concerns\HasInterval;
+use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Interval\IntervalInterface;
+use Level23\Druid\Concerns\HasSegmentGranularity;
 
 class CompactTaskBuilder extends TaskBuilder
 {

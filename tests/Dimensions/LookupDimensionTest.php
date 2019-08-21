@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Dimensions;
 
-use Level23\Druid\Dimensions\LookupDimension;
 use tests\TestCase;
+use Level23\Druid\Dimensions\LookupDimension;
 
 class LookupDimensionTest extends TestCase
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Level23\Druid\Tasks;
 
 use Level23\Druid\Context\TaskContext;
-use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\TuningConfig\TuningConfig;
+use Level23\Druid\Interval\IntervalInterface;
 
 class CompactTask implements TaskInterface
 {

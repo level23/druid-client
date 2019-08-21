@@ -2,11 +2,11 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use Level23\Druid\Aggregations\FilteredAggregator;
-use Level23\Druid\Aggregations\SumAggregator;
-use Level23\Druid\Filters\InFilter;
-use Level23\Druid\Types\DataType;
 use tests\TestCase;
+use Level23\Druid\Types\DataType;
+use Level23\Druid\Filters\InFilter;
+use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\Aggregations\FilteredAggregator;
 
 class FilteredAggregatorTest extends TestCase
 {

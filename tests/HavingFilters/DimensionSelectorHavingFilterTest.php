@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\HavingFilters;
 
-use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 use tests\TestCase;
+use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 
 class DimensionSelectorHavingFilterTest extends TestCase
 {

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\HavingFilters;
 
-use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use tests\TestCase;
+use Level23\Druid\HavingFilters\LessThanHavingFilter;
 
 class LessThanHavingFilterTest extends TestCase
 {
