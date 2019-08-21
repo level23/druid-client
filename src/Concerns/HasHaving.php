@@ -146,9 +146,9 @@ trait HasHaving
         if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
             $this->having->addHavingFilter($havingFilter);
         } else {
-            $havings = [$this->having, $havingFilter];
+            $havingFilters = [$this->having, $havingFilter];
 
-            $this->having = new $type($havings);
+            $this->having = new $type($havingFilters);
         }
     }
 }

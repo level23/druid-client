@@ -43,13 +43,13 @@ class LookupExtractionTest extends TestCase
         bool $optimize,
         ?bool $injective
     ) {
-        $extr     = new LookupExtraction(
+        $extraction = new LookupExtraction(
             $lookup,
             $keepMissing,
             $optimize,
             $injective
         );
-        $expected = [
+        $expected   = [
             'type'     => 'registeredLookup',
             'lookup'   => $lookup,
             'optimize' => $optimize,
@@ -65,19 +65,19 @@ class LookupExtractionTest extends TestCase
             $expected['retainMissingValue'] = $keepMissing;
         }
 
-        $this->assertEquals($expected, $extr->toArray());
+        $this->assertEquals($expected, $extraction->toArray());
     }
 
     public function testExtractionFunctionDefaults()
     {
-        $extr     = new LookupExtraction('user');
-        $expected = [
+        $extraction = new LookupExtraction('user');
+        $expected   = [
             'type'               => 'registeredLookup',
             'lookup'             => "user",
             'optimize'           => true,
             'retainMissingValue' => true,
         ];
 
-        $this->assertEquals($expected, $extr->toArray());
+        $this->assertEquals($expected, $extraction->toArray());
     }
 }
