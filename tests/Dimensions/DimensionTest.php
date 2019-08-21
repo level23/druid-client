@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Dimensions;
 
+use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\RegexExtraction;
-use tests\TestCase;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 class DimensionTest extends TestCase
 {

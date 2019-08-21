@@ -3,17 +3,17 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use Level23\Druid\Extractions\CascadeExtraction;
-use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Extractions\ExtractionInterface;
-use Level23\Druid\Extractions\LookupExtraction;
-use Level23\Druid\Extractions\PartialExtraction;
-use Level23\Druid\Extractions\RegexExtraction;
-use Level23\Druid\Extractions\SearchQueryExtraction;
-use Level23\Druid\Extractions\SubstringExtraction;
-use Level23\Druid\Extractions\TimeFormatExtraction;
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\Extractions\RegexExtraction;
+use Level23\Druid\Extractions\LookupExtraction;
+use Level23\Druid\Extractions\CascadeExtraction;
+use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Extractions\PartialExtraction;
+use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\Extractions\SubstringExtraction;
+use Level23\Druid\Extractions\TimeFormatExtraction;
+use Level23\Druid\Extractions\SearchQueryExtraction;
 
 class HasExtractions extends TestCase
 {

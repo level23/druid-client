@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Collections;
 
 use ArrayIterator;
+use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Collections\AggregationCollection;
-use tests\TestCase;
 
 class BaseCollectionTest extends TestCase
 {

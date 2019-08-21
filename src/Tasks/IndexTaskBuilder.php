@@ -5,21 +5,21 @@ namespace Level23\Druid\Tasks;
 
 use Closure;
 use InvalidArgumentException;
-use Level23\Druid\Collections\AggregationCollection;
-use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\Concerns\HasAggregations;
-use Level23\Druid\Concerns\HasInterval;
-use Level23\Druid\Concerns\HasQueryGranularity;
-use Level23\Druid\Concerns\HasSegmentGranularity;
-use Level23\Druid\Concerns\HasTuningConfig;
-use Level23\Druid\Context\TaskContext;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
-use Level23\Druid\Granularities\ArbitraryGranularity;
-use Level23\Druid\Granularities\UniformGranularity;
-use Level23\Druid\Transforms\TransformBuilder;
-use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Types\DataType;
+use Level23\Druid\Context\TaskContext;
+use Level23\Druid\Concerns\HasInterval;
+use Level23\Druid\Concerns\HasAggregations;
+use Level23\Druid\Concerns\HasTuningConfig;
+use Level23\Druid\Transforms\TransformSpec;
+use Level23\Druid\Transforms\TransformBuilder;
+use Level23\Druid\Concerns\HasQueryGranularity;
+use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Concerns\HasSegmentGranularity;
+use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\Granularities\UniformGranularity;
+use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Granularities\ArbitraryGranularity;
 
 class IndexTaskBuilder extends TaskBuilder
 {

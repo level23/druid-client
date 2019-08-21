@@ -3,22 +3,22 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use Level23\Druid\Aggregations\AggregatorInterface;
-use Level23\Druid\Aggregations\CountAggregator;
-use Level23\Druid\Aggregations\DistinctCountAggregator;
-use Level23\Druid\Aggregations\FilteredAggregator;
-use Level23\Druid\Aggregations\FirstAggregator;
-use Level23\Druid\Aggregations\JavascriptAggregator;
-use Level23\Druid\Aggregations\LastAggregator;
+use Mockery;
+use tests\TestCase;
+use Level23\Druid\DruidClient;
+use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
-use Level23\Druid\DruidClient;
-use Level23\Druid\Filters\FilterBuilder;
-use Level23\Druid\Filters\SelectorFilter;
-use Level23\Druid\Queries\QueryBuilder;
-use Mockery;
-use tests\TestCase;
+use Level23\Druid\Aggregations\LastAggregator;
+use Level23\Druid\Aggregations\CountAggregator;
+use Level23\Druid\Aggregations\FirstAggregator;
+use Level23\Druid\Aggregations\FilteredAggregator;
+use Level23\Druid\Aggregations\AggregatorInterface;
+use Level23\Druid\Aggregations\JavascriptAggregator;
+use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 class HasAggregationsTest extends TestCase
 {

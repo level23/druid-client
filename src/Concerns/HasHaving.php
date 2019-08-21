@@ -5,19 +5,19 @@ namespace Level23\Druid\Concerns;
 
 use Closure;
 use InvalidArgumentException;
-use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\LikeFilter;
-use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
-use Level23\Druid\HavingFilters\AndHavingFilter;
-use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
-use Level23\Druid\HavingFilters\EqualToHavingFilter;
-use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
+use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\HavingFilters\HavingBuilder;
-use Level23\Druid\HavingFilters\HavingFilterInterface;
-use Level23\Druid\HavingFilters\LessThanHavingFilter;
-use Level23\Druid\HavingFilters\NotHavingFilter;
 use Level23\Druid\HavingFilters\OrHavingFilter;
+use Level23\Druid\HavingFilters\AndHavingFilter;
+use Level23\Druid\HavingFilters\NotHavingFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
+use Level23\Druid\HavingFilters\EqualToHavingFilter;
+use Level23\Druid\HavingFilters\LessThanHavingFilter;
+use Level23\Druid\HavingFilters\HavingFilterInterface;
+use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
+use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
+use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
 
 trait HasHaving
 {

@@ -2,10 +2,10 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use InvalidArgumentException;
-use Level23\Druid\Aggregations\SumAggregator;
-use Level23\Druid\Types\DataType;
 use tests\TestCase;
+use InvalidArgumentException;
+use Level23\Druid\Types\DataType;
+use Level23\Druid\Aggregations\SumAggregator;
 
 class SumAggregatorTest extends TestCase
 {

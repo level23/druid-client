@@ -4,19 +4,19 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
-use Level23\Druid\Aggregations\AggregatorInterface;
-use Level23\Druid\Aggregations\CountAggregator;
-use Level23\Druid\Aggregations\DistinctCountAggregator;
-use Level23\Druid\Aggregations\FilteredAggregator;
-use Level23\Druid\Aggregations\FirstAggregator;
-use Level23\Druid\Aggregations\JavascriptAggregator;
-use Level23\Druid\Aggregations\LastAggregator;
+use Level23\Druid\Types\DataType;
+use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
-use Level23\Druid\Filters\FilterBuilder;
-use Level23\Druid\Filters\FilterInterface;
-use Level23\Druid\Types\DataType;
+use Level23\Druid\Aggregations\LastAggregator;
+use Level23\Druid\Aggregations\CountAggregator;
+use Level23\Druid\Aggregations\FirstAggregator;
+use Level23\Druid\Aggregations\FilteredAggregator;
+use Level23\Druid\Aggregations\AggregatorInterface;
+use Level23\Druid\Aggregations\JavascriptAggregator;
+use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 trait HasAggregations
 {

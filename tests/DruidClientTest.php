@@ -3,22 +3,22 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid;
 
+use Mockery;
 use Exception;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ServerException;
-use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use tests\TestCase;
 use Hamcrest\Type\IsArray;
+use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Exceptions\QueryResponseException;
+use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
-use Mockery;
-use Psr\Log\LoggerInterface;
-use tests\TestCase;
+use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
 {
