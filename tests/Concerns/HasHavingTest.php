@@ -9,17 +9,17 @@ use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\NotFilter;
-use Level23\Druid\HavingBuilder;
 use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
+use Level23\Druid\HavingFilters\HavingBuilder;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\NotHavingFilter;
 use Level23\Druid\HavingFilters\OrHavingFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
-use Level23\Druid\QueryBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Mockery;
 use tests\TestCase;
 
@@ -31,7 +31,7 @@ class HasHavingTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 

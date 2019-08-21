@@ -8,7 +8,7 @@ use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\OrderBy\OrderBy;
-use Level23\Druid\QueryBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Types\SortingOrder;
 use Mockery;
@@ -22,7 +22,7 @@ class HasLimitTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 

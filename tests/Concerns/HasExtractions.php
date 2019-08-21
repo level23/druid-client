@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use Level23\Druid\ExtractionBuilder;
 use Level23\Druid\Extractions\CascadeExtraction;
+use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Extractions\PartialExtraction;

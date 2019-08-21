@@ -11,24 +11,24 @@ class InFilterTest extends TestCase
 {
     public function testFilter()
     {
-        $filter = new InFilter('name', ['Piet', 'Jan', 'Klaas']);
+        $filter = new InFilter('name', ['John', 'Jan', 'Jack']);
 
         $this->assertEquals([
             'type'      => 'in',
             'dimension' => 'name',
-            'values'    => ['Piet', 'Jan', 'Klaas'],
+            'values'    => ['John', 'Jan', 'Jack'],
         ], $filter->toArray());
     }
 
     public function testFilterWithExtraction()
     {
         $substring = new SubstringExtraction(1, 2);
-        $filter    = new InFilter('name', ['Piet', 'Jan', 'Klaas'], $substring);
+        $filter    = new InFilter('name', ['John', 'Jan', 'Jack'], $substring);
 
         $this->assertEquals([
             'type'         => 'in',
             'dimension'    => 'name',
-            'values'       => ['Piet', 'Jan', 'Klaas'],
+            'values'       => ['John', 'Jan', 'Jack'],
             'extractionFn' => $substring->toArray(),
         ], $filter->toArray());
     }

@@ -2,12 +2,14 @@
 
 namespace tests\Level23\Druid\Context;
 
+use Exception;
 use InvalidArgumentException;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
+use ReflectionMethod;
 use tests\TestCase;
 
 class ContextTest extends TestCase
@@ -29,6 +31,7 @@ class ContextTest extends TestCase
      * @param array  $extra
      *
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function testContext(string $class, array $extra = [])
     {
@@ -45,7 +48,7 @@ class ContextTest extends TestCase
 
             $property = lcfirst(substr($method, 3));
 
-            $reflection = new \ReflectionMethod($class, $method);
+            $reflection = new ReflectionMethod($class, $method);
             $parameters = $reflection->getParameters();
 
             switch ($parameters[0]->getType()) {
@@ -62,7 +65,7 @@ class ContextTest extends TestCase
                     break;
 
                 default:
-                    throw new \Exception('Unknown type: ' . $parameters[0]->getType());
+                    throw new Exception('Unknown type: ' . $parameters[0]->getType());
             }
 
             $properties[$property] = $value;
@@ -91,7 +94,7 @@ class ContextTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('was not found in ');
 
-        new GroupByV2QueryContext(['prio' => 1]);
+        new GroupByV2QueryContext(['something' => 1]);
     }
 
     public function testNonScalarValue()
