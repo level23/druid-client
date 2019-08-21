@@ -15,10 +15,12 @@ use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
+use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
@@ -159,6 +161,51 @@ trait HasFilter
     }
 
     /**
+     * This filter will select records where the given dimension is greater than or equal to the given minValue, and
+     * less than or equal to the given $maxValue.
+     *
+     * So in SQL syntax, this would be:
+     * ```
+     * WHERE dimension => $minValue AND dimension <= $maxValue
+     * ```
+     *
+     * @param string        $dimension
+     * @param string|int    $minValue
+     * @param string|int    $maxValue
+     * @param \Closure|null $extraction
+     *
+     * @return $this
+     */
+    public function whereBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null)
+    {
+        $filter = new BetweenFilter($dimension, $minValue, $maxValue, null, $this->getExtraction($extraction));
+
+        return $this->where($filter);
+    }
+
+    /**
+     * This filter will select records where the given dimension is NOT between the given min and max value.
+     *
+     * So in SQL syntax, this would be:
+     * ```
+     * WHERE dimension < $minValue AND dimension > $maxValue
+     * ```
+     *
+     * @param string        $dimension
+     * @param string|int    $minValue
+     * @param string|int    $maxValue
+     * @param \Closure|null $extraction
+     *
+     * @return $this
+     */
+    public function whereNotBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null)
+    {
+        $filter = new BetweenFilter($dimension, $minValue, $maxValue, null, $this->getExtraction($extraction));
+
+        return $this->where(new NotFilter($filter));
+    }
+
+    /**
      * Filter records where the given dimension NOT exists in the given list of items
      *
      * @param string        $dimension
@@ -193,6 +240,57 @@ trait HasFilter
         $filter = new IntervalFilter(
             $dimension,
             [new Interval($start, $stop)],
+            $this->getExtraction($extraction)
+        );
+
+        return $this->where($filter);
+    }
+
+    /**
+     * Filter on an dimension where the value exists in the given intervals array.
+     *
+     * The intervals array can contain the following:
+     * - an Interval object
+     * - an raw interval string as used in druid. For example: 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
+     *   or anything which can be parsed by DateTime::__construct
+     *
+     * @param string        $dimension
+     * @param array         $intervals
+     * @param \Closure|null $extraction
+     *
+     * @return $this
+     */
+    public function whereInIntervals(string $dimension, array $intervals, Closure $extraction = null)
+    {
+        $intervals = array_map(function ($interval) {
+
+            if ($interval instanceof IntervalInterface) {
+                return $interval;
+            }
+
+            if (is_string($interval) && preg_match(
+                    '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/',
+                    $interval
+                )) {
+                return new Interval($interval);
+            }
+
+            if (is_array($interval) && count($interval) == 2) {
+                list($start, $stop) = $interval;
+
+                return new Interval($start, $stop);
+            }
+
+            throw new InvalidArgumentException(
+                'Invalid type given in the interval array. We cannot process ' .
+                var_export($interval, true)
+            );
+        }, $intervals);
+
+        $filter = new IntervalFilter(
+            $dimension,
+            $intervals,
             $this->getExtraction($extraction)
         );
 
