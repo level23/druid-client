@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
+use DateTime;
 use InvalidArgumentException;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
@@ -11,14 +12,17 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
+use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
+use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
@@ -33,7 +37,8 @@ trait HasFilter
 
     /**
      * Filter our results where the given dimension matches the value based on the operator.
-     * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like', 'regex', 'javascript', 'in'
+     * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=', 'like', 'not like', 'regex', 'not regex',
+     * 'javascript', 'not javascript', 'search' and 'not search'
      *
      * @param string|\Level23\Druid\Filters\FilterInterface|\Closure $filterOrDimensionOrClosure
      * @param string|null                                            $operator
@@ -81,16 +86,30 @@ trait HasFilter
                 $filter = new LikeFilter(
                     $filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction)
                 );
+            } elseif ($operator == 'not like') {
+                $filter = new NotFilter(
+                    new LikeFilter($filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction))
+                );
             } elseif ($operator == 'javascript') {
                 $filter = new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+            } elseif ($operator == 'not javascript') {
+                $filter = new NotFilter(
+                    new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction))
+                );
             } elseif ($operator == 'regex' || $operator == 'regexp') {
                 $filter = new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+            } elseif ($operator == 'not regex' || $operator == 'not regexp') {
+                $filter = new NotFilter(
+                    new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction))
+                );
             } elseif ($operator == 'search') {
                 $filter = new SearchFilter(
                     $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
                 );
-            } elseif ($operator == 'in') {
-                $filter = new InFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+            } elseif ($operator == 'not search') {
+                $filter = new NotFilter(new SearchFilter(
+                    $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
+                ));
             } else {
                 $filter = null;
             }
@@ -152,10 +171,69 @@ trait HasFilter
      */
     public function whereIn(string $dimension, array $items, Closure $extraction = null)
     {
-
         $filter = new InFilter($dimension, $items, $this->getExtraction($extraction));
 
         return $this->where($filter);
+    }
+
+    /**
+     * This filter will select records where the given dimension is greater than or equal to the given minValue, and
+     * less than or equal to the given $maxValue.
+     *
+     * So in SQL syntax, this would be:
+     * ```
+     * WHERE dimension => $minValue AND dimension <= $maxValue
+     * ```
+     *
+     * @param string                   $dimension
+     * @param string|int               $minValue
+     * @param string|int               $maxValue
+     * @param \Closure|null            $extraction
+     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     *                                           between filter. Can be one of the following values: "lexicographic",
+     *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                           more details. By default it will be "numeric" if the values are
+     *                                           numeric, otherwise it will be "lexicographic"
+     *
+     * @return $this
+     */
+    public function whereBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null, $ordering = null)
+    {
+        $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
+
+        return $this->where($filter);
+    }
+
+    /**
+     * This filter will select records where the given dimension is NOT between the given min and max value.
+     *
+     * So in SQL syntax, this would be:
+     * ```
+     * WHERE dimension < $minValue AND dimension > $maxValue
+     * ```
+     *
+     * @param string                   $dimension
+     * @param string|int               $minValue
+     * @param string|int               $maxValue
+     * @param \Closure|null            $extraction
+     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     *                                           between filter. Can be one of the following values: "lexicographic",
+     *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                           more details. By default it will be "numeric" if the values are
+     *                                           numeric, otherwise it will be "lexicographic"
+     *
+     * @return $this
+     */
+    public function whereNotBetween(
+        string $dimension,
+        $minValue,
+        $maxValue,
+        Closure $extraction = null,
+        $ordering = null
+    ) {
+        $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
+
+        return $this->where(new NotFilter($filter));
     }
 
     /**
@@ -175,28 +253,117 @@ trait HasFilter
     }
 
     /**
-     * Apply a where filter using a interval.
+     * Filter on an dimension where the value exists in the given intervals array.
      *
-     * @param string                    $dimension
-     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct or a raw interval string as required by druid.
-     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct or null when $start contains an raw interval
-     *                                         string.
-     * @param \Closure|null             $extraction
+     * The intervals array can contain the following:
+     * - Only 2 elements, start and stop.
+     * - an Interval object
+     * - an raw interval string as used in druid. For example: 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     * - an array which each contain 2 elements, a start and stop date. These can be an DateTime object, a unix
+     * timestamp or anything which can be parsed by DateTime::__construct
+     *
+     * So valid are:
+     * ['now', 'tomorrow']
+     * [['now', 'now + 1 hour'], ['tomorrow', 'tomorrow + 1 hour']]
+     * ['2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z']
+     *
+     * @param string        $dimension
+     * @param array         $intervals
+     * @param \Closure|null $extraction
      *
      * @return $this
-     * @throws \Exception
      */
-    public function whereInterval(string $dimension, $start, $stop = null, Closure $extraction = null)
+    public function whereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
     {
         $filter = new IntervalFilter(
             $dimension,
-            [new Interval($start, $stop)],
+            $this->normalizeIntervals($intervals),
+            $this->getExtraction($extraction)
+        );
+
+        return $this->where(new NotFilter($filter));
+    }
+
+    /**
+     * Filter on an dimension where the value exists in the given intervals array.
+     *
+     * The intervals array can contain the following:
+     * - an Interval object
+     * - an raw interval string as used in druid. For example: 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
+     *   or anything which can be parsed by DateTime::__construct
+     *
+     * @param string        $dimension
+     * @param array         $intervals
+     * @param \Closure|null $extraction
+     *
+     * @return $this
+     */
+    public function whereInterval(string $dimension, array $intervals, Closure $extraction = null)
+    {
+        $filter = new IntervalFilter(
+            $dimension,
+            $this->normalizeIntervals($intervals),
             $this->getExtraction($extraction)
         );
 
         return $this->where($filter);
+    }
+
+    /**
+     * Normalize the given intervals into Interval objects.
+     *
+     * @param array $intervals
+     *
+     * @return array
+     */
+    protected function normalizeIntervals(array $intervals): array
+    {
+        $first = reset($intervals);
+
+        // If first is an array or already a druid interval string or object we do not wrap it in an array
+        if(!is_array($first) && !$this->isDruidInterval($first)) {
+            $intervals = [$intervals];
+        }
+
+        return array_map(function($interval) {
+
+            if($interval instanceof IntervalInterface) {
+                return $interval;
+            }
+
+            // If it is a string we explode it into to elements
+            if(is_string($interval)) {
+                $interval = explode('/', $interval, 2);
+            }
+
+            // If the value is an array and is not empty and has either one or 2 values its an interval array
+            if(is_array($interval) && !empty(array_filter($interval)) && count($interval) < 3) {
+                return new Interval(...$interval);
+            }
+
+            throw new InvalidArgumentException(
+                'Invalid type given in the interval array. We cannot process ' .
+                var_export($interval, true)
+            );
+
+        }, $intervals);
+    }
+
+    /**
+     * Returns true if the argument provided is a druid interval string or interface
+     *
+     * @param string|IntervalInterface $interval
+     *
+     * @return bool
+     */
+    protected function isDruidInterval($interval)
+    {
+        if($interval instanceof IntervalInterface) {
+            return true;
+        }
+
+        return is_string($interval) && strpos($interval, '/') !== false;
     }
 
     /**

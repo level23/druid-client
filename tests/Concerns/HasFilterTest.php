@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
+use DateTime;
 use Exception;
 use tests\TestCase;
 use InvalidArgumentException;
@@ -61,10 +62,83 @@ class HasFilterTest extends TestCase
             ['name', 'LiKE', 'John%', 'and'],
             ['name', 'javaScript', 'function() { return "John"; }', 'and'],
             ['name', 'regex', '^[0-9]*$', 'and'],
-            ['name', 'regexp', '^[0-9]*$', 'or'],
+            ['name', 'regexp', '^[0-9]*$', 'oR'],
             ['name', 'search', ['john', 'doe'], 'aNd'],
-            ['name', 'in', ['john', 'doe'], 'Or'],
         ];
+    }
+
+    public function normalizeIntervalsDataProvider(): array
+    {
+        return [
+            [
+                ['19-02-2019 00:00:00', '20-02-2019 00:00:00'],
+                [new Interval('19-02-2019 00:00:00', '20-02-2019 00:00:00')],
+            ],
+            [
+                [
+                    '2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z',
+                    '2019-03-15T08:00:00.000Z/2019-03-15T09:00:00.000Z',
+                ],
+                [
+                    new Interval('2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z'),
+                    new Interval('2019-03-15T08:00:00.000Z/2019-03-15T09:00:00.000Z'),
+                ],
+            ],
+            [
+                [new DateTime('19-02-2019 00:00:00'), new DateTime('20-02-2019 00:00:00')],
+                [new Interval('19-02-2019 00:00:00', '20-02-2019 00:00:00')],
+            ],
+            [
+                [($interval = new Interval('now', 'tomorrow'))],
+                [$interval],
+            ],
+            [
+                [['19-02-2019 00:00:00', '20-02-2019 00:00:00'], ['10-02-2019 00:00:00', '12-02-2019 00:00:00']],
+                [
+                    new Interval('19-02-2019 00:00:00', '20-02-2019 00:00:00'),
+                    new Interval('10-02-2019 00:00:00', '12-02-2019 00:00:00'),
+                ],
+            ],
+            [
+                [
+                    (new DateTime('19-02-2019 00:00:00'))->getTimestamp(),
+                    (new DateTime('20-02-2019 00:00:00'))->getTimestamp(),
+                ],
+                [new Interval('19-02-2019 00:00:00', '20-02-2019 00:00:00')],
+            ],
+            [
+                [null],
+                [],
+                InvalidArgumentException::class,
+            ],
+            [
+                ['19-02-2019 00:00:00', '20-02-2019 00:00:00', '21-02-2019 00:00:00'],
+                [],
+                InvalidArgumentException::class,
+            ],
+            [
+                [strtotime('19-02-2019 00:00:00'), strtotime('20-02-2019 00:00:00'), strtotime('21-02-2019 00:00:00')],
+                [],
+                InvalidArgumentException::class,
+            ],
+        ];
+    }
+
+    /**
+     * @param array $given
+     * @param array $expected
+     *
+     * @dataProvider normalizeIntervalsDataProvider
+     */
+    public function testNormalizeIntervals(array $given, array $expected, string $expectException = "")
+    {
+        if (!empty($expectException)) {
+            $this->expectException($expectException);
+        }
+        /** @noinspection PhpUndefinedMethodInspection */
+        $response = $this->builder->shouldAllowMockingProtectedMethods()->normalizeIntervals($given);
+
+        $this->assertEquals($expected, $response);
     }
 
     /**
@@ -264,7 +338,7 @@ class HasFilterTest extends TestCase
                 $this->assertNull($extraction);
             });
 
-        $response = $this->builder->whereInterval('__time', $interval->getStart(), $interval->getStop(), null);
+        $response = $this->builder->whereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
 
         $this->assertEquals($this->builder, $response);
     }
