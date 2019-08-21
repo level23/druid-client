@@ -10,6 +10,7 @@ use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 
 class TopNQuery implements QueryInterface
@@ -33,6 +34,11 @@ class TopNQuery implements QueryInterface
      * @var \Level23\Druid\Dimensions\DimensionInterface
      */
     protected $dimension;
+
+    /**
+     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
+     */
+    protected $virtualColumns;
 
     /**
      * @var int
@@ -116,6 +122,10 @@ class TopNQuery implements QueryInterface
 
         if ($this->filter) {
             $result['filter'] = $this->filter->toArray();
+        }
+
+        if ($this->virtualColumns) {
+            $query['virtualColumns'] = $this->virtualColumns->toArray();
         }
 
         if ($this->aggregations) {
@@ -209,6 +219,14 @@ class TopNQuery implements QueryInterface
         return array_map(function ($row) {
             return $row['result'];
         }, $response);
+    }
+
+    /**
+     * @param \Level23\Druid\Collections\VirtualColumnCollection $virtualColumns
+     */
+    public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
+    {
+        $this->virtualColumns = $virtualColumns;
     }
 }
 
