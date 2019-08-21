@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
-use Level23\Druid\Collections\DimensionCollection;
-use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Dimensions\DimensionInterface;
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\Dimensions\DimensionInterface;
+use Level23\Druid\Collections\DimensionCollection;
 
 class DimensionCollectionTest extends TestCase
 {

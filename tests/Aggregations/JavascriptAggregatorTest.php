@@ -2,8 +2,8 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use Level23\Druid\Aggregations\JavascriptAggregator;
 use tests\TestCase;
+use Level23\Druid\Aggregations\JavascriptAggregator;
 
 class JavascriptAggregatorTest extends TestCase
 {

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
+use Mockery;
 use DateTime;
-use Level23\Druid\Collections\IntervalCollection;
+use tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Interval\IntervalInterface;
-use Mockery;
-use tests\TestCase;
+use Level23\Druid\Collections\IntervalCollection;
 
 class IntervalCollectionTest extends TestCase
 {

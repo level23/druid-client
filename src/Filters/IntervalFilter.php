@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Interval\IntervalInterface;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class IntervalFilter

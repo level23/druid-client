@@ -19,7 +19,7 @@ class VirtualColumnCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        return array_map(function(VirtualColumnInterface $item) {
+        return array_map(function (VirtualColumnInterface $item) {
             return $item->toArray();
         }, $this->items);
     }

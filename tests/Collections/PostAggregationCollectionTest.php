@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
-use Level23\Druid\Collections\PostAggregationCollection;
-use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
-use Level23\Druid\PostAggregations\PostAggregatorInterface;
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\PostAggregations\PostAggregatorInterface;
+use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 
 class PostAggregationCollectionTest extends TestCase
 {

@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
+use Mockery;
 use DateTime;
 use Exception;
+use tests\TestCase;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\QueryBuilder;
-use Mockery;
-use tests\TestCase;
 
 class HasIntervalsTest extends TestCase
 {

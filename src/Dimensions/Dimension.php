@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Level23\Druid\Dimensions;
 
 use InvalidArgumentException;
-use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Types\DataType;
+use Level23\Druid\Extractions\ExtractionInterface;
 
 class Dimension implements DimensionInterface
 {

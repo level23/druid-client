@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
+use tests\TestCase;
 use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\SelectorFilter;
-use tests\TestCase;
 
 class OrFilterTest extends TestCase
 {

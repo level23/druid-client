@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Extractions;
 
-use Level23\Druid\Extractions\RegexExtraction;
 use tests\TestCase;
+use Level23\Druid\Extractions\RegexExtraction;
 
 class RegexExtractionTest extends TestCase
 {

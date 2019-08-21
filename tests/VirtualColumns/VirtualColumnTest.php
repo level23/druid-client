@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\VirtualColumns;
 
+use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\VirtualColumns\VirtualColumn;
-use tests\TestCase;
 
 class VirtualColumnTest extends TestCase
 {

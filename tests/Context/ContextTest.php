@@ -3,14 +3,14 @@
 namespace tests\Level23\Druid\Context;
 
 use Exception;
+use tests\TestCase;
+use ReflectionMethod;
 use InvalidArgumentException;
 use Level23\Druid\Context\ContextInterface;
-use Level23\Druid\Context\GroupByV1QueryContext;
-use Level23\Druid\Context\GroupByV2QueryContext;
-use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Context\TopNQueryContext;
-use ReflectionMethod;
-use tests\TestCase;
+use Level23\Druid\Context\GroupByV2QueryContext;
+use Level23\Druid\Context\GroupByV1QueryContext;
+use Level23\Druid\Context\TimeSeriesQueryContext;
 
 class ContextTest extends TestCase
 {

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Extractions;
 
-use Level23\Druid\Extractions\LookupExtraction;
 use tests\TestCase;
+use Level23\Druid\Extractions\LookupExtraction;
 
 class LookupExtractionTest extends TestCase
 {

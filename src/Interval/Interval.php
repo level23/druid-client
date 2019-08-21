@@ -20,8 +20,10 @@ class Interval implements IntervalInterface
     /**
      * Interval constructor.
      *
-     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by DateTime::__construct
-     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
+     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by
+     *                                         DateTime::__construct
+     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by
+     *                                         DateTime::__construct
      *
      * @throws \Exception
      */

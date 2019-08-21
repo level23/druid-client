@@ -2,10 +2,10 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use InvalidArgumentException;
-use Level23\Druid\Aggregations\MaxAggregator;
-use Level23\Druid\Types\DataType;
 use tests\TestCase;
+use InvalidArgumentException;
+use Level23\Druid\Types\DataType;
+use Level23\Druid\Aggregations\MaxAggregator;
 
 class MaxAggregatorTest extends TestCase
 {

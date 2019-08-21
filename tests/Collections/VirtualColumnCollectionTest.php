@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
-use Level23\Druid\Collections\VirtualColumnCollection;
-use Level23\Druid\VirtualColumns\VirtualColumn;
-use Level23\Druid\VirtualColumns\VirtualColumnInterface;
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Collections\VirtualColumnCollection;
+use Level23\Druid\VirtualColumns\VirtualColumnInterface;
 
 class VirtualColumnCollectionTest extends TestCase
 {
