@@ -319,39 +319,51 @@ trait HasFilter
      */
     protected function normalizeIntervals(array $intervals): array
     {
-        // 2 items? Then check if we received a "start" and "stop".
-        if (count($intervals) == 2) {
-            $first = reset($intervals);
+        $first = reset($intervals);
 
-            if (is_string($first) && strpos($first, '/') === false
-                || $first instanceof DateTime
-                || is_numeric($first)
-            ) {
-                $intervals = [$intervals];
-            }
+        // If first is an array or already a druid interval string or object we do not wrap it in an array
+        if(!is_array($first) && !$this->isDruidInterval($first)) {
+            $intervals = [$intervals];
         }
 
-        return array_map(function ($interval) {
+        return array_map(function($interval) {
 
-            if ($interval instanceof IntervalInterface) {
+            if($interval instanceof IntervalInterface) {
                 return $interval;
             }
 
-            if (is_string($interval)) {
-                return new Interval($interval);
+            // If it is a string we explode it into to elements
+            if(is_string($interval)) {
+                $interval = explode('/', $interval, 2);
             }
 
-            if (is_array($interval) && count($interval) == 2) {
-                list($start, $stop) = $interval;
-
-                return new Interval($start, $stop);
+            // If the value is an array and is not empty and has either one or 2 values its an interval array
+            if(is_array($interval) && !empty(array_filter($interval)) && count($interval) < 3) {
+                return new Interval(...$interval);
             }
 
             throw new InvalidArgumentException(
                 'Invalid type given in the interval array. We cannot process ' .
                 var_export($interval, true)
             );
+
         }, $intervals);
+    }
+
+    /**
+     * Returns true if the argument provided is a druid interval string or interface
+     *
+     * @param string $interval
+     *
+     * @return bool
+     */
+    protected function isDruidInterval($interval)
+    {
+        if($interval instanceof Interval) {
+            return true;
+        }
+
+        return is_string($interval) && strpos($interval, '/') !== false;
     }
 
     /**
