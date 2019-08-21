@@ -6,6 +6,7 @@ use Exception;
 use tests\TestCase;
 use ReflectionMethod;
 use InvalidArgumentException;
+use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
@@ -21,6 +22,7 @@ class ContextTest extends TestCase
             [GroupByV2QueryContext::class, ['groupByStrategy' => 'v2']],
             [TopNQueryContext::class],
             [TimeSeriesQueryContext::class],
+            [TaskContext::class],
         ];
     }
 
