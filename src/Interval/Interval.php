@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Interval;
 
 use DateTime;
+use InvalidArgumentException;
 
 class Interval implements IntervalInterface
 {
@@ -30,16 +31,21 @@ class Interval implements IntervalInterface
     public function __construct($start, $stop = null)
     {
         // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
-        if (is_string($start)
-            && $stop === null
-            && preg_match(
+        if (is_string($start) && $stop === null) {
+            if (preg_match(
                 '/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|\+\d{2}:\d{2}))\/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3}Z|\+\d{2}:\d{2}))$/',
                 $start,
                 $matches
-            )
-        ) {
-            $start = $matches[1];
-            $stop  = $matches[3];
+            )) {
+                $start = $matches[1];
+                $stop  = $matches[3];
+            } else {
+                throw new InvalidArgumentException(
+                    'You should supply a valid start and stop date, ' .
+                    'or a valid interval range like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z ' .
+                    'in the $start parameter.'
+                );
+            }
         }
 
         if (!$start instanceof DateTime) {
