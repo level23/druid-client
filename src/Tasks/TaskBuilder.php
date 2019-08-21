@@ -71,7 +71,7 @@ abstract class TaskBuilder
     }
 
     /**
-     * Execute the index task. We will return the task identifier.
+     * Return the task in Json format.
      *
      * @param \Level23\Druid\Context\TaskContext|array $context
      *
