@@ -2,8 +2,8 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use Level23\Druid\Aggregations\DistinctCountAggregator;
 use tests\TestCase;
+use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 class DistinctCountAggregatorTest extends TestCase
 {

@@ -30,10 +30,10 @@ class RegexExtraction implements ExtractionInterface
      *
      * @param string      $regexp
      * @param int         $groupToExtract
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The value
-     *                                 will be null. If false, the missing items will not be kept in the result set. If
-     *                                 this is a string, we will keep the missing values and replace them with the
-     *                                 string value.
+     * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
+     *                                         value will be null. If false, the missing items will not be kept in the
+     *                                         result set. If this is a string, we will keep the missing values and
+     *                                         replace them with the string value.
      */
     public function __construct(
         string $regexp,

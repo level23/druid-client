@@ -3,12 +3,12 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Limits;
 
-use Level23\Druid\Collections\OrderByCollection;
+use tests\TestCase;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\OrderBy\OrderBy;
-use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Types\SortingOrder;
-use tests\TestCase;
+use Level23\Druid\Types\OrderByDirection;
+use Level23\Druid\Collections\OrderByCollection;
 
 class LimitTest extends TestCase
 {

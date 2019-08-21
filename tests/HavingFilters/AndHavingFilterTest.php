@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\HavingFilters;
 
+use tests\TestCase;
 use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
-use tests\TestCase;
 
 class AndHavingFilterTest extends TestCase
 {

@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\LookupExtraction;
-use Level23\Druid\Filters\SearchFilter;
 use tests\TestCase;
+use Level23\Druid\Filters\SearchFilter;
+use Level23\Druid\Extractions\LookupExtraction;
 
 class SearchFilterTest extends TestCase
 {

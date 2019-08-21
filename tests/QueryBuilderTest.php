@@ -3,16 +3,16 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid;
 
-use Level23\Druid\Collections\DimensionCollection;
-use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\Dimensions\Dimension;
+use Mockery;
+use tests\TestCase;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Queries\TopNQuery;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Queries\TimeSeriesQuery;
-use Level23\Druid\Queries\TopNQuery;
-use Mockery;
-use tests\TestCase;
+use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Collections\DimensionCollection;
 
 class QueryBuilderTest extends TestCase
 {

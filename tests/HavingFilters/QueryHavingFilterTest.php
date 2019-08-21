@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\HavingFilters;
 
+use tests\TestCase;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
-use tests\TestCase;
 
 class QueryHavingFilterTest extends TestCase
 {
