@@ -97,7 +97,7 @@ class DruidClient
     {
         $payload = $task->toArray();
 
-        $this->log('Executing druid task', ['TaskBuilder' => $payload]);
+        $this->log('Executing druid task', ['task' => $payload]);
 
         $result = $this->executeRawRequest(
             'post',
@@ -107,7 +107,7 @@ class DruidClient
 
         $this->log('Received task response', ['response' => $result]);
 
-        return $result['TaskBuilder'];
+        return $result['task'];
     }
 
     /**
