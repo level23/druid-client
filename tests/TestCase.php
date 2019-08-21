@@ -22,10 +22,11 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
         $property = $reflectionClass->getProperty($propertyName);
         $property->setAccessible(true);
+
         return $property->getValue($object);
     }
 
-    public function assertArrayContainsSubset( array  $expectedSubset, array  $actualArray )
+    public function assertArrayContainsSubset(array $expectedSubset, array $actualArray)
     {
         foreach ($expectedSubset as $key => $value) {
             $this->assertArrayHasKey($key, $actualArray);

@@ -29,7 +29,7 @@ class NotFilter implements FilterInterface
     public function toArray(): array
     {
         return [
-            'type'   => 'not',
+            'type'  => 'not',
             'field' => $this->filter->toArray(),
         ];
     }

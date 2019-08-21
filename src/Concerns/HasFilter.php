@@ -5,23 +5,23 @@ namespace Level23\Druid\Concerns;
 
 use Closure;
 use InvalidArgumentException;
-use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Extractions\ExtractionInterface;
-use Level23\Druid\Filters\AndFilter;
-use Level23\Druid\Filters\BoundFilter;
-use Level23\Druid\Filters\FilterBuilder;
-use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\InFilter;
-use Level23\Druid\Filters\IntervalFilter;
-use Level23\Druid\Filters\JavascriptFilter;
-use Level23\Druid\Filters\LikeFilter;
-use Level23\Druid\Filters\LogicalExpressionFilterInterface;
-use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Filters\OrFilter;
+use Level23\Druid\Filters\AndFilter;
+use Level23\Druid\Filters\NotFilter;
+use Level23\Druid\Interval\Interval;
+use Level23\Druid\Filters\LikeFilter;
+use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
+use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\SelectorFilter;
-use Level23\Druid\Interval\Interval;
+use Level23\Druid\Filters\FilterInterface;
+use Level23\Druid\Filters\JavascriptFilter;
+use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 trait HasFilter
 {
@@ -178,10 +178,11 @@ trait HasFilter
      * Apply a where filter using a interval.
      *
      * @param string                    $dimension
-     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by DateTime::__construct
-     *                                    or a raw interval string as required by druid.
-     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by DateTime::__construct
-     *                                    or null when $start contains an raw interval string.
+     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by
+     *                                         DateTime::__construct or a raw interval string as required by druid.
+     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by
+     *                                         DateTime::__construct or null when $start contains an raw interval
+     *                                         string.
      * @param \Closure|null             $extraction
      *
      * @return $this

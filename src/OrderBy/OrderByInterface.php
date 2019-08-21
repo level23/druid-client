@@ -16,12 +16,14 @@ interface OrderByInterface
 
     /**
      * The dimension where we should order on.
+     *
      * @return string
      */
     public function getDimension(): string;
 
     /**
      * Return the direction of the order by
+     *
      * @return \Level23\Druid\Types\OrderByDirection
      */
     public function getDirection(): OrderByDirection;

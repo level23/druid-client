@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use InvalidArgumentException;
-use Level23\Druid\Extractions\LookupExtraction;
-use Level23\Druid\Filters\BoundFilter;
-use Level23\Druid\Types\SortingOrder;
 use tests\TestCase;
+use InvalidArgumentException;
+use Level23\Druid\Types\SortingOrder;
+use Level23\Druid\Filters\BoundFilter;
+use Level23\Druid\Extractions\LookupExtraction;
 
 class BoundFilterTest extends TestCase
 {

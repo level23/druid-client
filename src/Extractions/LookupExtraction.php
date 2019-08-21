@@ -34,15 +34,14 @@ class LookupExtraction implements ExtractionInterface
      * LookupExtraction constructor.
      *
      * @param string      $lookupName
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup function. The
-     *                                 original value will be kept. If false, the missing items will not be kept in the
-     *                                 result set. If this is a string, we will keep the missing values and replace them
-     *                                 with the string value.
+     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     *                                         function. The original value will be kept. If false, the missing items
+     *                                         will not be kept in the result set. If this is a string, we will keep
+     *                                         the missing values and replace them with the string value.
      * @param bool        $optimize
-     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether or not it
-     *                                 is
-     *                                 injective. If left unspecified, Druid will use the registered
-     *                                 cluster-wide lookup configuration.
+     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
+     *                                         or not it is injective. If left unspecified, Druid will use the
+     *                                         registered cluster-wide lookup configuration.
      *
      * For  more information about injective, see:
      * https://druid.apache.org/docs/latest/querying/lookups.html#query-execution

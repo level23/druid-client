@@ -3,12 +3,12 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tasks;
 
-use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Context\TaskContext;
-use Level23\Druid\Firehoses\FirehoseInterface;
-use Level23\Druid\Granularities\GranularityInterface;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
+use Level23\Druid\Firehoses\FirehoseInterface;
+use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Granularities\GranularityInterface;
 
 class IndexTask implements TaskInterface
 {

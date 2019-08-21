@@ -3,17 +3,17 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use ArrayObject;
-use InvalidArgumentException;
-use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Dimensions\DimensionInterface;
-use Level23\Druid\Dimensions\LookupDimension;
-use Level23\Druid\DruidClient;
-use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Queries\QueryBuilder;
-use Level23\Druid\Types\DataType;
 use Mockery;
+use ArrayObject;
 use tests\TestCase;
+use InvalidArgumentException;
+use Level23\Druid\DruidClient;
+use Level23\Druid\Types\DataType;
+use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Dimensions\LookupDimension;
+use Level23\Druid\Dimensions\DimensionInterface;
+use Level23\Druid\Extractions\ExtractionBuilder;
 
 class HasDimensionsTest extends TestCase
 {

@@ -2,8 +2,8 @@
 
 namespace tests\Level23\Druid\Aggregations;
 
-use Level23\Druid\Aggregations\CountAggregator;
 use tests\TestCase;
+use Level23\Druid\Aggregations\CountAggregator;
 
 class CountAggregatorTest extends TestCase
 {
@@ -13,9 +13,9 @@ class CountAggregatorTest extends TestCase
 
         $aggregator = new CountAggregator($name);
 
-        $this->assertEquals( [
+        $this->assertEquals([
             'type' => 'count',
-            'name' => $name
+            'name' => $name,
         ], $aggregator->toArray());
     }
 }

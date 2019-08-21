@@ -4,29 +4,29 @@ declare(strict_types=1);
 namespace Level23\Druid\Queries;
 
 use InvalidArgumentException;
-use Level23\Druid\Collections\AggregationCollection;
-use Level23\Druid\Collections\DimensionCollection;
-use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\Collections\PostAggregationCollection;
-use Level23\Druid\Collections\VirtualColumnCollection;
-use Level23\Druid\Concerns\HasAggregations;
-use Level23\Druid\Concerns\HasDimensions;
+use Level23\Druid\DruidClient;
+use Level23\Druid\Concerns\HasLimit;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Concerns\HasFilter;
 use Level23\Druid\Concerns\HasHaving;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Concerns\HasIntervals;
-use Level23\Druid\Concerns\HasLimit;
-use Level23\Druid\Concerns\HasPostAggregations;
+use Level23\Druid\Limits\LimitInterface;
+use Level23\Druid\Concerns\HasDimensions;
+use Level23\Druid\Types\OrderByDirection;
+use Level23\Druid\Concerns\HasAggregations;
+use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Concerns\HasVirtualColumns;
+use Level23\Druid\Concerns\HasPostAggregations;
+use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
+use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
-use Level23\Druid\Context\TopNQueryContext;
-use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\DruidClient;
-use Level23\Druid\Limits\LimitInterface;
-use Level23\Druid\Types\Granularity;
-use Level23\Druid\Types\OrderByDirection;
-use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Collections\DimensionCollection;
+use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
+use Level23\Druid\Collections\PostAggregationCollection;
 
 class QueryBuilder
 {

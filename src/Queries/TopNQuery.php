@@ -4,13 +4,13 @@ declare(strict_types=1);
 namespace Level23\Druid\Queries;
 
 use InvalidArgumentException;
-use Level23\Druid\Collections\AggregationCollection;
-use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Types\Granularity;
+use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Dimensions\DimensionInterface;
-use Level23\Druid\Filters\FilterInterface;
-use Level23\Druid\Types\Granularity;
+use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Collections\PostAggregationCollection;
 
 class TopNQuery implements QueryInterface
 {

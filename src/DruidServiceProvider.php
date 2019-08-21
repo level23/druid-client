@@ -8,9 +8,9 @@
 
 namespace Level23\Druid;
 
-use Illuminate\Foundation\Application as LaravelApplication;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
+use Illuminate\Foundation\Application as LaravelApplication;
 
 class DruidServiceProvider extends ServiceProvider
 {

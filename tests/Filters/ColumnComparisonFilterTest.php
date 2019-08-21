@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\Filters\ColumnComparisonFilter;
 use tests\TestCase;
+use Level23\Druid\Filters\ColumnComparisonFilter;
 
 class ColumnComparisonFilterTest extends TestCase
 {

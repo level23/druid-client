@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Collections;
 
-use Level23\Druid\Aggregations\AggregatorInterface;
-use Level23\Druid\Aggregations\SumAggregator;
-use Level23\Druid\Collections\AggregationCollection;
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\Aggregations\AggregatorInterface;
+use Level23\Druid\Collections\AggregationCollection;
 
 class AggregationCollectionTest extends TestCase
 {
