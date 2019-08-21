@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
+use DateTime;
 use InvalidArgumentException;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
@@ -11,6 +12,7 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
+use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
@@ -169,16 +171,21 @@ trait HasFilter
      * WHERE dimension => $minValue AND dimension <= $maxValue
      * ```
      *
-     * @param string        $dimension
-     * @param string|int    $minValue
-     * @param string|int    $maxValue
-     * @param \Closure|null $extraction
+     * @param string                   $dimension
+     * @param string|int               $minValue
+     * @param string|int               $maxValue
+     * @param \Closure|null            $extraction
+     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     *                                           between filter. Can be one of the following values: "lexicographic",
+     *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                           more details. By default it will be "numeric" if the values are
+     *                                           numeric, otherwise it will be "lexicographic"
      *
      * @return $this
      */
-    public function whereBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null)
+    public function whereBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null, $ordering = null)
     {
-        $filter = new BetweenFilter($dimension, $minValue, $maxValue, null, $this->getExtraction($extraction));
+        $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
         return $this->where($filter);
     }
@@ -191,16 +198,26 @@ trait HasFilter
      * WHERE dimension < $minValue AND dimension > $maxValue
      * ```
      *
-     * @param string        $dimension
-     * @param string|int    $minValue
-     * @param string|int    $maxValue
-     * @param \Closure|null $extraction
+     * @param string                   $dimension
+     * @param string|int               $minValue
+     * @param string|int               $maxValue
+     * @param \Closure|null            $extraction
+     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     *                                           between filter. Can be one of the following values: "lexicographic",
+     *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                           more details. By default it will be "numeric" if the values are
+     *                                           numeric, otherwise it will be "lexicographic"
      *
      * @return $this
      */
-    public function whereNotBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null)
-    {
-        $filter = new BetweenFilter($dimension, $minValue, $maxValue, null, $this->getExtraction($extraction));
+    public function whereNotBetween(
+        string $dimension,
+        $minValue,
+        $maxValue,
+        Closure $extraction = null,
+        $ordering = null
+    ) {
+        $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
         return $this->where(new NotFilter($filter));
     }
@@ -222,28 +239,35 @@ trait HasFilter
     }
 
     /**
-     * Apply a where filter using a interval.
+     * Filter on an dimension where the value exists in the given intervals array.
      *
-     * @param string                    $dimension
-     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct or a raw interval string as required by druid.
-     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct or null when $start contains an raw interval
-     *                                         string.
-     * @param \Closure|null             $extraction
+     * The intervals array can contain the following:
+     * - Only 2 elements, start and stop.
+     * - an Interval object
+     * - an raw interval string as used in druid. For example: 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     * - an array which each contain 2 elements, a start and stop date. These can be an DateTime object, a unix
+     * timestamp or anything which can be parsed by DateTime::__construct
+     *
+     * So valid are:
+     * ['now', 'tomorrow']
+     * [['now', 'now + 1 hour'], ['tomorrow', 'tomorrow + 1 hour']]
+     * ['2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z']
+     *
+     * @param string        $dimension
+     * @param array         $intervals
+     * @param \Closure|null $extraction
      *
      * @return $this
-     * @throws \Exception
      */
-    public function whereInterval(string $dimension, $start, $stop = null, Closure $extraction = null)
+    public function whereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
     {
         $filter = new IntervalFilter(
             $dimension,
-            [new Interval($start, $stop)],
+            $this->normalizeIntervals($intervals),
             $this->getExtraction($extraction)
         );
 
-        return $this->where($filter);
+        return $this->where(new NotFilter($filter));
     }
 
     /**
@@ -261,9 +285,39 @@ trait HasFilter
      *
      * @return $this
      */
-    public function whereInIntervals(string $dimension, array $intervals, Closure $extraction = null)
+    public function whereInterval(string $dimension, array $intervals, Closure $extraction = null)
     {
-        $intervals = array_map(function ($interval) {
+        $filter = new IntervalFilter(
+            $dimension,
+            $this->normalizeIntervals($intervals),
+            $this->getExtraction($extraction)
+        );
+
+        return $this->where($filter);
+    }
+
+    /**
+     * Normalize the given intervals into Interval objects.
+     *
+     * @param array $intervals
+     *
+     * @return array
+     */
+    protected function normalizeIntervals(array $intervals): array
+    {
+        // 2 items? Then check if we received a "start" and "stop".
+        if (count($intervals) == 2) {
+            $first = reset($intervals);
+
+            if (is_string($first) && strpos($first, '/') === false
+                || $first instanceof DateTime
+                || is_numeric($first)
+            ) {
+                $intervals = [$intervals];
+            }
+        }
+
+        return array_map(function ($interval) {
 
             if ($interval instanceof IntervalInterface) {
                 return $interval;
@@ -284,14 +338,6 @@ trait HasFilter
                 var_export($interval, true)
             );
         }, $intervals);
-
-        $filter = new IntervalFilter(
-            $dimension,
-            $intervals,
-            $this->getExtraction($extraction)
-        );
-
-        return $this->where($filter);
     }
 
     /**
