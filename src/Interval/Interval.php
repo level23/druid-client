@@ -39,7 +39,7 @@ class Interval implements IntervalInterface
             )
         ) {
             $start = $matches[1];
-            $stop  = $matches[2];
+            $stop  = $matches[3];
         }
 
         if (!$start instanceof DateTime) {
