@@ -62,9 +62,8 @@ class HasFilterTest extends TestCase
             ['name', 'LiKE', 'John%', 'and'],
             ['name', 'javaScript', 'function() { return "John"; }', 'and'],
             ['name', 'regex', '^[0-9]*$', 'and'],
-            ['name', 'regexp', '^[0-9]*$', 'or'],
+            ['name', 'regexp', '^[0-9]*$', 'oR'],
             ['name', 'search', ['john', 'doe'], 'aNd'],
-            ['name', 'in', ['john', 'doe'], 'Or'],
         ];
     }
 
