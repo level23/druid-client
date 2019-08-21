@@ -7,10 +7,10 @@ use Exception;
 use Hamcrest\Core\IsInstanceOf;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use Level23\Druid\ExtractionBuilder;
-use Level23\Druid\FilterBuilder;
+use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\BoundFilter;
+use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\IntervalFilter;
@@ -22,7 +22,7 @@ use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Interval\Interval;
-use Level23\Druid\QueryBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Mockery;
 use tests\TestCase;
 
@@ -34,7 +34,7 @@ class HasFilterTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 
@@ -59,7 +59,7 @@ class HasFilterTest extends TestCase
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
             ['name', 'LiKE', 'John%', 'and'],
-            ['name', 'javaScript', 'function() { return "Piet"; }', 'and'],
+            ['name', 'javaScript', 'function() { return "John"; }', 'and'],
             ['name', 'regex', '^[0-9]*$', 'and'],
             ['name', 'regexp', '^[0-9]*$', 'or'],
             ['name', 'search', ['john', 'doe'], 'aNd'],

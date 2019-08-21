@@ -7,7 +7,7 @@ use DateTime;
 use Exception;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Interval\Interval;
-use Level23\Druid\QueryBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Mockery;
 use tests\TestCase;
 
@@ -19,7 +19,7 @@ class HasIntervalsTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 
@@ -67,9 +67,9 @@ class HasIntervalsTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage(
-            'DateTime::__construct(): Failed to parse time string (hoi) at position 0 (h): The timezone could not be found in the database'
+            'DateTime::__construct(): Failed to parse time string (hi) at position 0 (h): The timezone could not be found in the database'
         );
 
-        $this->builder->interval("hoi", "doei");
+        $this->builder->interval('hi', 'bye');
     }
 }
