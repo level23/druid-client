@@ -54,11 +54,11 @@ class ColumnComparisonFilter implements FilterInterface
     public function toArray(): array
     {
         return [
-            'type'      => 'columnComparison',
+            'type'       => 'columnComparison',
             'dimensions' => [
                 $this->dimensionA,
-                $this->dimensionB
-            ]
+                $this->dimensionB,
+            ],
         ];
     }
 }

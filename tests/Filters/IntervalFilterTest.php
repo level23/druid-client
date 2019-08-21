@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\LookupExtraction;
-use Level23\Druid\Filters\IntervalFilter;
-use Level23\Druid\Interval\Interval;
 use tests\TestCase;
+use Level23\Druid\Interval\Interval;
+use Level23\Druid\Filters\IntervalFilter;
+use Level23\Druid\Extractions\LookupExtraction;
 
 class IntervalFilterTest extends TestCase
 {

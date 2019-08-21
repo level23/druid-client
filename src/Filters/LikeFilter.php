@@ -38,9 +38,9 @@ class LikeFilter implements FilterInterface
     /**
      * LikeFilter constructor.
      *
-     * @param string                   $dimension       The dimension to filter on
-     * @param string                   $pattern         LIKE pattern, such as "foo%" or "___bar".
-     * @param string                   $escapeCharacter An escape character that can be used to escape special
+     * @param string                   $dimension               The dimension to filter on
+     * @param string                   $pattern                 LIKE pattern, such as "foo%" or "___bar".
+     * @param string                   $escapeCharacter         An escape character that can be used to escape special
      *                                                          characters.
      * @param ExtractionInterface|null $extractionFunction
      */

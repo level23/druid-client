@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use Level23\Druid\Extractions\CascadeExtraction;
-use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\Extractions\RegexExtraction;
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Extractions\PartialExtraction;
-use Level23\Druid\Extractions\RegexExtraction;
-use Level23\Druid\Extractions\SearchQueryExtraction;
+use Level23\Druid\Extractions\CascadeExtraction;
+use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\SubstringExtraction;
 use Level23\Druid\Extractions\TimeFormatExtraction;
+use Level23\Druid\Extractions\SearchQueryExtraction;
 
 trait HasExtractions
 {
@@ -62,9 +62,9 @@ trait HasExtractions
      * @param string      $regexp
      * @param int         $groupToExtract
      * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
-     *                                 value will be null. If false, the missing items will not be kept in the
-     *                                 result set. If this is a string, we will keep the missing values and replace them
-     *                                 with the string value.
+     *                                         value will be null. If false, the missing items will not be kept in the
+     *                                         result set. If this is a string, we will keep the missing values and
+     *                                         replace them with the string value.
      *
      * @return $this
      */

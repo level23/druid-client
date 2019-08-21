@@ -3,18 +3,18 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\ServerException;
-use Level23\Druid\Exceptions\QueryResponseException;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
-use Level23\Druid\Metadata\MetadataBuilder;
-use Level23\Druid\Queries\QueryBuilder;
-use Level23\Druid\Queries\QueryInterface;
-use Level23\Druid\Tasks\CompactTaskBuilder;
-use Level23\Druid\Tasks\IndexTaskBuilder;
-use Level23\Druid\Tasks\TaskInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Client as GuzzleClient;
+use Level23\Druid\Tasks\TaskInterface;
+use Level23\Druid\Queries\QueryBuilder;
+use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\Exception\ServerException;
+use Level23\Druid\Queries\QueryInterface;
+use Level23\Druid\Tasks\IndexTaskBuilder;
+use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Tasks\CompactTaskBuilder;
+use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClient
 {

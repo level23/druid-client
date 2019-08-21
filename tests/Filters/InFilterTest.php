@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\SubstringExtraction;
-use Level23\Druid\Filters\InFilter;
 use tests\TestCase;
+use Level23\Druid\Filters\InFilter;
+use Level23\Druid\Extractions\SubstringExtraction;
 
 class InFilterTest extends TestCase
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Level23\Druid\OrderBy;
 
 use InvalidArgumentException;
-use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Types\SortingOrder;
+use Level23\Druid\Types\OrderByDirection;
 
 class OrderBy implements OrderByInterface
 {

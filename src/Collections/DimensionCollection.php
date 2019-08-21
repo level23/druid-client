@@ -34,7 +34,7 @@ class DimensionCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        return array_map(function(DimensionInterface $item) {
+        return array_map(function (DimensionInterface $item) {
             return $item->toArray();
         }, $this->items);
     }

@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Extractions;
 
-use Level23\Druid\Extractions\CascadeExtraction;
-use Level23\Druid\Extractions\RegexExtraction;
-use Level23\Druid\Extractions\SearchQueryExtraction;
-use Level23\Druid\Extractions\SubstringExtraction;
 use tests\TestCase;
+use Level23\Druid\Extractions\RegexExtraction;
+use Level23\Druid\Extractions\CascadeExtraction;
+use Level23\Druid\Extractions\SubstringExtraction;
+use Level23\Druid\Extractions\SearchQueryExtraction;
 
 class CascadeExtractionTest extends TestCase
 {

@@ -3,28 +3,28 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
+use Mockery;
 use Exception;
-use Hamcrest\Core\IsInstanceOf;
+use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Filters\AndFilter;
-use Level23\Druid\Filters\BoundFilter;
-use Level23\Druid\Filters\FilterBuilder;
-use Level23\Druid\Filters\FilterInterface;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Filters\InFilter;
-use Level23\Druid\Filters\IntervalFilter;
-use Level23\Druid\Filters\JavascriptFilter;
-use Level23\Druid\Filters\LikeFilter;
-use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Filters\OrFilter;
+use Level23\Druid\Filters\AndFilter;
+use Level23\Druid\Filters\NotFilter;
+use Level23\Druid\Interval\Interval;
+use Level23\Druid\Filters\LikeFilter;
+use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
-use Level23\Druid\Filters\SelectorFilter;
-use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\QueryBuilder;
-use Mockery;
-use tests\TestCase;
+use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\IntervalFilter;
+use Level23\Druid\Filters\SelectorFilter;
+use Level23\Druid\Filters\FilterInterface;
+use Level23\Druid\Filters\JavascriptFilter;
+use Level23\Druid\Extractions\ExtractionBuilder;
 
 class HasFilterTest extends TestCase
 {

@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use ArrayObject;
 use Closure;
+use ArrayObject;
 use InvalidArgumentException;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\LookupDimension;
 use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Types\DataType;
+use Level23\Druid\Dimensions\DimensionInterface;
 
 trait HasDimensions
 {

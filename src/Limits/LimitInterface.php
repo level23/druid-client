@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Limits;
 
-use Level23\Druid\Collections\OrderByCollection;
 use Level23\Druid\OrderBy\OrderByInterface;
+use Level23\Druid\Collections\OrderByCollection;
 
 interface LimitInterface
 {
