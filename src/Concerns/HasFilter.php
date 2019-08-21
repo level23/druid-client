@@ -37,7 +37,8 @@ trait HasFilter
 
     /**
      * Filter our results where the given dimension matches the value based on the operator.
-     * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like', 'regex', 'javascript', 'in'
+     * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=', 'like', 'not like', 'regex', 'not regex',
+     * 'javascript', 'not javascript', 'search' and 'not search'
      *
      * @param string|\Level23\Druid\Filters\FilterInterface|\Closure $filterOrDimensionOrClosure
      * @param string|null                                            $operator
@@ -85,16 +86,30 @@ trait HasFilter
                 $filter = new LikeFilter(
                     $filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction)
                 );
+            } elseif ($operator == 'not like') {
+                $filter = new NotFilter(
+                    new LikeFilter($filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction))
+                );
             } elseif ($operator == 'javascript') {
                 $filter = new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+            } elseif ($operator == 'not javascript') {
+                $filter = new NotFilter(
+                    new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction))
+                );
             } elseif ($operator == 'regex' || $operator == 'regexp') {
                 $filter = new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+            } elseif ($operator == 'not regex' || $operator == 'not regexp') {
+                $filter = new NotFilter(
+                    new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction))
+                );
             } elseif ($operator == 'search') {
                 $filter = new SearchFilter(
                     $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
                 );
-            } elseif ($operator == 'in') {
-                $filter = new InFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+            } elseif ($operator == 'not search') {
+                $filter = new NotFilter(new SearchFilter(
+                    $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
+                ));
             } else {
                 $filter = null;
             }
