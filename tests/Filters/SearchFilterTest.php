@@ -12,11 +12,11 @@ class SearchFilterTest extends TestCase
     public function dataProvider(): array
     {
         return [
-            ['name', 'Piet', false],
-            ['name', 'Piet', true],
-            ['name', ['Piet', 'Klaas'], true],
-            ['name', ['Piet', 'Klaas'], false],
-            ['name', ['Piet', 'Klaas'], null],
+            ['name', 'John', false],
+            ['name', 'John', true],
+            ['name', ['John', 'Jack'], true],
+            ['name', ['John', 'Jack'], false],
+            ['name', ['John', 'Jack'], null],
         ];
     }
 

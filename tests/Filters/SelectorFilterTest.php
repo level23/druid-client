@@ -23,14 +23,14 @@ class SelectorFilterTest extends TestCase
         $expected = [
             'type'      => 'selector',
             'dimension' => 'name',
-            'value'     => 'Piet',
+            'value'     => 'John',
         ];
 
         if ($useExtractionFunction) {
-            $filter                   = new SelectorFilter('name', 'Piet', $extractionFunction);
+            $filter                   = new SelectorFilter('name', 'John', $extractionFunction);
             $expected['extractionFn'] = $extractionFunction->toArray();
         } else {
-            $filter = new SelectorFilter('name', 'Piet');
+            $filter = new SelectorFilter('name', 'John');
         }
 
         $this->assertEquals($expected, $filter->toArray());

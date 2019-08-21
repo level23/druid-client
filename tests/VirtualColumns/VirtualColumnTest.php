@@ -39,6 +39,6 @@ class VirtualColumnTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new VirtualColumn('a', 'b', 'blaat');
+        new VirtualColumn('a', 'b', 'something');
     }
 }

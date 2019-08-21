@@ -8,11 +8,11 @@ use InvalidArgumentException;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
-use Level23\Druid\HavingBuilder;
 use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
+use Level23\Druid\HavingFilters\HavingBuilder;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\NotHavingFilter;
@@ -146,9 +146,9 @@ trait HasHaving
         if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
             $this->having->addHavingFilter($havingFilter);
         } else {
-            $havings = [$this->having, $havingFilter];
+            $havingFilters = [$this->having, $havingFilter];
 
-            $this->having = new $type($havings);
+            $this->having = new $type($havingFilters);
         }
     }
 }

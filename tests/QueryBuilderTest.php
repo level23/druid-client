@@ -8,9 +8,9 @@ use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Queries\GroupByQuery;
+use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Queries\TopNQuery;
-use Level23\Druid\QueryBuilder;
 use Mockery;
 use tests\TestCase;
 
@@ -22,7 +22,7 @@ class QueryBuilderTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 
