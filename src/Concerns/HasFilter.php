@@ -353,13 +353,13 @@ trait HasFilter
     /**
      * Returns true if the argument provided is a druid interval string or interface
      *
-     * @param string $interval
+     * @param string|IntervalInterface $interval
      *
      * @return bool
      */
     protected function isDruidInterval($interval)
     {
-        if($interval instanceof Interval) {
+        if($interval instanceof IntervalInterface) {
             return true;
         }
 
