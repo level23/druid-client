@@ -34,7 +34,7 @@ trait HasExtractions
      */
     public function lookup(
         string $lookupName,
-        $replaceMissingValue = true,
+        $replaceMissingValue = false,
         bool $optimize = true,
         ?bool $injective = null
     ) {

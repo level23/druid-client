@@ -9,6 +9,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 
 class TimeSeriesQuery implements QueryInterface
@@ -32,6 +33,11 @@ class TimeSeriesQuery implements QueryInterface
      * @var \Level23\Druid\Filters\FilterInterface|null
      */
     protected $filter;
+
+    /**
+     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
+     */
+    protected $virtualColumns;
 
     /**
      * @var \Level23\Druid\Collections\AggregationCollection|null
@@ -97,6 +103,10 @@ class TimeSeriesQuery implements QueryInterface
             $result['filter'] = $this->filter->toArray();
         }
 
+        if ($this->virtualColumns) {
+            $query['virtualColumns'] = $this->virtualColumns->toArray();
+        }
+
         if ($this->aggregations) {
             $result['aggregations'] = $this->aggregations->toArray();
         }
@@ -108,6 +118,7 @@ class TimeSeriesQuery implements QueryInterface
         if ($this->context) {
             $result['context'] = $this->context->toArray();
         }
+
 
         return $result;
     }
@@ -216,5 +227,13 @@ class TimeSeriesQuery implements QueryInterface
     public function setTimeOutputName(string $timeOutputName): void
     {
         $this->timeOutputName = $timeOutputName;
+    }
+
+    /**
+     * @param \Level23\Druid\Collections\VirtualColumnCollection $virtualColumns
+     */
+    public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
+    {
+        $this->virtualColumns = $virtualColumns;
     }
 }
