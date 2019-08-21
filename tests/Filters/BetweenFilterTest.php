@@ -11,10 +11,10 @@ use Level23\Druid\Extractions\LookupExtraction;
 class BetweenFilterTest extends TestCase
 {
     /**
-     * @param      $minValue
-     * @param      $maxValue
-     * @param      $ordering
-     * @param bool $expectException
+     * @param string|int  $minValue
+     * @param string|int  $maxValue
+     * @param string|null $ordering
+     * @param bool        $expectException
      *
      * @testWith [12, 14]
      *           ["john", "doe"]

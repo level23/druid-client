@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Granularities;
 
+use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Collections\IntervalCollection;
 
@@ -32,6 +33,13 @@ class ArbitraryGranularity implements GranularityInterface
      */
     public function __construct($queryGranularity, bool $rollup, IntervalCollection $intervals)
     {
+        if (is_string($queryGranularity) && !Granularity::isValid($queryGranularity)) {
+            throw new InvalidArgumentException(
+                'The given query granularity is invalid: ' . $queryGranularity . '. ' .
+                'Allowed are: ' . implode(',', Granularity::values())
+            );
+        }
+
         $this->queryGranularity = $queryGranularity;
         $this->rollup           = $rollup;
         $this->intervals        = $intervals;

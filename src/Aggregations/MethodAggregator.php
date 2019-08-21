@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Level23\Druid\Aggregations;
 
@@ -10,7 +11,7 @@ abstract class MethodAggregator implements AggregatorInterface
     /**
      * The type of field. This can either be "long", "float" or "double"
      *
-     * @var string
+     * @var DataType|string
      */
     protected $type;
 
@@ -34,7 +35,9 @@ abstract class MethodAggregator implements AggregatorInterface
      */
     public function __construct(string $metricName, string $outputName = '', $type = 'long')
     {
-        $type = strtolower($type ?: DataType::LONG());
+        if (is_string($type)) {
+            $type = strtolower($type);
+        }
 
         if (!in_array($type, ['long', 'float', 'double'])) {
             throw new InvalidArgumentException(
