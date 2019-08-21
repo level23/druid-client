@@ -1,20 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid;
+namespace Level23\Druid\Tasks;
 
 use InvalidArgumentException;
 use Level23\Druid\Concerns\HasInterval;
-use Level23\Druid\Concerns\HasIntervalValidation;
 use Level23\Druid\Concerns\HasSegmentGranularity;
 use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Context\TaskContext;
+use Level23\Druid\DruidClient;
 use Level23\Druid\Interval\IntervalInterface;
-use Level23\Druid\Tasks\CompactTask;
 
-class CompactTaskBuilder
+class CompactTaskBuilder extends TaskBuilder
 {
-    use HasInterval, HasIntervalValidation, HasSegmentGranularity, HasTuningConfig;
+    use HasInterval, HasSegmentGranularity, HasTuningConfig;
 
     /**
      * @var string
@@ -51,15 +50,15 @@ class CompactTaskBuilder
     }
 
     /**
-     * @param \Level23\Druid\Context\TaskContext|array $taskContext
+     * @param \Level23\Druid\Context\TaskContext|array $context
      *
-     * @return string
+     * @return \Level23\Druid\Tasks\CompactTask
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function execute($taskContext = null)
+    protected function buildTask($context): TaskInterface
     {
-        if (is_array($taskContext)) {
-            $taskContext = new TaskContext($taskContext);
+        if (is_array($context)) {
+            $context = new TaskContext($context);
         }
 
         if (!$this->interval instanceof IntervalInterface) {
@@ -70,17 +69,17 @@ class CompactTaskBuilder
         // match the beginning and end of an interval.
         $this->validateInterval($this->dataSource, $this->interval);
 
+        // @todo: add support for building metricSpec and DimensionSpec.
+
         $task = new CompactTask(
             $this->dataSource,
             $this->interval,
             $this->segmentGranularity,
             $this->tuningConfig,
-            $taskContext
+            $context
         );
 
-        // @todo: add support for building metricSpec and DimensionSpec.
-
-        return $this->client->executeTask($task);
+        return $task;
     }
 
     /**

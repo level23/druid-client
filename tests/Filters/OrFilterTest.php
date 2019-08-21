@@ -11,7 +11,7 @@ class OrFilterTest extends TestCase
 {
     public function testFilter()
     {
-        $filter1 = new SelectorFilter('name', 'Piet');
+        $filter1 = new SelectorFilter('name', 'John');
         $filter2 = new SelectorFilter('age', '11');
         $filter3 = new SelectorFilter('gender', 'strange');
 

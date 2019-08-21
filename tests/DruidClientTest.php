@@ -15,7 +15,7 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Exceptions\QueryResponseException;
 use Level23\Druid\Queries\GroupByQuery;
-use Level23\Druid\QueryBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Mockery;
 use Psr\Log\LoggerInterface;
 use tests\TestCase;
@@ -37,7 +37,7 @@ class DruidClientTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The given granularity is invalid');
 
-        $this->client->query('hits', 'fout');
+        $this->client->query('hits', 'wrong');
     }
 
     /**
@@ -92,7 +92,7 @@ class DruidClientTest extends TestCase
                 $response,
                 function () {
                     throw new ServerException(
-                        'Unknow exception',
+                        'Unknown exception',
                         new GuzzleRequest('GET', '/druid/v1', [], ''),
                         new GuzzleResponse(500, [], (string)json_encode([
                             'error'        => 'Unknown exception',

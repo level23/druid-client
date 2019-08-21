@@ -14,9 +14,9 @@ use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\DruidClient;
-use Level23\Druid\FilterBuilder;
+use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\SelectorFilter;
-use Level23\Druid\QueryBuilder;
+use Level23\Druid\Queries\QueryBuilder;
 use Mockery;
 use tests\TestCase;
 
@@ -28,7 +28,7 @@ class HasAggregationsTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
      */
     protected $builder;
 

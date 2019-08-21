@@ -12,7 +12,7 @@ class DruidQueryExceptionTest extends TestCase
 {
     public function testException()
     {
-        $query = new TimeSeriesQuery('iets', new IntervalCollection(), 'all');
+        $query = new TimeSeriesQuery('something', new IntervalCollection(), 'all');
 
         $exception = new QueryResponseException($query->toArray());
 

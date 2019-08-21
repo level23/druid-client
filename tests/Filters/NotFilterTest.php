@@ -11,7 +11,7 @@ class NotFilterTest extends TestCase
 {
     public function testFilter()
     {
-        $filterName = new SelectorFilter('name', 'Piet');
+        $filterName = new SelectorFilter('name', 'John');
 
         $filter = new NotFilter($filterName);
 

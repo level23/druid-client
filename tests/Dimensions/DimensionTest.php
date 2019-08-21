@@ -13,7 +13,7 @@ class DimensionTest extends TestCase
 {
     public function dataProvider(): array
     {
-        $extr = new RegexExtraction("^([a-z]+)$");
+        $extraction = new RegexExtraction("^([a-z]+)$");
 
         return [
             ["name", "full_name", "string", null, false],
@@ -23,7 +23,7 @@ class DimensionTest extends TestCase
             ["name", "full_name", "whatever", null, true],
             ["name", "full_name", "whatever", null, true],
             ["name", "full_name", "", null, false],
-            ["name", "full_name", "", $extr, false],
+            ["name", "full_name", "", $extraction, false],
         ];
     }
 
