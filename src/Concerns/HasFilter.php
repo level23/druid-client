@@ -269,10 +269,7 @@ trait HasFilter
                 return $interval;
             }
 
-            if (is_string($interval) && preg_match(
-                    '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/',
-                    $interval
-                )) {
+            if (is_string($interval)) {
                 return new Interval($interval);
             }
 
