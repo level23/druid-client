@@ -11,7 +11,7 @@ class VirtualColumnTest extends TestCase
 {
     public function testVirtualColumn()
     {
-        $column = new VirtualColumn('country_iso', 'if(mccmnc > 0, country_iso, "")', 'string');
+        $column = new VirtualColumn('if(mccmnc > 0, country_iso, "")', 'country_iso', 'string');
 
         $this->assertEquals([
             'type'       => 'expression',
@@ -24,7 +24,7 @@ class VirtualColumnTest extends TestCase
 
     public function testDefaults()
     {
-        $column = new VirtualColumn('country_iso', 'if(mccmnc > 0, country_iso, "")');
+        $column = new VirtualColumn('if(mccmnc > 0, country_iso, "")', 'country_iso');
 
         $this->assertEquals([
             'type'       => 'expression',

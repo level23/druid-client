@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid;
+namespace tests\Level23\Druid\Queries;
 
 use Mockery;
 use tests\TestCase;
