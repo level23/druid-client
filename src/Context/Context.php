@@ -17,7 +17,7 @@ abstract class Context
      *
      * @param array $properties
      */
-    public function __construct(array $properties)
+    public function __construct(array $properties = [])
     {
         foreach ($properties as $key => $value) {
 
