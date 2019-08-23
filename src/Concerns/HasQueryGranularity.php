@@ -19,9 +19,7 @@ trait HasQueryGranularity
      */
     public function queryGranularity($queryGranularity)
     {
-        Granularity::validate($queryGranularity);
-
-        $this->queryGranularity = $queryGranularity;
+        $this->queryGranularity = Granularity::validate($queryGranularity);
 
         return $this;
     }

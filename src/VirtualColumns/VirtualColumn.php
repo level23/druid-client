@@ -33,11 +33,9 @@ class VirtualColumn implements VirtualColumnInterface
      */
     public function __construct(string $expression, string $as, $outputType = 'float')
     {
-        DataType::validate($outputType);
-
         $this->name       = $as;
         $this->expression = $expression;
-        $this->outputType = $outputType;
+        $this->outputType = DataType::validate($outputType);
     }
 
     /**

@@ -72,11 +72,9 @@ class TimeSeriesQuery implements QueryInterface
      */
     public function __construct(string $dataSource, IntervalCollection $intervals, $granularity = 'all')
     {
-        Granularity::validate($granularity);
-
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;
-        $this->granularity = $granularity;
+        $this->granularity = Granularity::validate($granularity);
     }
 
     /**

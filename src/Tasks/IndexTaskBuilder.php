@@ -87,9 +87,7 @@ class IndexTaskBuilder extends TaskBuilder
      */
     public function dimension(string $name, $type = 'string')
     {
-        DataType::validate($type);
-
-        $this->dimensions[] = ['name' => $name, 'type' => $type];
+        $this->dimensions[] = ['name' => $name, 'type' => DataType::validate($type)];
 
         return $this;
     }

@@ -28,8 +28,10 @@ class SortingOrder extends Enum
 
     /**
      * @param string|\Level23\Druid\Types\SortingOrder $ordering
+     *
+     * @return string|\Level23\Druid\Types\SortingOrder
      */
-    public static function validate(&$ordering)
+    public static function validate($ordering)
     {
         if (is_string($ordering) && !SortingOrder::isValid($ordering = strtolower($ordering))) {
             throw new InvalidArgumentException(
@@ -37,5 +39,7 @@ class SortingOrder extends Enum
                 'Allowed are: ' . implode(',', SortingOrder::values())
             );
         }
+
+        return $ordering;
     }
 }

@@ -19,9 +19,7 @@ trait HasSegmentGranularity
      */
     public function segmentGranularity($segmentGranularity)
     {
-        Granularity::validate($segmentGranularity);
-
-        $this->segmentGranularity = $segmentGranularity;
+        $this->segmentGranularity = Granularity::validate($segmentGranularity);
 
         return $this;
     }
