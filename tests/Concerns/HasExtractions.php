@@ -54,7 +54,7 @@ class HasExtractions extends TestCase
     {
         $this->getExtractionMock(LookupExtraction::class)
             ->shouldReceive('__construct')
-            ->with('username', true, true, null);
+            ->with('username', false, true, null);
 
         $builder = new ExtractionBuilder();
         $builder->lookup('username');
@@ -186,6 +186,10 @@ class HasExtractions extends TestCase
         $builder->timeFormat();
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testMultiple()
     {
         $builder = new ExtractionBuilder();
@@ -199,5 +203,16 @@ class HasExtractions extends TestCase
             $array = $extraction->toArray();
             $this->assertEquals(2, count($array['extractionFns']));
         }
+
+        $builder->timeFormat();
+
+        $extraction = $builder->getExtraction();
+        $this->assertInstanceOf(CascadeExtraction::class, $extraction);
+
+        if ($extraction instanceof CascadeExtraction) {
+            $array = $extraction->toArray();
+            $this->assertEquals(3, count($array['extractionFns']));
+        }
+
     }
 }
