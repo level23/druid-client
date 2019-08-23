@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Queries;
 
-use InvalidArgumentException;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\Types\Granularity;
-use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
@@ -89,12 +87,7 @@ class GroupByQuery implements QueryInterface
         $aggregations = null,
         $granularity = 'all'
     ) {
-        if (is_string($granularity) && !Granularity::isValid($granularity)) {
-            throw new InvalidArgumentException(
-                'The given granularity is invalid: ' . $granularity . '. ' .
-                'Allowed are: ' . implode(',', Granularity::values())
-            );
-        }
+        Granularity::validate($granularity);
 
         $this->dataSource  = $dataSource;
         $this->dimensions  = $dimensions;

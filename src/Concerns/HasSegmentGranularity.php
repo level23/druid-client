@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
 
 trait HasSegmentGranularity
@@ -20,12 +19,7 @@ trait HasSegmentGranularity
      */
     public function segmentGranularity($segmentGranularity)
     {
-        if (is_string($segmentGranularity) && !Granularity::isValid($segmentGranularity)) {
-            throw new InvalidArgumentException(
-                'The given granularity is invalid: ' . $segmentGranularity . '. ' .
-                'Allowed are: ' . implode(',', Granularity::values())
-            );
-        }
+        Granularity::validate($segmentGranularity);
 
         $this->segmentGranularity = $segmentGranularity;
 

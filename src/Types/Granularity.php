@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Types;
 
 use MyCLabs\Enum\Enum;
+use InvalidArgumentException;
 
 /**
  * Class Granularity
@@ -37,4 +38,17 @@ class Granularity extends Enum
     private const MONTH          = 'month';
     private const QUARTER        = 'quarter';
     private const YEAR           = 'year';
+
+    /**
+     * @param string|\Level23\Druid\Types\Granularity $granularity
+     */
+    public static function validate(&$granularity)
+    {
+        if (is_string($granularity) && !Granularity::isValid($granularity = strtolower($granularity))) {
+            throw new InvalidArgumentException(
+                'The given granularity is invalid: ' . $granularity . '. ' .
+                'Allowed are: ' . implode(',', Granularity::values())
+            );
+        }
+    }
 }
