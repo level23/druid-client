@@ -18,13 +18,13 @@ class ExpressionTransform implements TransformInterface
     /**
      * ExpressionTransform constructor.
      *
-     * @param string $outputName
      * @param string $expression
+     * @param string $outputName
      */
-    public function __construct(string $outputName, string $expression)
+    public function __construct(string $expression, string $outputName)
     {
-        $this->outputName = $outputName;
         $this->expression = $expression;
+        $this->outputName = $outputName;
     }
 
     /**

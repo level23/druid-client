@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace tests\Level23\Druid\Aggregations;
 
@@ -36,7 +37,7 @@ class SumAggregatorTest extends TestCase
         $aggregator = new SumAggregator('abc', 'dim123', $type);
 
         $this->assertEquals([
-            'type'      => strtolower($type) . 'Sum',
+            'type'      => strtolower((string)$type) . 'Sum',
             'name'      => 'dim123',
             'fieldName' => 'abc',
         ], $aggregator->toArray());

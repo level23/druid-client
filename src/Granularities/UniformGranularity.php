@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Granularities;
 
+use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Collections\IntervalCollection;
 
@@ -38,6 +39,19 @@ class UniformGranularity implements GranularityInterface
      */
     public function __construct($segmentGranularity, $queryGranularity, bool $rollup, IntervalCollection $intervals)
     {
+        if (is_string($segmentGranularity) && !Granularity::isValid($segmentGranularity)) {
+            throw new InvalidArgumentException(
+                'The given segment granularity is invalid: ' . $segmentGranularity . '. ' .
+                'Allowed are: ' . implode(',', Granularity::values())
+            );
+        }
+
+        if (is_string($queryGranularity) && !Granularity::isValid($queryGranularity)) {
+            throw new InvalidArgumentException(
+                'The given query granularity is invalid: ' . $queryGranularity . '. ' .
+                'Allowed are: ' . implode(',', Granularity::values())
+            );
+        }
         $this->segmentGranularity = $segmentGranularity;
         $this->queryGranularity   = $queryGranularity;
         $this->rollup             = $rollup;
