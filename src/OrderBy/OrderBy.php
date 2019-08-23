@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\OrderBy;
 
-use InvalidArgumentException;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\OrderByDirection;
 
@@ -33,19 +32,9 @@ class OrderBy implements OrderByInterface
      */
     public function __construct(string $dimension, $direction = 'ascending', $dimensionOrder = 'lexicographic')
     {
-        if (is_string($direction) && !OrderByDirection::isValid($direction)) {
-            throw new InvalidArgumentException(
-                'Invalid order by direction given: ' . $direction .
-                '. Valid options are: ' . implode(', ', OrderByDirection::values())
-            );
-        }
+        OrderByDirection::validate($direction);
 
-        if (is_string($dimensionOrder) && !SortingOrder::isValid($dimensionOrder)) {
-            throw new InvalidArgumentException(
-                'Invalid dimension order given: ' . $dimensionOrder .
-                '. Valid options are: ' . implode(', ', SortingOrder::values())
-            );
-        }
+        SortingOrder::validate($dimensionOrder);
 
         $this->dimension      = $dimension;
         $this->direction      = $direction;

@@ -56,12 +56,7 @@ class QueryBuilder
      */
     public function __construct(DruidClient $client, string $dataSource, $granularity = 'all')
     {
-        if (is_string($granularity) && !Granularity::isValid($granularity)) {
-            throw new InvalidArgumentException(
-                'The given granularity is invalid: ' . $granularity . '. ' .
-                'Allowed are: ' . implode(',', Granularity::values())
-            );
-        }
+        Granularity::validate($granularity);
 
         $this->client      = $client;
         $this->dataSource  = $dataSource;

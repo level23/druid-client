@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\VirtualColumns;
 
-use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
 
 class VirtualColumn implements VirtualColumnInterface
@@ -34,12 +33,7 @@ class VirtualColumn implements VirtualColumnInterface
      */
     public function __construct(string $expression, string $as, $outputType = 'float')
     {
-        if (is_string($outputType) && !DataType::isValid($outputType)) {
-            throw new InvalidArgumentException(
-                'The given output type is invalid: ' . $outputType . '. ' .
-                'Valid values are: ' . implode(', ', DataType::values())
-            );
-        }
+        DataType::validate($outputType);
 
         $this->name       = $as;
         $this->expression = $expression;
