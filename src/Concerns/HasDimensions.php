@@ -5,7 +5,6 @@ namespace Level23\Druid\Concerns;
 
 use Closure;
 use ArrayObject;
-use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\LookupDimension;
@@ -45,13 +44,6 @@ trait HasDimensions
         Closure $extraction = null,
         $outputType = 'string'
     ) {
-        if (is_string($outputType) && !DataType::isValid($outputType = strtolower($outputType))) {
-            throw new InvalidArgumentException(
-                'The given output type is invalid: ' . $outputType . '. ' .
-                'Allowed are: ' . implode(',', DataType::values())
-            );
-        }
-
         if (is_string($dimension)) {
             if (!empty($extraction)) {
                 $builder = new ExtractionBuilder();
@@ -63,7 +55,7 @@ trait HasDimensions
             }
 
             $this->addDimension(
-                new Dimension($dimension, ($as ?: $dimension), $outputType, $extraction)
+                new Dimension($dimension, ($as ?: $dimension), DataType::validate($outputType), $extraction)
             );
         } else {
             $this->addDimension($dimension);

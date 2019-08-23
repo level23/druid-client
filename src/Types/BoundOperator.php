@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Types;
 
 use MyCLabs\Enum\Enum;
+use InvalidArgumentException;
 
 /**
  * Class BoundOperator
@@ -22,4 +23,21 @@ class BoundOperator extends Enum
     private const GE = '>=';
     private const LT = '<';
     private const LE = '<=';
+
+    /**
+     * @param string|\Level23\Druid\Types\BoundOperator $operator
+     *
+     * @return string|\Level23\Druid\Types\BoundOperator
+     */
+    public static function validate($operator)
+    {
+        if (is_string($operator) && !BoundOperator::isValid($operator)) {
+            throw new InvalidArgumentException(
+                'Invalid operator given: ' . $operator .
+                '. Valid options are: ' . implode(',', BoundOperator::values())
+            );
+        }
+
+        return $operator;
+    }
 }
