@@ -163,14 +163,6 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * @return \Level23\Druid\Filters\FilterInterface|null
-     */
-    public function getFilter(): ?FilterInterface
-    {
-        return $this->filter;
-    }
-
-    /**
      * @param \Level23\Druid\Collections\AggregationCollection|array $aggregations
      */
     public function setAggregations($aggregations)
@@ -180,14 +172,6 @@ class GroupByQuery implements QueryInterface
         }
 
         $this->aggregations = $aggregations;
-    }
-
-    /**
-     * @return \Level23\Druid\Collections\AggregationCollection|null
-     */
-    public function getAggregations(): ?AggregationCollection
-    {
-        return $this->aggregations;
     }
 
     /**
@@ -203,27 +187,11 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * @return \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    public function getPostAggregations(): ?PostAggregationCollection
-    {
-        return $this->postAggregations;
-    }
-
-    /**
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
      */
     public function setHaving(HavingFilterInterface $having)
     {
         $this->having = $having;
-    }
-
-    /**
-     * @return \Level23\Druid\HavingFilters\HavingFilterInterface|null
-     */
-    public function getHaving(): ?HavingFilterInterface
-    {
-        return $this->having;
     }
 
     /**
@@ -235,14 +203,6 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * @return \Level23\Druid\Context\ContextInterface|null
-     */
-    public function getContext(): ?ContextInterface
-    {
-        return $this->context;
-    }
-
-    /**
      * @param \Level23\Druid\Limits\LimitInterface|int $limit
      */
     public function setLimit($limit)
@@ -251,21 +211,7 @@ class GroupByQuery implements QueryInterface
             $limit = new Limit($limit);
         }
 
-        if (!$limit instanceof LimitInterface) {
-            throw new InvalidArgumentException(
-                'The given limit should be numeric or an instance of LimitInterface'
-            );
-        }
-
         $this->limit = $limit;
-    }
-
-    /**
-     * @return \Level23\Druid\Limits\LimitInterface|null
-     */
-    public function getLimit(): ?LimitInterface
-    {
-        return $this->limit;
     }
 
     /**

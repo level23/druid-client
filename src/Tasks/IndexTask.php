@@ -129,7 +129,7 @@ class IndexTask implements TaskInterface
         ];
 
         if ($this->tuningConfig) {
-            $this->tuningConfig->type       = 'index';
+            $this->tuningConfig->setType('index');
             $result['spec']['tuningConfig'] = $this->tuningConfig->toArray();
         }
 
