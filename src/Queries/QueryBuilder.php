@@ -117,6 +117,20 @@ class QueryBuilder
     }
 
     /**
+     * Update/set the granularity
+     *
+     * @param string|Granularity $granularity
+     *
+     * @return $this
+     */
+    public function granularity($granularity)
+    {
+        $this->granularity = Granularity::validate($granularity);
+
+        return $this;
+    }
+
+    /**
      * Do a segment metadata query and return the response
      *
      * @return array
