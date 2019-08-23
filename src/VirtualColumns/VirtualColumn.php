@@ -26,13 +26,13 @@ class VirtualColumn implements VirtualColumnInterface
     /**
      * VirtualColumn constructor.
      *
-     * @param string                               $name
      * @param string                               $expression An druid expression
+     * @param string                               $as
      * @param string|\Level23\Druid\Types\DataType $outputType
      *
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function __construct(string $name, string $expression, $outputType = 'float')
+    public function __construct(string $expression, string $as, $outputType = 'float')
     {
         if (is_string($outputType) && !DataType::isValid($outputType)) {
             throw new InvalidArgumentException(
@@ -41,7 +41,7 @@ class VirtualColumn implements VirtualColumnInterface
             );
         }
 
-        $this->name       = $name;
+        $this->name       = $as;
         $this->expression = $expression;
         $this->outputType = $outputType;
     }

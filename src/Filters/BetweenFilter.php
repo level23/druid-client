@@ -88,7 +88,7 @@ class BetweenFilter implements FilterInterface
         $result = [
             'type'        => 'bound',
             'dimension'   => $this->dimension,
-            'ordering'    => $this->ordering,
+            'ordering'    => (string)$this->ordering,
             'lower'       => (string)$this->minValue,
             'lowerStrict' => false,
             'upper'       => (string)$this->maxValue,

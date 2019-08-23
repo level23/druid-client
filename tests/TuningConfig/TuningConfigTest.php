@@ -10,37 +10,22 @@ use InvalidArgumentException;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\TopNQueryContext;
+use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 
-class ContextTest extends TestCase
+class TuningConfigTest extends TestCase
 {
-    public function dataProvider(): array
-    {
-        return [
-            [GroupByV1QueryContext::class, ['groupByStrategy' => 'v1']],
-            [GroupByV2QueryContext::class, ['groupByStrategy' => 'v2']],
-            [TopNQueryContext::class],
-            [TimeSeriesQueryContext::class],
-            [TaskContext::class],
-        ];
-    }
-
     /**
-     * @dataProvider dataProvider
-     *
-     * @param string $class
-     * @param array  $extra
-     *
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function testContext(string $class, array $extra = [])
+    public function testContext()
     {
-        $methods = get_class_methods($class);
+        $methods = get_class_methods(TuningConfig::class);
 
-        $object = new $class([]);
+        $tuningConfig = new TuningConfig([]);
 
         $properties = [];
 
@@ -51,7 +36,7 @@ class ContextTest extends TestCase
 
             $property = lcfirst(substr($method, 3));
 
-            $reflection = new ReflectionMethod($class, $method);
+            $reflection = new ReflectionMethod(TuningConfig::class, $method);
             $parameters = $reflection->getParameters();
 
             switch ($parameters[0]->getType()) {
@@ -68,6 +53,10 @@ class ContextTest extends TestCase
                     $value = $items[array_rand($items)];
                     break;
 
+                case 'array':
+                    $value = ['item' => $this->getRandomWord()];
+                    break;
+
                 default:
                     throw new Exception('Unknown type: ' . $parameters[0]->getType());
             }
@@ -75,22 +64,18 @@ class ContextTest extends TestCase
             $properties[$property] = $value;
 
             // call our setter.
-            $object->$method($value);
+            $tuningConfig->$method($value);
         }
 
-        $properties = array_merge($properties, $extra);
-
-        if ($object instanceof ContextInterface) {
-            $this->assertEquals($properties, $object->toArray());
-        }
+        $this->assertEquals($properties, $tuningConfig->toArray());
     }
 
     public function testSettingValueUsingConstructor()
     {
-        $context = new GroupByV2QueryContext(['timeout' => 6271]);
+        $context = new TuningConfig(['type' => 'index']);
 
         $response = $context->toArray();
-        $this->assertEquals(6271, $response['timeout']);
+        $this->assertEquals('index', $response['type']);
     }
 
     public function testNonExistingProperty()
@@ -98,14 +83,7 @@ class ContextTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('was not found in ');
 
-        new GroupByV2QueryContext(['something' => 1]);
-    }
-
-    public function testNonScalarValue()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid value');
-        new GroupByV2QueryContext(['priority' => ['oops']]);
+        new TuningConfig(['something' => 1]);
     }
 
     protected function getRandomWord()
