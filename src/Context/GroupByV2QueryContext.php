@@ -29,7 +29,7 @@ namespace Level23\Druid\Context;
  */
 class GroupByV2QueryContext extends QueryContext implements ContextInterface
 {
-    public function __construct(array $properties)
+    public function __construct(array $properties = [])
     {
         parent::__construct($properties);
 

@@ -14,9 +14,23 @@ class TransformBuilder
      */
     protected $transforms = [];
 
-    public function transform(string $as, string $expression)
+    /**
+     * Build a new transform.
+     *
+     * For all the available options in expressions, see this link:
+     *
+     * @see https://druid.apache.org/docs/latest/misc/math-expr.html
+     *
+     * @param string $expression
+     * @param string $as
+     *
+     * @return $this
+     */
+    public function transform(string $expression, string $as)
     {
-        $this->transforms[] = new ExpressionTransform($as, $expression);
+        $this->transforms[] = new ExpressionTransform($expression, $as);
+
+        return $this;
     }
 
     /**
