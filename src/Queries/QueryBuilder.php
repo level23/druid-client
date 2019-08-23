@@ -110,6 +110,20 @@ class QueryBuilder
     }
 
     /**
+     * Update/set the dataSource
+     *
+     * @param string $dataSource
+     *
+     * @return $this
+     */
+    public function dataSource(string $dataSource)
+    {
+        $this->dataSource = $dataSource;
+
+        return $this;
+    }
+
+    /**
      * Do a segment metadata query and return the response
      *
      * @return array
