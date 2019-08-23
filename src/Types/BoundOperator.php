@@ -26,6 +26,8 @@ class BoundOperator extends Enum
 
     /**
      * @param string|\Level23\Druid\Types\BoundOperator $operator
+     *
+     * @return string|\Level23\Druid\Types\BoundOperator
      */
     public static function validate($operator)
     {
@@ -35,5 +37,7 @@ class BoundOperator extends Enum
                 '. Valid options are: ' . implode(',', BoundOperator::values())
             );
         }
+
+        return $operator;
     }
 }

@@ -27,8 +27,10 @@ class DataType extends Enum
      * Validate the DataType.
      *
      * @param string|\Level23\Druid\Types\DataType $outputType
+     *
+     * @return string|\Level23\Druid\Types\DataType
      */
-    public static function validate(&$outputType)
+    public static function validate($outputType)
     {
         if (is_string($outputType) && !self::isValid($outputType = strtolower($outputType))) {
             throw new InvalidArgumentException(
@@ -36,5 +38,7 @@ class DataType extends Enum
                 'Allowed are: ' . implode(',', DataType::values())
             );
         }
+
+        return $outputType;
     }
 }

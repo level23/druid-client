@@ -44,8 +44,6 @@ trait HasDimensions
         Closure $extraction = null,
         $outputType = 'string'
     ) {
-        DataType::validate($outputType);
-
         if (is_string($dimension)) {
             if (!empty($extraction)) {
                 $builder = new ExtractionBuilder();
@@ -57,7 +55,7 @@ trait HasDimensions
             }
 
             $this->addDimension(
-                new Dimension($dimension, ($as ?: $dimension), $outputType, $extraction)
+                new Dimension($dimension, ($as ?: $dimension), DataType::validate($outputType), $extraction)
             );
         } else {
             $this->addDimension($dimension);

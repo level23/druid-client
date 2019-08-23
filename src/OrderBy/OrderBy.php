@@ -32,13 +32,9 @@ class OrderBy implements OrderByInterface
      */
     public function __construct(string $dimension, $direction = 'ascending', $dimensionOrder = 'lexicographic')
     {
-        OrderByDirection::validate($direction);
-
-        SortingOrder::validate($dimensionOrder);
-
         $this->dimension      = $dimension;
-        $this->direction      = $direction;
-        $this->dimensionOrder = $dimensionOrder;
+        $this->direction      = OrderByDirection::validate($direction);
+        $this->dimensionOrder = SortingOrder::validate($dimensionOrder);
     }
 
     /**
