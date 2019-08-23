@@ -6,6 +6,7 @@ namespace tests\Level23\Druid\Concerns;
 use Mockery;
 use DateTime;
 use Exception;
+use PHPUnit\Util\Filter;
 use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
@@ -21,6 +22,7 @@ use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
@@ -60,10 +62,15 @@ class HasFilterTest extends TestCase
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
             ['name', 'LiKE', 'John%', 'and'],
+            ['name', 'NoT LiKE', 'Jack%', 'and'],
             ['name', 'javaScript', 'function() { return "John"; }', 'and'],
+            ['name', 'NOT javaScript', 'function() { return false; }', 'OR'],
             ['name', 'regex', '^[0-9]*$', 'and'],
+            ['name', 'NOT regex', '^[0-9]*$', 'and'],
             ['name', 'regexp', '^[0-9]*$', 'oR'],
+            ['name', 'NOT regexp', '^[0-9]*$', 'oR'],
             ['name', 'search', ['john', 'doe'], 'aNd'],
+            ['name', 'not search', ['john', 'doe'], 'aNd'],
         ];
     }
 
@@ -178,21 +185,21 @@ class HasFilterTest extends TestCase
             $testingValue    = $value;
         }
 
+        $not = false;
+        if ($operator == '!=' || $operator == '<>' || substr($testingOperator, 0, 3) == 'not') {
+
+            if (substr($testingOperator, 0, 3) == 'not') {
+                $testingOperator = substr($testingOperator, 4);
+            }
+            $not = true;
+
+            $this->getFilterMock(NotFilter::class)
+                ->shouldReceive('__construct')
+                ->once();
+        }
+
         switch ($testingOperator) {
             case '<>':
-            case '!=':
-                $class = NotFilter::class;
-                $this->getFilterMock(NotFilter::class)
-                    ->shouldReceive('__construct')
-                    ->once();
-
-                $this->getFilterMock(SelectorFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, $testingValue, null)
-                    ->once();
-
-                break;
-
             case '>':
             case '>=':
             case '<':
@@ -222,6 +229,7 @@ class HasFilterTest extends TestCase
 
             default:
                 $types = [
+                    '!='         => SelectorFilter::class,
                     '='          => SelectorFilter::class,
                     'javascript' => JavascriptFilter::class,
                     'regex'      => RegexFilter::class,
@@ -245,7 +253,11 @@ class HasFilterTest extends TestCase
         $response = $this->builder->where($field, $operator, $value, null, $boolean);
         $this->assertEquals($this->builder, $response);
 
-        $this->assertInstanceOf($class, $this->builder->getFilter());
+        if ($not) {
+            $this->assertInstanceOf(NotFilter::class, $this->builder->getFilter());
+        } else {
+            $this->assertInstanceOf($class, $this->builder->getFilter());
+        }
 
         // add another
         $this->builder->where($field, $operator, $value, null, $boolean);
@@ -255,6 +267,14 @@ class HasFilterTest extends TestCase
         } else {
             $this->assertInstanceOf(OrFilter::class, $this->builder->getFilter());
         }
+    }
+
+    public function testWithUnknownOperator()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The arguments which you have supplied cannot be parsed');
+
+        $this->builder->where('field', 'something', 'value');
     }
 
     public function testWithFilterObject()
@@ -293,6 +313,55 @@ class HasFilterTest extends TestCase
 
         $this->assertEquals($this->builder->getFilter(), $where);
         $this->assertEquals(1, $counter);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the whereBetween
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereBetween()
+    {
+        $in = $this->getFilterMock(BetweenFilter::class);
+        $in->shouldReceive('__construct')
+            ->once()
+            ->with('age', 16, 18, null, null);
+
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->whereBetween('age', 16, 18 );
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the whereNotBetween
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereNotBetween()
+    {
+        $this->getFilterMock(BetweenFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('age', 16, 18, null, null);
+
+        $this->getFilterMock(NotFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(new IsInstanceOf(BetweenFilter::class));
+
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->whereNotBetween('age', 16, 18 );
 
         $this->assertEquals($this->builder, $response);
     }
@@ -339,6 +408,35 @@ class HasFilterTest extends TestCase
             });
 
         $response = $this->builder->whereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * @throws \Exception
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereNotInterval()
+    {
+        $interval = new Interval('now', 'tomorrow');
+
+        $filter = $this->getFilterMock(IntervalFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->andReturnUsing(function ($dimension, $intervals, $extraction) use ($interval) {
+                $this->assertEquals('__time', $dimension);
+                $this->assertIsArray($intervals);
+                $this->assertEquals($interval, $intervals[0]);
+                $this->assertNull($extraction);
+            });
+
+        $this->getFilterMock(NotFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(new IsInstanceOf(IntervalFilter::class));
+
+        $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
 
         $this->assertEquals($this->builder, $response);
     }
