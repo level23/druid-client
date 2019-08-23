@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Types;
 
 use MyCLabs\Enum\Enum;
+use InvalidArgumentException;
 
 /**
  * Class DataType
@@ -21,4 +22,23 @@ class DataType extends Enum
     private const FLOAT  = 'float';
     private const LONG   = 'long';
     private const DOUBLE = 'double';
+
+    /**
+     * Validate the DataType.
+     *
+     * @param string|\Level23\Druid\Types\DataType $outputType
+     *
+     * @return string|\Level23\Druid\Types\DataType
+     */
+    public static function validate($outputType)
+    {
+        if (is_string($outputType) && !self::isValid($outputType = strtolower($outputType))) {
+            throw new InvalidArgumentException(
+                'The given output type is invalid: ' . $outputType . '. ' .
+                'Allowed are: ' . implode(',', DataType::values())
+            );
+        }
+
+        return $outputType;
+    }
 }

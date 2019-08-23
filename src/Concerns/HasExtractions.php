@@ -4,13 +4,19 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Level23\Druid\Extractions\RegexExtraction;
+use Level23\Druid\Extractions\UpperExtraction;
+use Level23\Druid\Extractions\LowerExtraction;
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Extractions\PartialExtraction;
 use Level23\Druid\Extractions\CascadeExtraction;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\SubstringExtraction;
+use Level23\Druid\Extractions\TimeParseExtraction;
 use Level23\Druid\Extractions\TimeFormatExtraction;
+use Level23\Druid\Extractions\JavascriptExtraction;
 use Level23\Druid\Extractions\SearchQueryExtraction;
+use Level23\Druid\Extractions\InlineLookupExtraction;
+use Level23\Druid\Extractions\StringFormatExtraction;
 
 trait HasExtractions
 {
@@ -25,7 +31,8 @@ trait HasExtractions
      *                                         function. The original value will be kept. If false, the missing items
      *                                         will not be kept in the result set. If this is a string, we will keep
      *                                         the missing values and replace them with the string value.
-     * @param bool        $optimize
+     * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
+     *                                         broker) to rewrite the extraction filter if needed.
      * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
@@ -36,9 +43,101 @@ trait HasExtractions
         string $lookupName,
         $replaceMissingValue = false,
         bool $optimize = true,
-        ?bool $injective = null
+        bool $injective = null
     ) {
         $this->addExtraction(new LookupExtraction($lookupName, $replaceMissingValue, $optimize, $injective));
+
+        return $this;
+    }
+
+    /**
+     * @param array       $map                 A map with items. The key is the value of the given dimension. It will
+     *                                         be replaced by the value.
+     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     *                                         function. The original value will be kept. If false, the missing items
+     *                                         will not be kept in the result set. If this is a string, we will keep
+     *                                         the missing values and replace them with the string value.
+     * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
+     *                                         broker) to rewrite the extraction filter if needed.
+     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
+     *                                         or not it is injective. If left unspecified, Druid will use the
+     *                                         registered cluster-wide lookup configuration.
+     *
+     * @return $this
+     */
+    public function inlineLookup(
+        array $map,
+        $replaceMissingValue = false,
+        bool $optimize = true,
+        bool $injective = null
+    ) {
+        $this->addExtraction(new InlineLookupExtraction($map, $replaceMissingValue, $optimize, $injective));
+
+        return $this;
+    }
+
+    /**
+     * Returns the dimension value formatted according to the given format string.
+     *
+     * For example if you want to concat "[" and "]" before and after the actual dimension value, you need to specify
+     * "[%s]" as format string.
+     *
+     * @param string $sprintfExpression
+     *
+     * @return $this
+     */
+    public function format(string $sprintfExpression)
+    {
+        $this->addExtraction(new StringFormatExtraction($sprintfExpression));
+
+        return $this;
+    }
+
+    /**
+     * Returns the dimension values as all upper case. Optionally user can specify the language to use in
+     * order to perform upper transformation
+     *
+     * @param string|null $locale
+     *
+     * @return $this
+     */
+    public function upper(string $locale = null)
+    {
+        $this->addExtraction(new UpperExtraction($locale));
+
+        return $this;
+    }
+
+    /**
+     * Returns the dimension values as all lower case. Optionally user can specify the language to use in
+     * order to perform lower transformation
+     *
+     * @param string|null $locale
+     *
+     * @return $this
+     */
+    public function lower(string $locale = null)
+    {
+        $this->addExtraction(new LowerExtraction($locale));
+
+        return $this;
+    }
+
+    /**
+     * Parses dimension values as timestamps using the given input format, and returns them formatted using the given
+     * output format.
+     *
+     * Note, if you are working with the __time dimension, you should consider using the timeFormat extraction function
+     * instead, which works on time value directly as opposed to string values.
+     *
+     * @param string $inputFormat
+     * @param string $outputFormat
+     *
+     * @return $this
+     */
+    public function timeParse(string $inputFormat, string $outputFormat)
+    {
+        $this->addExtraction(new TimeParseExtraction($inputFormat, $outputFormat));
 
         return $this;
     }
@@ -127,6 +226,23 @@ trait HasExtractions
         bool $asMilliseconds = null
     ) {
         $this->addExtraction(new TimeFormatExtraction($format, $granularity, $locale, $timeZone, $asMilliseconds));
+
+        return $this;
+    }
+
+    /**
+     * Add a javascript extraction
+     *
+     * @param string $javascript A javascript function which will receive the dimension/value. The function can then
+     *                           extract the needed value from it and should return it.
+     * @param bool   $injective  A property of injective specifies if the javascript function preserves uniqueness. The
+     *                           default value is false meaning uniqueness is not preserved
+     *
+     * @return $this
+     */
+    public function javascript(string $javascript, bool $injective = false)
+    {
+        $this->addExtraction(new JavascriptExtraction($javascript, $injective));
 
         return $this;
     }

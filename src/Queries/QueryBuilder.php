@@ -56,16 +56,9 @@ class QueryBuilder
      */
     public function __construct(DruidClient $client, string $dataSource, $granularity = 'all')
     {
-        if (is_string($granularity) && !Granularity::isValid($granularity)) {
-            throw new InvalidArgumentException(
-                'The given granularity is invalid: ' . $granularity . '. ' .
-                'Allowed are: ' . implode(',', Granularity::values())
-            );
-        }
-
         $this->client      = $client;
         $this->dataSource  = $dataSource;
-        $this->granularity = $granularity;
+        $this->granularity = Granularity::validate($granularity);
     }
 
     /**
@@ -107,6 +100,20 @@ class QueryBuilder
         $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * Update/set the dataSource
+     *
+     * @param string $dataSource
+     *
+     * @return $this
+     */
+    public function dataSource(string $dataSource)
+    {
+        $this->dataSource = $dataSource;
+
+        return $this;
     }
 
     /**
@@ -232,6 +239,10 @@ class QueryBuilder
      */
     protected function buildTimeSeriesQuery(array $context = []): TimeSeriesQuery
     {
+        if (count($this->intervals) == 0) {
+            throw new InvalidArgumentException('You have to specify at least one interval');
+        }
+
         $query = new TimeSeriesQuery(
             $this->dataSource,
             new IntervalCollection(...$this->intervals),
@@ -292,6 +303,10 @@ class QueryBuilder
      */
     protected function buildTopNQuery(array $context = []): TopNQuery
     {
+        if (count($this->intervals) == 0) {
+            throw new InvalidArgumentException('You have to specify at least one interval');
+        }
+
         if (!$this->limit instanceof LimitInterface) {
             throw new InvalidArgumentException(
                 'You should specify a limit to make use of a top query'
@@ -351,6 +366,10 @@ class QueryBuilder
      */
     protected function buildGroupByQuery($context = [], string $type = 'v2'): GroupByQuery
     {
+        if (count($this->intervals) == 0) {
+            throw new InvalidArgumentException('You have to specify at least one interval');
+        }
+
         $query = new GroupByQuery(
             $this->dataSource,
             new DimensionCollection(...$this->dimensions),

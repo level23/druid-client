@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use InvalidArgumentException;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Extractions\ExtractionInterface;
 
@@ -64,11 +63,8 @@ class BetweenFilter implements FilterInterface
         $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
-        if (is_string($ordering) && !SortingOrder::isValid($ordering)) {
-            throw new InvalidArgumentException(
-                'The given sorting order is invalid: ' . $ordering . '. ' .
-                'Allowed are: ' . implode(',', SortingOrder::values())
-            );
+        if (!is_null($ordering)) {
+            $ordering = SortingOrder::validate($ordering);
         }
 
         $this->dimension          = $dimension;
