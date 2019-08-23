@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Types;
 
 use MyCLabs\Enum\Enum;
+use InvalidArgumentException;
 
 /**
  * Class SortingOrder
@@ -24,4 +25,21 @@ class SortingOrder extends Enum
     private const NUMERIC       = 'numeric';
     private const STRLEN        = 'strlen';
     private const VERSION       = 'version';
+
+    /**
+     * @param string|\Level23\Druid\Types\SortingOrder $ordering
+     *
+     * @return string|\Level23\Druid\Types\SortingOrder
+     */
+    public static function validate($ordering)
+    {
+        if (is_string($ordering) && !SortingOrder::isValid($ordering = strtolower($ordering))) {
+            throw new InvalidArgumentException(
+                'The given sorting order is invalid: ' . $ordering . '. ' .
+                'Allowed are: ' . implode(',', SortingOrder::values())
+            );
+        }
+
+        return $ordering;
+    }
 }

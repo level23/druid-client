@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use InvalidArgumentException;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\BoundOperator;
 use Level23\Druid\Extractions\ExtractionInterface;
@@ -62,16 +61,8 @@ class BoundFilter implements FilterInterface
         SortingOrder $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
-
-        if (is_string($operator) && !BoundOperator::isValid($operator)) {
-            throw new InvalidArgumentException(
-                'Invalid operator given: ' . $operator .
-                '. Valid options are: ' . implode(',', BoundOperator::values())
-            );
-        }
-
         $this->dimension          = $dimension;
-        $this->operator           = $operator;
+        $this->operator           = BoundOperator::validate($operator);
         $this->value              = $value;
         $this->ordering           = $ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC());
         $this->extractionFunction = $extractionFunction;
