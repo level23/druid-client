@@ -3,12 +3,22 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Extractions;
 
-class LookupExtraction implements ExtractionInterface
+class InlineLookupExtraction implements ExtractionInterface
 {
     /**
-     * @var string
+     * @var array
      */
-    protected $lookupName;
+    protected $map;
+
+    /**
+     * @var bool
+     */
+    protected $optimize;
+
+    /**
+     * @var bool|null
+     */
+    protected $injective;
 
     /**
      * @var bool
@@ -18,22 +28,13 @@ class LookupExtraction implements ExtractionInterface
     /**
      * @var string|null
      */
-    protected $replaceMissingValueWith;
+    private $replaceMissingValueWith;
 
     /**
-     * @var bool|null
-     */
-    protected $injective;
-
-    /**
-     * @var bool|null
-     */
-    protected $optimize;
-
-    /**
-     * LookupExtraction constructor.
+     * InlineLookupExtraction constructor.
      *
-     * @param string      $lookupName
+     * @param array       $map                 A map with items. The key is the value of the given dimension. It will
+     *                                         be replaced by the value.
      * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
      *                                         function. The original value will be kept. If false, the missing items
      *                                         will not be kept in the result set. If this is a string, we will keep
@@ -43,22 +44,14 @@ class LookupExtraction implements ExtractionInterface
      * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
-     *
-     * For  more information about injective, see:
-     * https://druid.apache.org/docs/latest/querying/lookups.html#query-execution
      */
-    public function __construct(
-        string $lookupName,
-        $replaceMissingValue = true,
-        bool $optimize = true,
-        ?bool $injective = null
-
-    ) {
-        $this->lookupName              = $lookupName;
-        $this->retainMissingValue      = is_string($replaceMissingValue) ? true : $replaceMissingValue;
+    public function __construct(array $map, $replaceMissingValue = false, bool $optimize = true, bool $injective = null)
+    {
+        $this->map                     = $map;
+        $this->retainMissingValue      = is_string($replaceMissingValue) ? true : (bool)$replaceMissingValue;
         $this->replaceMissingValueWith = is_string($replaceMissingValue) ? $replaceMissingValue : null;
-        $this->injective               = $injective;
         $this->optimize                = $optimize;
+        $this->injective               = $injective;
     }
 
     /**
@@ -69,8 +62,8 @@ class LookupExtraction implements ExtractionInterface
     public function toArray(): array
     {
         $result = [
-            'type'     => 'registeredLookup',
-            'lookup'   => $this->lookupName,
+            'type'     => 'lookup',
+            'lookup'   => $this->map,
             'optimize' => $this->optimize,
         ];
 
