@@ -10,6 +10,7 @@ use Level23\Druid\Extractions\CascadeExtraction;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\SubstringExtraction;
 use Level23\Druid\Extractions\TimeFormatExtraction;
+use Level23\Druid\Extractions\JavascriptExtraction;
 use Level23\Druid\Extractions\SearchQueryExtraction;
 
 trait HasExtractions
@@ -127,6 +128,23 @@ trait HasExtractions
         bool $asMilliseconds = null
     ) {
         $this->addExtraction(new TimeFormatExtraction($format, $granularity, $locale, $timeZone, $asMilliseconds));
+
+        return $this;
+    }
+
+    /**
+     * Add a javascript extraction
+     *
+     * @param string $javascript A javascript function which will receive the dimension/value. The function can then
+     *                           extract the needed value from it and should return it.
+     * @param bool   $injective  A property of injective specifies if the javascript function preserves uniqueness. The
+     *                           default value is false meaning uniqueness is not preserved
+     *
+     * @return $this
+     */
+    public function javascript(string $javascript, bool $injective = false)
+    {
+        $this->addExtraction(new JavascriptExtraction($javascript, $injective));
 
         return $this;
     }
