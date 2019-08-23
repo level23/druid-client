@@ -87,11 +87,9 @@ class TopNQuery implements QueryInterface
         string $metric,
         $granularity = 'all'
     ) {
-        Granularity::validate($granularity);
-
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;
-        $this->granularity = $granularity;
+        $this->granularity = Granularity::validate($granularity);
         $this->dimension   = $dimension;
         $this->threshold   = $threshold;
         $this->metric      = $metric;

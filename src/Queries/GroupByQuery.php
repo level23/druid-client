@@ -87,11 +87,9 @@ class GroupByQuery implements QueryInterface
         $aggregations = null,
         $granularity = 'all'
     ) {
-        Granularity::validate($granularity);
-
         $this->dataSource  = $dataSource;
         $this->dimensions  = $dimensions;
-        $this->granularity = $granularity;
+        $this->granularity = Granularity::validate($granularity);
         $this->intervals   = $intervals;
 
         if ($aggregations) {

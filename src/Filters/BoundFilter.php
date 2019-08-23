@@ -61,11 +61,8 @@ class BoundFilter implements FilterInterface
         SortingOrder $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
-
-        BoundOperator::validate($operator);
-
         $this->dimension          = $dimension;
-        $this->operator           = $operator;
+        $this->operator           = BoundOperator::validate($operator);
         $this->value              = $value;
         $this->ordering           = $ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC());
         $this->extractionFunction = $extractionFunction;

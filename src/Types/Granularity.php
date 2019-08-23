@@ -41,8 +41,10 @@ class Granularity extends Enum
 
     /**
      * @param string|\Level23\Druid\Types\Granularity $granularity
+     *
+     * @return string|\Level23\Druid\Types\Granularity
      */
-    public static function validate(&$granularity)
+    public static function validate($granularity)
     {
         if (is_string($granularity) && !Granularity::isValid($granularity = strtolower($granularity))) {
             throw new InvalidArgumentException(
@@ -50,5 +52,7 @@ class Granularity extends Enum
                 'Allowed are: ' . implode(',', Granularity::values())
             );
         }
+
+        return $granularity;
     }
 }

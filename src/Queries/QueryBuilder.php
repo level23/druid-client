@@ -56,11 +56,9 @@ class QueryBuilder
      */
     public function __construct(DruidClient $client, string $dataSource, $granularity = 'all')
     {
-        Granularity::validate($granularity);
-
         $this->client      = $client;
         $this->dataSource  = $dataSource;
-        $this->granularity = $granularity;
+        $this->granularity = Granularity::validate($granularity);
     }
 
     /**

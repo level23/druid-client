@@ -22,6 +22,8 @@ class OrderByDirection extends Enum
 
     /**
      * @param string|\Level23\Druid\Types\OrderByDirection $direction
+     *
+     * @return string|\Level23\Druid\Types\OrderByDirection
      */
     public static function validate($direction)
     {
@@ -31,5 +33,7 @@ class OrderByDirection extends Enum
                 '. Valid options are: ' . implode(', ', OrderByDirection::values())
             );
         }
+
+        return $direction;
     }
 }

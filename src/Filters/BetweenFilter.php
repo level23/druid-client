@@ -63,7 +63,9 @@ class BetweenFilter implements FilterInterface
         $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
-        SortingOrder::validate($ordering);
+        if (!is_null($ordering)) {
+            $ordering = SortingOrder::validate($ordering);
+        }
 
         $this->dimension          = $dimension;
         $this->ordering           = $ordering ?: (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC());
