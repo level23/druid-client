@@ -10,14 +10,22 @@ use Hamcrest\Type\IsArray;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Tasks\IndexTask;
 use GuzzleHttp\Client as GuzzleClient;
+use Level23\Druid\Metadata\Structure;
+use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
 use GuzzleHttp\Exception\ServerException;
+use Level23\Druid\Tasks\IndexTaskBuilder;
 use GuzzleHttp\Exception\RequestException;
+use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Tasks\CompactTaskBuilder;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\Aggregations\AggregatorInterface;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
@@ -52,6 +60,160 @@ class DruidClientTest extends TestCase
             ->with($this->client, 'randomDataSource', 'quarter');
 
         $this->client->query('randomDataSource', 'quarter');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testMetaBuilder()
+    {
+        $builder = Mockery::mock('overload:' . MetadataBuilder::class);
+        $builder->shouldReceive('__construct')
+            ->once()
+            ->with($this->client);
+
+        $this->client->metadata();
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testCompact()
+    {
+        $builder = Mockery::mock('overload:' . CompactTaskBuilder::class);
+        $builder->shouldReceive('__construct')
+            ->once()
+            ->with($this->client, 'someDataSource');
+
+        $this->client->compact('someDataSource');
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testReindex()
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName(MetadataBuilder::class);
+
+        $metaDataBuilder = Mockery::mock($builder);
+
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        $structure = new Structure('somethingElse', ['name' => 'string', 'room' => 'long'], ['salary' => 'double']);
+
+        $metaDataBuilder->shouldReceive('structure')
+            ->once()
+            ->with('somethingElse')
+            ->andReturn($structure);
+
+        $indexTaskBuilder = Mockery::mock('overload:' . IndexTaskBuilder::class);
+        $indexTaskBuilder->shouldReceive('__construct')
+            ->once()
+            ->with($client, 'somethingElse', IngestSegmentFirehose::class);
+
+        $indexTaskBuilder->shouldReceive('dimension')
+            ->with('name', 'string')
+            ->once();
+
+        $indexTaskBuilder->shouldReceive('dimension')
+            ->with('room', 'long')
+            ->once();
+
+        $indexTaskBuilder->shouldReceive('sum')
+            ->once()
+            ->with('salary', 'salary', 'double');
+
+        $client->shouldReceive('metadata')
+            ->once()
+            ->andReturn($metaDataBuilder);
+
+        $client->reindex('somethingElse');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testExecuteTask()
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName(IndexTask::class);
+        $builder->addTarget(TaskInterface::class);
+
+        $task = Mockery::mock($builder);
+
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info')->twice();
+
+        $client->setLogger($logger);
+
+        $payload = ['task' => 'here'];
+
+        $task->shouldReceive('toArray')
+            ->once()
+            ->andReturn($payload);
+
+        $client->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('config')
+            ->once()
+            ->with('overlord_url')
+            ->andReturn('http://overlord.test');
+
+        $url = 'http://overlord.test/druid/indexer/v1/task';
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('post', $url, $payload)
+            ->andReturn(['task' => 'myTaskIdentifier']);
+
+        $response = $client->executeTask($task);
+
+        $this->assertEquals('myTaskIdentifier', $response);
+    }
+
+    /**
+     * @testWith [{}, {}]
+     *           [{"status": {"id":"abcd"}}, {"id":"abcd"}]
+     *
+     * @param array $executeRequestResponse
+     * @param array $expectedResponse
+     *
+     * @return void
+     * @throws \Exception
+     */
+    public function testTaskStatus(array $executeRequestResponse, array $expectedResponse)
+    {
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        $client->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('config')
+            ->once()
+            ->with('overlord_url')
+            ->andReturn('http://overlord.test');
+
+        $url = 'http://overlord.test/druid/indexer/v1/task/' . urlencode('abcd1234') . '/status';
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('get', $url)
+            ->andReturn($executeRequestResponse);
+
+        $response = $client->taskStatus('abcd1234');
+
+        $this->assertEquals($expectedResponse, $response);
     }
 
     public function testLogHandler()
@@ -197,16 +359,4 @@ class DruidClientTest extends TestCase
             $this->assertEquals($response, $druidResult);
         }
     }
-
-    //    public function testOptions()
-    //    {
-    //
-    //    }
-    //
-    //    public function testGetEventData()
-    //    {
-    //        $client = Mockery::mock(DruidClient::class, []);
-    //
-    //        //$this->assertEquals($client->getConfig());
-    //    }
 }
