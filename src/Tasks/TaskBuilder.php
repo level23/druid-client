@@ -82,7 +82,7 @@ abstract class TaskBuilder
     {
         $task = $this->buildTask($context);
 
-        $json = \GuzzleHttp\json_encode($task->toArray(), JSON_PRETTY_PRINT);
+        $json = \GuzzleHttp\json_encode($task->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         return $json;
     }
