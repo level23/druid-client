@@ -20,8 +20,8 @@ ini_set('display_errors', 'On');
 include __DIR__ . '/../vendor/autoload.php';
 
 use Level23\Druid\DruidClient;
-use Level23\Druid\FilterBuilder;
-use Level23\Druid\ExtractionBuilder;
+use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Extractions\ExtractionBuilder;
 
 $client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
