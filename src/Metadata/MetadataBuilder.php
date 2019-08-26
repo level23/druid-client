@@ -52,6 +52,7 @@ class MetadataBuilder
     /**
      * Returns a map of segment intervals contained within the specified interval to a map of segment metadata to a set
      * of server names that contain the segment for an interval.
+     * The latest intervals will come as first, the olderst as last.
      *
      * Example response:
      *
@@ -134,7 +135,7 @@ class MetadataBuilder
         if ($interval == 'last' || $interval == 'first') {
             $intervals = array_keys($this->intervals($dataSource));
 
-            if ($interval == 'first') {
+            if ($interval == 'last') {
                 $interval = $intervals[0];
             } else {
                 $interval = $intervals[count($intervals) - 1];
