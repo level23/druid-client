@@ -14,6 +14,12 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Lumen\Application as LumenApplication;
 use Illuminate\Foundation\Application as LaravelApplication;
 
+/**
+ * Class DruidServiceProvider
+ *
+ * @package Level23\Druid
+ * @codeCoverageIgnore
+ */
 class DruidServiceProvider extends ServiceProvider
 {
     /**
