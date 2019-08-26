@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Level23\Druid\Extractions;
+namespace tests\Level23\Druid\Extractions;
 
 use tests\TestCase;
+use Level23\Druid\Extractions\SubstringExtraction;
 
 class SubstringExtractionTest extends TestCase
 {
