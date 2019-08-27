@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Extractions;
 
 use tests\TestCase;
-use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Extractions\InlineLookupExtraction;
 
 class InlineLookupExtractionTest extends TestCase
@@ -41,7 +40,10 @@ class InlineLookupExtractionTest extends TestCase
 
         $expected = [
             'type'     => 'lookup',
-            'lookup'   => ['m' => 'Male', 'f' => 'Female'],
+            'lookup'   => [
+                'type' => 'map',
+                'map'  => ['m' => 'Male', 'f' => 'Female'],
+            ],
             'optimize' => $optimize,
         ];
 
@@ -63,7 +65,10 @@ class InlineLookupExtractionTest extends TestCase
         $extraction = new InlineLookupExtraction(['y' => 'Yes', 'n' => 'No']);
         $expected   = [
             'type'     => 'lookup',
-            'lookup'   => ['y' => 'Yes', 'n' => 'No'],
+            'lookup'   => [
+                'type' => 'map',
+                'map'  => ['y' => 'Yes', 'n' => 'No'],
+            ],
             'optimize' => true,
         ];
 
