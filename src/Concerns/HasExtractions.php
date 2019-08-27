@@ -130,14 +130,23 @@ trait HasExtractions
      * Note, if you are working with the __time dimension, you should consider using the timeFormat extraction function
      * instead, which works on time value directly as opposed to string values.
      *
+     * If "$jodaFormat" is true, time formats are described in the Joda DateTimeFormat documentation. If "joda" is false (or
+     * unspecified) then formats are described in the SimpleDateFormat documentation. In general, we recommend setting
+     * "joda" to true since Joda format strings are more common in Druid APIs and since Joda handles certain edge cases
+     * (like weeks and week-years near the start and end of calendar years) in a more ISO8601 compliant way.
+     *
+     * If a value cannot be parsed using the provided timeFormat, it will be returned as-is.
+     *
      * @param string $inputFormat
      * @param string $outputFormat
+     * @param bool   $jodaFormat  If true, we assume that the given formats are Joda DateTime Format. If false, we
+     *                            assume that are SimpleDateFormat's.
      *
      * @return $this
      */
-    public function timeParse(string $inputFormat, string $outputFormat)
+    public function timeParse(string $inputFormat, string $outputFormat, bool $jodaFormat = true)
     {
-        $this->addExtraction(new TimeParseExtraction($inputFormat, $outputFormat));
+        $this->addExtraction(new TimeParseExtraction($inputFormat, $outputFormat, $jodaFormat));
 
         return $this;
     }

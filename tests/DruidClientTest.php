@@ -4,9 +4,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid;
 
 use Mockery;
-use Exception;
 use tests\TestCase;
-use Hamcrest\Type\IsArray;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
@@ -14,18 +12,19 @@ use Level23\Druid\Tasks\IndexTask;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Tasks\TaskInterface;
-use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
-use GuzzleHttp\Exception\ServerException;
+use Psr\Http\Message\ResponseInterface;
 use Level23\Druid\Tasks\IndexTaskBuilder;
+use Level23\Druid\Queries\QueryInterface;
+use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\RequestException;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use GuzzleHttp\Exception\BadResponseException;
+use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
-use Level23\Druid\Aggregations\AggregatorInterface;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
@@ -46,6 +45,20 @@ class DruidClientTest extends TestCase
         $this->expectExceptionMessage('The given granularity is invalid');
 
         $this->client->query('hits', 'wrong');
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testSetGuzzleClient()
+    {
+        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        $this->client->setGuzzleClient($guzzle);
+
+        $this->assertEquals($guzzle,
+            $this->getProperty($this->client, 'client')
+        );
     }
 
     /**
@@ -230,7 +243,49 @@ class DruidClientTest extends TestCase
         $client->shouldAllowMockingProtectedMethods()->log('something');
     }
 
-    public function executeQueryDataProvider(): array
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testExecuteDruidQuery()
+    {
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName(SegmentMetadataQuery::class);
+        $builder->addTarget(QueryInterface::class);
+
+        /**
+         * @var \Mockery\MockInterface|\Mockery\LegacyMockInterface|SegmentMetadataQuery|QueryInterface $query
+         */
+        $query = Mockery::mock($builder);
+
+        $query->shouldReceive('toArray')
+            ->once()
+            ->andReturn(['query' => 'here']);
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info')->twice();
+
+        $client->shouldReceive('config')
+            ->with('broker_url')
+            ->once()
+            ->andReturn('http://broker.url');
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('post', 'http://broker.url/druid/v2', ['query' => 'here'])
+            ->andReturn(['result' => 'yes']);
+
+        $client->setLogger($logger);
+
+        $this->assertEquals(['result' => 'yes'], $client->executeQuery($query));
+    }
+
+    public function executeRawRequestDataProvider(): array
     {
         $response = [
             'event' => [
@@ -242,16 +297,44 @@ class DruidClientTest extends TestCase
         return [
             // Correct response
             [
-                $response,
+                'post',
                 function () use ($response) {
                     return new GuzzleResponse(200, [], (string)json_encode($response));
                 },
                 false,
+            ],
+            // Correct response
+            [
+                'GET',
+                function () use ($response) {
+                    return new GuzzleResponse(200, [], (string)json_encode($response));
+                },
                 false,
+            ],
+            // Correct response
+            [
+                'GET',
+                function () {
+                    return new GuzzleResponse(204, [], '');
+                },
+                false,
+                true,
+            ],
+            // Test exception
+            [
+                "PoSt",
+                function () {
+                    throw new ServerException(
+                        'Unknown exception',
+                        new GuzzleRequest('GET', '/druid/v1', [], ''),
+                        null
+                    );
+                },
+                ServerException::class,
             ],
             // Test incorrect http code
             [
-                $response,
+                'PoSt',
                 function () {
                     throw new ServerException(
                         'Unknown exception',
@@ -263,11 +346,24 @@ class DruidClientTest extends TestCase
                     );
                 },
                 QueryResponseException::class,
-                500,
+            ],
+            // Test incorrect http code
+            [
+                'PoSt',
+                function () {
+                    throw new ServerException(
+                        'Unknown exception',
+                        new GuzzleRequest('GET', '/druid/v1', [], ''),
+                        new GuzzleResponse(500, [], (string)json_encode([
+                            'blaat' => 'woei',
+                        ]))
+                    );
+                },
+                ServerException::class,
             ],
             // Test a BadResponseException
             [
-                $response,
+                'GET',
                 function () {
                     throw new BadResponseException(
                         'Bad response',
@@ -275,11 +371,10 @@ class DruidClientTest extends TestCase
                     );
                 },
                 BadResponseException::class,
-                0,
             ],
             // Test a RequestException
             [
-                $response,
+                'POST',
                 function () {
                     throw new RequestException(
                         'Request exception',
@@ -287,76 +382,68 @@ class DruidClientTest extends TestCase
                     );
                 },
                 RequestException::class,
-                0,
             ],
-            // Test a generic Exception
-            [
-                $response,
-                function () {
-                    throw new Exception('Something went wrong!');
-                },
-                Exception::class,
-                0,
-            ],
-
         ];
     }
 
+    public function testConfig()
+    {
+        $client = new DruidClient(['pieter' => 'okay']);
+
+        $this->assertEquals('okay', $client->config('pieter'));
+        $this->assertEquals('bar', $client->config('foo', 'bar'));
+    }
+
     /**
-     * @dataProvider executeQueryDataProvider
+     * @dataProvider executeRawRequestDataProvider
      *
-     * @param array    $response
+     * @param string   $method
      * @param callable $responseFunction
      * @param mixed    $expectException
-     * @param int      $exceptionCode
+     * @param bool     $is204
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testExecuteDruidQuery(array $response, callable $responseFunction, $expectException, $exceptionCode)
-    {
-        $queryArray = ['something' => 'here'];
-
-        $config = [
-            'broker_url'     => 'http://test.dev',
-            'guzzle_options' => ['strict' => false],
-        ];
-
+    public function testExecuteRawRequest(
+        string $method,
+        callable $responseFunction,
+        $expectException,
+        $is204 = false
+    ) {
         if ($expectException) {
             $this->expectException($expectException);
-            $this->expectExceptionCode($exceptionCode);
         }
 
-        $query = Mockery::mock(GroupByQuery::class);
-        $query->shouldReceive('toArray')
-            ->once()
-            ->andReturn($queryArray);
-
-        $guzzle = Mockery::mock(GuzzleClient::class);
-        $guzzle->shouldReceive('post')
-            ->once()
-            ->with(
-                'http://test.dev/druid/v2',
-                new IsArray()
-            )
-            ->andReturnUsing(function ($url, $options) use ($responseFunction, $queryArray) {
-                $this->assertIsArray($options);
-
-                $this->assertEquals(['json' => $queryArray,], $options);
-
-                $response = call_user_func($responseFunction, $url, $options);
-
-                return $response;
-            });
-
-        $client = Mockery::mock(DruidClient::class, [$config, $guzzle]);
+        $client = Mockery::mock(DruidClient::class, [[]]);
         $client->makePartial();
 
-        $client->shouldAllowMockingProtectedMethods();
+        $url  = 'http://test.dev/v2/task';
+        $data = ['payload' => 'here'];
 
-        $druidResult = $client->executeQuery($query);
+        $guzzle = Mockery::mock(GuzzleClient::class);
+        $guzzle->shouldReceive(strtolower($method))
+            ->once()
+            ->with($url, (strtolower($method) == 'post' ? ['json' => $data] : ['query' => $data]))
+            ->andReturnUsing($responseFunction);
 
-        if (!$expectException) {
-            $this->assertEquals($response, $druidResult);
+        $client->setGuzzleClient($guzzle);
+
+        $expectedResponse = [];
+        if (!$is204 && (!$expectException || $expectException instanceof ResponseInterface)) {
+
+            $client->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('parseResponse')
+                ->once()
+                ->andReturnUsing(function (ResponseInterface $input) use (&$expectedResponse) {
+                    $response         = \GuzzleHttp\json_decode($input->getBody()->getContents(), true) ?: [];
+                    $expectedResponse = $response;
+
+                    return $expectedResponse;
+                });
         }
+
+        $response = $client->executeRawRequest($method, $url, $data);
+
+        $this->assertEquals($expectedResponse, $response);
     }
 }

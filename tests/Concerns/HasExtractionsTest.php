@@ -6,16 +6,22 @@ namespace tests\Level23\Druid\Concerns;
 use Mockery;
 use tests\TestCase;
 use Level23\Druid\Extractions\RegexExtraction;
+use Level23\Druid\Extractions\UpperExtraction;
+use Level23\Druid\Extractions\LowerExtraction;
 use Level23\Druid\Extractions\LookupExtraction;
 use Level23\Druid\Extractions\CascadeExtraction;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\PartialExtraction;
 use Level23\Druid\Extractions\ExtractionInterface;
 use Level23\Druid\Extractions\SubstringExtraction;
+use Level23\Druid\Extractions\TimeParseExtraction;
 use Level23\Druid\Extractions\TimeFormatExtraction;
+use Level23\Druid\Extractions\JavascriptExtraction;
 use Level23\Druid\Extractions\SearchQueryExtraction;
+use Level23\Druid\Extractions\InlineLookupExtraction;
+use Level23\Druid\Extractions\StringFormatExtraction;
 
-class HasExtractions extends TestCase
+class HasExtractionsTest extends TestCase
 {
     /**
      * @param string $class
@@ -213,6 +219,140 @@ class HasExtractions extends TestCase
             $array = $extraction->toArray();
             $this->assertEquals(3, count($array['extractionFns']));
         }
+    }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testInlineLookup()
+    {
+        $this->getExtractionMock(InlineLookupExtraction::class)
+            ->shouldReceive('__construct')
+            ->with(['f' => 'Female', 'm' => 'Male'],
+                'Unknown',
+                false,
+                true
+            );
+
+        $builder = new ExtractionBuilder();
+        $builder->inlineLookup(
+            ['f' => 'Female', 'm' => 'Male'],
+            'Unknown',
+            false,
+            true
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testInlineLookupWithDefaults()
+    {
+        $this->getExtractionMock(InlineLookupExtraction::class)
+            ->shouldReceive('__construct')
+            ->with(['f' => 'Female', 'm' => 'Male'], false, true, null);
+
+        $builder = new ExtractionBuilder();
+        $builder->inlineLookup(['f' => 'Female', 'm' => 'Male']);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testFormat()
+    {
+        $this->getExtractionMock(StringFormatExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('[%s]');
+
+        $builder = new ExtractionBuilder();
+        $builder->format('[%s]');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testUpper()
+    {
+        $this->getExtractionMock(UpperExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('fr');
+
+        $builder = new ExtractionBuilder();
+        $builder->upper('fr');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testLower()
+    {
+        $this->getExtractionMock(LowerExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('fr');
+
+        $builder = new ExtractionBuilder();
+        $builder->lower('fr');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testTimeParse()
+    {
+        $this->getExtractionMock(TimeParseExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', false);
+
+        $builder = new ExtractionBuilder();
+        $builder->timeParse('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', false);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testTimeParseWithDefaults()
+    {
+        $this->getExtractionMock(TimeParseExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', true);
+
+        $builder = new ExtractionBuilder();
+        $builder->timeParse('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testJavascript()
+    {
+        $this->getExtractionMock(JavascriptExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('function() { return "hi"; }', true);
+
+        $builder = new ExtractionBuilder();
+        $builder->javascript('function() { return "hi"; }', true);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testJavascriptWithDefaults()
+    {
+        $this->getExtractionMock(JavascriptExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('function() { return "hi"; }', false);
+
+        $builder = new ExtractionBuilder();
+        $builder->javascript('function() { return "hi"; }');
     }
 }
