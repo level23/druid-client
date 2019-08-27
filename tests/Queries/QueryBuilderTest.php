@@ -14,6 +14,7 @@ use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
+use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Collections\IntervalCollection;
@@ -237,6 +238,65 @@ class QueryBuilderTest extends TestCase
         $response = $this->builder->segmentMetadata();
 
         $this->assertEquals($parsedResult, $response);
+    }
+
+    public function testDatasource()
+    {
+        $this->builder->dataSource('myFavorite');
+
+        $this->assertEquals('myFavorite', $this->getProperty($this->builder, 'dataSource'));
+    }
+
+    /**
+     * @testWith [{"__time":"hour"}, 5, "hour", true]
+     *           [{"__time":"hour", "name":"name"}, 5, "hour", false]
+     *           [{"__time":"hour"}, null, "hour", false]
+     *           [{"__time":"hour"}, 999999, "hour", false]
+     *           [{"__time":"hour"}, 5, null, false]
+     *
+     * @param array       $dimensions
+     * @param int|null    $limit
+     * @param string|null $orderBy
+     * @param bool        $expected
+     */
+    public function testIsTopNQuery(array $dimensions, int $limit = null, string $orderBy = null, bool $expected)
+    {
+        $this->builder->select($dimensions);
+
+        if ($limit) {
+            $this->builder->limit($limit);
+        }
+
+        if ($orderBy) {
+            $this->builder->orderBy($orderBy, 'asc');
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTopNQuery());
+    }
+
+    public function isTimeSeriesQueryDataProvider(): array
+    {
+        return [
+            [['__time' => 'hour'], true],
+            [new Dimension('__hour', 'time', 'string', new UpperExtraction()), false],
+            [['time' => 'hour'], false],
+            [['__time' => 'hour', 'full_name'], false],
+        ];
+    }
+
+    /**
+     * @dataProvider isTimeSeriesQueryDataProvider
+     *
+     * @param mixed $dimension
+     * @param bool  $expected
+     */
+    public function testIsTimeSeriesQuery($dimension, bool $expected)
+    {
+        $this->builder->select($dimension);
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
     }
 
     /**
