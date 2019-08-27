@@ -128,7 +128,7 @@ You can use:
 ```php 
 ->select([
     "browser"     => "TheBrowser", 
-    "country_iso" => "CountryIso, 
+    "country_iso" => "CountryIso", 
     "age"         => "Age",
     "gender"      => "MaleOrFemale"
 ])
