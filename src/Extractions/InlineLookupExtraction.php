@@ -63,7 +63,10 @@ class InlineLookupExtraction implements ExtractionInterface
     {
         $result = [
             'type'     => 'lookup',
-            'lookup'   => $this->map,
+            'lookup'   => [
+                'type' => 'map',
+                'map'  => $this->map,
+            ],
             'optimize' => $this->optimize,
         ];
 
