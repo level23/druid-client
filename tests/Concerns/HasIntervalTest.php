@@ -24,7 +24,5 @@ class HasIntervalTest extends TestCase
 
         $interval = new Interval($start, $stop);
         $this->assertEquals($interval, $this->getProperty($builder, 'interval'));
-
-        $this->assertEquals($interval, $builder->getInterval());
     }
 }

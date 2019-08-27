@@ -29,12 +29,4 @@ trait HasInterval
 
         return $this;
     }
-
-    /**
-     * @return \Level23\Druid\Interval\Interval|null
-     */
-    public function getInterval(): ?Interval
-    {
-        return $this->interval;
-    }
 }
