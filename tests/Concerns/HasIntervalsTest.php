@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use Mockery;
 use DateTime;
 use Exception;
 use tests\TestCase;
@@ -19,15 +18,13 @@ class HasIntervalsTest extends TestCase
     protected $client;
 
     /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
+     * @var \Level23\Druid\Queries\QueryBuilder
      */
     protected $builder;
 
     public function setUp(): void
     {
-        $this->client  = new DruidClient([]);
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
-        $this->builder->makePartial();
+        $this->builder = new QueryBuilder(new DruidClient([]), 'dataSource');
     }
 
     /**

@@ -35,7 +35,7 @@ trait HasVirtualColumns
      */
     public function virtualColumn(string $expression, string $as, $outputType = 'string')
     {
-        $this->virtualColumns[] = new VirtualColumn($as, $expression, $outputType);
+        $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
 
         return $this;
     }
