@@ -292,6 +292,10 @@ class QueryBuilder
             return $query;
         }
 
+        if (count($this->virtualColumns) > 0) {
+            $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
+        }
+
         $orderByCollection = $this->limit->getOrderByCollection();
 
         if (count($orderByCollection) != 1) {
@@ -357,6 +361,10 @@ class QueryBuilder
 
         if (count($this->postAggregations) > 0) {
             $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
+        }
+
+        if (count($this->virtualColumns) > 0) {
+            $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
         }
 
         if (count($context) > 0) {
