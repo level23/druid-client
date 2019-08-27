@@ -6,11 +6,17 @@ namespace tests\Level23\Druid\Queries;
 use Mockery;
 use tests\TestCase;
 use Level23\Druid\DruidClient;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
+use Level23\Druid\Extractions\UpperExtraction;
+use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\DimensionCollection;
 
@@ -65,6 +71,32 @@ class QueryBuilderTest extends TestCase
         $response = $this->builder->execute($context);
 
         $this->assertEquals($normalized, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testSelectVirtual()
+    {
+        Mockery::mock('overload:' . VirtualColumn::class)
+            ->shouldReceive('__construct')
+            ->with('concat(foo, bar)', 'fooBar', 'string');
+
+        $this->builder->shouldReceive('select', 'fooBar');
+        $this->builder->selectVirtual('concat(foo, bar)', 'fooBar');
+    }
+
+    public function testGranularity()
+    {
+        Mockery::mock(Granularity::class)
+            ->shouldReceive('validate')
+            ->with('year')
+            ->andReturn('year');
+
+        $this->builder->granularity('year');
+
+        $this->assertEquals('year', $this->getProperty($this->builder, 'granularity'));
     }
 
     public function testToJson()
@@ -171,6 +203,129 @@ class QueryBuilderTest extends TestCase
             ->andReturn($parsedResult);
 
         $response = $this->builder->topN($context);
+
+        $this->assertEquals($parsedResult, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testSegmentMetadata()
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName(SegmentMetadataQuery::class);
+        $builder->addTarget(QueryInterface::class);
+
+        $query = Mockery::mock($builder);
+        $query->shouldReceive('__construct')->once();
+
+        $result       = ['event' => ['result' => 'here']];
+        $parsedResult = ['result' => 'here'];
+
+        $this->client->shouldReceive('executeQuery')
+            ->with(new IsInstanceOf(SegmentMetadataQuery::class))
+            ->once()
+            ->andReturn($result);
+
+        $query->shouldReceive('parseResponse')
+            ->once()
+            ->with($result)
+            ->andReturn($parsedResult);
+
+        $response = $this->builder->segmentMetadata();
+
+        $this->assertEquals($parsedResult, $response);
+    }
+
+    public function testDatasource()
+    {
+        $this->builder->dataSource('myFavorite');
+
+        $this->assertEquals('myFavorite', $this->getProperty($this->builder, 'dataSource'));
+    }
+
+    /**
+     * @testWith [{"__time":"hour"}, 5, "hour", true]
+     *           [{"__time":"hour", "name":"name"}, 5, "hour", false]
+     *           [{"__time":"hour"}, null, "hour", false]
+     *           [{"__time":"hour"}, 999999, "hour", false]
+     *           [{"__time":"hour"}, 5, null, false]
+     *
+     * @param array       $dimensions
+     * @param int|null    $limit
+     * @param string|null $orderBy
+     * @param bool        $expected
+     */
+    public function testIsTopNQuery(array $dimensions, int $limit = null, string $orderBy = null, bool $expected)
+    {
+        $this->builder->select($dimensions);
+
+        if ($limit) {
+            $this->builder->limit($limit);
+        }
+
+        if ($orderBy) {
+            $this->builder->orderBy($orderBy, 'asc');
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTopNQuery());
+    }
+
+    public function isTimeSeriesQueryDataProvider(): array
+    {
+        return [
+            [['__time' => 'hour'], true],
+            [new Dimension('__hour', 'time', 'string', new UpperExtraction()), false],
+            [['time' => 'hour'], false],
+            [['__time' => 'hour', 'full_name'], false],
+        ];
+    }
+
+    /**
+     * @dataProvider isTimeSeriesQueryDataProvider
+     *
+     * @param mixed $dimension
+     * @param bool  $expected
+     */
+    public function testIsTimeSeriesQuery($dimension, bool $expected)
+    {
+        $this->builder->select($dimension);
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testGroupByV1()
+    {
+        $context = ['foo' => 'bar'];
+        $query   = $this->getGroupByQueryMock();
+
+        $result       = ['event' => ['result' => 'here']];
+        $parsedResult = ['result' => 'here'];
+
+        $this->builder->shouldReceive('buildGroupByQuery')
+            ->with($context, 'v1')
+            ->once()
+            ->andReturn($query);
+
+        $this->client->shouldReceive('executeQuery')
+            ->with($query)
+            ->once()
+            ->andReturn($result);
+
+        $query->shouldReceive('parseResponse')
+            ->once()
+            ->with($result)
+            ->andReturn($parsedResult);
+
+        $response = $this->builder->groupByV1($context);
 
         $this->assertEquals($parsedResult, $response);
     }
