@@ -78,7 +78,7 @@ class QueryBuilder
      */
     public function selectVirtual(string $expression, string $as, $outputType = 'string')
     {
-        $this->virtualColumns[] = new VirtualColumn($as, $expression, $outputType);
+        $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
 
         $this->select($as);
 
