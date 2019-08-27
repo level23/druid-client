@@ -276,7 +276,7 @@ class DruidClient
 
         $response = $this->executeRawRequest('get', $url);
 
-        return $response['status'] ?: [];
+        return $response['status'] ?? [];
     }
 
     /**
