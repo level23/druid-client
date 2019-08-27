@@ -97,7 +97,7 @@ class TimeSeriesQuery implements QueryInterface
         }
 
         if ($this->virtualColumns) {
-            $query['virtualColumns'] = $this->virtualColumns->toArray();
+            $result['virtualColumns'] = $this->virtualColumns->toArray();
         }
 
         if ($this->aggregations) {
