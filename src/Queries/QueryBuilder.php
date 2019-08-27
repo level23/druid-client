@@ -288,12 +288,12 @@ class QueryBuilder
             $query->setPostAggregations(new PostAggregationCollection(...$this->postAggregations));
         }
 
-        if (!$this->limit) {
-            return $query;
-        }
-
         if (count($this->virtualColumns) > 0) {
             $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
+        }
+
+        if (!$this->limit) {
+            return $query;
         }
 
         $orderByCollection = $this->limit->getOrderByCollection();
