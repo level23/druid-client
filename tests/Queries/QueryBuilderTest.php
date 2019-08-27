@@ -6,11 +6,16 @@ namespace tests\Level23\Druid\Queries;
 use Mockery;
 use tests\TestCase;
 use Level23\Druid\DruidClient;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
+use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\DimensionCollection;
 
@@ -65,6 +70,32 @@ class QueryBuilderTest extends TestCase
         $response = $this->builder->execute($context);
 
         $this->assertEquals($normalized, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testSelectVirtual()
+    {
+        Mockery::mock('overload:' . VirtualColumn::class)
+            ->shouldReceive('__construct')
+            ->with('concat(foo, bar)', 'fooBar', 'string');
+
+        $this->builder->shouldReceive('select', 'fooBar');
+        $this->builder->selectVirtual('concat(foo, bar)', 'fooBar');
+    }
+
+    public function testGranularity()
+    {
+        Mockery::mock(Granularity::class)
+            ->shouldReceive('validate')
+            ->with('year')
+            ->andReturn('year');
+
+        $this->builder->granularity('year');
+
+        $this->assertEquals('year', $this->getProperty($this->builder, 'granularity'));
     }
 
     public function testToJson()
@@ -171,6 +202,70 @@ class QueryBuilderTest extends TestCase
             ->andReturn($parsedResult);
 
         $response = $this->builder->topN($context);
+
+        $this->assertEquals($parsedResult, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testSegmentMetadata()
+    {
+        $builder = new Mockery\Generator\MockConfigurationBuilder();
+        $builder->setInstanceMock(true);
+        $builder->setName(SegmentMetadataQuery::class);
+        $builder->addTarget(QueryInterface::class);
+
+        $query = Mockery::mock($builder);
+        $query->shouldReceive('__construct')->once();
+
+        $result       = ['event' => ['result' => 'here']];
+        $parsedResult = ['result' => 'here'];
+
+        $this->client->shouldReceive('executeQuery')
+            ->with(new IsInstanceOf(SegmentMetadataQuery::class))
+            ->once()
+            ->andReturn($result);
+
+        $query->shouldReceive('parseResponse')
+            ->once()
+            ->with($result)
+            ->andReturn($parsedResult);
+
+        $response = $this->builder->segmentMetadata();
+
+        $this->assertEquals($parsedResult, $response);
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testGroupByV1()
+    {
+        $context = ['foo' => 'bar'];
+        $query   = $this->getGroupByQueryMock();
+
+        $result       = ['event' => ['result' => 'here']];
+        $parsedResult = ['result' => 'here'];
+
+        $this->builder->shouldReceive('buildGroupByQuery')
+            ->with($context, 'v1')
+            ->once()
+            ->andReturn($query);
+
+        $this->client->shouldReceive('executeQuery')
+            ->with($query)
+            ->once()
+            ->andReturn($result);
+
+        $query->shouldReceive('parseResponse')
+            ->once()
+            ->with($result)
+            ->andReturn($parsedResult);
+
+        $response = $this->builder->groupByV1($context);
 
         $this->assertEquals($parsedResult, $response);
     }
