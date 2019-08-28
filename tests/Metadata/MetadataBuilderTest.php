@@ -6,8 +6,10 @@ namespace tests\Level23\Druid\Metadata;
 use Mockery;
 use tests\TestCase;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Exceptions\QueryResponseException;
 
 class MetadataBuilderTest extends TestCase
 {
@@ -78,16 +80,18 @@ class MetadataBuilderTest extends TestCase
 
     public function structureDataProvider(): array
     {
+        $dataSource = 'myDataSource';
+
         $intervalResponse = [
             '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
                 'data_source_2019-08-19T14:00:00.000Z_2019-08-19T15:00:00.000Z' => [
                     'metadata' => [
-                        'dataSource'    => 'dataSource',
+                        'dataSource'    => $dataSource,
                         'interval'      => '2017-01-01T00:00:00.000Z/2017-01-02T00:00:00.000Z',
                         'version'       => '2019-05-15T11:29:56.874Z',
                         'loadSpec'      => [],
-                        'dimensions'    => 'country_iso,mccmnc,offer_id,product_type_id,promo_id',
-                        'metrics'       => 'conversions,revenue',
+                        'dimensions'    => 'country_iso',
+                        'metrics'       => 'revenue',
                         'shardSpec'     => [],
                         'binaryVersion' => 9,
                         'size'          => 272709,
@@ -101,72 +105,142 @@ class MetadataBuilderTest extends TestCase
             ],
         ];
 
-        $metadataResponse = [
-            [
-                'id'        => 'traffic-conversions_2019-04-15T08:00:00.000Z_2019-04-15T09:00:00.000Z_2019-08-20T12:24:44.384Z',
-                'intervals' => [
-                    '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z',
-                ],
-                'columns'   => [
-                    '__time' => [
-                        'type' => 'LONG',
-                        'size' => 0,
-                    ],
-                ],
+        $columnsResponse = [
+            '__time'      => [
+                'type'         => 'LONG',
+                'size'         => 0,
+                'cardinality'  => 84,
+                'minValue'     => '',
+                'maxValue'     => 74807,
+                'errorMessage' => '',
             ],
-        ]
+            'country_iso' => [
+                'type'         => 'STRING',
+                'size'         => 0,
+                'cardinality'  => 4,
+                'minValue'     => '',
+                'maxValue'     => '',
+                'errorMessage' => '',
+            ],
+            'revenue'     => [
+                'type'         => 'DOUBLE',
+                'size'         => 0,
+                'cardinality'  => 84,
+                'minValue'     => '',
+                'maxValue'     => 74807,
+                'errorMessage' => '',
+            ],
+        ];
+
+        $structure = new Structure(
+            $dataSource,
+            ['country_iso' => 'STRING'],
+            ['revenue' => 'DOUBLE']
+        );
 
         return [
-            ["first", $intervalResponse],
-            ["LaSt"],
-            ["2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z"],
+            [$dataSource, 'first', $intervalResponse, $columnsResponse, $structure],
+            [$dataSource, 'LaSt', $intervalResponse, $columnsResponse, $structure],
+            [
+                $dataSource,
+                '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',
+                $intervalResponse,
+                $columnsResponse,
+                $structure,
+            ],
+            [$dataSource, '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z', [], $columnsResponse, null, null],
+            [
+                $dataSource,
+                '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',
+                ['item' => []],
+                $columnsResponse,
+                null,
+            ],
         ];
     }
 
     /**
-     * @param string $interval
-     * @param array  $intervalResponse
-     * @param array  $metadataResponse
-     * @param        $expectException
+     * @param string                            $dataSource
+     * @param string                            $interval
+     * @param array                             $intervalResponse
+     * @param array                             $columnsResponse
+     * @param \Level23\Druid\Metadata\Structure $expectedResponse
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @dataProvider structureDataProvider
-     *
      */
-    public function testStructure(string $interval, array $intervalResponse, array $metadataResponse, $expectException)
-    {
-        $intervals = [
-            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => ['size' => 75208, 'count' => 4],
-            '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z' => ['size' => 161870, 'count' => 8],
-        ];
+    public function testStructure(
+        string $dataSource,
+        string $interval,
+        array $intervalResponse,
+        array $columnsResponse,
+        $expectedResponse
+    ) {
 
         $druidClient     = Mockery::mock(DruidClient::class, [[]]);
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$druidClient]);
-        $queryBuilder    = Mockery::mock(QueryBuilder::class, [$druidClient, 'myDataSource']);
 
         $metadataBuilder->makePartial();
 
         if (in_array(strtolower($interval), ['first', 'last'])) {
-            $metadataBuilder->shouldReceive('intervals')
+            $metadataBuilder->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('getIntervalByShorthand')
                 ->once()
-                ->with('myDataSource')
-                ->andReturn($intervals);
+                ->with($dataSource, $interval)
+                ->andReturn('2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z');
 
-            $keys = array_keys($intervals);
-            if ($interval == 'last') {
-                $interval = $intervals[0];
-            } else {
-                $interval = $intervals[count($intervals) - 1];
-            }
+            $expectedInterval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+        } else {
+            $expectedInterval = $interval;
         }
 
         $metadataBuilder->shouldReceive('interval')
             ->once()
-            ->with('myDataSource', $interval)
+            ->with($dataSource, $expectedInterval)
             ->andReturn($intervalResponse);
 
+        $exception = false;
+        if (!$intervalResponse) {
+            $this->expectException(QueryResponseException::class);
+            $exception = true;
+        } else {
+            $intervalResponse = reset($intervalResponse);
+            if (!$intervalResponse) {
+                $this->expectException(QueryResponseException::class);
+                $exception = true;
+            }
+        }
+
+        if (!$exception) {
+            $metadataBuilder->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('getColumnsForInterval')
+                ->once()
+                ->with($dataSource, $expectedInterval)
+                ->andReturn($columnsResponse);
+        }
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @testWith [[{"columns": {"__time": {"type":"LONG"}}}]]
+     *           [[]]
+     *
+     * @param array $segmentMetadataResponse
+     */
+    public function testGetColumnsForInterval(array $segmentMetadataResponse)
+    {
+        $dataSource      = 'myDataSource';
+        $interval        = '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z';
+        $druidClient     = Mockery::mock(DruidClient::class, [[]]);
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$druidClient]);
+        $metadataBuilder->makePartial();
+        $queryBuilder = Mockery::mock(QueryBuilder::class, [$druidClient, 'myDataSource']);
+
         $druidClient->shouldReceive('query')
-            ->with('myDataSource')
+            ->with($dataSource)
             ->once()
             ->andReturn($queryBuilder);
 
@@ -177,12 +251,64 @@ class MetadataBuilderTest extends TestCase
 
         $queryBuilder->shouldReceive('segmentMetadata')
             ->once()
-            ->andReturn($metadataResponse);
+            ->andReturn($segmentMetadataResponse);
 
-        if ($expectException) {
-            $this->expectException($expectException);
+        if (empty($segmentMetadataResponse[0]['columns'])) {
+            $this->expectException(QueryResponseException::class);
         }
 
-        $response = $metadataBuilder->structure('myDataSource', $interval);
+        /** @noinspection PhpUndefinedMethodInspection */
+        $response = $metadataBuilder
+            ->shouldAllowMockingProtectedMethods()
+            ->getColumnsForInterval(
+                $dataSource, $interval
+            );
+
+        $this->assertEquals($segmentMetadataResponse[0]['columns'], $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @testWith ["dataSource", "laST"]
+     *           ["theDataSource", "first"]
+     *           ["john", "wrong"]
+     *
+     * @param string $dataSource
+     * @param string $shortHand
+     */
+    public function testGetIntervalByShorthand(string $dataSource, string $shortHand)
+    {
+        $druidClient     = Mockery::mock(DruidClient::class, [[]]);
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$druidClient]);
+        $metadataBuilder->makePartial();
+
+        $intervals = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => ['size' => 75208, 'count' => 4],
+            '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z' => ['size' => 161870, 'count' => 8],
+            '2019-08-19T12:00:00.000Z/2019-08-19T13:00:00.000Z' => ['size' => 161870, 'count' => 8],
+        ];
+
+        $lowerShortHand = strtolower($shortHand);
+        if ($lowerShortHand != 'first' && $lowerShortHand != 'last') {
+            $this->expectException(\InvalidArgumentException::class);
+        } else {
+            $metadataBuilder->shouldReceive('intervals')
+                ->once()
+                ->with($dataSource)
+                ->andReturn($intervals);
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $response = $metadataBuilder
+            ->shouldAllowMockingProtectedMethods()
+            ->getIntervalByShorthand($dataSource, $shortHand);
+
+        if ($lowerShortHand == 'last') {
+            $this->assertEquals('2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z', $response);
+        } else {
+            $this->assertEquals('2019-08-19T12:00:00.000Z/2019-08-19T13:00:00.000Z', $response);
+        }
     }
 }

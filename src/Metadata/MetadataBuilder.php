@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Metadata;
 
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Exceptions\QueryResponseException;
 
@@ -121,48 +122,71 @@ class MetadataBuilder
     }
 
     /**
-     * Generate a structure class for the given dataSource.
+     * Get the columns for the given interval. This will return something like this:
+     *
+     *   Array
+     *  (
+     *      [__time] => Array
+     *          (
+     *              [type] => LONG
+     *              [hasMultipleValues] =>
+     *              [size] => 0
+     *              [cardinality] =>
+     *              [minValue] =>
+     *              [maxValue] =>
+     *              [errorMessage] =>
+     *          )
+     *      [conversions] => Array
+     *          (
+     *              [type] => LONG
+     *              [hasMultipleValues] =>
+     *              [size] => 0
+     *              [cardinality] =>
+     *              [minValue] =>
+     *              [maxValue] =>
+     *              [errorMessage] =>
+     *          )
+     *      [country_iso] => Array
+     *          (
+     *              [type] => STRING
+     *              [hasMultipleValues] =>
+     *              [size] => 0
+     *              [cardinality] => 59
+     *              [minValue] => af
+     *              [maxValue] => zm
+     *              [errorMessage] =>
+     *          )
+     *      [mccmnc] => Array
+     *          (
+     *              [type] => STRING
+     *              [hasMultipleValues] =>
+     *              [size] => 0
+     *              [cardinality] => 84
+     *              [minValue] =>
+     *              [maxValue] => 74807
+     *              [errorMessage] =>
+     *          )
+     *      [offer_id] => Array
+     *          (
+     *              [type] => LONG
+     *              [hasMultipleValues] =>
+     *              [size] => 0
+     *              [cardinality] =>
+     *              [minValue] =>
+     *              [maxValue] =>
+     *              [errorMessage] =>
+     *          )
+     *  )
      *
      * @param string $dataSource
-     * @param string $interval "last", "first" or a raw interval string as returned by druid.
+     * @param string $interval
      *
-     * @return \Level23\Druid\Metadata\Structure
+     * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function structure(string $dataSource, string $interval = 'last'): Structure
+    protected function getColumnsForInterval(string $dataSource, string $interval): array
     {
-        // Get the interval which we will use to do a "structure" scan.
-        $interval = strtolower($interval);
-        if ($interval == 'last' || $interval == 'first') {
-            $intervals = array_keys($this->intervals($dataSource));
-
-            if ($interval == 'last') {
-                $interval = $intervals[0];
-            } else {
-                $interval = $intervals[count($intervals) - 1];
-            }
-        }
-
-        $rawStructure = $this->interval($dataSource, $interval);
-
-        if (!$rawStructure) {
-            throw new QueryResponseException(
-                [], 'We failed to retrieve a correct structure for datasource ' . $dataSource
-            );
-        }
-
-        $rawStructure = reset($rawStructure);
-        if (!$rawStructure) {
-            throw new QueryResponseException(
-                [], 'We failed to retrieve a correct structure for datasource ' . $dataSource
-            );
-        }
-
-        $data = reset($rawStructure);
-
-        $dimensionFields = explode(',', $data['metadata']['dimensions']);
-        $metricFields    = explode(',', $data['metadata']['metrics']);
 
         $response = $this->client->query($dataSource)
             ->interval($interval)
@@ -174,10 +198,79 @@ class MetadataBuilder
             );
         }
 
+        return $response[0]['columns'];
+    }
+
+    /**
+     * Return the druid interval by the shorthand "first" or "last".
+     *
+     * We will return something like "2017-01-01T00:00:00.000Z/2017-01-02T00:00:00.000Z"
+     *
+     * @param string $dataSource
+     * @param string $shortHand
+     *
+     * @return string
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    protected function getIntervalByShorthand(string $dataSource, string $shortHand)
+    {
+        // Get the interval which we will use to do a "structure" scan.
+        $shortHand = strtolower($shortHand);
+        if ($shortHand != 'last' && $shortHand != 'first') {
+            throw new InvalidArgumentException('Only shorthand "first" and "last" are supported!');
+        }
+
+        $intervals = array_keys($this->intervals($dataSource));
+        if ($shortHand == 'last') {
+            return $intervals[0];
+        }
+
+        return $intervals[count($intervals) - 1];
+    }
+
+    /**
+     * Generate a structure class for the given dataSource.
+     *
+     * @param string $dataSource
+     * @param string $interval "last", "first" or a raw interval string as returned by druid.
+     *
+     * @return \Level23\Druid\Metadata\Structure
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function structure(string $dataSource, string $interval = 'last'): Structure
+    {
+        // shorthand given? Then retrieve the real interval for them.
+        if (in_array(strtolower($interval), ['first', 'last'])) {
+            $interval = $this->getIntervalByShorthand($dataSource, $interval);
+        }
+
+        $rawStructure = $this->interval($dataSource, $interval);
+
+        if (!$rawStructure) {
+            throw new QueryResponseException(
+                [], 'We failed to retrieve a correct structure for dataSource ' . $dataSource
+            );
+        }
+
+        $rawStructure = reset($rawStructure);
+        if (!$rawStructure) {
+            throw new QueryResponseException(
+                [], 'We failed to retrieve a correct structure for dataSource: ' . $dataSource
+            );
+        }
+
+        $data = reset($rawStructure);
+
+        $dimensionFields = explode(',', $data['metadata']['dimensions'] ?? '');
+        $metricFields    = explode(',', $data['metadata']['metrics'] ?? '');
+
         $dimensions = [];
         $metrics    = [];
 
-        foreach ($response[0]['columns'] as $column => $info) {
+        $columns = $this->getColumnsForInterval($dataSource, $interval);
+
+        foreach ($columns as $column => $info) {
             if (in_array($column, $dimensionFields)) {
                 $dimensions[$column] = $info['type'];
             }
