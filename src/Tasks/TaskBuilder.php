@@ -63,7 +63,7 @@ abstract class TaskBuilder
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function execute($context = [])
+    public function execute($context = []): string
     {
         $task = $this->buildTask($context);
 
