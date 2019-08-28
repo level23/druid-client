@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid;
 
 use Psr\Log\LoggerInterface;
+use InvalidArgumentException;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
@@ -166,7 +167,7 @@ class DruidClient
      *
      * @return DruidClient
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): DruidClient
     {
         $this->logger = $logger;
 
@@ -177,10 +178,14 @@ class DruidClient
      * Set a custom guzzle client which should be used.
      *
      * @param GuzzleClient $client
+     *
+     * @return \Level23\Druid\DruidClient
      */
-    public function setGuzzleClient(GuzzleClient $client)
+    public function setGuzzleClient(GuzzleClient $client): DruidClient
     {
         $this->client = $client;
+
+        return $this;
     }
 
     /**
@@ -214,10 +219,25 @@ class DruidClient
      * @param \Psr\Http\Message\ResponseInterface $response
      *
      * @return array
+     * @throws \InvalidArgumentException
      */
-    protected function parseResponse(ResponseInterface $response)
+    protected function parseResponse(ResponseInterface $response): array
     {
-        return \GuzzleHttp\json_decode($response->getBody()->getContents(), true) ?: [];
+        $contents = $response->getBody()->getContents();
+        try {
+            $response = \GuzzleHttp\json_decode($contents, true) ?: [];
+        } catch (InvalidArgumentException $exception) {
+            $this->log('We failed to decode druid response. ');
+            $this->log('Status code: ' . $response->getStatusCode());
+            $this->log('Response body: ' . $contents);
+
+            throw new InvalidArgumentException(
+                'Failed to parse druid response. Invalid json? Status code(' . $response->getStatusCode() . '). ' .
+                'Response body: ' . $contents
+            );
+        }
+
+        return $response;
     }
 
     /**
@@ -226,7 +246,7 @@ class DruidClient
      * @param string $message
      * @param array  $context
      */
-    protected function log(string $message, array $context = [])
+    protected function log(string $message, array $context = []): void
     {
         if ($this->logger) {
             $this->logger->info($message, $context);

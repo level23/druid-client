@@ -26,8 +26,8 @@ class MetadataBuilder
      *
      * Example response:
      * [
-     *   "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => [ "size": 75208, "count": 4 ],
-     *   "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => [ "size": 161870, "count": 8 ],
+     *   "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => [ "size" => 75208,  "count" => 4 ],
+     *   "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => [ "size" => 161870, "count" => 8 ],
      * ]
      *
      * @param string $dataSource
@@ -113,7 +113,9 @@ class MetadataBuilder
      */
     public function interval(string $dataSource, string $interval): array
     {
-        $url = 'http://127.0.0.1:8888/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals/' . urlencode($interval) . '?full';
+        $url = $this->client->config('coordinator_url') .
+            '/druid/coordinator/v1/datasources/' . urlencode($dataSource) .
+            '/intervals/' . urlencode($interval) . '?full';
 
         return $this->client->executeRawRequest('get', $url);
     }
