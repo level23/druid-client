@@ -5,17 +5,23 @@ namespace tests\Level23\Druid\Tasks;
 
 use Mockery;
 use tests\TestCase;
+use Hamcrest\Type\IsArray;
 use InvalidArgumentException;
 use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
+use Level23\Druid\Tasks\TaskInterface;
+use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Transforms\TransformBuilder;
+use Level23\Druid\Firehoses\FirehoseInterface;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Granularities\UniformGranularity;
+use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 use Level23\Druid\Granularities\GranularityInterface;
 
@@ -158,85 +164,37 @@ class IndexTaskBuilderTest extends TestCase
     public function buildTaskDataProvider(): array
     {
         return [
-            [null, null, UniformGranularity::class, null, null, []],
-            ["day", null, UniformGranularity::class, null, null, []],
-            ["day", new Interval("12-02-2019/13-02-2019"), ArbitraryGranularity::class, null, null, []],
-            ["day", new Interval("12-02-2019/13-02-2019"), UniformGranularity::class, null, null, []],
-            ["day", new Interval("12-02-2019/13-02-2019"), UniformGranularity::class, "day", null, []],
-            [
-                "day",
-                new Interval("12-02-2019/13-02-2019"),
-                UniformGranularity::class,
-                "day",
-                IngestSegmentFirehose::class,
-                [],
-            ],
+            ["day", "week", new Interval("12-02-2019/13-02-2019"), IngestSegmentFirehose::class],
+            ["day", "hour", new Interval("12-02-2019/13-02-2019"), IngestSegmentFirehose::class],
+            ["day", "day", new Interval("12-02-2019/13-02-2019"), null],
+
         ];
     }
 
     /**
-     * @param string|null                           $queryGranularity
-     * @param \Level23\Druid\Interval\Interval|null $interval
-     * @param string                                $granularityType
-     * @param string|null                           $segmentGranularity
-     * @param string|null                           $firehoseType
-     * @param                                       $context
+     * @param string                           $queryGranularity
+     * @param string                           $segmentGranularity
+     * @param \Level23\Druid\Interval\Interval $interval
+     * @param string|null                      $firehoseType
      *
+     * @throws \ReflectionException
+     * @throws \Exception
      * @dataProvider        buildTaskDataProvider
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
-     * @throws \Exception
      */
     public function testBuildTask(
-        ?string $queryGranularity,
-        ?Interval $interval,
-        string $granularityType,
-        ?string $segmentGranularity,
-        ?string $firehoseType,
-        $context
+        string $queryGranularity,
+        string $segmentGranularity,
+        Interval $interval,
+        ?string $firehoseType
     ) {
+        $context    = [];
         $client     = new DruidClient([]);
         $dataSource = 'farmers';
         $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource, $firehoseType]);
         $builder->makePartial();
-
-        if (!$queryGranularity || !$interval) {
-            $this->expectException(InvalidArgumentException::class);
-
-            /** @noinspection PhpUndefinedMethodInspection */
-            $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
-
-            return;
-        }
-
-        if ($granularityType == ArbitraryGranularity::class) {
-            $this->getGranularityMock(ArbitraryGranularity::class)
-                ->shouldReceive('__construct')
-                ->with(
-                    $queryGranularity,
-                    false,
-                    new IsInstanceOf(IntervalCollection::class)
-                );
-        } else {
-            if (!$segmentGranularity) {
-                $this->expectException(InvalidArgumentException::class);
-
-                /** @noinspection PhpUndefinedMethodInspection */
-                $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
-
-                return;
-            }
-
-            $this->getGranularityMock(UniformGranularity::class)
-                ->shouldReceive('__construct')
-                ->with(
-                    $segmentGranularity,
-                    $queryGranularity,
-                    false,
-                    new IsInstanceOf(IntervalCollection::class)
-                );
-        }
 
         $this->assertEquals(
             $firehoseType,
@@ -252,16 +210,143 @@ class IndexTaskBuilderTest extends TestCase
                     ->with($dataSource, new IsAnything());
 
                 break;
+
+            default:
+                $this->expectException(InvalidArgumentException::class);
+                $this->expectExceptionMessage('No firehose known.');
+                break;
         }
 
         $builder->queryGranularity($queryGranularity);
         $builder->segmentGranularity($segmentGranularity);
         $builder->interval($interval->getStart(), $interval->getStop());
 
+        if ($firehoseType) {
+            $mock = new Mockery\Generator\MockConfigurationBuilder();
+            $mock->setInstanceMock(true);
+            $mock->setName(IndexTask::class);
+            $mock->addTarget(TaskInterface::class);
+
+            Mockery::mock($mock)
+                ->shouldReceive('__construct')
+                ->once()
+                ->with(
+                    $dataSource,
+                    new IsInstanceOf(FirehoseInterface::class),
+                    new IsInstanceOf(GranularityInterface::class),
+                    null,
+                    null,
+                    new IsInstanceOf(TaskContext::class),
+                    new IsInstanceOf(AggregationCollection::class),
+                    new IsArray()
+                );
+        }
+
         /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
+    }
 
-        $this->assertTrue(true);
+    public function testBuildTaskWithoutQueryGranularity()
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'farmers';
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource]);
+        $builder->makePartial();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify a queryGranularity value!');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
+    }
+
+    public function testBuildTaskWithoutInterval()
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'farmers';
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource]);
+        $builder->makePartial();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify an interval!');
+
+        $builder->queryGranularity('day');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testBuildTaskWithoutSegmentGranularity()
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'farmers';
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource]);
+        $builder->makePartial();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify a segmentGranularity value!');
+
+        $builder->queryGranularity('day');
+        $builder->interval('12-02-2019', '13-02-2019');
+        $builder->uniformGranularity();
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
+    }
+
+    /**
+     * @testWith ["Level23\\Druid\\Granularities\\UniformGranularity"]
+     *           ["Level23\\Druid\\Granularities\\ArbitraryGranularity"]
+     *
+     * @param string $granularityType
+     *
+     * @throws \Exception
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     */
+    public function testBuildTaskGranularityObject(string $granularityType)
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'farmers';
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource]);
+        $builder->makePartial();
+
+        $builder->queryGranularity('day');
+        $builder->segmentGranularity('week');
+        $builder->interval('12-02-2019', '13-02-2019');
+
+        if ($granularityType == ArbitraryGranularity::class) {
+            $builder->arbitraryGranularity();
+
+            $this->getGranularityMock(ArbitraryGranularity::class)
+                ->shouldReceive('__construct')
+                ->with(
+                    'day',
+                    false,
+                    new IsInstanceOf(IntervalCollection::class)
+                );
+        } else {
+            $builder->uniformGranularity();
+
+            $this->getGranularityMock(UniformGranularity::class)
+                ->shouldReceive('__construct')
+                ->with(
+                    'week',
+                    'day',
+                    false,
+                    new IsInstanceOf(IntervalCollection::class)
+                );
+        }
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('firehose');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
     /**
