@@ -53,7 +53,7 @@ class MetadataBuilder
     /**
      * Returns a map of segment intervals contained within the specified interval to a map of segment metadata to a set
      * of server names that contain the segment for an interval.
-     * The latest intervals will come as first, the olderst as last.
+     * The latest intervals will come as first, the oldest as last.
      *
      * Example response:
      *
