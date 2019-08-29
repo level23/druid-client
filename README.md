@@ -39,7 +39,7 @@ use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
 
-$client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
+$client = new DruidClient(['broker_url' => 'https://broker.url']);
 
 $response = $client->query('traffic-hits')
     // REQUIRED: you have to select the interval where to select the data from.
