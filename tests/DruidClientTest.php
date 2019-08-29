@@ -396,7 +396,7 @@ class DruidClientTest extends TestCase
 
         $client->setLogger($logger);
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(QueryResponseException::class);
         $this->expectExceptionMessage('Failed to parse druid response. Invalid json?');
 
         /** @noinspection PhpUndefinedMethodInspection */
