@@ -133,6 +133,85 @@ class QueryBuilder
     /**
      * Do a segment metadata query and return the response
      *
+     * This will return something like this:
+     * Array
+     * (
+     *     [0] => Array
+     *         (
+     *             [id] => traffic-conversions_2019-04-15T08:00:00.000Z_2019-04-15T09:00:00.000Z_2019-08-20T12:24:44.384Z
+     *             [intervals] => Array
+     *                 (
+     *                     [0] => 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     *                 )
+     *
+     *             [columns] => Array
+     *                 (
+     *                     [__time] => Array
+     *                         (
+     *                             [type] => LONG
+     *                             [hasMultipleValues] =>
+     *                             [size] => 0
+     *                             [cardinality] =>
+     *                             [minValue] =>
+     *                             [maxValue] =>
+     *                             [errorMessage] =>
+     *                         )
+     *
+     *                     [conversions] => Array
+     *                         (
+     *                             [type] => LONG
+     *                             [hasMultipleValues] =>
+     *                             [size] => 0
+     *                             [cardinality] =>
+     *                             [minValue] =>
+     *                             [maxValue] =>
+     *                             [errorMessage] =>
+     *                         )
+     *
+     *                     [country_iso] => Array
+     *                         (
+     *                             [type] => STRING
+     *                             [hasMultipleValues] =>
+     *                             [size] => 0
+     *                             [cardinality] => 59
+     *                             [minValue] => af
+     *                             [maxValue] => zm
+     *                             [errorMessage] =>
+     *                         )
+     *
+     *                     [mccmnc] => Array
+     *                         (
+     *                             [type] => STRING
+     *                             [hasMultipleValues] =>
+     *                             [size] => 0
+     *                             [cardinality] => 84
+     *                             [minValue] =>
+     *                             [maxValue] => 74807
+     *                             [errorMessage] =>
+     *                         )
+     *
+     *                     [offer_id] => Array
+     *                         (
+     *                             [type] => LONG
+     *                             [hasMultipleValues] =>
+     *                             [size] => 0
+     *                             [cardinality] =>
+     *                             [minValue] =>
+     *                             [maxValue] =>
+     *                             [errorMessage] =>
+     *                         )
+     *                 )
+     *
+     *             [size] => 0
+     *             [numRows] => 449
+     *             [aggregators] =>
+     *             [timestampSpec] =>
+     *             [queryGranularity] =>
+     *             [rollup] =>
+     *         )
+     *
+     * )
+     *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */

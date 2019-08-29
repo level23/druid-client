@@ -17,6 +17,7 @@ use Level23\Druid\Concerns\HasQueryGranularity;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Concerns\HasSegmentGranularity;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\Collections\TransformCollection;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Granularities\ArbitraryGranularity;
@@ -85,7 +86,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function dimension(string $name, $type = 'string')
+    public function dimension(string $name, $type = 'string'): IndexTaskBuilder
     {
         $this->dimensions[] = ['name' => $name, 'type' => DataType::validate($type)];
 
@@ -98,7 +99,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function append()
+    public function append(): IndexTaskBuilder
     {
         $this->append = true;
 
@@ -150,10 +151,9 @@ class IndexTaskBuilder extends TaskBuilder
 
                 $firehose = new IngestSegmentFirehose($this->dataSource, $this->interval);
                 break;
-        }
 
-        if ($firehose === null) {
-            throw new InvalidArgumentException('No firehose known. Currently we only support re-indexing.');
+            default:
+                throw new InvalidArgumentException('No firehose known. Currently we only support re-indexing.');
         }
 
         if (!$context instanceof TaskContext) {
@@ -185,7 +185,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function transform(Closure $transformBuilder)
+    public function transform(Closure $transformBuilder): IndexTaskBuilder
     {
         $builder = new TransformBuilder();
         call_user_func($transformBuilder, $builder);
@@ -195,7 +195,10 @@ class IndexTaskBuilder extends TaskBuilder
             return $this;
         }
 
-        $this->transformSpec = new TransformSpec($builder->getTransforms(), $builder->getFilter());
+        $this->transformSpec = new TransformSpec(
+            new TransformCollection(...$builder->getTransforms()),
+            $builder->getFilter()
+        );
 
         return $this;
     }
@@ -205,7 +208,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function rollup()
+    public function rollup(): IndexTaskBuilder
     {
         $this->rollup = true;
 
@@ -217,7 +220,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function uniformGranularity()
+    public function uniformGranularity(): IndexTaskBuilder
     {
         $this->granularityType = UniformGranularity::class;
 
@@ -229,7 +232,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function arbitraryGranularity()
+    public function arbitraryGranularity(): IndexTaskBuilder
     {
         $this->granularityType = ArbitraryGranularity::class;
 
