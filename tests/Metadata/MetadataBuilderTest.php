@@ -55,7 +55,7 @@ class MetadataBuilderTest extends TestCase
 
         $builder = new MetadataBuilder($client);
 
-        $intervalResonse = ['druid' => ['response' => 'here']];
+        $intervalResponse = ['druid' => ['response' => 'here']];
 
         $client->shouldReceive('config')
             ->once()
@@ -68,14 +68,14 @@ class MetadataBuilderTest extends TestCase
                 'http://coordinator.url/druid/coordinator/v1/datasources/' . urlencode('dataSource') .
                 '/intervals/' . urlencode('2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z') . '?full'
             )
-            ->andReturn($intervalResonse);
+            ->andReturn($intervalResponse);
 
         $response = $builder->interval(
             'dataSource',
             '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z'
         );
 
-        $this->assertEquals($intervalResonse, $response);
+        $this->assertEquals($intervalResponse, $response);
     }
 
     public function structureDataProvider(): array

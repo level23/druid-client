@@ -19,7 +19,6 @@ use Level23\Druid\Concerns\HasSegmentGranularity;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Collections\TransformCollection;
 use Level23\Druid\Granularities\UniformGranularity;
-use tests\Level23\Druid\Tasks\IndexTaskBuilderTest;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 
@@ -152,10 +151,9 @@ class IndexTaskBuilder extends TaskBuilder
 
                 $firehose = new IngestSegmentFirehose($this->dataSource, $this->interval);
                 break;
-        }
 
-        if ($firehose === null) {
-            throw new InvalidArgumentException('No firehose known. Currently we only support re-indexing.');
+            default:
+                throw new InvalidArgumentException('No firehose known. Currently we only support re-indexing.');
         }
 
         if (!$context instanceof TaskContext) {
