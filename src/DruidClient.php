@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid;
 
 use Psr\Log\LoggerInterface;
+use InvalidArgumentException;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
@@ -120,7 +121,7 @@ class DruidClient
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function executeRawRequest(string $method, string $url, array $data = null): array
+    public function executeRawRequest(string $method, string $url, array $data = []): array
     {
         try {
             if (strtolower($method) == 'post') {
@@ -137,7 +138,7 @@ class DruidClient
                 return [];
             }
 
-            return $this->parseResponse($response);
+            return $this->parseResponse($response, $data);
         } catch (ServerException $exception) {
 
             $response = $exception->getResponse();
@@ -146,7 +147,7 @@ class DruidClient
                 throw $exception;
             }
 
-            $error = $this->parseResponse($response);
+            $error = $this->parseResponse($response, $data);
 
             // When its not a formatted error response from druid we rethrow the original exception
             if (!isset($error['error'], $error['errorMessage'])) {
@@ -154,7 +155,7 @@ class DruidClient
             }
 
             throw new QueryResponseException(
-                $data ?: [],
+                $data,
                 sprintf('%s: %s', $error['error'], $error['errorMessage']),
                 $exception
             );
@@ -166,7 +167,7 @@ class DruidClient
      *
      * @return DruidClient
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): DruidClient
     {
         $this->logger = $logger;
 
@@ -177,10 +178,14 @@ class DruidClient
      * Set a custom guzzle client which should be used.
      *
      * @param GuzzleClient $client
+     *
+     * @return \Level23\Druid\DruidClient
      */
-    public function setGuzzleClient(GuzzleClient $client)
+    public function setGuzzleClient(GuzzleClient $client): DruidClient
     {
         $this->client = $client;
+
+        return $this;
     }
 
     /**
@@ -212,12 +217,30 @@ class DruidClient
 
     /**
      * @param \Psr\Http\Message\ResponseInterface $response
+     * @param array                               $query
      *
      * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    protected function parseResponse(ResponseInterface $response)
+    protected function parseResponse(ResponseInterface $response, array $query = []): array
     {
-        return \GuzzleHttp\json_decode($response->getBody()->getContents(), true) ?: [];
+        $contents = $response->getBody()->getContents();
+        try {
+            $response = \GuzzleHttp\json_decode($contents, true) ?: [];
+        } catch (InvalidArgumentException $exception) {
+            $this->log('We failed to decode druid response. ');
+            $this->log('Status code: ' . $response->getStatusCode());
+            $this->log('Response body: ' . $contents);
+
+            throw new QueryResponseException(
+                $query,
+                'Failed to parse druid response. Invalid json? Status code(' . $response->getStatusCode() . '). ' .
+                'Response body: ' . $contents,
+                $exception
+            );
+        }
+
+        return $response;
     }
 
     /**
@@ -226,7 +249,7 @@ class DruidClient
      * @param string $message
      * @param array  $context
      */
-    protected function log(string $message, array $context = [])
+    protected function log(string $message, array $context = []): void
     {
         if ($this->logger) {
             $this->logger->info($message, $context);

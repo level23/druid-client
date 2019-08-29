@@ -386,6 +386,24 @@ class DruidClientTest extends TestCase
         ];
     }
 
+    public function testParseResponse()
+    {
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info')->times(3);
+
+        $client->setLogger($logger);
+
+        $this->expectException(QueryResponseException::class);
+        $this->expectExceptionMessage('Failed to parse druid response. Invalid json?');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $client->shouldAllowMockingProtectedMethods()
+            ->parseResponse(new GuzzleResponse(200, [], 'something'));
+    }
+
     public function testConfig()
     {
         $client = new DruidClient(['pieter' => 'okay']);

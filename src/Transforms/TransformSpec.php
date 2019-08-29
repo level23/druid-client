@@ -4,11 +4,12 @@ declare(strict_types=1);
 namespace Level23\Druid\Transforms;
 
 use Level23\Druid\Filters\FilterInterface;
+use Level23\Druid\Collections\TransformCollection;
 
 class TransformSpec
 {
     /**
-     * @var array|TransformInterface[]
+     * @var TransformCollection
      */
     protected $transforms;
 
@@ -20,10 +21,10 @@ class TransformSpec
     /**
      * TransformSpec constructor.
      *
-     * @param array|TransformInterface[] $transforms
-     * @param FilterInterface|null       $filter
+     * @param \Level23\Druid\Collections\TransformCollection $transforms
+     * @param FilterInterface|null                           $filter
      */
-    public function __construct(array $transforms, FilterInterface $filter = null)
+    public function __construct(TransformCollection $transforms, FilterInterface $filter = null)
     {
         $this->transforms = $transforms;
         $this->filter     = $filter;
@@ -38,10 +39,8 @@ class TransformSpec
     {
         $result = [];
 
-        if ($this->transforms) {
-            $result['transforms'] = array_map(function (TransformInterface $item) {
-                return $item->toArray();
-            }, $this->transforms);
+        if ($this->transforms->count() > 0) {
+            $result['transforms'] = $this->transforms->toArray();
         }
 
         if ($this->filter) {

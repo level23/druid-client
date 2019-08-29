@@ -46,7 +46,7 @@ class InFilter implements FilterInterface
         $result = [
             'type'      => 'in',
             'dimension' => $this->dimension,
-            'values'    => $this->values,
+            'values'    => array_values($this->values),
         ];
 
         if ($this->extraction) {

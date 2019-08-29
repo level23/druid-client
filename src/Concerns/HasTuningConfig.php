@@ -8,7 +8,7 @@ use Level23\Druid\TuningConfig\TuningConfig;
 trait HasTuningConfig
 {
     /**
-     * @var TuningConfig
+     * @var TuningConfig|null
      */
     protected $tuningConfig;
 
