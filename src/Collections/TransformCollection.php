@@ -10,7 +10,7 @@ class TransformCollection extends BaseCollection
     /**
      * DimensionCollection constructor.
      *
-     * @param \Level23\Druid\Transforms\TransformInterface[] $transforms
+     * @param \Level23\Druid\Transforms\TransformInterface ...$transforms
      */
     public function __construct(TransformInterface ...$transforms)
     {
