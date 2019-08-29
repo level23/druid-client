@@ -217,7 +217,7 @@ class DruidClient
 
     /**
      * @param \Psr\Http\Message\ResponseInterface $response
-     * @param array|null                          $query
+     * @param array                               $query
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
