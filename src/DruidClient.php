@@ -121,7 +121,7 @@ class DruidClient
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function executeRawRequest(string $method, string $url, array $data = null): array
+    public function executeRawRequest(string $method, string $url, array $data = []): array
     {
         try {
             if (strtolower($method) == 'post') {
@@ -155,7 +155,7 @@ class DruidClient
             }
 
             throw new QueryResponseException(
-                $data ?: [],
+                $data,
                 sprintf('%s: %s', $error['error'], $error['errorMessage']),
                 $exception
             );
@@ -222,7 +222,7 @@ class DruidClient
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    protected function parseResponse(ResponseInterface $response, array $query = null): array
+    protected function parseResponse(ResponseInterface $response, array $query = []): array
     {
         $contents = $response->getBody()->getContents();
         try {
@@ -233,7 +233,7 @@ class DruidClient
             $this->log('Response body: ' . $contents);
 
             throw new QueryResponseException(
-                $query ?: [],
+                $query,
                 'Failed to parse druid response. Invalid json? Status code(' . $response->getStatusCode() . '). ' .
                 'Response body: ' . $contents,
                 $exception
