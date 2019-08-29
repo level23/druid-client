@@ -138,7 +138,7 @@ class DruidClient
                 return [];
             }
 
-            return $this->parseResponse($response);
+            return $this->parseResponse($response, $data);
         } catch (ServerException $exception) {
 
             $response = $exception->getResponse();
@@ -147,7 +147,7 @@ class DruidClient
                 throw $exception;
             }
 
-            $error = $this->parseResponse($response);
+            $error = $this->parseResponse($response, $data);
 
             // When its not a formatted error response from druid we rethrow the original exception
             if (!isset($error['error'], $error['errorMessage'])) {
@@ -217,11 +217,12 @@ class DruidClient
 
     /**
      * @param \Psr\Http\Message\ResponseInterface $response
+     * @param array|null                          $query
      *
      * @return array
-     * @throws \InvalidArgumentException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    protected function parseResponse(ResponseInterface $response): array
+    protected function parseResponse(ResponseInterface $response, array $query = null): array
     {
         $contents = $response->getBody()->getContents();
         try {
@@ -231,9 +232,11 @@ class DruidClient
             $this->log('Status code: ' . $response->getStatusCode());
             $this->log('Response body: ' . $contents);
 
-            throw new InvalidArgumentException(
+            throw new QueryResponseException(
+                $query ?: [],
                 'Failed to parse druid response. Invalid json? Status code(' . $response->getStatusCode() . '). ' .
-                'Response body: ' . $contents
+                'Response body: ' . $contents,
+                $exception
             );
         }
 

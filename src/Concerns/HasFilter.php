@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
-use DateTime;
 use InvalidArgumentException;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
@@ -322,23 +321,23 @@ trait HasFilter
         $first = reset($intervals);
 
         // If first is an array or already a druid interval string or object we do not wrap it in an array
-        if(!is_array($first) && !$this->isDruidInterval($first)) {
+        if (!is_array($first) && !$this->isDruidInterval($first)) {
             $intervals = [$intervals];
         }
 
-        return array_map(function($interval) {
+        return array_map(function ($interval) {
 
-            if($interval instanceof IntervalInterface) {
+            if ($interval instanceof IntervalInterface) {
                 return $interval;
             }
 
             // If it is a string we explode it into to elements
-            if(is_string($interval)) {
+            if (is_string($interval)) {
                 $interval = explode('/', $interval, 2);
             }
 
             // If the value is an array and is not empty and has either one or 2 values its an interval array
-            if(is_array($interval) && !empty(array_filter($interval)) && count($interval) < 3) {
+            if (is_array($interval) && !empty(array_filter($interval)) && count($interval) < 3) {
                 return new Interval(...$interval);
             }
 
@@ -346,7 +345,6 @@ trait HasFilter
                 'Invalid type given in the interval array. We cannot process ' .
                 var_export($interval, true)
             );
-
         }, $intervals);
     }
 
@@ -359,7 +357,7 @@ trait HasFilter
      */
     protected function isDruidInterval($interval)
     {
-        if($interval instanceof IntervalInterface) {
+        if ($interval instanceof IntervalInterface) {
             return true;
         }
 
