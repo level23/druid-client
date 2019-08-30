@@ -138,7 +138,8 @@ class QueryBuilder
      * (
      *     [0] => Array
      *         (
-     *             [id] => traffic-conversions_2019-04-15T08:00:00.000Z_2019-04-15T09:00:00.000Z_2019-08-20T12:24:44.384Z
+     *             [id] =>
+     *             traffic-conversions_2019-04-15T08:00:00.000Z_2019-04-15T09:00:00.000Z_2019-08-20T12:24:44.384Z
      *             [intervals] => Array
      *                 (
      *                     [0] => 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
@@ -343,6 +344,7 @@ class QueryBuilder
         );
 
         // check if we want to use a different output name for the __time column
+        $dimension = null;
         if (count($this->dimensions) == 1) {
             $dimension = $this->dimensions[0];
             // did we only retrieve the time dimension?
@@ -375,6 +377,11 @@ class QueryBuilder
             return $query;
         }
 
+        // If there is a limit set, then apply this on the time series query.
+        if ($this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+            $query->setLimit($this->limit->getLimit());
+        }
+
         $orderByCollection = $this->limit->getOrderByCollection();
 
         if (count($orderByCollection) != 1) {
@@ -384,7 +391,13 @@ class QueryBuilder
         /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
         $orderBy = $orderByCollection[0];
 
-        if ($orderBy->getDimension() == '__time' && $orderBy->getDirection() === OrderByDirection::DESC()) {
+        if (
+            $orderBy->getDirection() === OrderByDirection::DESC() &&
+            (
+                ($dimension && $orderBy->getDimension() == $dimension->getOutputName())
+                || ($orderBy->getDimension() == '__time')
+            )
+        ) {
             $query->setDescending(true);
         }
 

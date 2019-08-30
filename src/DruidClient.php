@@ -33,10 +33,38 @@ class DruidClient
      * @var array
      */
     protected $config = [
-        'broker_url'      => '', // domain + optional port. Don't add the api path like "/druid/v2"
-        'coordinator_url' => '', // domain + optional port. Don't add the api path like "/druid/coordinator/v1"
-        'overlord_url'    => '', // domain + optional port. Don't add the api path like "/druid/indexer/v1"
-        'retries'         => 2, // The number of times we will try to do a retry in case of a failure.
+        /**
+         * Domain + optional port. Don't add the api path like "/druid/v2"
+         */
+        'broker_url'      => '',
+
+        /**
+         * Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
+         */
+        'coordinator_url' => '',
+
+        /**
+         * Domain + optional port. Don't add the api path like "/druid/indexer/v1"
+         */
+        'overlord_url'    => '',
+
+        /**
+         * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
+         * execute the query in worst case 3 times.
+         *
+         * First time is the normal attempt to execute the query.
+         * Then we do the FIRST retry.
+         * Then we do the SECOND retry.
+         */
+        'retries'         => 2,
+
+        /**
+         * When a query fails to be executed, this is the delay before a query is retried.
+         * Default is 500 ms, which is 0.5 seconds.
+         *
+         * Set to 0 to disable they delay between retries.
+         */
+        'retry_delay_ms'  => 500,
     ];
 
     /**
@@ -123,6 +151,9 @@ class DruidClient
      */
     public function executeRawRequest(string $method, string $url, array $data = []): array
     {
+        $retries = 0;
+
+        begin:
         try {
             if (strtolower($method) == 'post') {
                 $response = $this->client->post($url, [
@@ -141,10 +172,29 @@ class DruidClient
             return $this->parseResponse($response, $data);
         } catch (ServerException $exception) {
 
+            // Should we attempt a retry?
+            if ($retries++ < $this->config('retries')) {
+
+                $delay = $this->config('retry_delay_ms', 500);
+                if ($delay > 0) {
+                    $this->usleep(($delay * 1000));
+                }
+                goto begin;
+            }
+
             $response = $exception->getResponse();
 
             if (!$response instanceof ResponseInterface) {
                 throw $exception;
+            }
+
+            // Bad gateway, this happens for instance when all brokers are unavailable.
+            if ($response->getStatusCode() == 502) {
+                throw new QueryResponseException(
+                    $data,
+                    'We failed to execute druid query due to a 502 Bad Gateway response. Please try again later.',
+                    $exception
+                );
             }
 
             $error = $this->parseResponse($response, $data);
@@ -160,6 +210,16 @@ class DruidClient
                 $exception
             );
         }
+    }
+
+    /**
+     * @param int $microSeconds
+     *
+     * @codeCoverageIgnore
+     */
+    protected function usleep(int $microSeconds): void
+    {
+        usleep($microSeconds);
     }
 
     /**
