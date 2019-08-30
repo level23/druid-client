@@ -138,65 +138,33 @@ class TopNQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
      */
-    public function setFilter(FilterInterface $filter)
+    public function setFilter(FilterInterface $filter): void
     {
         $this->filter = $filter;
     }
 
     /**
-     * @return \Level23\Druid\Filters\FilterInterface|null
-     */
-    public function getFilter(): ?FilterInterface
-    {
-        return $this->filter;
-    }
-
-    /**
      * @param \Level23\Druid\Collections\AggregationCollection $aggregations
      */
-    public function setAggregations(AggregationCollection $aggregations)
+    public function setAggregations(AggregationCollection $aggregations): void
     {
         $this->aggregations = $aggregations;
     }
 
     /**
-     * @return \Level23\Druid\Collections\AggregationCollection|null
-     */
-    public function getAggregations(): ?AggregationCollection
-    {
-        return $this->aggregations;
-    }
-
-    /**
      * @param \Level23\Druid\Collections\PostAggregationCollection $postAggregations
      */
-    public function setPostAggregations(PostAggregationCollection $postAggregations)
+    public function setPostAggregations(PostAggregationCollection $postAggregations): void
     {
         $this->postAggregations = $postAggregations;
     }
 
     /**
-     * @return \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    public function getPostAggregations(): ?PostAggregationCollection
-    {
-        return $this->postAggregations;
-    }
-
-    /**
      * @param \Level23\Druid\Context\ContextInterface $context
      */
-    public function setContext(ContextInterface $context)
+    public function setContext(ContextInterface $context): void
     {
         $this->context = $context;
-    }
-
-    /**
-     * @return \Level23\Druid\Context\ContextInterface|null
-     */
-    public function getContext(): ?ContextInterface
-    {
-        return $this->context;
     }
 
     /**
