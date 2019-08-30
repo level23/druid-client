@@ -30,6 +30,7 @@ class SortingOrder extends Enum
      * @param string|\Level23\Druid\Types\SortingOrder $ordering
      *
      * @return string|\Level23\Druid\Types\SortingOrder
+     * @throws InvalidArgumentException
      */
     public static function validate($ordering)
     {

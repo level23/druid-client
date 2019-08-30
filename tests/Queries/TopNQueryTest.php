@@ -35,7 +35,10 @@ class TopNQueryTest extends TestCase
             'granularity' => $granularity,
             'dimension'   => $dimension->toArray(),
             'threshold'   => 5,
-            'metric'      => 'owners',
+            'metric'      => [
+                'type'   => 'numeric',
+                'metric' => 'owners',
+            ],
         ];
 
         $this->assertEquals($expected, $query->toArray());
@@ -67,6 +70,13 @@ class TopNQueryTest extends TestCase
         $context = new TopNQueryContext(['minTopNThreshold' => 2]);
         $query->setContext($context);
         $expected['context'] = $context->toArray();
+        $this->assertEquals($expected, $query->toArray());
+
+        $query->setDescending(true);
+        $expected['metric'] = [
+            'type'   => 'inverted',
+            'metric' => $expected['metric'],
+        ];
         $this->assertEquals($expected, $query->toArray());
 
         $response = [
