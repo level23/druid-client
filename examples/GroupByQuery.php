@@ -8,6 +8,7 @@ include __DIR__ . '/../vendor/autoload.php';
 use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\PostAggregations\PostAggregationsBuilder;
 
 $client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
 
@@ -42,6 +43,9 @@ $response = $client->query('traffic-hits')
     ->limit(5)
     ->having('total_hits', '>', 100)
     ->orderBy('total_hits', 'desc')
+    ->postAggregations(function (PostAggregationsBuilder $builder) {
+        $builder->longMax(['hits'], 'maxHits');
+    })
     // ->toJson();
     ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
 
