@@ -285,6 +285,32 @@ class DruidClientTest extends TestCase
         $this->assertEquals(['result' => 'yes'], $client->executeQuery($query));
     }
 
+    public function testParseResponse()
+    {
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info')->times(3);
+
+        $client->setLogger($logger);
+
+        $this->expectException(QueryResponseException::class);
+        $this->expectExceptionMessage('Failed to parse druid response. Invalid json?');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $client->shouldAllowMockingProtectedMethods()
+            ->parseResponse(new GuzzleResponse(200, [], 'something'));
+    }
+
+    public function testConfig()
+    {
+        $client = new DruidClient(['pieter' => 'okay']);
+
+        $this->assertEquals('okay', $client->config('pieter'));
+        $this->assertEquals('bar', $client->config('foo', 'bar'));
+    }
+
     public function executeRawRequestDataProvider(): array
     {
         $response = [
@@ -383,33 +409,23 @@ class DruidClientTest extends TestCase
                 },
                 RequestException::class,
             ],
+            // Test a RequestException
+            [
+                'POST',
+                function () {
+                    throw new ServerException(
+                        'Request exception',
+                        new GuzzleRequest('GET', '/druid/v1', [], ''),
+                        new GuzzleResponse(
+                            502,
+                            [],
+                            "<title>Error 502 Bad Gateway</title>"
+                        )
+                    );
+                },
+                QueryResponseException::class,
+            ],
         ];
-    }
-
-    public function testParseResponse()
-    {
-        $client = Mockery::mock(DruidClient::class, [[]]);
-        $client->makePartial();
-
-        $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('info')->times(3);
-
-        $client->setLogger($logger);
-
-        $this->expectException(QueryResponseException::class);
-        $this->expectExceptionMessage('Failed to parse druid response. Invalid json?');
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        $client->shouldAllowMockingProtectedMethods()
-            ->parseResponse(new GuzzleResponse(200, [], 'something'));
-    }
-
-    public function testConfig()
-    {
-        $client = new DruidClient(['pieter' => 'okay']);
-
-        $this->assertEquals('okay', $client->config('pieter'));
-        $this->assertEquals('bar', $client->config('foo', 'bar'));
     }
 
     /**
@@ -432,7 +448,7 @@ class DruidClientTest extends TestCase
             $this->expectException($expectException);
         }
 
-        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client = Mockery::mock(DruidClient::class, [['retries' => 0]]);
         $client->makePartial();
 
         $url  = 'http://test.dev/v2/task';
@@ -463,5 +479,54 @@ class DruidClientTest extends TestCase
         $response = $client->executeRawRequest($method, $url, $data);
 
         $this->assertEquals($expectedResponse, $response);
+    }
+
+    /**
+     * @testWith [2, 10]
+     *           [0, 200]
+     *           [1, 1000]
+     *           [5, 500]
+     *
+     * @param int $retries
+     * @param int $delay
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testExecuteRawRequestWithRetries(int $retries, int $delay)
+    {
+        $client = Mockery::mock(DruidClient::class, [['retries' => $retries, 'retry_delay_ms' => $delay]]);
+        $client->makePartial();
+
+        $url  = 'http://test.dev/v2/task';
+        $data = ['payload' => 'here'];
+
+        $guzzle = Mockery::mock(GuzzleClient::class);
+        $guzzle->shouldReceive('get')
+            ->once()
+            ->with($url, ['query' => $data])
+            ->times(($retries + 1))
+            ->andReturnUsing(function () {
+                throw new ServerException(
+                    'Request exception',
+                    new GuzzleRequest('GET', '/druid/v1', [], ''),
+                    new GuzzleResponse(
+                        502,
+                        [],
+                        "<title>Error 502 Bad Gateway</title>"
+                    )
+                );
+            });
+
+        $client->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('usleep')
+            ->with(($delay * 1000))
+            ->times($retries);
+
+        $client->setGuzzleClient($guzzle);
+
+        $this->expectException(QueryResponseException::class);
+        $this->expectExceptionMessage('We failed to execute druid query due to a 502 Bad Gateway response.');
+
+        $client->executeRawRequest('get', $url, $data);
     }
 }
