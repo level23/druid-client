@@ -5,6 +5,7 @@ namespace tests\Level23\Druid\Queries;
 
 use Mockery;
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
@@ -14,11 +15,14 @@ use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
+use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Collections\DimensionCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 
 class QueryBuilderTest extends TestCase
 {
@@ -35,7 +39,7 @@ class QueryBuilderTest extends TestCase
     public function setUp(): void
     {
         $this->client  = Mockery::mock(DruidClient::class, [[]]);
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'dataSourceName']);
         $this->builder->makePartial();
         $this->builder->shouldAllowMockingProtectedMethods();
     }
@@ -422,6 +426,105 @@ class QueryBuilderTest extends TestCase
         $response = $this->builder->shouldAllowMockingProtectedMethods()->buildQuery($context);
 
         $this->assertEquals($groupBy, $response);
+    }
+
+    public function testBuildTimeSeriesQueryWithoutIntervals()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify at least one interval');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery([]);
+    }
+
+    /**
+     * @testWith ["theTime", {}, true, true, 0, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, 5, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, 5, "myTime", "desc"]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @param string $timeAlias
+     * @param array  $context
+     * @param bool   $withFilter
+     * @param bool   $withVirtual
+     * @param int    $limit
+     * @param string $orderBy
+     * @param string $direction
+     *
+     * @throws \Exception
+     * @todo                : finish me
+     *
+     */
+    public function testBuildTimeSeriesQuery(
+        string $timeAlias,
+        array $context,
+        bool $withFilter,
+        bool $withVirtual,
+        int $limit,
+        string $orderBy,
+        string $direction = "asc"
+    ) {
+        $dataSource = 'phones';
+
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->dataSource($dataSource);
+        $this->builder->granularity('day');
+        $this->builder->select('__time', $timeAlias);
+        if ($withVirtual) {
+            $this->builder->virtualColumn('concat(foo, bar)', 'fooBar');
+        }
+
+        if ($withFilter) {
+            $this->builder->where('field', '=', 'value');
+        }
+
+        if ($limit) {
+            $this->builder->limit($limit);
+        }
+
+        if ($orderBy) {
+            $this->builder->orderBy($orderBy, $direction);
+        }
+
+        $query = Mockery::mock('overload:' . TimeSeriesQuery::class);
+
+        $query->shouldReceive('__construct')
+            ->with($dataSource, new IsInstanceOf(IntervalCollection::class), 'day');
+
+        if ($timeAlias != '__time') {
+            $query->shouldReceive('setTimeOutputName')
+                ->once()
+                ->with($timeAlias);
+        }
+
+        if ($context) {
+            $query->shouldReceive('setContext')
+                ->once()
+                ->with(new IsInstanceOf(TimeSeriesQueryContext::class));
+        }
+
+        if ($withFilter) {
+            $query->shouldReceive('setFilter')
+                ->once()
+                ->with(new IsInstanceOf(FilterInterface::class));
+        }
+
+        if ($withVirtual) {
+            $query->shouldReceive('setVirtualColumns')
+                ->once()
+                ->with(new IsInstanceOf(VirtualColumnCollection::class));
+        }
+
+        if ($limit && $limit != QueryBuilder::$DEFAULT_MAX_LIMIT) {
+            $query->shouldReceive('setLimit')
+                ->once()
+                ->with($limit);
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery($context);
     }
 
     /**

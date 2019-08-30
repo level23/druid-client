@@ -64,6 +64,16 @@ class TimeSeriesQuery implements QueryInterface
     protected $timeOutputName = 'timestamp';
 
     /**
+     * Not documented (yet), but supported since 0.13.0
+     * It is revealed also in a query like:
+     * `explain plan for select floor(__time to day), count(*) from "dataSource" group by 1 limit 2;`
+     *
+     * @see https://github.com/apache/incubator-druid/pull/5931
+     * @var int
+     */
+    protected $limit;
+
+    /**
      * TimeSeriesQuery constructor.
      *
      * @param string             $dataSource
@@ -112,6 +122,9 @@ class TimeSeriesQuery implements QueryInterface
             $result['context'] = $this->context->toArray();
         }
 
+        if ($this->limit) {
+            $result['limit'] = $this->limit;
+        }
 
         return $result;
     }
@@ -119,73 +132,33 @@ class TimeSeriesQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
      */
-    public function setFilter(FilterInterface $filter)
+    public function setFilter(FilterInterface $filter): void
     {
         $this->filter = $filter;
     }
 
     /**
-     * @return \Level23\Druid\Filters\FilterInterface|null
-     */
-    public function getFilter(): ?FilterInterface
-    {
-        return $this->filter;
-    }
-
-    /**
      * @param \Level23\Druid\Collections\AggregationCollection $aggregations
      */
-    public function setAggregations(AggregationCollection $aggregations)
+    public function setAggregations(AggregationCollection $aggregations): void
     {
         $this->aggregations = $aggregations;
     }
 
     /**
-     * @return \Level23\Druid\Collections\AggregationCollection|null
-     */
-    public function getAggregations(): ?AggregationCollection
-    {
-        return $this->aggregations;
-    }
-
-    /**
      * @param \Level23\Druid\Collections\PostAggregationCollection $postAggregations
      */
-    public function setPostAggregations(PostAggregationCollection $postAggregations)
+    public function setPostAggregations(PostAggregationCollection $postAggregations): void
     {
         $this->postAggregations = $postAggregations;
     }
 
     /**
-     * @return \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    public function getPostAggregations(): ?PostAggregationCollection
-    {
-        return $this->postAggregations;
-    }
-
-    /**
      * @param \Level23\Druid\Context\ContextInterface $context
      */
-    public function setContext(ContextInterface $context)
+    public function setContext(ContextInterface $context): void
     {
         $this->context = $context;
-    }
-
-    /**
-     * @return \Level23\Druid\Context\ContextInterface|null
-     */
-    public function getContext(): ?ContextInterface
-    {
-        return $this->context;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDescending(): bool
-    {
-        return $this->descending;
     }
 
     /**
@@ -228,5 +201,13 @@ class TimeSeriesQuery implements QueryInterface
     public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
     {
         $this->virtualColumns = $virtualColumns;
+    }
+
+    /**
+     * @param int $limit
+     */
+    public function setLimit(int $limit): void
+    {
+        $this->limit = $limit;
     }
 }
