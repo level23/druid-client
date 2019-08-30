@@ -43,6 +43,7 @@ class Granularity extends Enum
      * @param string|\Level23\Druid\Types\Granularity $granularity
      *
      * @return string|\Level23\Druid\Types\Granularity
+     * @throws InvalidArgumentException
      */
     public static function validate($granularity)
     {
