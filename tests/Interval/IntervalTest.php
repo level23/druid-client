@@ -58,4 +58,12 @@ class IntervalTest extends TestCase
         $this->assertEquals($interval->getStart()->format($format), $startObj->format($format));
         $this->assertEquals($interval->getStop()->format($format), $stopObj->format($format));
     }
+
+    public function testWithEndBeforeStart()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The end date must be greater than the start date');
+
+        new Interval("2019-04-15", "2019-04-11");
+    }
 }
