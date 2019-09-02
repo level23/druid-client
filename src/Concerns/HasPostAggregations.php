@@ -35,6 +35,12 @@ trait HasPostAggregations
      */
     protected function buildFields(array $fields): array
     {
+        $first = reset($fields);
+
+        if (is_array($first)) {
+            $fields = $first;
+        }
+
         $collection = new PostAggregationCollection();
 
         foreach ($fields as $field) {
@@ -68,13 +74,6 @@ trait HasPostAggregations
      */
     public function divide(string $as, ...$fieldOrClosure)
     {
-
-        $first = reset($fieldOrClosure);
-
-        if (is_array($first)) {
-            $fieldOrClosure = $first;
-        }
-
         $this->postAggregations[] = new ArithmeticPostAggregator(
             $as,
             '/',
