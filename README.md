@@ -40,10 +40,18 @@ $app->register(Level23\Druid\DruidServiceProvider::class);
 #### Configuration:
 
 You should also define the correct endpoint url's in your `.env` in your Laravel/Lumen project:
-```php
+```
 DRUID_BROKER_URL=http://broker.url:8082
 DRUID_COORDINATOR_URL=http://coordinator.url:8081
 DRUID_OVERLORD_URL=http://overlord.url:8090
+DRUID_RETRIES=2
+DRUID_RETRY_DELAY_MS=500
+```
+
+If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
+overlord and the coordinator:
+```
+DRUID_ROUTER_URL=http://druid-router.url:8082
 ```
 
 ## Todo's
