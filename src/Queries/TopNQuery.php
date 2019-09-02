@@ -72,7 +72,7 @@ class TopNQuery implements QueryInterface
     /**
      * @var bool
      */
-    protected $descending = false;
+    protected $descending = true;
 
     /**
      * TopNQuery constructor.
