@@ -30,6 +30,10 @@ class IntervalTest extends TestCase
     }
 
     /**
+     * @param string      $start
+     * @param string|null $stop
+     * @param bool        $expectException
+     *
      * @throws \Exception
      * @testWith ["now/tomorrow"]
      *           ["2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"]

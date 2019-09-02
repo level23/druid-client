@@ -6,7 +6,6 @@ namespace tests\Level23\Druid\Queries;
 use Mockery;
 use tests\TestCase;
 use InvalidArgumentException;
-use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
@@ -14,7 +13,6 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
-use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
@@ -677,11 +675,9 @@ class QueryBuilderTest extends TestCase
                 ->with(new IsInstanceOf(VirtualColumnCollection::class));
         }
 
-        if ($direction == "desc") {
-            $query->shouldReceive('setDescending')
-                ->once()
-                ->with(true);
-        }
+        $query->shouldReceive('setDescending')
+            ->once()
+            ->with($direction == "desc");
 
         /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildTopNQuery($context);
