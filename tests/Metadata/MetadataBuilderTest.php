@@ -32,7 +32,9 @@ class MetadataBuilderTest extends TestCase
         $client->shouldReceive('executeRawRequest')
             ->once()
             ->with('get',
-                'http://coordinator.url/druid/coordinator/v1/datasources/' . urlencode('dataSource') . '/intervals?simple')
+                'http://coordinator.url/druid/coordinator/v1/datasources/' . urlencode('dataSource') . '/intervals',
+                ['simple' => '']
+            )
             ->andReturn($intervals);
 
         $builder  = new MetadataBuilder($client);
@@ -66,7 +68,8 @@ class MetadataBuilderTest extends TestCase
             ->once()
             ->with('get',
                 'http://coordinator.url/druid/coordinator/v1/datasources/' . urlencode('dataSource') .
-                '/intervals/' . urlencode('2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z') . '?full'
+                '/intervals/' . urlencode('2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z'),
+                ['full' => '']
             )
             ->andReturn($intervalResponse);
 
@@ -139,8 +142,20 @@ class MetadataBuilderTest extends TestCase
         );
 
         return [
-            [$dataSource, 'first', $intervalResponse, $columnsResponse, $structure],
-            [$dataSource, 'LaSt', $intervalResponse, $columnsResponse, $structure],
+            [
+                $dataSource,
+                'first',
+                $intervalResponse,
+                $columnsResponse,
+                $structure,
+            ],
+            [
+                $dataSource,
+                'LaSt',
+                $intervalResponse,
+                $columnsResponse,
+                $structure,
+            ],
             [
                 $dataSource,
                 '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',
@@ -148,7 +163,14 @@ class MetadataBuilderTest extends TestCase
                 $columnsResponse,
                 $structure,
             ],
-            [$dataSource, '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z', [], $columnsResponse, null, null],
+            [
+                $dataSource,
+                '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',
+                [],
+                $columnsResponse,
+                null,
+                null,
+            ],
             [
                 $dataSource,
                 '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',

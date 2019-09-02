@@ -1,0 +1,130 @@
+<?php
+declare(strict_types=1);
+
+namespace tests\Level23\Druid\Tasks;
+
+use Mockery;
+use tests\TestCase;
+use Level23\Druid\Tasks\IndexTask;
+use Level23\Druid\Interval\Interval;
+use Level23\Druid\Context\TaskContext;
+use Level23\Druid\Transforms\TransformSpec;
+use Level23\Druid\TuningConfig\TuningConfig;
+use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Transforms\ExpressionTransform;
+use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\Collections\TransformCollection;
+use Level23\Druid\Granularities\UniformGranularity;
+use Level23\Druid\Collections\AggregationCollection;
+
+class IndexTaskTest extends TestCase
+{
+    /**
+     * @testWith [true, true, true, true, true]
+     *           [false, false, false, false, false ]
+     *
+     * @param bool $withAggregations
+     * @param bool $withTransformSpec
+     * @param bool $withAppend
+     * @param bool $withTuning
+     *
+     * @param bool $withContext
+     *
+     * @throws \ReflectionException
+     */
+    public function testTask(
+        bool $withAggregations,
+        bool $withTransformSpec,
+        bool $withAppend,
+        bool $withTuning,
+        bool $withContext
+    ) {
+        $dataSource = 'people';
+        $interval   = new Interval('12-02-2019', '13-02-2019');
+
+        $firehose = new IngestSegmentFirehose($dataSource, $interval);
+
+        $granularity = new UniformGranularity(
+            'week',
+            'day',
+            true,
+            new IntervalCollection($interval)
+        );
+
+        $transformSpec = $withTransformSpec ? new TransformSpec(
+            new TransformCollection(new ExpressionTransform('concat(foo, bar)', 'fooBar')),
+            null
+        ) : null;
+
+        $tuningConfig = $withTuning ? new TuningConfig(['maxRowsInMemory' => 5000]) : null;
+
+        $taskContext = $withContext ? new TaskContext(['priority' => 75]) : null;
+
+        $aggregations = $withAggregations ? new AggregationCollection(
+            new SumAggregator('age')
+        ) : null;
+
+        $dimensions = [
+            ['name' => 'country', 'type' => 'string'],
+            ['name' => 'duration', 'type' => 'long'],
+        ];
+
+        $task = new IndexTask(
+            $dataSource,
+            $firehose,
+            $granularity,
+            $transformSpec,
+            $tuningConfig,
+            $taskContext,
+            $aggregations,
+            $dimensions
+        );
+
+        $this->assertFalse($this->getProperty($task, 'appendToExisting'));
+
+        $task->setAppendToExisting($withAppend);
+
+        $expected = [
+            'type' => 'index',
+            'spec' => [
+                'dataSchema' => [
+                    'dataSource'      => $dataSource,
+                    'parser'          => [
+                        'type'      => 'string',
+                        'parseSpec' => [
+                            'format'         => 'json',
+                            'timestampSpec'  => [
+                                'column' => '__time',
+                                'format' => 'auto',
+                            ],
+                            'dimensionsSpec' => [
+                                'dimensions' => $dimensions,
+                            ],
+                        ],
+                    ],
+                    'metricsSpec'     => ($aggregations ? $aggregations->toArray() : null),
+                    'granularitySpec' => $granularity->toArray(),
+                    'transformSpec'   => ($transformSpec ? $transformSpec->toArray() : null),
+                ],
+                'ioConfig'   => [
+                    'type'             => 'index',
+                    'firehose'         => $firehose->toArray(),
+                    'appendToExisting' => $withAppend,
+                ],
+
+            ],
+        ];
+
+        if ($taskContext instanceof TaskContext) {
+            $expected['context'] = $taskContext->toArray();
+        }
+
+        if ($tuningConfig instanceof TuningConfig) {
+            $tuningConfig->setType('index');
+            $expected['spec']['tuningConfig'] = $tuningConfig->toArray();
+        }
+
+        $this->assertEquals($expected, $task->toArray());
+    }
+}

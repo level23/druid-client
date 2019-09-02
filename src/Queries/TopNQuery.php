@@ -70,6 +70,11 @@ class TopNQuery implements QueryInterface
     protected $context;
 
     /**
+     * @var bool
+     */
+    protected $descending = false;
+
+    /**
      * TopNQuery constructor.
      *
      * @param string             $dataSource
@@ -102,6 +107,18 @@ class TopNQuery implements QueryInterface
      */
     public function toArray(): array
     {
+        $metricSpec = [
+            'type'   => 'numeric',
+            'metric' => $this->metric,
+        ];
+
+        if ($this->descending) {
+            $metricSpec = [
+                'type'   => 'inverted',
+                'metric' => $metricSpec,
+            ];
+        }
+
         $result = [
             'queryType'   => 'topN',
             'dataSource'  => $this->dataSource,
@@ -109,7 +126,7 @@ class TopNQuery implements QueryInterface
             'granularity' => $this->granularity,
             'dimension'   => $this->dimension->toArray(),
             'threshold'   => $this->threshold,
-            'metric'      => $this->metric,
+            'metric'      => $metricSpec,
         ];
 
         if ($this->filter) {
@@ -187,6 +204,14 @@ class TopNQuery implements QueryInterface
     public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
     {
         $this->virtualColumns = $virtualColumns;
+    }
+
+    /**
+     * @param bool $descending
+     */
+    public function setDescending(bool $descending): void
+    {
+        $this->descending = $descending;
     }
 }
 

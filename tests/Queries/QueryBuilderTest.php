@@ -6,6 +6,7 @@ namespace tests\Level23\Druid\Queries;
 use Mockery;
 use tests\TestCase;
 use InvalidArgumentException;
+use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
@@ -13,16 +14,24 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Context\QueryContext;
+use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Filters\FilterInterface;
+use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Queries\SegmentMetadataQuery;
+use Level23\Druid\Dimensions\DimensionInterface;
+use Level23\Druid\Context\GroupByV2QueryContext;
+use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Collections\DimensionCollection;
+use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
+use Level23\Druid\HavingFilters\HavingFilterInterface;
 
 class QueryBuilderTest extends TestCase
 {
@@ -438,9 +447,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["theTime", {}, true, true, 0, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, 5, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, 5, "myTime", "desc"]
+     * @testWith ["theTime", {}, true, true, true, 0, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, true, 5, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, 5, "myTime", "desc"]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -449,19 +458,19 @@ class QueryBuilderTest extends TestCase
      * @param array  $context
      * @param bool   $withFilter
      * @param bool   $withVirtual
+     * @param bool   $withAggregations
      * @param int    $limit
      * @param string $orderBy
      * @param string $direction
      *
      * @throws \Exception
-     * @todo                : finish me
-     *
      */
     public function testBuildTimeSeriesQuery(
         string $timeAlias,
         array $context,
         bool $withFilter,
         bool $withVirtual,
+        bool $withAggregations,
         int $limit,
         string $orderBy,
         string $direction = "asc"
@@ -488,6 +497,10 @@ class QueryBuilderTest extends TestCase
             $this->builder->orderBy($orderBy, $direction);
         }
 
+        if ($withAggregations) {
+            $this->builder->sum('items', 'total');
+        }
+
         $query = Mockery::mock('overload:' . TimeSeriesQuery::class);
 
         $query->shouldReceive('__construct')
@@ -511,6 +524,12 @@ class QueryBuilderTest extends TestCase
                 ->with(new IsInstanceOf(FilterInterface::class));
         }
 
+        if ($withAggregations) {
+            $query->shouldReceive('setAggregations')
+                ->once()
+                ->with(new IsInstanceOf(AggregationCollection::class));
+        }
+
         if ($withVirtual) {
             $query->shouldReceive('setVirtualColumns')
                 ->once()
@@ -523,8 +542,260 @@ class QueryBuilderTest extends TestCase
                 ->with($limit);
         }
 
+        if ($direction == 'desc') {
+            if ($orderBy == '__time' || $orderBy == $timeAlias) {
+                $query->shouldReceive('setDescending')
+                    ->once()
+                    ->with(true);
+            }
+        }
+
         /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery($context);
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function testBuildTopNQueryWithoutLimit()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You should specify a limit to make use of a top query');
+
+        $this->builder->interval('10-02-2019/11-02-2019');
+        $this->builder->topN([]);
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testBuildTopNQueryWithoutInterval()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify at least one interval');
+
+        $this->builder->topN([]);
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function testBuildTopNQueryWithoutOrderBy()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You should specify a an order by direction to make use of a top query');
+        $this->builder->interval('10-02-2019/11-02-2019');
+        $this->builder->limit(10);
+
+        $this->builder->topN([]);
+    }
+
+    /**
+     * @testWith [true, true, true, true, "asc", {"minTopNThreshold":2}]
+     *           [false, false, false, false, "desc", {}]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @param bool   $withAggregations
+     * @param bool   $withGranularity
+     * @param bool   $withVirtual
+     * @param bool   $withFilter
+     * @param string $direction
+     * @param array  $context
+     *
+     * @throws \Exception
+     */
+    public function testBuildTopNQuery(
+        bool $withAggregations,
+        bool $withGranularity,
+        bool $withVirtual,
+        bool $withFilter,
+        string $direction,
+        array $context
+    ) {
+        $dataSource = 'phones';
+
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->dataSource($dataSource);
+        $this->builder->select('country_iso');
+        $this->builder->limit(15);
+        $this->builder->orderBy('suppliers', $direction);
+
+        if ($withAggregations) {
+            $this->builder->longSum('suppliers');
+        }
+
+        if ($withGranularity) {
+            $this->builder->granularity('day');
+        }
+
+        if ($withVirtual) {
+            $this->builder->virtualColumn('concat(foo, bar)', 'fooBar');
+        }
+
+        if ($withFilter) {
+            $this->builder->where('field', '=', 'value');
+        }
+
+        $query = Mockery::mock('overload:' . TopNQuery::class);
+
+        $query->shouldReceive('__construct')
+            ->once()
+            ->with(
+                $dataSource,
+                new IsInstanceOf(IntervalCollection::class),
+                new IsInstanceOf(DimensionInterface::class),
+                15,
+                'suppliers',
+                $withGranularity ? 'day' : 'all'
+            );
+
+        if ($context) {
+            $query->shouldReceive('setContext')
+                ->once()
+                ->with(new IsInstanceOf(TopNQueryContext::class));
+        }
+
+        if ($withFilter) {
+            $query->shouldReceive('setFilter')
+                ->once()
+                ->with(new IsInstanceOf(FilterInterface::class));
+        }
+
+        if ($withAggregations) {
+            $query->shouldReceive('setAggregations')
+                ->once()
+                ->with(new IsInstanceOf(AggregationCollection::class));
+        }
+
+        if ($withVirtual) {
+            $query->shouldReceive('setVirtualColumns')
+                ->once()
+                ->with(new IsInstanceOf(VirtualColumnCollection::class));
+        }
+
+        if ($direction == "desc") {
+            $query->shouldReceive('setDescending')
+                ->once()
+                ->with(true);
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildTopNQuery($context);
+    }
+
+    public function testBuildGroupByQueryWithoutInterval()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify at least one interval');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery([]);
+    }
+
+    /**
+     * @testWith ["v1", true, true, true, true, true]
+     *           ["v1", false, false, true, false, true]
+     *           ["v2", true, false, false, true, false]
+     *           ["v2", false, false, false, false, false]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @param string $version
+     * @param bool   $withArrayContext
+     * @param bool   $withVirtual
+     * @param bool   $withFilter
+     * @param bool   $withLimit
+     *
+     * @throws \Exception
+     */
+    public function testBuildGroupByQuery(
+        string $version,
+        bool $withArrayContext,
+        bool $withVirtual,
+        bool $withFilter,
+        bool $withLimit,
+        bool $withHaving
+    ) {
+        $dataSource = 'drinks';
+
+        $this->builder->select('cans');
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->dataSource($dataSource);
+        $this->builder->longSum('liters');
+        $this->builder->granularity('week');
+
+        if ($withArrayContext) {
+            $context    = ['timeout' => 60];
+            $expectType = $version == 'v1' ? GroupByV1QueryContext::class : GroupByV2QueryContext::class;
+        } else {
+            $context = new GroupByV2QueryContext();
+            $context->setFinalize(true);
+            $expectType = GroupByV2QueryContext::class;
+        }
+
+        if ($withVirtual) {
+            $this->builder->virtualColumn('concat(foo, bar)', 'fooBar');
+        }
+
+        if ($withFilter) {
+            $this->builder->where('field', '=', 'value');
+        }
+
+        if ($withLimit) {
+            $this->builder->limit(89);
+        }
+
+        if ($withHaving) {
+            $this->builder->having('field', '=', 'value');
+        }
+
+        $query = Mockery::mock('overload:' . GroupByQuery::class);
+
+        $query->shouldReceive('__construct')
+            ->once()
+            ->with(
+                $dataSource,
+                new IsInstanceOf(DimensionCollection::class),
+                new IsInstanceOf(IntervalCollection::class),
+                new IsInstanceOf(AggregationCollection::class),
+                'week'
+            );
+
+        $query->shouldReceive('setContext')
+            ->once()
+            ->with(new IsInstanceOf($expectType));
+
+        if ($withFilter) {
+            $query->shouldReceive('setFilter')
+                ->once()
+                ->with(new IsInstanceOf(FilterInterface::class));
+        }
+
+        if ($withVirtual) {
+            $query->shouldReceive('setVirtualColumns')
+                ->once()
+                ->with(new IsInstanceOf(VirtualColumnCollection::class));
+        }
+
+        if ($withLimit) {
+            $query->shouldReceive('setLimit')
+                ->once()
+                ->with(new IsInstanceOf(LimitInterface::class));
+        }
+
+        if ($withHaving) {
+            $query->shouldReceive('setHaving')
+                ->once()
+                ->with(new IsInstanceOf(HavingFilterInterface::class));
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery($context, $version);
     }
 
     /**
