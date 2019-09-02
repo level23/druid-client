@@ -453,9 +453,9 @@ class QueryBuilder
             $this->granularity
         );
 
-        if ($orderBy->getDirection() == OrderByDirection::DESC()) {
-            $query->setDescending(true);
-        }
+        $query->setDescending(
+            ($orderBy->getDirection() == OrderByDirection::DESC())
+        );
 
         if (count($this->aggregations) > 0) {
             $query->setAggregations(new AggregationCollection(...$this->aggregations));
