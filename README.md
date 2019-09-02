@@ -23,58 +23,30 @@ composer require level23/druid-client
 
 This package is Laravel/Lumen ready.  It can be used in a Laravel/Lumen project, but its not required.
 
-If you are using a Laravel/Lumen project, just include the service provider
+#### Laravel
+
+For Laravel 5.6+ the package will be auto discovered. For Laravel <= 5.5 you should add the service provider 
+`Level23\Druid\DruidServiceProvider::class` in the file `config/app.php`.
+
+#### Lumen 
+
+If you are using a Lumen project, just include the service provider
 in `bootstrap/app.php`:
 ```php
-
 // Register the druid-client service provider
 $app->register(Level23\Druid\DruidServiceProvider::class);
-
-// Include the configuration
-$app->configure('druid');
 ```
 
-You should also create a config file called `config/druid.php` and use something like this:
+#### Configuration:
+
+You should also define the correct endpoint url's in your `.env` in your Laravel/Lumen project:
 ```php
-<?php
-
-return [
-    /**
-     * Domain + optional port. Don't add the api path like "/druid/v2"
-     */
-    'broker_url'      => '',
-
-    /**
-     * Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
-     */
-    'coordinator_url' => '',
-
-    /**
-     * Domain + optional port. Don't add the api path like "/druid/indexer/v1"
-     */
-    'overlord_url'    => '',
-
-    /**
-     * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
-     * execute the query in worst case 3 times.
-     *
-     * First time is the normal attempt to execute the query.
-     * Then we do the FIRST retry.
-     * Then we do the SECOND retry.
-     */
-    'retries'         => 2,
-
-    /**
-     * When a query fails to be executed, this is the delay before a query is retried.
-     * Default is 500 ms, which is 0.5 seconds.
-     *
-     * Set to 0 to disable they delay between retries.
-     */
-    'retry_delay_ms'  => 500,
-];
+DRUID_BROKER_URL=http://broker.url:8082
+DRUID_COORDINATOR_URL=http://coordinator.url:8081
+DRUID_OVERLORD_URL=http://overlord.url:8090
 ```
 
-### Todo's
+## Todo's
 
  - Implement Kill Task
  - Support for subtotalsSpec in GroupBy query
