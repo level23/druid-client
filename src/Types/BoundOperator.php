@@ -28,6 +28,7 @@ class BoundOperator extends Enum
      * @param string|\Level23\Druid\Types\BoundOperator $operator
      *
      * @return string|\Level23\Druid\Types\BoundOperator
+     * @throws InvalidArgumentException
      */
     public static function validate($operator)
     {

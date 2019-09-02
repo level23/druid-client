@@ -24,6 +24,7 @@ class OrderByDirection extends Enum
      * @param string|\Level23\Druid\Types\OrderByDirection $direction
      *
      * @return string|\Level23\Druid\Types\OrderByDirection
+     * @throws InvalidArgumentException
      */
     public static function validate($direction)
     {

@@ -11,11 +11,15 @@ use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Aggregations\LastAggregator;
+use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Aggregations\CountAggregator;
 use Level23\Druid\Aggregations\FirstAggregator;
 use Level23\Druid\Aggregations\FilteredAggregator;
+use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Aggregations\AggregatorInterface;
 use Level23\Druid\Aggregations\JavascriptAggregator;
+use Level23\Druid\Aggregations\HyperUniqueAggregator;
+use Level23\Druid\Aggregations\CardinalityAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 trait HasAggregations
@@ -97,6 +101,97 @@ trait HasAggregations
     public function floatSum(string $metric, string $as = '', Closure $filterBuilder = null)
     {
         return $this->sum($metric, $as, 'float', $filterBuilder);
+    }
+
+    /**
+     * Uses HyperLogLog to compute the estimated cardinality of a dimension that has been aggregated as a "hyperUnique"
+     * metric at indexing time.
+     *
+     * @see http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf
+     *
+     * @param string $metric
+     * @param string $as
+     * @param bool   $round              Only affects query-time behavior, and is ignored at ingestion-time. The
+     *                                   HyperLogLog algorithm generates decimal estimates with some error. "round" can
+     *                                   be set to true to round off estimated values to whole numbers. Note that even
+     *                                   with rounding, the cardinality is still an estimate.
+     * @param bool   $isInputHyperUnique Only affects ingestion-time behavior, and is ignored at query-time. Set to
+     *                                   true to index pre-computed HLL (Base64 encoded output from druid-hll is
+     *                                   expected).
+     *
+     * @return $this
+     */
+    public function hyperUnique(string $metric, string $as, bool $round = false, bool $isInputHyperUnique = false)
+    {
+        $this->aggregations[] = new HyperUniqueAggregator(
+            $as, $metric, $isInputHyperUnique, $round
+        );
+
+        return $this;
+    }
+
+    /**
+     * Computes the cardinality of a set of Apache Druid (incubating) dimensions, using HyperLogLog to estimate the
+     * cardinality. Please note that this aggregator will be much slower than indexing a column with the hyperUnique
+     * aggregator. This aggregator also runs over a dimension column, which means the string dimension cannot be
+     * removed from the dataset to improve rollup. In general, we strongly recommend using the hyperUnique aggregator
+     * instead of the cardinality aggregator if you do not care about the individual values of a dimension.
+     *
+     * The HyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off
+     * estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. The
+     * "round" field only affects query-time behavior, and is ignored at ingestion-time.
+     *
+     * When setting byRow to false (the default) it computes the cardinality of the set composed of the union of all
+     * dimension values for all the given dimensions. For a single dimension, this is equivalent to:
+     * ```
+     * SELECT COUNT(DISTINCT(dimension)) FROM <datasource>
+     * ```
+     *
+     * For multiple dimensions, this is equivalent to something akin to
+     * ```
+     * SELECT COUNT(DISTINCT(value)) FROM (
+     * SELECT dim_1 as value FROM <datasource>
+     * UNION
+     * SELECT dim_2 as value FROM <datasource>
+     * UNION
+     * SELECT dim_3 as value FROM <datasource>
+     * )
+     * ```
+     *
+     * When setting byRow to true it computes the cardinality by row, i.e. the cardinality of distinct dimension
+     * combinations. This is equivalent to something akin to
+     *
+     * ```
+     * SELECT COUNT(*) FROM ( SELECT DIM1, DIM2, DIM3 FROM <datasource> GROUP BY DIM1, DIM2, DIM3 )
+     * ```
+     *
+     * @see https://druid.apache.org/docs/latest/querying/hll-old.html
+     *
+     * @param string   $as               The output name which is used for the result.
+     * @param \Closure $dimensionBuilder A closure which will receive a DimensionBuilder. You should build the
+     *                                   dimensions which are used to calculate the cardinality over.
+     * @param bool     $byRow            For more details see method description.
+     * @param bool     $round            Only affects query-time behavior, and is ignored at ingestion-time. The
+     *                                   HyperLogLog algorithm generates decimal estimates with some error. "round" can
+     *                                   be set to true to round off estimated values to whole numbers. Note that even
+     *                                   with rounding, the cardinality is still an estimate.
+     *
+     * @return $this
+     */
+    public function cardinality(string $as, Closure $dimensionBuilder, bool $byRow = false, bool $round = false)
+    {
+        $builder = new DimensionBuilder();
+        call_user_func($dimensionBuilder, $builder);
+        $dimensions = $builder->getDimensions();
+
+        $this->aggregations[] = new CardinalityAggregator(
+            $as,
+            new DimensionCollection(...$dimensions),
+            $byRow,
+            $round
+        );
+
+        return $this;
     }
 
     /**

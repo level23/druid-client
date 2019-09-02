@@ -6,7 +6,7 @@ namespace Level23\Druid\PostAggregations;
 interface PostAggregatorInterface
 {
     /**
-     * Return the aggregator as it can be used in a druid query.
+     * Return the post aggregator as it can be used in a druid query.
      *
      * @return array
      */

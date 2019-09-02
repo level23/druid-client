@@ -19,6 +19,47 @@ To install this package, you can use composer:
 composer require level23/druid-client
 ```
 
+## Laravel/Lumen support.
+
+This package is Laravel/Lumen ready.  It can be used in a Laravel/Lumen project, but its not required.
+
+#### Laravel
+
+For Laravel 5.6+ the package will be auto discovered. For Laravel <= 5.5 you should add the service provider 
+`Level23\Druid\DruidServiceProvider::class` in the file `config/app.php`.
+
+#### Lumen 
+
+If you are using a Lumen project, just include the service provider
+in `bootstrap/app.php`:
+```php
+// Register the druid-client service provider
+$app->register(Level23\Druid\DruidServiceProvider::class);
+```
+
+#### Configuration:
+
+You should also define the correct endpoint url's in your `.env` in your Laravel/Lumen project:
+```
+DRUID_BROKER_URL=http://broker.url:8082
+DRUID_COORDINATOR_URL=http://coordinator.url:8081
+DRUID_OVERLORD_URL=http://overlord.url:8090
+DRUID_RETRIES=2
+DRUID_RETRY_DELAY_MS=500
+```
+
+If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
+overlord and the coordinator:
+```
+DRUID_ROUTER_URL=http://druid-router.url:8082
+```
+
+## Todo's
+
+ - Implement Kill Task
+ - Support for subtotalsSpec in GroupBy query
+ - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
+
 ## Example usage
 
 Here is an example of how you can use this package.
