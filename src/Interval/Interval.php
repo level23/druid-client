@@ -50,6 +50,10 @@ class Interval implements IntervalInterface
             $stop = new DateTime(is_numeric($stop) ? "@$stop" : $stop);
         }
 
+        if ($stop < $start) {
+            throw new InvalidArgumentException('The end date must be greater than the start date');
+        }
+
         $this->start = $start;
         $this->stop  = $stop;
     }
