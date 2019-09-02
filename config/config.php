@@ -4,17 +4,17 @@ return [
     /**
      * Domain + optional port. Don't add the api path like "/druid/v2"
      */
-    'broker_url'      => '',
+    'broker_url'      => env('DRUID_BROKER_URL', ''),
 
     /**
      * Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
      */
-    'coordinator_url' => '',
+    'coordinator_url' => env('DRUID_COORDINATOR_URL', ''),
 
     /**
      * Domain + optional port. Don't add the api path like "/druid/indexer/v1"
      */
-    'overlord_url'    => '',
+    'overlord_url'    => env('DRUID_OVERLORD_URL', ''),
 
     /**
      * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
