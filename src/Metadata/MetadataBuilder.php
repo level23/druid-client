@@ -42,9 +42,9 @@ class MetadataBuilder
         static $intervals = [];
 
         if (!array_key_exists($dataSource, $intervals)) {
-            $url = $this->client->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals?simple';
+            $url = $this->client->config('coordinator_url') . '/druid/coordinator/v1/datasources/' . urlencode($dataSource) . '/intervals';
 
-            $intervals[$dataSource] = $this->client->executeRawRequest('get', $url);
+            $intervals[$dataSource] = $this->client->executeRawRequest('get', $url, ['simple' => '']);
         }
 
         return $intervals[$dataSource];
@@ -116,9 +116,9 @@ class MetadataBuilder
     {
         $url = $this->client->config('coordinator_url') .
             '/druid/coordinator/v1/datasources/' . urlencode($dataSource) .
-            '/intervals/' . urlencode($interval) . '?full';
+            '/intervals/' . urlencode($interval);
 
-        return $this->client->executeRawRequest('get', $url);
+        return $this->client->executeRawRequest('get', $url, ['full' => '']);
     }
 
     /**
@@ -253,14 +253,16 @@ class MetadataBuilder
             );
         }
 
-        $rawStructure = reset($rawStructure);
-        if (!$rawStructure) {
-            throw new QueryResponseException(
-                [], 'We failed to retrieve a correct structure for dataSource: ' . $dataSource
+        $structureData = reset($rawStructure);
+        if (!$structureData || !is_array($structureData)) {
+            throw new QueryResponseException([],
+                'We failed to retrieve a correct structure for dataSource: ' . $dataSource . '.' . PHP_EOL .
+                'Failed to parse raw interval structure data: ' . var_export($rawStructure, true)
+
             );
         }
 
-        $data = reset($rawStructure);
+        $data = reset($structureData);
 
         $dimensionFields = explode(',', $data['metadata']['dimensions'] ?? '');
         $metricFields    = explode(',', $data['metadata']['metrics'] ?? '');
