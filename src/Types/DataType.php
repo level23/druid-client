@@ -29,6 +29,7 @@ class DataType extends Enum
      * @param string|\Level23\Druid\Types\DataType $outputType
      *
      * @return string|\Level23\Druid\Types\DataType
+     * @throws InvalidArgumentException
      */
     public static function validate($outputType)
     {
