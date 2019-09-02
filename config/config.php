@@ -4,17 +4,17 @@ return [
     /**
      * Domain + optional port. Don't add the api path like "/druid/v2"
      */
-    'broker_url'      => env('DRUID_BROKER_URL', ''),
+    'broker_url'      => env('DRUID_BROKER_URL', env('DRUID_ROUTER_URL')),
 
     /**
      * Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
      */
-    'coordinator_url' => env('DRUID_COORDINATOR_URL', ''),
+    'coordinator_url' => env('DRUID_COORDINATOR_URL', env('DRUID_ROUTER_URL')),
 
     /**
      * Domain + optional port. Don't add the api path like "/druid/indexer/v1"
      */
-    'overlord_url'    => env('DRUID_OVERLORD_URL', ''),
+    'overlord_url'    => env('DRUID_OVERLORD_URL', env('DRUID_ROUTER_URL')),
 
     /**
      * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
@@ -24,7 +24,7 @@ return [
      * Then we do the FIRST retry.
      * Then we do the SECOND retry.
      */
-    'retries'         => 2,
+    'retries'         => env('DRUID_RETRIES', 2),
 
     /**
      * When a query fails to be executed, this is the delay before a query is retried.
@@ -32,5 +32,5 @@ return [
      *
      * Set to 0 to disable they delay between retries.
      */
-    'retry_delay_ms'  => 500,
+    'retry_delay_ms'  => env('DRUID_RETRY_DELAY_MS', 500),
 ];
