@@ -28,16 +28,19 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
     /**
      * Add an item to our collection.
      *
-     * @param mixed $item
+     * @param mixed ...$item
      */
-    public function add($item)
+    public function add(...$item)
     {
         $type = $this->getType();
-        if (!$item instanceof $type) {
-            throw new InvalidArgumentException('We only accept instances of type ' . $type);
-        }
 
-        $this->items[] = $item;
+        foreach ($item as $obj) {
+            if (!$obj instanceof $type) {
+                throw new InvalidArgumentException('We only accept instances of type ' . $type);
+            }
+
+            $this->items[] = $obj;
+        }
     }
 
     /**
