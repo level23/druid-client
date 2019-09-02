@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Queries;
 
-use Closure;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Concerns\HasLimit;
@@ -19,6 +18,7 @@ use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Collections\IntervalCollection;
@@ -27,11 +27,10 @@ use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
-use Level23\Druid\PostAggregations\PostAggregationsBuilder;
 
 class QueryBuilder
 {
-    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns;
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations;
 
     /**
      * @var \Level23\Druid\DruidClient
@@ -212,6 +211,7 @@ class QueryBuilder
      *             [size] => 0
      *             [numRows] => 449
      *             [aggregators] =>
+     *             [aggregators] =>
      *             [timestampSpec] =>
      *             [queryGranularity] =>
      *             [rollup] =>
@@ -327,28 +327,6 @@ class QueryBuilder
 
         return $query->parseResponse($rawResponse);
     }
-
-    /**
-     * You should give a closure which is responsible for building post-aggregations.
-     *
-     * @param \Closure $builder
-     *
-     * @return $this
-     */
-    public function postAggregations(Closure $builder)
-    {
-        $postAggregationsBuilder = new PostAggregationsBuilder();
-        call_user_func($builder, $postAggregationsBuilder);
-
-        $postAggregations = $postAggregationsBuilder->getPostAggregations();
-
-        if ($postAggregations) {
-            $this->postAggregations = array_merge($this->postAggregations, $postAggregations);
-        }
-
-        return $this;
-    }
-
 
     //<editor-fold desc="Protected methods">
 
@@ -475,9 +453,9 @@ class QueryBuilder
             $this->granularity
         );
 
-        if ($orderBy->getDirection() == OrderByDirection::DESC()) {
-            $query->setDescending(true);
-        }
+        $query->setDescending(
+            ($orderBy->getDirection() == OrderByDirection::DESC())
+        );
 
         if (count($this->aggregations) > 0) {
             $query->setAggregations(new AggregationCollection(...$this->aggregations));

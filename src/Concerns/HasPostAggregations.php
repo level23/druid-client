@@ -3,12 +3,13 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use Level23\Druid\Types\ArithmeticFunction;
-use Level23\Druid\PostAggregations\MinPostAggregator;
-use Level23\Druid\PostAggregations\MaxPostAggregator;
+use Closure;
+use InvalidArgumentException;
 use Level23\Druid\PostAggregations\LeastPostAggregator;
+use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ConstantPostAggregator;
 use Level23\Druid\PostAggregations\GreatestPostAggregator;
+use Level23\Druid\PostAggregations\PostAggregationsBuilder;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
@@ -22,30 +23,160 @@ trait HasPostAggregations
     protected $postAggregations = [];
 
     /**
-     * The arithmetic post-aggregator applies the provided function to the given fields from left to right. The fields
-     * can be aggregators or other post aggregators.
+     * Build our input field for the post aggregation.
+     * This array can contain:
+     *  - A string, referring to a metric or dimension in the query
+     *  - A Closure, which allows you to build another postAggretator
      *
-     * Notes:
-     * -  / division always returns 0 if dividing by 0, regardless of the numerator.
-     * - quotient division behaves like regular floating point division
+     * @param array $fields
      *
-     * @param array|string[]            $fields                List with field names which are used for this function
-     * @param string|ArithmeticFunction $function              Supported functions are +, -, *, /, and quotient.
-     * @param string                    $as                    The output name
-     * @param bool                      $floatingPointOrdering By default floating point ordering is used. When set to
-     *                                                         false we will use numericFirst ordering. It returns
-     *                                                         finite values first, followed by NaN, and infinite
-     *                                                         values last.
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    protected function buildFields(array $fields): array
+    {
+        $collection = new PostAggregationCollection();
+
+        foreach ($fields as $field) {
+            if (is_string($field)) {
+                $collection->add(new FieldAccessPostAggregator($field, $field));
+            } elseif ($field instanceof Closure) {
+                $builder = new PostAggregationsBuilder();
+                call_user_func($field, $builder);
+                $postAggregations = $builder->getPostAggregations();
+
+                $collection->add(...$postAggregations);
+            } else {
+                throw new InvalidArgumentException('');
+            }
+        }
+
+        return $collection->toArray();
+    }
+
+    /**
+     * Divide two or more fields with each other.
+     *
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
-    public function arithmetic(array $fields, $function, string $as, bool $floatingPointOrdering = true)
+    public function divide(string $as, ...$fieldOrClosure)
+    {
+
+        $first = reset($fieldOrClosure);
+
+        if (is_array($first)) {
+            $fieldOrClosure = $first;
+        }
+
+        $this->postAggregations[] = new ArithmeticPostAggregator(
+            $as,
+            '/',
+            $this->buildFields($fieldOrClosure),
+            true
+        );
+
+        return $this;
+    }
+
+    /**
+     * Multiply two or more fields with each other.
+     *
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
+     *
+     * @return $this
+     */
+    public function multiply(string $as, ...$fieldOrClosure)
     {
         $this->postAggregations[] = new ArithmeticPostAggregator(
             $as,
-            $function,
-            $fields,
-            $floatingPointOrdering
+            '*',
+            $this->buildFields($fieldOrClosure),
+            true
+        );
+
+        return $this;
+    }
+
+    /**
+     * Subtract two or more fields with each other.
+     *
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
+     *
+     * @return $this
+     */
+    public function subtract(string $as, ...$fieldOrClosure)
+    {
+
+        $this->postAggregations[] = new ArithmeticPostAggregator(
+            $as,
+            '-',
+            $this->buildFields($fieldOrClosure),
+            true
+        );
+
+        return $this;
+    }
+
+    /**
+     * Add two or more fields with each other.
+     *
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
+     *
+     * @return $this
+     */
+    public function add(string $as, ...$fieldOrClosure)
+    {
+        $this->postAggregations[] = new ArithmeticPostAggregator(
+            $as,
+            '+',
+            $this->buildFields($fieldOrClosure),
+            true
+        );
+
+        return $this;
+    }
+
+    /**
+     * Return the quotient of two or more fields.
+     *
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
+     *
+     * @return $this
+     */
+    public function quotient(string $as, ...$fieldOrClosure)
+    {
+        $this->postAggregations[] = new ArithmeticPostAggregator(
+            $as,
+            'quotient',
+            $this->buildFields($fieldOrClosure),
+            true
         );
 
         return $this;
@@ -68,9 +199,13 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function fieldAccess(string $aggregatorOutputName, string $as, bool $finalizing = false)
+    public function fieldAccess(string $aggregatorOutputName, string $as = "", bool $finalizing = false)
     {
-        $this->postAggregations[] = new FieldAccessPostAggregator($aggregatorOutputName, $as, $finalizing);
+        $this->postAggregations[] = new FieldAccessPostAggregator(
+            $aggregatorOutputName,
+            ($as ?: $aggregatorOutputName),
+            $finalizing
+        );
 
         return $this;
     }
@@ -91,101 +226,24 @@ trait HasPostAggregations
     }
 
     /**
-     * Return the lowest value of all rows for one specific column.
-     *
-     * @param array|string[] $fields
-     * @param string         $as   The output name
-     * @param string         $type Either "long" or "double"
-     *
-     * @return $this
-     */
-    public function min(array $fields, string $as, string $type = 'long')
-    {
-        $this->postAggregations[] = new MinPostAggregator($as, $fields, $type);
-
-        return $this;
-    }
-
-    /**
-     * Return the lowest value of all rows for one specific column.
-     *
-     * @param array|string[] $fields
-     * @param string         $as The output name
-     *
-     * @return $this
-     */
-    public function longMin(array $fields, string $as)
-    {
-        return $this->min($fields, $as, 'long');
-    }
-
-    /**
-     * Return the lowest value of all rows for one specific column.
-     *
-     * @param array|string[] $fields
-     * @param string         $as The output name
-     *
-     * @return $this
-     */
-    public function doubleMin(array $fields, string $as)
-    {
-        return $this->min($fields, $as, 'double');
-    }
-
-    /**
-     * Return the highest value of all rows for one specific column.
-     *
-     * @param array|string[] $fields
-     * @param string         $as   The output name
-     * @param string         $type Either "long" or "double"
-     *
-     * @return $this
-     */
-    public function max(array $fields, string $as, string $type = 'long')
-    {
-        $this->postAggregations[] = new MaxPostAggregator($as, $fields, $type);
-
-        return $this;
-    }
-
-    /**
-     * Return the highest value of all rows for one specific column.
-     *
-     * @param array|string[] $fields
-     * @param string         $as The output name
-     *
-     * @return $this
-     */
-    public function longMax(array $fields, string $as)
-    {
-        return $this->max($fields, $as, 'long');
-    }
-
-    /**
-     * Return the highest value of all rows for one specific column.
-     *
-     * @param array|string[] $fields
-     * @param string         $as The output name
-     *
-     * @return $this
-     */
-    public function doubleMax(array $fields, string $as)
-    {
-        return $this->max($fields, $as, 'double');
-    }
-
-    /**
      * Return the highest value of multiple columns in one row.
      *
-     * @param array|string[] $fields
-     * @param string         $as   The output name
-     * @param string         $type Either "long" or "double"
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
-    public function greatest(array $fields, string $as, string $type = 'long')
+    public function longGreatest(string $as, ...$fieldOrClosure)
     {
-        $this->postAggregations[] = new GreatestPostAggregator($as, $fields, $type);
+        $this->postAggregations[] = new GreatestPostAggregator(
+            $as,
+            $this->buildFields($fieldOrClosure),
+            'long'
+        );
 
         return $this;
     }
@@ -193,41 +251,22 @@ trait HasPostAggregations
     /**
      * Return the highest value of multiple columns in one row.
      *
-     * @param array|string[] $fields
-     * @param string         $as The output name
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
-    public function longGreatest(array $fields, string $as)
+    public function doubleGreatest(string $as, ...$fieldOrClosure)
     {
-        return $this->greatest($fields, $as, 'long');
-    }
-
-    /**
-     * Return the highest value of multiple columns in one row.
-     *
-     * @param array|string[] $fields
-     * @param string         $as The output name
-     *
-     * @return $this
-     */
-    public function doubleGreatest(array $fields, string $as)
-    {
-        return $this->greatest($fields, $as, 'double');
-    }
-
-    /**
-     * Return the lowest value of multiple columns in one row.
-     *
-     * @param array|string[] $fields
-     * @param string         $as The output name
-     * @param string         $type Either "long" or "double"
-     *
-     * @return $this
-     */
-    public function least(array $fields, string $as, string $type = 'long')
-    {
-        $this->postAggregations[] = new LeastPostAggregator($as, $fields, $type);
+        $this->postAggregations[] = new GreatestPostAggregator(
+            $as,
+            $this->buildFields($fieldOrClosure),
+            'double'
+        );
 
         return $this;
     }
@@ -235,46 +274,74 @@ trait HasPostAggregations
     /**
      * Return the lowest value of multiple columns in one row.
      *
-     * @param array|string[] $fields
-     * @param string         $as The output name
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
-    public function longLeast(array $fields, string $as)
+    public function longLeast(string $as, ...$fieldOrClosure)
     {
-        return $this->least($fields, $as, 'long');
+        $this->postAggregations[] = new LeastPostAggregator(
+            $as,
+            $this->buildFields($fieldOrClosure),
+            'long'
+        );
+
+        return $this;
     }
 
     /**
      * Return the lowest value of multiple columns in one row.
      *
-     * @param array|string[] $fields
-     * @param string         $as The output name
+     * @param string               $as                The name which will be used in the output
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
-    public function doubleLeast(array $fields, string $as)
+    public function doubleLeast(string $as, ...$fieldOrClosure)
     {
-        return $this->least($fields, $as, 'double');
+        $this->postAggregations[] = new LeastPostAggregator(
+            $as,
+            $this->buildFields($fieldOrClosure),
+            'double'
+        );
+
+        return $this;
     }
 
     /**
-     * Applies the provided JavaScript function to the given fields. Fields are passed as arguments to the JavaScript
-     * function in the given order.
+     * This Post Aggregation function applies the provided JavaScript function to the given fields. Fields are passed
+     * as arguments to the JavaScript function in the given order.
      *
      * NOTE: JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming
      * guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it.
      *
-     * @param array|string[] $fields   The fields which should be processd by the javascript function.
-     * @param string         $function The javascript function which should be applied.
-     * @param string         $as       The output name
+     * @param string               $as                The output name
+     * @param string               $function          The javascript function which should be applied.
+     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                we assume that it refers to another field in the query. If you
+     *                                                give a closure, it will receive an instance of the
+     *                                                PostAggregationsBuilder. With this builder you can build other
+     *                                                post-aggregations or use constants as input for this method.
      *
      * @return $this
      * @see https://druid.apache.org/docs/latest/querying/post-aggregations.html#javascript-post-aggregator
      */
-    public function javascript(array $fields, string $function, string $as)
+    public function postJavascript(string $as, string $function, ...$fieldOrClosure)
     {
-        $this->postAggregations[] = new JavaScriptPostAggregator($as, $fields, $function);
+        $this->postAggregations[] = new JavaScriptPostAggregator(
+            $as,
+            $this->buildFields($fieldOrClosure),
+            $function
+        );
 
         return $this;
     }

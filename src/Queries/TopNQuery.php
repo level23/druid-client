@@ -72,7 +72,7 @@ class TopNQuery implements QueryInterface
     /**
      * @var bool
      */
-    protected $descending = false;
+    protected $descending = true;
 
     /**
      * TopNQuery constructor.
@@ -112,7 +112,7 @@ class TopNQuery implements QueryInterface
             'metric' => $this->metric,
         ];
 
-        if ($this->descending) {
+        if (!$this->descending) {
             $metricSpec = [
                 'type'   => 'inverted',
                 'metric' => $metricSpec,

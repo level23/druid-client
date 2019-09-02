@@ -72,10 +72,13 @@ class TopNQueryTest extends TestCase
         $expected['context'] = $context->toArray();
         $this->assertEquals($expected, $query->toArray());
 
-        $query->setDescending(true);
+        $query->setDescending(false);
         $expected['metric'] = [
             'type'   => 'inverted',
-            'metric' => $expected['metric'],
+            'metric' => [
+                'type'   => 'numeric',
+                'metric' => 'owners',
+            ],
         ];
         $this->assertEquals($expected, $query->toArray());
 
