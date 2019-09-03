@@ -28,12 +28,19 @@ class KillTaskTest extends TestCase
 
         $killTask = new KillTask($dataSource, $taskId, $interval, $context);
 
-        $this->assertEquals([
+        $expected = [
             'type'       => 'kill',
             'id'         => $taskId,
             'dataSource' => $dataSource,
             'interval'   => $interval->getInterval(),
-            'context'    => ($context ? $context->toArray() : null),
-        ], $killTask->toArray());
+        ];
+
+        if ($context) {
+            $expected['context'] = $context->toArray();
+        } else {
+            $this->assertArrayNotHasKey('context', $killTask->toArray());
+        }
+
+        $this->assertEquals($expected, $killTask->toArray());
     }
 }

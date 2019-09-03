@@ -128,8 +128,9 @@ class IndexTask implements TaskInterface
             ],
         ];
 
-        if ($this->context) {
-            $result['context'] = $this->context->toArray();
+        $context = $this->context ? $this->context->toArray() : [];
+        if (count($context) > 0) {
+            $result['context'] = $context;
         }
 
         if ($this->tuningConfig) {

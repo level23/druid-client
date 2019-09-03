@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Tasks;
 
-use Mockery;
 use tests\TestCase;
 use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
@@ -118,6 +117,8 @@ class IndexTaskTest extends TestCase
 
         if ($taskContext instanceof TaskContext) {
             $expected['context'] = $taskContext->toArray();
+        } else {
+            $this->assertArrayNotHasKey('context', $task->toArray());
         }
 
         if ($tuningConfig instanceof TuningConfig) {
