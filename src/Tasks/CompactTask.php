@@ -104,8 +104,9 @@ class CompactTask implements TaskInterface
             $result['tuningConfig'] = $this->tuningConfig->toArray();
         }
 
-        if ($this->context) {
-            $result['context'] = $this->context->toArray();
+        $context = $this->context ? $this->context->toArray() : [];
+        if (count($context) > 0) {
+            $result['context'] = $context;
         }
 
         return $result;
