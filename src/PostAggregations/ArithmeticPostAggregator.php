@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\PostAggregations;
 
 use Level23\Druid\Types\ArithmeticFunction;
+use Level23\Druid\Collections\PostAggregationCollection;
 
 class ArithmeticPostAggregator implements PostAggregatorInterface
 {
@@ -18,7 +19,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
     protected $function;
 
     /**
-     * @var array
+     * @var \Level23\Druid\Collections\PostAggregationCollection
      */
     protected $fields;
 
@@ -39,18 +40,25 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
      *
      * @param string                    $outputName
      * @param string|ArithmeticFunction $function              Supported functions are +, -, *, /, and quotient.
-     * @param array|string[]            $fields                List with field names which are used for this function
+     * @param PostAggregationCollection $fields                List with field names which are used for this function.
+     *
+     *
      * @param bool                      $floatingPointOrdering By default floating point ordering is used. When set to
      *                                                         false we will use numericFirst ordering. It returns
-     *                                                         finite values first, followed by NaN, and infinite
-     *                                                         values last.
+     *                                                         finite values first,followed by NaN, and infinite values
+     *                                                         last.
      */
-    public function __construct(string $outputName, $function, array $fields, bool $floatingPointOrdering = true)
-    {
+    public function __construct(
+        string $outputName,
+        $function,
+        PostAggregationCollection $fields,
+        bool $floatingPointOrdering = true
+    ) {
         $this->outputName            = $outputName;
         $this->function              = ArithmeticFunction::validate($function);
         $this->fields                = $fields;
         $this->floatingPointOrdering = $floatingPointOrdering;
+        $this->function              = $function;
     }
 
     /**
@@ -64,7 +72,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
             'type'     => 'arithmetic',
             'name'     => $this->outputName,
             'fn'       => $this->function,
-            'fields'   => $this->fields,
+            'fields'   => $this->fields->toArray(),
             'ordering' => $this->floatingPointOrdering ? null : 'numericFirst',
         ];
     }
