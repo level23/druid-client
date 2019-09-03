@@ -69,9 +69,11 @@ class CompactTaskTest extends TestCase
             $config->setType('index');;
             $expected['tuningConfig'] = $config->toArray();
         }
-        if ($context) {
+        if (is_array($context) && count($context) > 0) {
             $contextObj          = new TaskContext($context);
             $expected['context'] = $contextObj->toArray();
+        } else {
+            $this->assertArrayNotHasKey('context', $task->toArray());
         }
 
         $this->assertEquals($expected, $task->toArray());
