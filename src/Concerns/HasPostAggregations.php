@@ -30,10 +30,10 @@ trait HasPostAggregations
      *
      * @param array $fields
      *
-     * @return array
+     * @return PostAggregationCollection
      * @throws InvalidArgumentException
      */
-    protected function buildFields(array $fields): array
+    protected function buildFields(array $fields): PostAggregationCollection
     {
         $first = reset($fields);
 
@@ -57,7 +57,7 @@ trait HasPostAggregations
             }
         }
 
-        return $collection->toArray();
+        return $collection;
     }
 
     /**
