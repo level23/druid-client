@@ -16,7 +16,9 @@ class HasSegmentGranularityTest extends TestCase
     {
         $builder = new IndexTaskBuilder(new DruidClient([]), 'dataSource');
 
-        $builder->segmentGranularity('year');
+        $result = $builder->segmentGranularity('year');
+
+        $this->assertEquals($builder, $result);
 
         $this->assertEquals(
             'year',

@@ -5,6 +5,7 @@ namespace tests\Level23\Druid\Metadata;
 
 use Mockery;
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Queries\QueryBuilder;
@@ -222,16 +223,13 @@ class MetadataBuilderTest extends TestCase
             ->andReturn($intervalResponse);
 
         $exception = false;
+
+        $intervalResponse = reset($intervalResponse);
         if (!$intervalResponse) {
             $this->expectException(QueryResponseException::class);
             $exception = true;
-        } else {
-            $intervalResponse = reset($intervalResponse);
-            if (!$intervalResponse) {
-                $this->expectException(QueryResponseException::class);
-                $exception = true;
-            }
         }
+
 
         if (!$exception) {
             $metadataBuilder->shouldAllowMockingProtectedMethods()
@@ -314,7 +312,7 @@ class MetadataBuilderTest extends TestCase
 
         $lowerShortHand = strtolower($shortHand);
         if ($lowerShortHand != 'first' && $lowerShortHand != 'last') {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
         } else {
             $metadataBuilder->shouldReceive('intervals')
                 ->once()

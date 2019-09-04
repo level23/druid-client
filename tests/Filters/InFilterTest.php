@@ -32,4 +32,17 @@ class InFilterTest extends TestCase
             'extractionFn' => $substring->toArray(),
         ], $filter->toArray());
     }
+
+    public function testFilterWithAssociativeArray()
+    {
+        $substring = new SubstringExtraction(1, 2);
+        $filter    = new InFilter('name', ['name1' => 'John', 'name2' => 'Jan', 'name3' => 'Jack'], $substring);
+
+        $this->assertEquals([
+            'type'         => 'in',
+            'dimension'    => 'name',
+            'values'       => ['John', 'Jan', 'Jack'],
+            'extractionFn' => $substring->toArray(),
+        ], $filter->toArray());
+    }
 }

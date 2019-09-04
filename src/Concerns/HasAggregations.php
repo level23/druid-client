@@ -40,15 +40,15 @@ trait HasAggregations
     /**
      * Sum the given metric
      *
-     * @param string          $metric
-     * @param string          $as
-     * @param string|DataType $type
-     * @param \Closure|null   $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply
+     * @param string        $metric
+     * @param string        $as
+     * @param string        $type
+     * @param \Closure|null $filterBuilder   A closure which receives a FilterBuilder. When given, we will only apply
      *                                       the "sum" function to the records which match with the given filter.
      *
      * @return $this
      */
-    public function sum(string $metric, string $as = '', $type = 'long', Closure $filterBuilder = null)
+    public function sum(string $metric, string $as = '', string $type = 'long', Closure $filterBuilder = null)
     {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new SumAggregator($metric, $as, $type),

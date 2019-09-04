@@ -34,7 +34,7 @@ trait HasDimensions
      * @param string                                       $as         When dimensions is a string (the dimension), you
      *                                                                 can specify the alias output name here.
      * @param \Closure|null                                $extraction
-     * @param string|\Level23\Druid\Types\DataType         $outputType This can either be "long", "float" or "string"
+     * @param string                                       $outputType This can either be "long", "float" or "string"
      *
      * @return $this
      */

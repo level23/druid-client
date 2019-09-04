@@ -188,11 +188,11 @@ trait HasFilter
      * WHERE dimension => $minValue AND dimension <= $maxValue
      * ```
      *
-     * @param string                   $dimension
-     * @param string|int               $minValue
-     * @param string|int               $maxValue
-     * @param \Closure|null            $extraction
-     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     * @param string        $dimension
+     * @param string|int    $minValue
+     * @param string|int    $maxValue
+     * @param \Closure|null $extraction
+     * @param null|string   $ordering            Specifies the sorting order to use when comparing values against the
      *                                           between filter. Can be one of the following values: "lexicographic",
      *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
      *                                           more details. By default it will be "numeric" if the values are
@@ -200,8 +200,13 @@ trait HasFilter
      *
      * @return $this
      */
-    public function whereBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null, $ordering = null)
-    {
+    public function whereBetween(
+        string $dimension,
+        $minValue,
+        $maxValue,
+        Closure $extraction = null,
+        string $ordering = null
+    ) {
         $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
         return $this->where($filter);
@@ -215,11 +220,11 @@ trait HasFilter
      * WHERE dimension < $minValue AND dimension > $maxValue
      * ```
      *
-     * @param string                   $dimension
-     * @param string|int               $minValue
-     * @param string|int               $maxValue
-     * @param \Closure|null            $extraction
-     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     * @param string        $dimension
+     * @param string|int    $minValue
+     * @param string|int    $maxValue
+     * @param \Closure|null $extraction
+     * @param null|string   $ordering            Specifies the sorting order to use when comparing values against the
      *                                           between filter. Can be one of the following values: "lexicographic",
      *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
      *                                           more details. By default it will be "numeric" if the values are
@@ -232,7 +237,7 @@ trait HasFilter
         $minValue,
         $maxValue,
         Closure $extraction = null,
-        $ordering = null
+        string $ordering = null
     ) {
         $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
@@ -337,7 +342,7 @@ trait HasFilter
 
             // If it is a string we explode it into to elements
             if (is_string($interval)) {
-                $interval = explode('/', $interval, 2);
+                $interval = explode('/', $interval);
             }
 
             // If the value is an array and is not empty and has either one or 2 values its an interval array
@@ -376,7 +381,8 @@ trait HasFilter
      */
     protected function addFilter(FilterInterface $filter, string $type)
     {
-        if ($this->filter instanceof LogicalExpressionFilterInterface && $this->filter instanceof $type) {
+        if ($this->filter instanceof $type) {
+            /** @noinspection PhpUndefinedMethodInspection */
             $this->filter->addFilter($filter);
         } else {
             $filters = [$this->filter, $filter];

@@ -27,7 +27,7 @@ class GroupByQuery implements QueryInterface
     protected $dimensions;
 
     /**
-     * @var \Level23\Druid\Types\Granularity|string
+     * @var string
      */
     protected $granularity;
 
@@ -78,7 +78,7 @@ class GroupByQuery implements QueryInterface
      * @param \Level23\Druid\Collections\DimensionCollection $dimensions
      * @param \Level23\Druid\Collections\IntervalCollection  $intervals
      * @param null|array|AggregationCollection               $aggregations
-     * @param string|\Level23\Druid\Types\Granularity        $granularity
+     * @param string                                         $granularity
      */
     public function __construct(
         string $dataSource,

@@ -7,55 +7,26 @@ use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Collections\IntervalCollection;
 
-class UniformGranularity implements GranularityInterface
+class UniformGranularity extends AbstractGranularity implements GranularityInterface
 {
     /**
-     * @var \Level23\Druid\Types\Granularity|string
+     * @var string
      */
     protected $segmentGranularity;
 
     /**
-     * @var \Level23\Druid\Types\Granularity|string
-     */
-    protected $queryGranularity;
-
-    /**
-     * @var bool
-     */
-    protected $rollup;
-
-    /**
-     * @var IntervalCollection
-     */
-    protected $intervals;
-
-    /**
      * UniformGranularity constructor.
      *
-     * @param string|Granularity $segmentGranularity
-     * @param string|Granularity $queryGranularity
+     * @param string $segmentGranularity
+     * @param string $queryGranularity
      * @param bool               $rollup
      * @param IntervalCollection $intervals
      */
-    public function __construct($segmentGranularity, $queryGranularity, bool $rollup, IntervalCollection $intervals)
+    public function __construct(string $segmentGranularity, string $queryGranularity, bool $rollup, IntervalCollection $intervals)
     {
-        if (is_string($segmentGranularity) && !Granularity::isValid($segmentGranularity)) {
-            throw new InvalidArgumentException(
-                'The given segment granularity is invalid: ' . $segmentGranularity . '. ' .
-                'Allowed are: ' . implode(',', Granularity::values())
-            );
-        }
+        parent::__construct($queryGranularity, $rollup, $intervals);
 
-        if (is_string($queryGranularity) && !Granularity::isValid($queryGranularity)) {
-            throw new InvalidArgumentException(
-                'The given query granularity is invalid: ' . $queryGranularity . '. ' .
-                'Allowed are: ' . implode(',', Granularity::values())
-            );
-        }
-        $this->segmentGranularity = $segmentGranularity;
-        $this->queryGranularity   = $queryGranularity;
-        $this->rollup             = $rollup;
-        $this->intervals          = $intervals;
+        $this->segmentGranularity = Granularity::validate($segmentGranularity);
     }
 
     /**

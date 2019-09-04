@@ -43,7 +43,7 @@ class QueryBuilder
     protected $dataSource;
 
     /**
-     * @var string|\Level23\Druid\Types\Granularity
+     * @var string
      */
     protected $granularity;
 
@@ -55,11 +55,11 @@ class QueryBuilder
     /**
      * QueryBuilder constructor.
      *
-     * @param \Level23\Druid\DruidClient              $client
-     * @param string                                  $dataSource
-     * @param string|\Level23\Druid\Types\Granularity $granularity
+     * @param \Level23\Druid\DruidClient $client
+     * @param string                     $dataSource
+     * @param string                     $granularity
      */
-    public function __construct(DruidClient $client, string $dataSource, $granularity = 'all')
+    public function __construct(DruidClient $client, string $dataSource, string $granularity = 'all')
     {
         $this->client      = $client;
         $this->dataSource  = $dataSource;
@@ -124,11 +124,11 @@ class QueryBuilder
     /**
      * Update/set the granularity
      *
-     * @param string|Granularity $granularity
+     * @param string $granularity
      *
      * @return $this
      */
-    public function granularity($granularity)
+    public function granularity(string $granularity)
     {
         $this->granularity = Granularity::validate($granularity);
 
@@ -398,7 +398,7 @@ class QueryBuilder
         $orderBy = $orderByCollection[0];
 
         if (
-            $orderBy->getDirection() == OrderByDirection::DESC() &&
+            $orderBy->getDirection() == OrderByDirection::DESC &&
             (
                 ($dimension && $orderBy->getDimension() == $dimension->getOutputName())
                 || ($orderBy->getDimension() == '__time')
@@ -454,7 +454,7 @@ class QueryBuilder
         );
 
         $query->setDescending(
-            ($orderBy->getDirection() == OrderByDirection::DESC())
+            ($orderBy->getDirection() == OrderByDirection::DESC)
         );
 
         if (count($this->aggregations) > 0) {

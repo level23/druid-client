@@ -38,4 +38,26 @@ class ArithmeticPostAggregatorTest extends TestCase
         ], $aggregator->toArray()
         );
     }
+
+    public function testAggregatorDefaults()
+    {
+        $collections = new PostAggregationCollection(
+            new FieldAccessPostAggregator('totals', 'totals'),
+            new FieldAccessPostAggregator('rows', 'rows')
+        );
+        $aggregator  = new ArithmeticPostAggregator(
+            'average',
+            '/',
+            $collections
+        );
+
+        $this->assertEquals([
+            'type'     => 'arithmetic',
+            'name'     => 'average',
+            'fn'       => '/',
+            'fields'   => $collections->toArray(),
+            'ordering' => null,
+        ], $aggregator->toArray()
+        );
+    }
 }

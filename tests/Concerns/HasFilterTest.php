@@ -27,6 +27,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 class HasFilterTest extends TestCase
 {
@@ -131,8 +132,9 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @param array $given
-     * @param array $expected
+     * @param array  $given
+     * @param array  $expected
+     * @param string $expectException
      *
      * @dataProvider normalizeIntervalsDataProvider
      */
@@ -266,6 +268,49 @@ class HasFilterTest extends TestCase
         } else {
             $this->assertInstanceOf(OrFilter::class, $this->builder->getFilter());
         }
+    }
+
+    public function testWhereMultipleAnd()
+    {
+        $this->builder->where('name', '!=', 'John', null, 'AnD');
+        $this->builder->where('name', '!=', 'Doe', null, 'AnD');
+        $this->builder->where('name', '!=', 'Jane', null, 'AnD');
+
+        $filter = $this->builder->getFilter();
+        if ($filter instanceof LogicalExpressionFilterInterface) {
+            $this->assertEquals(AndFilter::class, get_class($filter));
+            $this->assertEquals(3, count($filter->toArray()['fields']));
+        }
+    }
+
+    public function testWhereMultipleOr()
+    {
+        $this->builder->where('name', '!=', 'John', null, 'Or');
+        $this->builder->where('name', '!=', 'Doe', null, 'OR');
+        $this->builder->where('name', '!=', 'Jane', null, 'OR');
+
+        $filter = $this->builder->getFilter();
+        if ($filter instanceof LogicalExpressionFilterInterface) {
+            $this->assertEquals(OrFilter::class, get_class($filter));
+            $this->assertEquals(3, count($filter->toArray()['fields']));
+        }
+    }
+
+    /**
+     * @testWith [null, null, "name"]
+     *           [null, null, null]
+     *           [null, "=", null]
+     *           [null, "=", "name"]
+     *
+     * @param string|null $field
+     * @param string|null $operator
+     * @param string|null $value
+     */
+    public function testWhereInvalidArguments(?string $field, ?string $operator, ?string $value)
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->builder->where($field, $operator, $value);
     }
 
     /**
@@ -471,13 +516,6 @@ class HasFilterTest extends TestCase
         $response = $this->builder->orWhere('name', '=', 'John');
 
         $this->assertEquals($this->builder, $response);
-    }
-
-    public function testInvalidArguments()
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->builder->where(null);
     }
 
     /**

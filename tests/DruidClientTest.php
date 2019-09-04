@@ -184,6 +184,7 @@ class DruidClientTest extends TestCase
         $builder->setName(IndexTask::class);
         $builder->addTarget(TaskInterface::class);
 
+        /** @var \Mockery\MockInterface|\Mockery\LegacyMockInterface|IndexTask $task */
         $task = Mockery::mock($builder);
 
         $client = Mockery::mock(DruidClient::class, [[]]);
@@ -511,6 +512,7 @@ class DruidClientTest extends TestCase
      *           [0, 200]
      *           [1, 1000]
      *           [5, 500]
+     *           [5, 0]
      *
      * @param int $retries
      * @param int $delay
@@ -542,10 +544,26 @@ class DruidClientTest extends TestCase
                 );
             });
 
-        $client->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('usleep')
-            ->with(($delay * 1000))
-            ->times($retries);
+        if( $delay > 0 ) {
+            $client->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('usleep')
+                ->with(($delay * 1000))
+                ->times($retries);
+        } else {
+            $client->shouldAllowMockingProtectedMethods()
+                ->shouldNotReceive('usleep');
+
+        }
+
+        $client->shouldReceive('config')
+            ->with('retry_delay_ms', 500)
+            ->times($retries + 1)
+            ->andReturn($delay);
+
+        $client->shouldReceive('config')
+            ->with('retries', 2)
+            ->times($retries + 1)
+            ->andReturn($retries);
 
         $client->setGuzzleClient($guzzle);
 

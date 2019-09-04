@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Tasks;
 
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Context\TaskContext;
@@ -13,7 +14,7 @@ class CompactTaskTest extends TestCase
 {
     /**
      * @testWith ["day", null, null, null]
-     *           ["week", {"type": "index"}, null, null]
+     *           ["week", {"maxRowsPerSegment": "1"}, null, null]
      *           ["week", {"wrong": "index"}, null, null, true]
      *           ["week", {"type": "index"}, {"priority": 10}, null]
      *           ["week", {"type": "index"}, {"wrong": 10}, null, true]
@@ -36,7 +37,7 @@ class CompactTaskTest extends TestCase
         bool $expectException = false
     ) {
         if ($expectException) {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
         }
 
         $interval = new Interval('20-02-2019', '22-02-2019');
@@ -65,9 +66,8 @@ class CompactTaskTest extends TestCase
         }
 
         if ($tuningConfig) {
-            $config                   = new TuningConfig($tuningConfig);
-            $config->setType('index');;
-            $expected['tuningConfig'] = $config->toArray();
+            $expected['tuningConfig']         = $tuningConfig;
+            $expected['tuningConfig']['type'] = 'index';
         }
         if (is_array($context) && count($context) > 0) {
             $contextObj          = new TaskContext($context);

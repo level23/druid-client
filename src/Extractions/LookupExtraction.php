@@ -54,11 +54,15 @@ class LookupExtraction implements ExtractionInterface
         ?bool $injective = null
 
     ) {
-        $this->lookupName              = $lookupName;
-        $this->retainMissingValue      = is_string($replaceMissingValue) ? true : $replaceMissingValue;
-        $this->replaceMissingValueWith = is_string($replaceMissingValue) ? $replaceMissingValue : null;
-        $this->injective               = $injective;
-        $this->optimize                = $optimize;
+        $this->lookupName = $lookupName;
+        $this->injective  = $injective;
+        $this->optimize   = $optimize;
+
+        if (is_string($replaceMissingValue)) {
+            $this->replaceMissingValueWith = $replaceMissingValue;
+        } else {
+            $this->retainMissingValue = (bool)$replaceMissingValue;
+        }
     }
 
     /**
