@@ -97,6 +97,22 @@ class HasAggregationsTest extends TestCase
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
+     */
+    public function testHyperUniqueDefaults()
+    {
+        $this->getAggregationMock(HyperUniqueAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('myOutput', 'myMetric', false, false);
+
+        $result = $this->builder->hyperUnique('myMetric', 'myOutput');
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
      *
      * @testWith [true, true]
      *           [false, false]
@@ -125,8 +141,38 @@ class HasAggregationsTest extends TestCase
             });
         };
 
-        $this->builder->cardinality('distinct_last_name_first_char', $closure, $byRow, $round);
+        $response = $this->builder->cardinality('distinct_last_name_first_char', $closure, $byRow, $round);
 
+        $this->assertEquals($this->builder, $response);
+        $this->assertEquals(1, $counter);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testCardinalityDefaults()
+    {
+        $this->getAggregationMock(CardinalityAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(
+                'distinct_last_name_first_char',
+                new IsInstanceOf(DimensionCollection::class),
+                false,
+                false);
+
+        $counter = 0;
+        $closure = function (DimensionBuilder $builder) use (&$counter) {
+            $counter++;
+            $builder->select('last_name', 'last_name_first_char', function (ExtractionBuilder $extractionBuilder) {
+                $extractionBuilder->substring(0, 1);
+            });
+        };
+
+        $response = $this->builder->cardinality('distinct_last_name_first_char', $closure);
+
+        $this->assertEquals($this->builder, $response);
         $this->assertEquals(1, $counter);
     }
 

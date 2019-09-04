@@ -29,22 +29,37 @@ use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
-
-    public function setUp(): void
-    {
-        $this->client = new DruidClient([]);
-    }
-
     public function testInvalidGranularity()
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The given granularity is invalid');
 
-        $this->client->query('hits', 'wrong');
+        $client = new DruidClient([]);
+        $client->query('hits', 'wrong');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testMakeGuzzleClient()
+    {
+        Mockery::mock('overload:' . GuzzleClient::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with([
+                'timeout'         => 60,
+                'connect_timeout' => 10,
+                'headers'         => [
+                    'User-Agent' => 'level23 druid client package',
+                ],
+            ]);
+
+        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client->makePartial();
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $client->shouldAllowMockingProtectedMethods()->makeGuzzleClient();
     }
 
     /**
@@ -54,10 +69,11 @@ class DruidClientTest extends TestCase
     {
         $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
 
-        $this->client->setGuzzleClient($guzzle);
+        $client = new DruidClient([]);
+        $client->setGuzzleClient($guzzle);
 
         $this->assertEquals($guzzle,
-            $this->getProperty($this->client, 'client')
+            $this->getProperty($client, 'client')
         );
     }
 
@@ -67,12 +83,14 @@ class DruidClientTest extends TestCase
      */
     public function testQuery()
     {
+        $client = new DruidClient([]);
+
         $builder = Mockery::mock('overload:' . QueryBuilder::class);
         $builder->shouldReceive('__construct')
             ->once()
-            ->with($this->client, 'randomDataSource', 'quarter');
+            ->with($client, 'randomDataSource', 'quarter');
 
-        $this->client->query('randomDataSource', 'quarter');
+        $client->query('randomDataSource', 'quarter');
     }
 
     /**
@@ -81,12 +99,14 @@ class DruidClientTest extends TestCase
      */
     public function testMetaBuilder()
     {
+        $client = new DruidClient([]);
+
         $builder = Mockery::mock('overload:' . MetadataBuilder::class);
         $builder->shouldReceive('__construct')
             ->once()
-            ->with($this->client);
+            ->with($client);
 
-        $this->client->metadata();
+        $client->metadata();
     }
 
     /**
@@ -95,12 +115,14 @@ class DruidClientTest extends TestCase
      */
     public function testCompact()
     {
+        $client = new DruidClient([]);
+
         $builder = Mockery::mock('overload:' . CompactTaskBuilder::class);
         $builder->shouldReceive('__construct')
             ->once()
-            ->with($this->client, 'someDataSource');
+            ->with($client, 'someDataSource');
 
-        $this->client->compact('someDataSource');
+        $client->compact('someDataSource');
     }
 
     /**
@@ -309,6 +331,9 @@ class DruidClientTest extends TestCase
 
         $this->assertEquals('okay', $client->config('pieter'));
         $this->assertEquals('bar', $client->config('foo', 'bar'));
+
+        // test a default config param
+        $this->assertEquals(500, $client->config('retry_delay_ms'));
     }
 
     public function executeRawRequestDataProvider(): array

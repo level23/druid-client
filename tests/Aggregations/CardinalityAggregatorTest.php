@@ -39,4 +39,24 @@ class CardinalityAggregatorTest extends TestCase
             'round'  => $round,
         ], $aggregator->toArray());
     }
+
+    public function testDefaults()
+    {
+        $dimensions = new DimensionCollection(
+            new Dimension('dim1'),
+            new Dimension('dim2')
+        );
+        $aggregator = new CardinalityAggregator(
+            'myCardinality',
+            $dimensions
+        );
+
+        $this->assertEquals([
+            'type'   => 'cardinality',
+            'name'   => 'myCardinality',
+            'fields' => $dimensions->toArray(),
+            'byRow'  => false,
+            'round'  => false,
+        ], $aggregator->toArray());
+    }
 }
