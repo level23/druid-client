@@ -6,6 +6,7 @@ namespace tests\Level23\Druid\Concerns;
 use Mockery;
 use tests\TestCase;
 use Level23\Druid\DruidClient;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\SelectorFilter;
@@ -13,11 +14,16 @@ use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Aggregations\LastAggregator;
+use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Aggregations\CountAggregator;
 use Level23\Druid\Aggregations\FirstAggregator;
+use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Aggregations\FilteredAggregator;
+use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Aggregations\AggregatorInterface;
 use Level23\Druid\Aggregations\JavascriptAggregator;
+use Level23\Druid\Aggregations\HyperUniqueAggregator;
+use Level23\Druid\Aggregations\CardinalityAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 class HasAggregationsTest extends TestCase
@@ -62,6 +68,66 @@ class HasAggregationsTest extends TestCase
 
                 return $aggregator;
             });
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @testWith [true, true]
+     *           [false, false]
+     *           [true, false]
+     *           [false, true]
+     *
+     * @param bool $round
+     * @param bool $isInputHyperUnique
+     */
+    public function testHyperUnique(bool $round, bool $isInputHyperUnique)
+    {
+        $this->getAggregationMock(HyperUniqueAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('myOutput', 'myMetric', $isInputHyperUnique, $round);
+
+        $result = $this->builder->hyperUnique('myMetric', 'myOutput', $round, $isInputHyperUnique);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @testWith [true, true]
+     *           [false, false]
+     *           [true, false]
+     *           [false, true]
+     *
+     * @param bool $byRow
+     * @param bool $round
+     */
+    public function testCardinality(bool $byRow, bool $round)
+    {
+        $this->getAggregationMock(CardinalityAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(
+                'distinct_last_name_first_char',
+                new IsInstanceOf(DimensionCollection::class),
+                $byRow,
+                $round);
+
+        $counter = 0;
+        $closure = function (DimensionBuilder $builder) use (&$counter) {
+            $counter++;
+            $builder->select('last_name', 'last_name_first_char', function (ExtractionBuilder $extractionBuilder) {
+                $extractionBuilder->substring(0, 1);
+            });
+        };
+
+        $this->builder->cardinality('distinct_last_name_first_char', $closure, $byRow, $round);
+
+        $this->assertEquals(1, $counter);
     }
 
     public function testBuildFilteredAggregation()
