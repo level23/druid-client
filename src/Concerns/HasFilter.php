@@ -11,7 +11,6 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
-use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
@@ -24,7 +23,6 @@ use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\ExtractionInterface;
-use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 trait HasFilter
 {

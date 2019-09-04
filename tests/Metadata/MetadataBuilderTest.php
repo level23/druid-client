@@ -230,7 +230,6 @@ class MetadataBuilderTest extends TestCase
             $exception = true;
         }
 
-
         if (!$exception) {
             $metadataBuilder->shouldAllowMockingProtectedMethods()
                 ->shouldReceive('getColumnsForInterval')

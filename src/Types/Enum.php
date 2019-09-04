@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Types;
 
 use ReflectionClass;
+use ReflectionException;
 
 abstract class Enum
 {
@@ -23,7 +24,7 @@ abstract class Enum
                 $reflect = new ReflectionClass($calledClass);
 
                 self::$constCacheArray[$calledClass] = $reflect->getConstants();
-            } catch (\ReflectionException $e) {
+            } catch (ReflectionException $e) {
                 return [];
             }
         }

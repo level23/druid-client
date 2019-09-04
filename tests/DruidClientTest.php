@@ -544,7 +544,7 @@ class DruidClientTest extends TestCase
                 );
             });
 
-        if( $delay > 0 ) {
+        if ($delay > 0) {
             $client->shouldAllowMockingProtectedMethods()
                 ->shouldReceive('usleep')
                 ->with(($delay * 1000))
@@ -552,7 +552,6 @@ class DruidClientTest extends TestCase
         } else {
             $client->shouldAllowMockingProtectedMethods()
                 ->shouldNotReceive('usleep');
-
         }
 
         $client->shouldReceive('config')

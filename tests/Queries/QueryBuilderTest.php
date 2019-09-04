@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
-use Level23\Druid\Types\Granularity;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
@@ -102,8 +101,7 @@ class QueryBuilderTest extends TestCase
             'dimension'  => 'fooBar',
             'outputType' => 'string',
             'outputName' => 'fooBar',
-        ], $this->builder->getDimensions()[0]->toArray() );
-
+        ], $this->builder->getDimensions()[0]->toArray());
 
         $this->assertEquals($this->builder, $response);
     }
