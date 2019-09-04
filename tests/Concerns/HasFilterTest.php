@@ -6,7 +6,6 @@ namespace tests\Level23\Druid\Concerns;
 use Mockery;
 use DateTime;
 use Exception;
-use PHPUnit\Util\Filter;
 use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
@@ -269,6 +268,24 @@ class HasFilterTest extends TestCase
         }
     }
 
+    /**
+     * @testWith [true, false]
+     *           [true, true]
+     *
+     * @param bool $withoutOperator
+     * @param bool $withoutValue
+     */
+    public function testWhereWithoutOperatorOrValue(bool $withoutOperator, bool $withoutValue)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to supply an operator and an compare value when you supply a dimension as string');
+        $this->builder->where(
+            'field',
+            ($withoutOperator ? null : '='),
+            ($withoutValue ? null : 'value')
+        );
+    }
+
     public function testWithUnknownOperator()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -334,7 +351,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->whereBetween('age', 16, 18 );
+        $response = $this->builder->whereBetween('age', 16, 18);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -361,7 +378,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->whereNotBetween('age', 16, 18 );
+        $response = $this->builder->whereNotBetween('age', 16, 18);
 
         $this->assertEquals($this->builder, $response);
     }

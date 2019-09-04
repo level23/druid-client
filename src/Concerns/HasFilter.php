@@ -61,7 +61,11 @@ trait HasFilter
                 $operator = '=';
             }
 
-            $operator = strtolower((string)$operator);
+            if ($operator === null || $value === null) {
+                throw new InvalidArgumentException('You have to supply an operator and an compare value when you supply a dimension as string');
+            }
+
+            $operator = strtolower($operator);
 
             if ($operator == '=') {
                 $filter = new SelectorFilter(

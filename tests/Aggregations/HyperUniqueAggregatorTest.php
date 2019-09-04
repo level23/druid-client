@@ -32,4 +32,19 @@ class HyperUniqueAggregatorTest extends TestCase
             'round'              => $round,
         ], $aggregator->toArray());
     }
+
+    public function testDefaults()
+    {
+        $aggregator = new HyperUniqueAggregator(
+            'hyperHyper',
+            'scooter'
+        );
+        $this->assertEquals([
+            'type'               => 'hyperUnique',
+            'name'               => 'hyperHyper',
+            'fieldName'          => 'scooter',
+            'isInputHyperUnique' => false,
+            'round'              => false,
+        ], $aggregator->toArray());
+    }
 }

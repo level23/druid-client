@@ -24,7 +24,7 @@ class TuningConfig implements TuningConfigInterface
             $method = 'set' . ucfirst($key);
 
             $callable = [$this, $method];
-            if (!method_exists($this, $method) || !is_callable($callable)) {
+            if (!is_callable($callable)) {
                 throw new InvalidArgumentException(
                     'Setting ' . $key . ' was not found in ' . __CLASS__
                 );
