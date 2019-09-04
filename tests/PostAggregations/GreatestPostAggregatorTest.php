@@ -17,9 +17,9 @@ class GreatestPostAggregatorTest extends TestCase
      *           ["StRinG"]
      *           ["DOUBLE"]
      *
-     * @param $type
+     * @param string $type
      */
-    public function testAggregator($type)
+    public function testAggregator(string $type)
     {
         $collections = new PostAggregationCollection(
             new FieldAccessPostAggregator('field1', 'field1'),
