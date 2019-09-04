@@ -18,16 +18,16 @@ class VirtualColumn implements VirtualColumnInterface
     protected $expression;
 
     /**
-     * @var \Level23\Druid\Types\DataType|string
+     * @var string
      */
     protected $outputType;
 
     /**
      * VirtualColumn constructor.
      *
-     * @param string                               $expression An druid expression
-     * @param string                               $as
-     * @param string|\Level23\Druid\Types\DataType $outputType
+     * @param string $expression An druid expression
+     * @param string $as
+     * @param string $outputType
      *
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */

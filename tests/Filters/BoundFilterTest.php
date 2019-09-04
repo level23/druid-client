@@ -37,12 +37,12 @@ class BoundFilterTest extends TestCase
     /**
      * @dataProvider dataProvider
      *
-     * @param string                                 $dimension
-     * @param string                                 $operator
-     * @param string                                 $value
-     * @param \Level23\Druid\Types\SortingOrder|null $ordering
+     * @param string      $dimension
+     * @param string      $operator
+     * @param string      $value
+     * @param string|null $ordering
      */
-    public function testFilter(string $dimension, string $operator, string $value, SortingOrder $ordering = null)
+    public function testFilter(string $dimension, string $operator, string $value, string $ordering = null)
     {
         $filter = new BoundFilter($dimension, $operator, $value, $ordering);
 
@@ -69,7 +69,7 @@ class BoundFilterTest extends TestCase
                 break;
         }
 
-        $expected['ordering'] = ($ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC()))->getValue();
+        $expected['ordering'] = $ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
 
         $this->assertEquals($expected, $filter->toArray());
     }
@@ -92,7 +92,7 @@ class BoundFilterTest extends TestCase
             'member_id',
             '>',
             '18',
-            SortingOrder::ALPHANUMERIC(),
+            SortingOrder::ALPHANUMERIC,
             $extractionFunction
         );
 

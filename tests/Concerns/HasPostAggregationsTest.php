@@ -5,6 +5,7 @@ namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\QueryBuilder;
@@ -30,7 +31,7 @@ class HasPostAggregationsTest extends TestCase
     public function setUp(): void
     {
         $client        = new DruidClient([]);
-        $this->builder = \Mockery::mock(QueryBuilder::class, [$client, 'dataSource']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$client, 'dataSource']);
         $this->builder->makePartial();
     }
 
@@ -81,7 +82,7 @@ class HasPostAggregationsTest extends TestCase
             new Dimension('field'),
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Incorrect field type given in postAggregation fields');
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -210,6 +211,22 @@ class HasPostAggregationsTest extends TestCase
             ->with('myField', 'fooBar', $finalizing);
 
         $result = $this->builder->fieldAccess('myField', 'fooBar', $finalizing);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testFieldAccessDefaults()
+    {
+        $this->getPostAggregationMock(FieldAccessPostAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('myField', 'myField', false);
+
+        $result = $this->builder->fieldAccess('myField');
 
         $this->assertEquals($this->builder, $result);
     }

@@ -122,8 +122,10 @@ class IndexTaskTest extends TestCase
         }
 
         if ($tuningConfig instanceof TuningConfig) {
-            $tuningConfig->setType('index');
-            $expected['spec']['tuningConfig'] = $tuningConfig->toArray();
+            $expected['spec']['tuningConfig'] = [
+                'type'            => 'index',
+                'maxRowsInMemory' => 5000,
+            ];
         }
 
         $this->assertEquals($expected, $task->toArray());

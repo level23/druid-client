@@ -24,7 +24,7 @@ class TimeSeriesQuery implements QueryInterface
     protected $intervals;
 
     /**
-     * @var \Level23\Druid\Types\Granularity|string
+     * @var string
      */
     protected $granularity;
 
@@ -78,9 +78,9 @@ class TimeSeriesQuery implements QueryInterface
      *
      * @param string             $dataSource
      * @param IntervalCollection $intervals
-     * @param string|Granularity $granularity
+     * @param string $granularity
      */
-    public function __construct(string $dataSource, IntervalCollection $intervals, $granularity = 'all')
+    public function __construct(string $dataSource, IntervalCollection $intervals, string $granularity = 'all')
     {
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;

@@ -44,21 +44,19 @@ trait HasLimit
     }
 
     /**
-     * @param string                  $dimension
-     * @param string|OrderByDirection $direction
-     * @param string|SortingOrder     $dimensionOrder
+     * @param string $dimension
+     * @param string $direction
+     * @param string $dimensionOrder
      *
      * @return $this
      */
-    public function orderBy(string $dimension, $direction, $dimensionOrder = 'lexicographic')
+    public function orderBy(string $dimension, string $direction, string $dimensionOrder = 'lexicographic')
     {
-        if (is_string($direction)) {
-            $direction = strtolower($direction);
-            if ($direction == "asc") {
-                $direction = OrderByDirection::ASC();
-            } elseif ($direction == "desc") {
-                $direction = OrderByDirection::DESC();
-            }
+        $direction = strtolower($direction);
+        if ($direction == 'asc') {
+            $direction = OrderByDirection::ASC;
+        } elseif ($direction == 'desc') {
+            $direction = OrderByDirection::DESC;
         }
 
         $order = new OrderBy($dimension, $direction, $dimensionOrder);

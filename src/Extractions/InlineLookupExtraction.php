@@ -47,11 +47,15 @@ class InlineLookupExtraction implements ExtractionInterface
      */
     public function __construct(array $map, $replaceMissingValue = false, bool $optimize = true, bool $injective = null)
     {
-        $this->map                     = $map;
-        $this->retainMissingValue      = is_string($replaceMissingValue) ? true : (bool)$replaceMissingValue;
-        $this->replaceMissingValueWith = is_string($replaceMissingValue) ? $replaceMissingValue : null;
-        $this->optimize                = $optimize;
-        $this->injective               = $injective;
+        $this->map       = $map;
+        $this->optimize  = $optimize;
+        $this->injective = $injective;
+
+        if (is_string($replaceMissingValue)) {
+            $this->replaceMissingValueWith = $replaceMissingValue;
+        } else {
+            $this->retainMissingValue = (bool)$replaceMissingValue;
+        }
     }
 
     /**

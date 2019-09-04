@@ -5,6 +5,7 @@ namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\OrderBy\OrderBy;
@@ -92,8 +93,8 @@ class HasLimitTest extends TestCase
             ->shouldReceive('__construct')
             ->andReturnUsing(function ($dimension, $direction, $dimensionOrder) {
                 $this->assertEquals('name', $dimension);
-                $this->assertEquals(OrderByDirection::DESC(), $direction);
-                $this->assertEquals(SortingOrder::ALPHANUMERIC(), $dimensionOrder);
+                $this->assertEquals(OrderByDirection::DESC, $direction);
+                $this->assertEquals(SortingOrder::ALPHANUMERIC, $dimensionOrder);
             })
             ->once();
 
@@ -109,17 +110,30 @@ class HasLimitTest extends TestCase
                 $this->assertInstanceOf(OrderBy::class, $orderBy);
             });
 
-        $this->builder->orderBy('name', 'desc', SortingOrder::ALPHANUMERIC());
+        $result = $this->builder->orderBy('name', 'DeSc', SortingOrder::ALPHANUMERIC);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    public function testIncorrectOrderByDirect()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid order by direction given:');
+
+        $this->builder->orderBy('name', 'd');
     }
 
     public function testSetOrderByWithLimit()
     {
-        $this->builder->limit(15);
-        $this->builder->orderBy('name', 'asc');
+        $result = $this->builder->limit(15);
+        $this->assertEquals($this->builder, $result);
+
+        $result = $this->builder->orderBy('name', 'ASC');
+        $this->assertEquals($this->builder, $result);
 
         $this->assertEquals(
             new Limit(15, new OrderByCollection(
-                new OrderBy('name', OrderByDirection::ASC(), 'lexicographic')
+                new OrderBy('name', OrderByDirection::ASC, 'lexicographic')
             )),
             $this->builder->getLimit()
         );

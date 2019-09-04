@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Filters;
 
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Extractions\LookupExtraction;
@@ -24,14 +25,14 @@ class BetweenFilterTest extends TestCase
     public function testFilter($minValue, $maxValue, $ordering = null, bool $expectException = false)
     {
         if ($expectException) {
-            $this->expectException(\InvalidArgumentException::class);
+            $this->expectException(InvalidArgumentException::class);
         }
         $filter = new BetweenFilter('age', $minValue, $maxValue, $ordering);
 
         if (is_numeric($minValue) && is_numeric($maxValue) && is_null($ordering)) {
             $ordering = 'numeric';
         } elseif (is_null($ordering)) {
-            $ordering = SortingOrder::LEXICOGRAPHIC();
+            $ordering = SortingOrder::LEXICOGRAPHIC;
         }
 
         $expected = [
@@ -64,6 +65,32 @@ class BetweenFilterTest extends TestCase
             'upper'        => '18',
             'upperStrict'  => false,
             'extractionFn' => $extractionFunction->toArray(),
+        ];
+
+        $this->assertEquals($expected, $filter->toArray());
+    }
+
+    /**
+     * @testWith ["12", "15"]
+     *           ["-inf", "15"]
+     *           ["-inf", "+inf"]
+     *           ["1", "+inf"]
+     *
+     * @param string $minValue
+     * @param string $maxValue
+     */
+    public function testDefaultOrdering(string $minValue, string $maxValue)
+    {
+        $filter = new BetweenFilter('age', $minValue, $maxValue);
+
+        $expected = [
+            'type'        => 'bound',
+            'dimension'   => 'age',
+            'ordering'    => is_numeric($minValue) && is_numeric($maxValue) ? 'numeric' : 'lexicographic',
+            'lower'       => $minValue,
+            'lowerStrict' => false,
+            'upper'       => $maxValue,
+            'upperStrict' => false,
         ];
 
         $this->assertEquals($expected, $filter->toArray());

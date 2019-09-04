@@ -23,4 +23,18 @@ class TimeParseExtractionTest extends TestCase
             'joda'         => false,
         ], $extraction->toArray());
     }
+
+    public function testExtractionDefaults()
+    {
+        $extraction = new TimeParseExtraction(
+            "yyyy.MM.dd G 'at' hh:mm:ss a zzz",
+            "K:mm a, vvv");
+
+        $this->assertEquals([
+            'type'         => 'time',
+            'timeFormat'   => "yyyy.MM.dd G 'at' hh:mm:ss a zzz",
+            'resultFormat' => "K:mm a, vvv",
+            'joda'         => true,
+        ], $extraction->toArray());
+    }
 }

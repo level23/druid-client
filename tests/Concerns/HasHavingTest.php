@@ -109,83 +109,113 @@ class HasHavingTest extends TestCase
             $testingValue    = $value;
         }
 
+        $expected = null;
+
         switch ($testingOperator) {
             case '<>':
             case '!=':
-                $class = NotHavingFilter::class;
-                $this->getFilterMock(NotFilter::class)
-                    ->shouldReceive('__construct')
-                    ->once();
-
-                $this->getHavingMock(DimensionSelectorHavingFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, $testingValue)
-                    ->once();
-
+                $expected = [
+                    'type'       => 'not',
+                    'havingSpec' =>
+                        [
+                            'type'      => 'dimSelector',
+                            'dimension' => $field,
+                            'value'     => $testingValue,
+                        ],
+                ];
                 break;
 
             case '>=':
-                $class = OrHavingFilter::class;
-                $this->getHavingMock(GreaterThanHavingFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, floatval($testingValue))
-                    ->once();
-
-                $this->getHavingMock(EqualToHavingFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, floatval($testingValue))
-                    ->once();
+                $expected = [
+                    'type'        => 'or',
+                    'havingSpecs' =>
+                        [
+                            0 =>
+                                [
+                                    'type'        => 'greaterThan',
+                                    'aggregation' => $field,
+                                    'value'       => $testingValue,
+                                ],
+                            1 =>
+                                [
+                                    'type'        => 'equalTo',
+                                    'aggregation' => $field,
+                                    'value'       => $testingValue,
+                                ],
+                        ],
+                ];
                 break;
 
             case '<=':
-                $class = OrHavingFilter::class;
-                $this->getHavingMock(LessThanHavingFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, floatval($testingValue))
-                    ->once();
-
-                $this->getHavingMock(EqualToHavingFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, floatval($testingValue))
-                    ->once();
+                $expected = [
+                    'type'        => 'or',
+                    'havingSpecs' =>
+                        [
+                            0 =>
+                                [
+                                    'type'        => 'lessThan',
+                                    'aggregation' => $field,
+                                    'value'       => $testingValue,
+                                ],
+                            1 =>
+                                [
+                                    'type'        => 'equalTo',
+                                    'aggregation' => $field,
+                                    'value'       => $testingValue,
+                                ],
+                        ],
+                ];
                 break;
 
             case 'like':
-                $class = QueryHavingFilter::class;
-                $this->getHavingMock(QueryHavingFilter::class)
-                    ->shouldReceive('__construct')
-                    ->once();
+                $expected = [
+                    'type'   => 'filter',
+                    'filter' =>
+                        [
+                            'type'      => 'like',
+                            'dimension' => $field,
+                            'pattern'   => $testingValue,
+                            'escape'    => '\\',
+                        ],
+                ];
+                break;
 
-                $this->getFilterMock(LikeFilter::class)
-                    ->shouldReceive('__construct')
-                    ->with($field, $testingValue)
-                    ->once();
+            case '=':
+                $expected = [
+                    'type'      => 'dimSelector',
+                    'dimension' => $field,
+                    'value'     => $testingValue,
+                ];
+                break;
+
+            case '<':
+                $expected = [
+                    'type'        => 'lessThan',
+                    'aggregation' => $field,
+                    'value'       => $testingValue,
+                ];
+                break;
+
+            case '>':
+                $expected = [
+                    'type'        => 'greaterThan',
+                    'aggregation' => $field,
+                    'value'       => $testingValue,
+                ];
                 break;
 
             default:
-                $types = [
-                    '=' => DimensionSelectorHavingFilter::class,
-                    '>' => GreaterThanHavingFilter::class,
-                    '<' => LessThanHavingFilter::class,
-                ];
-
-                if (!array_key_exists($testingOperator, $types)) {
-                    throw new Exception('Unknown operator ' . $testingOperator);
-                }
-
-                $class = $types[$testingOperator];
-
-                $this->getHavingMock($class)
-                    ->shouldReceive('__construct')
-                    ->with($field, $testingValue)
-                    ->once();
+                throw new Exception('Unknown operator ' . $testingOperator);
                 break;
         }
 
         $response = $this->builder->having($field, $operator, $value, $boolean);
         $this->assertEquals($this->builder, $response);
 
-        $this->assertInstanceOf($class, $this->builder->getHaving());
+        $having = $this->builder->getHaving();
+        if ($having instanceof HavingFilterInterface) {
+            $this->assertEquals($expected, $having->toArray());
+        }
 
         // add another
         $this->builder->having($field, $operator, $value, $boolean);
@@ -197,11 +227,47 @@ class HasHavingTest extends TestCase
         }
     }
 
-    public function testInvalidArguments()
+    public function testHavingMultipleAnd()
+    {
+        $this->builder->having('name', '!=', 'John', 'AnD');
+        $this->builder->having('name', '!=', 'Doe', 'AnD');
+        $this->builder->having('name', '!=', 'Jane', 'AnD');
+
+        $filter = $this->builder->getHaving();
+        if ($filter instanceof AndHavingFilter) {
+            $this->assertEquals(AndHavingFilter::class, get_class($filter));
+            $this->assertEquals(3, count($filter->toArray()['havingSpecs']));
+        }
+    }
+
+    public function testHavingMultipleOr()
+    {
+        $this->builder->having('name', '!=', 'John', 'Or');
+        $this->builder->having('name', '!=', 'Doe', 'OR');
+        $this->builder->having('name', '!=', 'Jane', 'OR');
+
+        $filter = $this->builder->getHaving();
+        if ($filter instanceof OrHavingFilter) {
+            $this->assertEquals(OrHavingFilter::class, get_class($filter));
+            $this->assertEquals(3, count($filter->toArray()['havingSpecs']));
+        }
+    }
+
+    /**
+     * @testWith [null, null, "name"]
+     *           [null, null, null]
+     *           [null, "=", null]
+     *           [null, "=", "name"]
+     *
+     * @param string|null $field
+     * @param string|null $operator
+     * @param string|null $value
+     */
+    public function testInvalidArguments(?string $field, ?string $operator, ?string $value)
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->builder->having(null);
+        $this->builder->having($field, $operator, $value);
     }
 
     public function testHavingWithQueryFilter()

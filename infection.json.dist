@@ -17,6 +17,30 @@
     },
     "mutators": {
         "@default": true,
-        "@function_signature": false
+        "@function_signature": false,
+        "ArrayItemRemoval": {
+            "ignore": [
+                "Level23\\Druid\\DruidClient::executeQuery",
+                "Level23\\Druid\\DruidClient::executeTask"
+            ]
+        },
+        "CastString": {
+            "ignore": [
+                "Level23\\Druid\\Concerns\\HasFilter::where",
+                "Level23\\Druid\\Concerns\\HasHaving::having",
+                "Level23\\Druid\\Filters\\BetweenFilter::toArray"
+            ]
+        },
+        "CastBool": {
+            "ignore": [
+                "Level23\\Druid\\Extractions\\LookupExtraction::__construct",
+                "Level23\\Druid\\Extractions\\InlineLookupExtraction::__construct"
+            ]
+        },
+        "LessThanNegotiation": {
+            "ignore": [
+                "Level23\\Druid\\DruidClient::executeRawRequest"
+            ]
+        }
     }
 }

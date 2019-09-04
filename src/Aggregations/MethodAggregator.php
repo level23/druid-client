@@ -11,7 +11,7 @@ abstract class MethodAggregator implements AggregatorInterface
     /**
      * The type of field. This can either be "long", "float" or "double"
      *
-     * @var DataType|string
+     * @var string
      */
     protected $type;
 
@@ -28,17 +28,14 @@ abstract class MethodAggregator implements AggregatorInterface
     /**
      * constructor.
      *
-     * @param string          $metricName
-     * @param string          $outputName                   When not given, we will use the same name as the metric.
-     * @param DataType|string $type                         The type of field. This can either be "long", "float" or
+     * @param string $metricName
+     * @param string $outputName                            When not given, we will use the same name as the metric.
+     * @param string $type                                  The type of field. This can either be "long", "float" or
      *                                                      "double"
      */
-    public function __construct(string $metricName, string $outputName = '', $type = 'long')
+    public function __construct(string $metricName, string $outputName = '', string $type = 'long')
     {
-        if (is_string($type)) {
-            $type = strtolower($type);
-        }
-
+        $type = strtolower($type);
         if (!in_array($type, ['long', 'float', 'double'])) {
             throw new InvalidArgumentException(
                 'Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"'

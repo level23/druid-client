@@ -9,8 +9,7 @@
   "require": {
     "php": ">=7.2",
     "ext-json": "*",
-    "guzzlehttp/guzzle": "^6",
-    "myclabs/php-enum": "^1.7"
+    "guzzlehttp/guzzle": "^6"
   },
   "require-dev": {
     "illuminate/support": "~5.0",
