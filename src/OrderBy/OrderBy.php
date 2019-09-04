@@ -14,12 +14,12 @@ class OrderBy implements OrderByInterface
     protected $dimension;
 
     /**
-     * @var \Level23\Druid\Types\OrderByDirection|string
+     * @var string
      */
     protected $direction;
 
     /**
-     * @var \Level23\Druid\Types\SortingOrder|string
+     * @var string
      */
     protected $dimensionOrder;
 
@@ -27,10 +27,10 @@ class OrderBy implements OrderByInterface
      * OrderBy constructor.
      *
      * @param string                  $dimension
-     * @param string|OrderByDirection $direction
-     * @param string|SortingOrder     $dimensionOrder
+     * @param string $direction
+     * @param string     $dimensionOrder
      */
-    public function __construct(string $dimension, $direction = 'ascending', $dimensionOrder = 'lexicographic')
+    public function __construct(string $dimension, string $direction = 'ascending', string $dimensionOrder = 'lexicographic')
     {
         $this->dimension      = $dimension;
         $this->direction      = OrderByDirection::validate($direction);
@@ -64,10 +64,10 @@ class OrderBy implements OrderByInterface
     /**
      * Return the direction of the order by
      *
-     * @return \Level23\Druid\Types\OrderByDirection
+     * @return string
      */
-    public function getDirection(): OrderByDirection
+    public function getDirection(): string
     {
-        return ($this->direction == "ascending" ? OrderByDirection::ASC() : OrderByDirection::DESC());
+        return ($this->direction == 'ascending' ? OrderByDirection::ASC : OrderByDirection::DESC);
     }
 }

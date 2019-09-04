@@ -22,7 +22,9 @@ class CompactTaskBuilderTest extends TestCase
         $client  = new DruidClient([]);
         $builder = new CompactTaskBuilder($client, 'dataSource');
 
-        $builder->targetCompactionSize(1024);
+        $response = $builder->targetCompactionSize(1024);
+
+        $this->assertEquals($response, $builder);
 
         $this->assertEquals(
             $client,

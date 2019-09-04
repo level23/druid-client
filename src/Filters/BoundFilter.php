@@ -23,7 +23,7 @@ class BoundFilter implements FilterInterface
     protected $dimension;
 
     /**
-     * @var \Level23\Druid\Types\BoundOperator|string
+     * @var string
      */
     protected $operator;
 
@@ -33,7 +33,7 @@ class BoundFilter implements FilterInterface
     protected $value;
 
     /**
-     * @var \Level23\Druid\Types\SortingOrder|null
+     * @var string|null
      */
     protected $ordering;
 
@@ -46,25 +46,25 @@ class BoundFilter implements FilterInterface
      * BoundFilter constructor.
      *
      * @param string                   $dimension         The dimension to filter on
-     * @param BoundOperator|string     $operator          The operator to use. Use ">", ">=", "<", or "<=" Or use the
+     * @param string                   $operator          The operator to use. Use ">", ">=", "<", or "<=" Or use the
      *                                                    BoundOperator constants.
      * @param string                   $value             The value to compare with. This can either be an numeric or a
      *                                                    string.
-     * @param SortingOrder|null        $ordering          Specifies the sorting order to use when comparing values
+     * @param string|null              $ordering          Specifies the sorting order to use when comparing values
      *                                                    against the bound.
      * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
-        $operator,
+        string $operator,
         string $value,
-        SortingOrder $ordering = null,
+        string $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->operator           = BoundOperator::validate($operator);
         $this->value              = $value;
-        $this->ordering           = $ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC());
+        $this->ordering           = $ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
         $this->extractionFunction = $extractionFunction;
     }
 
@@ -82,19 +82,19 @@ class BoundFilter implements FilterInterface
         ];
 
         switch ($this->operator) {
-            case BoundOperator::GE():
+            case BoundOperator::GE:
                 $result['lower']       = $this->value;
                 $result['lowerStrict'] = false;
                 break;
-            case BoundOperator::GT():
+            case BoundOperator::GT:
                 $result['lower']       = $this->value;
                 $result['lowerStrict'] = true;
                 break;
-            case BoundOperator::LE():
+            case BoundOperator::LE:
                 $result['upper']       = $this->value;
                 $result['upperStrict'] = false;
                 break;
-            case BoundOperator::LT():
+            case BoundOperator::LT:
                 $result['upper']       = $this->value;
                 $result['upperStrict'] = true;
                 break;

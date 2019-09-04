@@ -8,12 +8,12 @@ use Level23\Druid\Types\Granularity;
 trait HasQueryGranularity
 {
     /**
-     * @var null|\Level23\Druid\Types\Granularity|string
+     * @var null|string
      */
     protected $queryGranularity;
 
     /**
-     * @param \Level23\Druid\Types\Granularity|string $queryGranularity
+     * @param string $queryGranularity
      *
      * @return $this
      */

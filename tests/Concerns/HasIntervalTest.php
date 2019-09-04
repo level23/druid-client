@@ -20,7 +20,9 @@ class HasIntervalTest extends TestCase
 
         $start = new DateTime('2019-01-01 00:00:00');
         $stop  = new DateTime('2019-01-31 23:59:59');
-        $builder->interval($start, $stop);
+        $result = $builder->interval($start, $stop);
+
+        $this->assertEquals($builder, $result);
 
         $interval = new Interval($start, $stop);
         $this->assertEquals($interval, $this->getProperty($builder, 'interval'));

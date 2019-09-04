@@ -17,5 +17,6 @@ class DruidQueryExceptionTest extends TestCase
         $exception = new QueryResponseException($query->toArray());
 
         $this->assertEquals($query->toArray(), $exception->getQuery());
+        $this->assertEquals(500, $exception->getCode());
     }
 }

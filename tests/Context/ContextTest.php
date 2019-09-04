@@ -75,13 +75,20 @@ class ContextTest extends TestCase
             $properties[$property] = $value;
 
             // call our setter.
-            $object->$method($value);
+            $response = $object->$method($value);
+
+            $this->assertEquals($object, $response);
         }
 
-        $properties = array_merge($properties, $extra);
+        $expectedProperties = array_merge($properties, $extra);
 
         if ($object instanceof ContextInterface) {
-            $this->assertEquals($properties, $object->toArray());
+            $this->assertEquals($expectedProperties, $object->toArray());
+        }
+
+        $object2 = new $class($properties);
+        if ($object2 instanceof ContextInterface) {
+            $this->assertEquals($expectedProperties, $object2->toArray());
         }
     }
 

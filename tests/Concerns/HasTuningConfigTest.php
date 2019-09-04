@@ -28,7 +28,9 @@ class HasTuningConfigTest extends TestCase
         $tuning = new TuningConfig();
         $tuning->setMaxNumSubTasks(5);
 
-        $this->builder->tuningConfig($tuning);
+        $response = $this->builder->tuningConfig($tuning);
+
+        $this->assertEquals($this->builder, $response);
 
         $this->assertEquals(
             $tuning,
@@ -44,7 +46,8 @@ class HasTuningConfigTest extends TestCase
         $tuning = new TuningConfig();
         $tuning->setMaxNumSubTasks(5);
 
-        $this->builder->tuningConfig(['maxNumSubTasks' => 5]);
+        $response = $this->builder->tuningConfig(['maxNumSubTasks' => 5]);
+        $this->assertEquals($this->builder, $response);
 
         $this->assertEquals(
             $tuning,

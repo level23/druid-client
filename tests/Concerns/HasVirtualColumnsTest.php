@@ -15,8 +15,10 @@ class HasVirtualColumnsTest extends TestCase
      */
     public function testVirtualColumns()
     {
-        $builder = new QueryBuilder(new DruidClient([]), 'dataSource');
-        $builder->virtualColumn('concat(foo, bar)', 'fooBar');
+        $builder  = new QueryBuilder(new DruidClient([]), 'dataSource');
+        $response = $builder->virtualColumn('concat(foo, bar)', 'fooBar');
+
+        $this->assertEquals($builder, $response);
 
         $this->assertEquals([
             new VirtualColumn('concat(foo, bar)', 'fooBar', 'string'),

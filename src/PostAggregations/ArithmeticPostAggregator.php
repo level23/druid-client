@@ -14,7 +14,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
     protected $outputName;
 
     /**
-     * @var \Level23\Druid\Types\ArithmeticFunction|string
+     * @var string
      */
     protected $function;
 
@@ -39,7 +39,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
      * - quotient division behaves like regular floating point division
      *
      * @param string                    $outputName
-     * @param string|ArithmeticFunction $function              Supported functions are +, -, *, /, and quotient.
+     * @param string                    $function              Supported functions are +, -, *, /, and quotient.
      * @param PostAggregationCollection $fields                List with field names which are used for this function.
      *
      *
@@ -50,7 +50,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
      */
     public function __construct(
         string $outputName,
-        $function,
+        string $function,
         PostAggregationCollection $fields,
         bool $floatingPointOrdering = true
     ) {

@@ -107,7 +107,7 @@ trait HasHaving
 
         $this->addHaving(
             $having,
-            $boolean == 'and' ? AndHavingFilter::class : OrHavingFilter::class
+            strtolower($boolean) == 'and' ? AndHavingFilter::class : OrHavingFilter::class
         );
 
         return $this;
@@ -143,7 +143,8 @@ trait HasHaving
      */
     protected function addHaving(HavingFilterInterface $havingFilter, string $type)
     {
-        if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
+        if ($this->having instanceof $type) {
+            /** @noinspection PhpUndefinedMethodInspection */
             $this->having->addHavingFilter($havingFilter);
         } else {
             $havingFilters = [$this->having, $havingFilter];

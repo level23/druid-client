@@ -68,10 +68,10 @@ class TuningConfigTest extends TestCase
 
     public function testSettingValueUsingConstructor()
     {
-        $context = new TuningConfig(['type' => 'index']);
+        $context = new TuningConfig(['maxrowspersegment' => '1']);
 
         $response = $context->toArray();
-        $this->assertEquals('index', $response['type']);
+        $this->assertEquals('1', $response['maxRowsPerSegment']);
     }
 
     public function testNonExistingProperty()
