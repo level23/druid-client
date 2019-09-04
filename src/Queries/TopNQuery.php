@@ -82,7 +82,7 @@ class TopNQuery implements QueryInterface
      * @param DimensionInterface $dimension
      * @param int                $threshold
      * @param string             $metric
-     * @param string $granularity
+     * @param string             $granularity
      */
     public function __construct(
         string $dataSource,

@@ -63,6 +63,7 @@ class CardinalityAggregator implements AggregatorInterface
      * ```
      * SELECT COUNT(*) FROM ( SELECT DIM1, DIM2, DIM3 FROM <datasource> GROUP BY DIM1, DIM2, DIM3 )
      * ```
+     *
      * @see https://druid.apache.org/docs/latest/querying/hll-old.html
      *
      * @param string                                         $outputName

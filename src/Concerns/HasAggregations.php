@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
-use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Aggregations\MaxAggregator;

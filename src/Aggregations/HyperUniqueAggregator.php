@@ -7,7 +7,7 @@ namespace Level23\Druid\Aggregations;
  * Class HyperUniqueAggregator
  *
  * @package Level23\Druid\Aggregations
- * @see https://druid.apache.org/docs/latest/querying/hll-old.html
+ * @see     https://druid.apache.org/docs/latest/querying/hll-old.html
  */
 class HyperUniqueAggregator implements AggregatorInterface
 {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Level23\Druid\Aggregations;
 
 use InvalidArgumentException;
-use Level23\Druid\Types\DataType;
 
 abstract class MethodAggregator implements AggregatorInterface
 {

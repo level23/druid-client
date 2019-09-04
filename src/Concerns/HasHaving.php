@@ -17,7 +17,6 @@ use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
-use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
 
 trait HasHaving
 {

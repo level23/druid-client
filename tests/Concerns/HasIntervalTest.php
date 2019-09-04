@@ -18,8 +18,8 @@ class HasIntervalTest extends TestCase
     {
         $builder = new IndexTaskBuilder(new DruidClient([]), 'dataSource');
 
-        $start = new DateTime('2019-01-01 00:00:00');
-        $stop  = new DateTime('2019-01-31 23:59:59');
+        $start  = new DateTime('2019-01-01 00:00:00');
+        $stop   = new DateTime('2019-01-31 23:59:59');
         $result = $builder->interval($start, $stop);
 
         $this->assertEquals($builder, $result);

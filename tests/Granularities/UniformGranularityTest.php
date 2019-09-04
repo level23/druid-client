@@ -8,7 +8,6 @@ use InvalidArgumentException;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Granularities\UniformGranularity;
-use Level23\Druid\Granularities\ArbitraryGranularity;
 
 class UniformGranularityTest extends TestCase
 {
@@ -46,11 +45,11 @@ class UniformGranularityTest extends TestCase
         );
 
         $this->assertEquals([
-            'type' => 'uniform',
+            'type'               => 'uniform',
             'segmentGranularity' => $segmentGranularity,
-            'queryGranularity' => $queryGranularity,
-            'rollup' => $rollup,
-            'intervals' => $intervalCollection->toArray(),
+            'queryGranularity'   => $queryGranularity,
+            'rollup'             => $rollup,
+            'intervals'          => $intervalCollection->toArray(),
         ], $granularity->toArray());
     }
 }
