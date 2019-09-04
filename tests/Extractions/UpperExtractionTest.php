@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Extractions;
 
 use tests\TestCase;
-use Level23\Druid\Extractions\LowerExtraction;
 use Level23\Druid\Extractions\UpperExtraction;
 
 class UpperExtractionTest extends TestCase

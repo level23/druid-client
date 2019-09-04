@@ -3,10 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Granularities;
 
-use InvalidArgumentException;
-use Level23\Druid\Types\Granularity;
-use Level23\Druid\Collections\IntervalCollection;
-
 class ArbitraryGranularity extends AbstractGranularity implements GranularityInterface
 {
     /**

@@ -78,7 +78,7 @@ class TimeSeriesQuery implements QueryInterface
      *
      * @param string             $dataSource
      * @param IntervalCollection $intervals
-     * @param string $granularity
+     * @param string             $granularity
      */
     public function __construct(string $dataSource, IntervalCollection $intervals, string $granularity = 'all')
     {

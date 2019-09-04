@@ -8,19 +8,14 @@ use Exception;
 use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\HavingFilters\HavingBuilder;
 use Level23\Druid\HavingFilters\OrHavingFilter;
 use Level23\Druid\HavingFilters\AndHavingFilter;
-use Level23\Druid\HavingFilters\NotHavingFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
-use Level23\Druid\HavingFilters\EqualToHavingFilter;
-use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
-use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 
 class HasHavingTest extends TestCase

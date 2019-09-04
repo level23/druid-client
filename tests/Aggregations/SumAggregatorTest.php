@@ -26,7 +26,7 @@ class SumAggregatorTest extends TestCase
      * @dataProvider  dataProvider
      *
      * @param string $type
-     * @param bool            $expectException
+     * @param bool   $expectException
      */
     public function testAggregator(string $type, bool $expectException = false)
     {
