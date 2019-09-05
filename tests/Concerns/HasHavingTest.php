@@ -73,6 +73,7 @@ class HasHavingTest extends TestCase
             ['name', '=', 'John', 'and'],
             ['name', 'John', null, 'and'],
             ['age', '!=', '11', 'and'],
+            ['id', '0', null, 'and'],
             ['age', '<>', '12', 'and'],
             ['age', '>', '18', 'and'],
             ['age', '>=', '18', 'and'],
@@ -96,7 +97,7 @@ class HasHavingTest extends TestCase
      */
     public function testHaving($field, $operator, $value, $boolean)
     {
-        if ($value === null && !empty($operator)) {
+        if ($value === null && $operator !== null) {
             $testingValue    = $operator;
             $testingOperator = '=';
         } else {

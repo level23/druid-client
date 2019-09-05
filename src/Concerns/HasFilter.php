@@ -53,7 +53,7 @@ trait HasFilter
     ) {
         $filter = null;
         if (is_string($filterOrDimensionOrClosure)) {
-            if ($value === null && !empty($operator)) {
+            if ($value === null && $operator !== null) {
                 $value    = $operator;
                 $operator = '=';
             }
