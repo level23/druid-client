@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\PostAggregations;
 
 use tests\TestCase;
+use InvalidArgumentException;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
@@ -58,6 +59,23 @@ class ArithmeticPostAggregatorTest extends TestCase
             'fields'   => $collections->toArray(),
             'ordering' => null,
         ], $aggregator->toArray()
+        );
+    }
+
+    public function testInvalidArithmeticFunction()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid arithmetic function given');
+
+        $collections = new PostAggregationCollection(
+            new FieldAccessPostAggregator('totals', 'totals'),
+            new FieldAccessPostAggregator('rows', 'rows')
+        );
+
+        new ArithmeticPostAggregator(
+            'average',
+            'devide',
+            $collections
         );
     }
 }
