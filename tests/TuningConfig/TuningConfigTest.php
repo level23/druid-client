@@ -7,13 +7,7 @@ use Exception;
 use tests\TestCase;
 use ReflectionMethod;
 use InvalidArgumentException;
-use Level23\Druid\Context\TaskContext;
-use Level23\Druid\Context\ContextInterface;
-use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\TuningConfig\TuningConfig;
-use Level23\Druid\Context\GroupByV2QueryContext;
-use Level23\Druid\Context\GroupByV1QueryContext;
-use Level23\Druid\Context\TimeSeriesQueryContext;
 
 class TuningConfigTest extends TestCase
 {
@@ -64,7 +58,9 @@ class TuningConfigTest extends TestCase
             $properties[$property] = $value;
 
             // call our setter.
-            $tuningConfig->$method($value);
+            $response = $tuningConfig->$method($value);
+
+            $this->assertEquals($response, $tuningConfig);
         }
 
         $this->assertEquals($properties, $tuningConfig->toArray());
@@ -72,10 +68,10 @@ class TuningConfigTest extends TestCase
 
     public function testSettingValueUsingConstructor()
     {
-        $context = new TuningConfig(['type' => 'index']);
+        $context = new TuningConfig(['maxrowspersegment' => '1']);
 
         $response = $context->toArray();
-        $this->assertEquals('index', $response['type']);
+        $this->assertEquals('1', $response['maxRowsPerSegment']);
     }
 
     public function testNonExistingProperty()

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\PostAggregations;
 
 use InvalidArgumentException;
+use Level23\Druid\Collections\PostAggregationCollection;
 
 abstract class MethodPostAggregator implements PostAggregatorInterface
 {
@@ -13,7 +14,7 @@ abstract class MethodPostAggregator implements PostAggregatorInterface
     protected $outputName;
 
     /**
-     * @var array|string[]
+     * @var \Level23\Druid\Collections\PostAggregationCollection
      */
     protected $fields;
 
@@ -25,11 +26,11 @@ abstract class MethodPostAggregator implements PostAggregatorInterface
     /**
      *  constructor.
      *
-     * @param string $outputName
-     * @param array|string[]  $fields
-     * @param string $type
+     * @param string                    $outputName
+     * @param PostAggregationCollection $fields
+     * @param string                    $type
      */
-    public function __construct(string $outputName, array $fields, string $type = 'long')
+    public function __construct(string $outputName, PostAggregationCollection $fields, string $type = 'long')
     {
         $type = strtolower($type);
         if (!in_array($type, ['long', 'double'])) {
@@ -52,7 +53,7 @@ abstract class MethodPostAggregator implements PostAggregatorInterface
         return [
             'type'   => $this->type . ucfirst($this->getMethod()),
             'name'   => $this->outputName,
-            'fields' => $this->fields,
+            'fields' => $this->fields->toArray(),
         ];
     }
 

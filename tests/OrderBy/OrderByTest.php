@@ -15,10 +15,10 @@ class OrderByTest extends TestCase
     {
 
         return [
-            ['name', OrderByDirection::DESC(), SortingOrder::NUMERIC()],
-            ['name', OrderByDirection::ASC(), SortingOrder::ALPHANUMERIC()],
-            ['name', OrderByDirection::ASC(), 'numeric'],
-            ['name', OrderByDirection::ASC(), 'wrong', true],
+            ['name', OrderByDirection::DESC, SortingOrder::NUMERIC],
+            ['name', OrderByDirection::ASC, SortingOrder::ALPHANUMERIC],
+            ['name', OrderByDirection::ASC, 'numeric'],
+            ['name', OrderByDirection::ASC, 'wrong', true],
             ['name', 'desc', 'strlen', true],
             ['name', 'descending', 'strlen'],
         ];
@@ -27,12 +27,12 @@ class OrderByTest extends TestCase
     /**
      * @dataProvider dataProvider
      *
-     * @param string                  $dimension
-     * @param string|OrderByDirection $direction
-     * @param string|SortingOrder     $sorting
-     * @param bool                    $expectException
+     * @param string $dimension
+     * @param string $direction
+     * @param string $sorting
+     * @param bool   $expectException
      */
-    public function testOrderBy(string $dimension, $direction, $sorting, $expectException = false)
+    public function testOrderBy(string $dimension, string $direction, string $sorting, bool $expectException = false)
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -41,7 +41,7 @@ class OrderByTest extends TestCase
         $orderBy = new OrderBy($dimension, $direction, $sorting);
 
         $this->assertEquals($orderBy->getDimension(), $dimension);
-        $this->assertEquals($orderBy->getDirection()->getValue(), $direction);
+        $this->assertEquals($orderBy->getDirection(), $direction);
 
         $this->assertEquals([
             'dimension'      => $dimension,

@@ -21,10 +21,10 @@ class TuningConfig implements TuningConfigInterface
     {
         foreach ($properties as $key => $value) {
 
-            $method = 'set' . ucfirst($key);
+            $method = 'set' . $key;
 
             $callable = [$this, $method];
-            if (!method_exists($this, $method) || !is_callable($callable)) {
+            if (!is_callable($callable)) {
                 throw new InvalidArgumentException(
                     'Setting ' . $key . ' was not found in ' . __CLASS__
                 );
@@ -41,9 +41,7 @@ class TuningConfig implements TuningConfigInterface
      */
     public function toArray(): array
     {
-        return array_filter($this->properties, function ($value) {
-            return ($value !== null);
-        });
+        return $this->properties;
     }
 
     /**

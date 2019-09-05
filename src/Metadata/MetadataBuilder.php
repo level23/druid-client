@@ -247,12 +247,6 @@ class MetadataBuilder
 
         $rawStructure = $this->interval($dataSource, $interval);
 
-        if (!$rawStructure) {
-            throw new QueryResponseException(
-                [], 'We failed to retrieve a correct structure for dataSource ' . $dataSource
-            );
-        }
-
         $structureData = reset($rawStructure);
         if (!$structureData || !is_array($structureData)) {
             throw new QueryResponseException([],

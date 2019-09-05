@@ -3,37 +3,31 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Types;
 
-use MyCLabs\Enum\Enum;
 use InvalidArgumentException;
 
 /**
  * Class DataType
- * @method static self STRING()
- * @method static self FLOAT()
- * @method static self LONG()
- * @method static self DOUBLE()
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
-class DataType extends Enum
+final class DataType extends Enum
 {
-    private const STRING = 'string';
-    private const FLOAT  = 'float';
-    private const LONG   = 'long';
-    private const DOUBLE = 'double';
+    public const STRING = 'string';
+    public const FLOAT  = 'float';
+    public const LONG   = 'long';
+    public const DOUBLE = 'double';
 
     /**
      * Validate the DataType.
      *
-     * @param string|\Level23\Druid\Types\DataType $outputType
+     * @param string $outputType
      *
-     * @return string|\Level23\Druid\Types\DataType
+     * @return string
      * @throws InvalidArgumentException
      */
     public static function validate($outputType)
     {
-        if (is_string($outputType) && !self::isValid($outputType = strtolower($outputType))) {
+        if (is_string($outputType) && !self::isValidValue($outputType = strtolower($outputType))) {
             throw new InvalidArgumentException(
                 'The given output type is invalid: ' . $outputType . '. ' .
                 'Allowed are: ' . implode(',', DataType::values())

@@ -8,12 +8,12 @@ use Level23\Druid\Types\Granularity;
 trait HasSegmentGranularity
 {
     /**
-     * @var null|\Level23\Druid\Types\Granularity|string
+     * @var null|string
      */
     protected $segmentGranularity;
 
     /**
-     * @param \Level23\Druid\Types\Granularity|string $segmentGranularity
+     * @param string $segmentGranularity
      *
      * @return $this
      */

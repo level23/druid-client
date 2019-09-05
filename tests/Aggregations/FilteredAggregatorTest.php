@@ -15,7 +15,7 @@ class FilteredAggregatorTest extends TestCase
     {
         $aggregator = new FilteredAggregator(
             new InFilter('member_id', [1, 2, 6, 112]),
-            new SumAggregator('calls', 'total_calls', DataType::LONG())
+            new SumAggregator('calls', 'total_calls', DataType::LONG)
         );
 
         $this->assertEquals([

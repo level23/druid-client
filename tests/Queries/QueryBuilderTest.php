@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
-use Level23\Druid\Types\Granularity;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
@@ -30,6 +29,7 @@ use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
+use Level23\Druid\Collections\PostAggregationCollection;
 
 class QueryBuilderTest extends TestCase
 {
@@ -94,18 +94,25 @@ class QueryBuilderTest extends TestCase
             ->shouldReceive('__construct')
             ->with('concat(foo, bar)', 'fooBar', 'string');
 
-        $this->builder->shouldReceive('select', 'fooBar');
-        $this->builder->selectVirtual('concat(foo, bar)', 'fooBar');
+        $response = $this->builder->selectVirtual('concat(foo, bar)', 'fooBar');
+
+        $this->assertEquals([
+            'type'       => 'default',
+            'dimension'  => 'fooBar',
+            'outputType' => 'string',
+            'outputName' => 'fooBar',
+        ], $this->builder->getDimensions()[0]->toArray());
+
+        $this->assertEquals($this->builder, $response);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testGranularity()
     {
-        Mockery::mock(Granularity::class)
-            ->shouldReceive('validate')
-            ->with('year')
-            ->andReturn('year');
-
-        $this->builder->granularity('year');
+        $response = $this->builder->granularity('year');
+        $this->assertEquals($this->builder, $response);
 
         $this->assertEquals('year', $this->getProperty($this->builder, 'granularity'));
     }
@@ -251,9 +258,13 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($parsedResult, $response);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testDatasource()
     {
-        $this->builder->dataSource('myFavorite');
+        $response = $this->builder->dataSource('myFavorite');
+        $this->assertEquals($this->builder, $response);
 
         $this->assertEquals('myFavorite', $this->getProperty($this->builder, 'dataSource'));
     }
@@ -270,7 +281,7 @@ class QueryBuilderTest extends TestCase
      * @param string|null $orderBy
      * @param bool        $expected
      */
-    public function testIsTopNQuery(array $dimensions, int $limit = null, string $orderBy = null, bool $expected)
+    public function testIsTopNQuery(array $dimensions, ?int $limit, ?string $orderBy, bool $expected)
     {
         $this->builder->select($dimensions);
 
@@ -445,9 +456,12 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["theTime", {}, true, true, true, 0, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, true, 5, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, 5, "myTime", "desc"]
+     * @testWith ["theTime", {}, true, true, true, false, 0, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, true, false, true, 5, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, true, 5, ""]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "myTime", "desc"]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "__time", "desc"]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "Whatever", "desc"]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -457,6 +471,7 @@ class QueryBuilderTest extends TestCase
      * @param bool   $withFilter
      * @param bool   $withVirtual
      * @param bool   $withAggregations
+     * @param bool   $withPostAggregations
      * @param int    $limit
      * @param string $orderBy
      * @param string $direction
@@ -469,6 +484,7 @@ class QueryBuilderTest extends TestCase
         bool $withFilter,
         bool $withVirtual,
         bool $withAggregations,
+        bool $withPostAggregations,
         int $limit,
         string $orderBy,
         string $direction = "asc"
@@ -476,11 +492,16 @@ class QueryBuilderTest extends TestCase
         $dataSource = 'phones';
 
         $this->builder->interval('12-02-2019/13-02-2019');
-        $this->builder->dataSource($dataSource);
-        $this->builder->granularity('day');
+        $response = $this->builder->dataSource($dataSource);
+        $this->assertEquals($this->builder, $response);
+
+        $response = $this->builder->granularity('day');
+        $this->assertEquals($this->builder, $response);
+
         $this->builder->select('__time', $timeAlias);
         if ($withVirtual) {
-            $this->builder->virtualColumn('concat(foo, bar)', 'fooBar');
+            $response = $this->builder->virtualColumn('concat(foo, bar)', 'fooBar');
+            $this->assertEquals($this->builder, $response);
         }
 
         if ($withFilter) {
@@ -497,6 +518,10 @@ class QueryBuilderTest extends TestCase
 
         if ($withAggregations) {
             $this->builder->sum('items', 'total');
+        }
+
+        if ($withPostAggregations) {
+            $this->builder->divide('avg', ['field', 'total']);
         }
 
         $query = Mockery::mock('overload:' . TimeSeriesQuery::class);
@@ -526,6 +551,12 @@ class QueryBuilderTest extends TestCase
             $query->shouldReceive('setAggregations')
                 ->once()
                 ->with(new IsInstanceOf(AggregationCollection::class));
+        }
+
+        if ($withPostAggregations) {
+            $query->shouldReceive('setPostAggregations')
+                ->once()
+                ->with(new IsInstanceOf(PostAggregationCollection::class));
         }
 
         if ($withVirtual) {
@@ -591,13 +622,14 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [true, true, true, true, "asc", {"minTopNThreshold":2}]
-     *           [false, false, false, false, "desc", {}]
+     * @testWith [true, true, true, true, true, "asc", {"minTopNThreshold":2}]
+     *           [false, false, false, false, false, "desc", {}]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      *
      * @param bool   $withAggregations
+     * @param bool   $withPostAggregations
      * @param bool   $withGranularity
      * @param bool   $withVirtual
      * @param bool   $withFilter
@@ -608,6 +640,7 @@ class QueryBuilderTest extends TestCase
      */
     public function testBuildTopNQuery(
         bool $withAggregations,
+        bool $withPostAggregations,
         bool $withGranularity,
         bool $withVirtual,
         bool $withFilter,
@@ -624,6 +657,10 @@ class QueryBuilderTest extends TestCase
 
         if ($withAggregations) {
             $this->builder->longSum('suppliers');
+        }
+
+        if ($withPostAggregations) {
+            $this->builder->divide('avg', ['field', 'suppliers']);
         }
 
         if ($withGranularity) {
@@ -669,6 +706,12 @@ class QueryBuilderTest extends TestCase
                 ->with(new IsInstanceOf(AggregationCollection::class));
         }
 
+        if ($withPostAggregations) {
+            $query->shouldReceive('setPostAggregations')
+                ->once()
+                ->with(new IsInstanceOf(PostAggregationCollection::class));
+        }
+
         if ($withVirtual) {
             $query->shouldReceive('setVirtualColumns')
                 ->once()
@@ -693,10 +736,10 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["v1", true, true, true, true, true]
-     *           ["v1", false, false, true, false, true]
-     *           ["v2", true, false, false, true, false]
-     *           ["v2", false, false, false, false, false]
+     * @testWith ["v1", true, true, true, true, true, true]
+     *           ["v1", false, false, true, false, true, false]
+     *           ["v2", true, false, false, true, false, true]
+     *           ["v2", false, false, false, false, false, false]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -706,6 +749,8 @@ class QueryBuilderTest extends TestCase
      * @param bool   $withVirtual
      * @param bool   $withFilter
      * @param bool   $withLimit
+     * @param bool   $withHaving
+     * @param bool   $withPostAggregations
      *
      * @throws \Exception
      */
@@ -715,7 +760,8 @@ class QueryBuilderTest extends TestCase
         bool $withVirtual,
         bool $withFilter,
         bool $withLimit,
-        bool $withHaving
+        bool $withHaving,
+        bool $withPostAggregations
     ) {
         $dataSource = 'drinks';
 
@@ -732,6 +778,10 @@ class QueryBuilderTest extends TestCase
             $context = new GroupByV2QueryContext();
             $context->setFinalize(true);
             $expectType = GroupByV2QueryContext::class;
+        }
+
+        if ($withPostAggregations) {
+            $this->builder->divide('avg', ['field', 'suppliers']);
         }
 
         if ($withVirtual) {
@@ -788,6 +838,12 @@ class QueryBuilderTest extends TestCase
             $query->shouldReceive('setHaving')
                 ->once()
                 ->with(new IsInstanceOf(HavingFilterInterface::class));
+        }
+
+        if ($withPostAggregations) {
+            $query->shouldReceive('setPostAggregations')
+                ->once()
+                ->with(new IsInstanceOf(PostAggregationCollection::class));
         }
 
         /** @noinspection PhpUndefinedMethodInspection */

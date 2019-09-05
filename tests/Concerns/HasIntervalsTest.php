@@ -32,9 +32,11 @@ class HasIntervalsTest extends TestCase
      */
     public function testIntervals()
     {
-        $start = new DateTime('2019-01-01 00:00:00');
-        $stop  = new DateTime('2019-01-31 23:59:59');
-        $this->builder->interval($start, $stop);
+        $start  = new DateTime('2019-01-01 00:00:00');
+        $stop   = new DateTime('2019-01-31 23:59:59');
+        $result = $this->builder->interval($start, $stop);
+
+        $this->assertEquals($this->builder, $result);
 
         $this->assertEquals(
             [new Interval($start, $stop)],

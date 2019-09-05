@@ -70,7 +70,7 @@ class HasDimensionsTest extends TestCase
             [['browser', 'TheBrowser', null, 'something'], $expected, true],
             [[new Dimension('browser', 'TheBrowser')], $expected],
             [[new ArrayObject(['browser' => 'TheBrowser'])], $expected],
-            [['country_iso', 'country', null, DataType::LONG()], $expectedLong],
+            [['country_iso', 'country', null, DataType::LONG], $expectedLong],
         ];
     }
 
