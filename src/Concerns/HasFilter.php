@@ -26,7 +26,6 @@ use Level23\Druid\Extractions\ExtractionInterface;
 
 trait HasFilter
 {
-    // use BuildsExtraction;
     /**
      * @var \Level23\Druid\Filters\FilterInterface|null
      */
@@ -134,16 +133,9 @@ trait HasFilter
             );
         }
 
-        if ($this->filter === null) {
-            $this->filter = $filter;
-
-            return $this;
-        }
-
-        $this->addFilter(
-            $filter,
-            strtolower($boolean) == 'and' ? AndFilter::class : OrFilter::class
-        );
+        strtolower($boolean) == 'and' ?
+            $this->addAndFilter($filter) :
+            $this->addOrFilter($filter);
 
         return $this;
     }
@@ -372,21 +364,47 @@ trait HasFilter
     }
 
     /**
-     * Helper method to add a filter
+     * Helper method to add an OR filter
      *
      * @param FilterInterface $filter
-     * @param string          $type
      */
-    protected function addFilter(FilterInterface $filter, string $type)
+    protected function addOrFilter(FilterInterface $filter): void
     {
-        if ($this->filter instanceof $type) {
-            /** @noinspection PhpUndefinedMethodInspection */
-            $this->filter->addFilter($filter);
-        } else {
-            $filters = [$this->filter, $filter];
+        if (!$this->filter instanceof FilterInterface) {
+            $this->filter = $filter;
 
-            $this->filter = new $type($filters);
+            return;
         }
+
+        if ($this->filter instanceof OrFilter) {
+            $this->filter->addFilter($filter);
+
+            return;
+        }
+
+        $this->filter = new OrFilter([$this->filter, $filter]);
+    }
+
+    /**
+     * Helper method to add an AND filter
+     *
+     * @param FilterInterface $filter
+     */
+    protected function addAndFilter(FilterInterface $filter): void
+    {
+        if (!$this->filter instanceof FilterInterface) {
+            $this->filter = $filter;
+
+            return;
+        }
+
+        if ($this->filter instanceof AndFilter) {
+            $this->filter->addFilter($filter);
+
+            return;
+        }
+
+        $this->filter = new AndFilter([$this->filter, $filter]);
     }
 
     /**
