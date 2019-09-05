@@ -9,7 +9,6 @@ use InvalidArgumentException;
  * Class Granularity
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
 final class Granularity extends Enum
 {

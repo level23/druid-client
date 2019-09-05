@@ -8,12 +8,13 @@ use ReflectionException;
 
 abstract class Enum
 {
-    private static $constCacheArray = null;
+    protected static $constCacheArray = null;
 
     /**
      * @return array
+     * @codeCoverageIgnore
      */
-    private static function getConstants(): array
+    protected static function getConstants(): array
     {
         if (self::$constCacheArray == null) {
             self::$constCacheArray = [];
