@@ -6,7 +6,6 @@ namespace tests\Level23\Druid\Concerns;
 use Mockery;
 use DateTime;
 use Exception;
-use PHPUnit\Util\Filter;
 use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
@@ -28,6 +27,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 class HasFilterTest extends TestCase
 {
@@ -132,8 +132,9 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @param array $given
-     * @param array $expected
+     * @param array  $given
+     * @param array  $expected
+     * @param string $expectException
      *
      * @dataProvider normalizeIntervalsDataProvider
      */
@@ -269,6 +270,67 @@ class HasFilterTest extends TestCase
         }
     }
 
+    public function testWhereMultipleAnd()
+    {
+        $this->builder->where('name', '!=', 'John', null, 'AnD');
+        $this->builder->where('name', '!=', 'Doe', null, 'AnD');
+        $this->builder->where('name', '!=', 'Jane', null, 'AnD');
+
+        $filter = $this->builder->getFilter();
+        if ($filter instanceof LogicalExpressionFilterInterface) {
+            $this->assertEquals(AndFilter::class, get_class($filter));
+            $this->assertEquals(3, count($filter->toArray()['fields']));
+        }
+    }
+
+    public function testWhereMultipleOr()
+    {
+        $this->builder->where('name', '!=', 'John', null, 'Or');
+        $this->builder->where('name', '!=', 'Doe', null, 'OR');
+        $this->builder->where('name', '!=', 'Jane', null, 'OR');
+
+        $filter = $this->builder->getFilter();
+        if ($filter instanceof LogicalExpressionFilterInterface) {
+            $this->assertEquals(OrFilter::class, get_class($filter));
+            $this->assertEquals(3, count($filter->toArray()['fields']));
+        }
+    }
+
+    /**
+     * @testWith [null, null, "name"]
+     *           [null, null, null]
+     *           [null, "=", null]
+     *           [null, "=", "name"]
+     *
+     * @param string|null $field
+     * @param string|null $operator
+     * @param string|null $value
+     */
+    public function testWhereInvalidArguments(?string $field, ?string $operator, ?string $value)
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->builder->where($field, $operator, $value);
+    }
+
+    /**
+     * @testWith [true, false]
+     *           [true, true]
+     *
+     * @param bool $withoutOperator
+     * @param bool $withoutValue
+     */
+    public function testWhereWithoutOperatorOrValue(bool $withoutOperator, bool $withoutValue)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to supply an operator and an compare value when you supply a dimension as string');
+        $this->builder->where(
+            'field',
+            ($withoutOperator ? null : '='),
+            ($withoutValue ? null : 'value')
+        );
+    }
+
     public function testWithUnknownOperator()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -334,7 +396,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->whereBetween('age', 16, 18 );
+        $response = $this->builder->whereBetween('age', 16, 18);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -361,7 +423,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->whereNotBetween('age', 16, 18 );
+        $response = $this->builder->whereNotBetween('age', 16, 18);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -454,13 +516,6 @@ class HasFilterTest extends TestCase
         $response = $this->builder->orWhere('name', '=', 'John');
 
         $this->assertEquals($this->builder, $response);
-    }
-
-    public function testInvalidArguments()
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->builder->where(null);
     }
 
     /**

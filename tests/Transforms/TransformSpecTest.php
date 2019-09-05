@@ -29,7 +29,7 @@ class TransformSpecTest extends TestCase
 
     public function testDefaults()
     {
-        $spec = new TransformSpec(new TransformCollection(), null );
+        $spec = new TransformSpec(new TransformCollection(), null);
 
         $this->assertEquals([], $spec->toArray());
     }

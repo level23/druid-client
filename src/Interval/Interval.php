@@ -33,7 +33,7 @@ class Interval implements IntervalInterface
         // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
         if (is_string($start) && $stop === null) {
             if (strpos($start, '/') !== false) {
-                list($start, $stop) = explode('/', $start, 2);
+                list($start, $stop) = explode('/', $start);
             } else {
                 throw new InvalidArgumentException(
                     'Invalid interval given: ' . $start . '. ' .

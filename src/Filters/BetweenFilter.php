@@ -37,7 +37,7 @@ class BetweenFilter implements FilterInterface
     protected $maxValue;
 
     /**
-     * @var \Level23\Druid\Types\SortingOrder|string|null
+     * @var string|null
      */
     protected $ordering;
 
@@ -52,7 +52,7 @@ class BetweenFilter implements FilterInterface
      * @param string                   $dimension         The dimension to filter on
      * @param int|string               $minValue
      * @param int|string               $maxValue
-     * @param SortingOrder|null|string $ordering          Specifies the sorting order to use when comparing values
+     * @param null|string              $ordering          Specifies the sorting order to use when comparing values
      *                                                    against the bound.
      * @param ExtractionInterface|null $extractionFunction
      */
@@ -60,7 +60,7 @@ class BetweenFilter implements FilterInterface
         string $dimension,
         $minValue,
         $maxValue,
-        $ordering = null,
+        string $ordering = null,
         ExtractionInterface $extractionFunction = null
     ) {
         if (!is_null($ordering)) {
@@ -68,7 +68,7 @@ class BetweenFilter implements FilterInterface
         }
 
         $this->dimension          = $dimension;
-        $this->ordering           = $ordering ?: (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC() : SortingOrder::LEXICOGRAPHIC());
+        $this->ordering           = $ordering ?: (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
         $this->extractionFunction = $extractionFunction;
         $this->minValue           = $minValue;
         $this->maxValue           = $maxValue;

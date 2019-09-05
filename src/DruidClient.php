@@ -83,8 +83,8 @@ class DruidClient
     /**
      * Create a new query using the druid query builder.
      *
-     * @param string                                  $dataSource
-     * @param string|\Level23\Druid\Types\Granularity $granularity
+     * @param string $dataSource
+     * @param string $granularity
      *
      * @return \Level23\Druid\Queries\QueryBuilder
      */
@@ -172,12 +172,13 @@ class DruidClient
             return $this->parseResponse($response, $data);
         } catch (ServerException $exception) {
 
+            $configRetries = $this->config('retries', 2);
+            $configDelay   = $this->config('retry_delay_ms', 500);
             // Should we attempt a retry?
-            if ($retries++ < $this->config('retries')) {
+            if ($retries++ < $configRetries) {
 
-                $delay = $this->config('retry_delay_ms', 500);
-                if ($delay > 0) {
-                    $this->usleep(($delay * 1000));
+                if ($configDelay > 0) {
+                    $this->usleep(($configDelay * 1000));
                 }
                 goto begin;
             }

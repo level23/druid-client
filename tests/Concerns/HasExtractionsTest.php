@@ -48,8 +48,12 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('username', 'Unknown', false, true);
 
-        $builder = new ExtractionBuilder();
-        $builder->lookup('username', 'Unknown', false, true);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->lookup('username', 'Unknown', false, true);
+
+        $this->assertEquals($builder, $response);
+
+        $this->assertInstanceOf(LookupExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -62,8 +66,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('username', false, true, null);
 
-        $builder = new ExtractionBuilder();
-        $builder->lookup('username');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->lookup('username');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(LookupExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -76,8 +82,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('[a-z]{1,9}');
 
-        $builder = new ExtractionBuilder();
-        $builder->partial('[a-z]{1,9}');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->partial('[a-z]{1,9}');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(PartialExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -90,8 +98,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('[a-z]{1,9}', 2, false);
 
-        $builder = new ExtractionBuilder();
-        $builder->regex('[a-z]{1,9}', 2, false);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->regex('[a-z]{1,9}', 2, false);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(RegexExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -104,8 +114,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('[a-z]{1,9}', 1, true);
 
-        $builder = new ExtractionBuilder();
-        $builder->regex('[a-z]{1,9}');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->regex('[a-z]{1,9}');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(RegexExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -118,8 +130,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('john', true);
 
-        $builder = new ExtractionBuilder();
-        $builder->searchQuery('john', true);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->searchQuery('john', true);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(SearchQueryExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -132,8 +146,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with(['john', 'ben'], false);
 
-        $builder = new ExtractionBuilder();
-        $builder->searchQuery(['john', 'ben'], false);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->searchQuery(['john', 'ben']);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(SearchQueryExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -146,8 +162,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with(2, 2);
 
-        $builder = new ExtractionBuilder();
-        $builder->substring(2, 2);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->substring(2, 2);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(SubstringExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -160,8 +178,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with(2, null);
 
-        $builder = new ExtractionBuilder();
-        $builder->substring(2, null);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->substring(2, null);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(SubstringExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -174,8 +194,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('yyyy-MM-dd HH:00:00', 'hour', 'fr', 'Europe/Amsterdam', false);
 
-        $builder = new ExtractionBuilder();
-        $builder->timeFormat('yyyy-MM-dd HH:00:00', 'hour', 'fr', 'Europe/Amsterdam', false);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->timeFormat('yyyy-MM-dd HH:00:00', 'hour', 'fr', 'Europe/Amsterdam', false);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(TimeFormatExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -188,8 +210,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with(null, null, null, null, null);
 
-        $builder = new ExtractionBuilder();
-        $builder->timeFormat();
+        $builder  = new ExtractionBuilder();
+        $response = $builder->timeFormat();
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(TimeFormatExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -235,13 +259,16 @@ class HasExtractionsTest extends TestCase
                 true
             );
 
-        $builder = new ExtractionBuilder();
-        $builder->inlineLookup(
+        $builder  = new ExtractionBuilder();
+        $response = $builder->inlineLookup(
             ['f' => 'Female', 'm' => 'Male'],
             'Unknown',
             false,
             true
         );
+
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(InlineLookupExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -254,8 +281,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with(['f' => 'Female', 'm' => 'Male'], false, true, null);
 
-        $builder = new ExtractionBuilder();
-        $builder->inlineLookup(['f' => 'Female', 'm' => 'Male']);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->inlineLookup(['f' => 'Female', 'm' => 'Male']);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(InlineLookupExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -268,8 +297,11 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('[%s]');
 
-        $builder = new ExtractionBuilder();
-        $builder->format('[%s]');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->format('[%s]');
+
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(StringFormatExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -282,8 +314,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('fr');
 
-        $builder = new ExtractionBuilder();
-        $builder->upper('fr');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->upper('fr');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(UpperExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -296,8 +330,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('fr');
 
-        $builder = new ExtractionBuilder();
-        $builder->lower('fr');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->lower('fr');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(LowerExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -310,8 +346,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', false);
 
-        $builder = new ExtractionBuilder();
-        $builder->timeParse('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', false);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->timeParse('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', false);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(TimeParseExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -324,8 +362,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00', true);
 
-        $builder = new ExtractionBuilder();
-        $builder->timeParse('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->timeParse('dd, MMMM, yyyy', 'yyyy-MM-dd HH:00:00');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(TimeParseExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -338,8 +378,10 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('function() { return "hi"; }', true);
 
-        $builder = new ExtractionBuilder();
-        $builder->javascript('function() { return "hi"; }', true);
+        $builder  = new ExtractionBuilder();
+        $response = $builder->javascript('function() { return "hi"; }', true);
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(JavascriptExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -352,7 +394,9 @@ class HasExtractionsTest extends TestCase
             ->shouldReceive('__construct')
             ->with('function() { return "hi"; }', false);
 
-        $builder = new ExtractionBuilder();
-        $builder->javascript('function() { return "hi"; }');
+        $builder  = new ExtractionBuilder();
+        $response = $builder->javascript('function() { return "hi"; }');
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(JavascriptExtraction::class, $builder->getExtraction());
     }
 }

@@ -10,6 +10,7 @@ use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ConstantPostAggregator;
 use Level23\Druid\PostAggregations\GreatestPostAggregator;
 use Level23\Druid\PostAggregations\PostAggregationsBuilder;
+use Level23\Druid\PostAggregations\PostAggregatorInterface;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
@@ -30,10 +31,10 @@ trait HasPostAggregations
      *
      * @param array $fields
      *
-     * @return array
+     * @return PostAggregationCollection
      * @throws InvalidArgumentException
      */
-    protected function buildFields(array $fields): array
+    protected function buildFields(array $fields): PostAggregationCollection
     {
         $first = reset($fields);
 
@@ -46,6 +47,8 @@ trait HasPostAggregations
         foreach ($fields as $field) {
             if (is_string($field)) {
                 $collection->add(new FieldAccessPostAggregator($field, $field));
+            } elseif ($field instanceof PostAggregatorInterface) {
+                $collection->add($field);
             } elseif ($field instanceof Closure) {
                 $builder = new PostAggregationsBuilder();
                 call_user_func($field, $builder);
@@ -53,11 +56,14 @@ trait HasPostAggregations
 
                 $collection->add(...$postAggregations);
             } else {
-                throw new InvalidArgumentException('');
+                throw new InvalidArgumentException(
+                    'Incorrect field type given in postAggregation fields. Only strings (which will become' .
+                    'FieldAccess types), Objects of the type PostAggregatorInterface and Closure\'s are allowed!'
+                );
             }
         }
 
-        return $collection->toArray();
+        return $collection;
     }
 
     /**
@@ -198,7 +204,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function fieldAccess(string $aggregatorOutputName, string $as = "", bool $finalizing = false)
+    public function fieldAccess(string $aggregatorOutputName, string $as = '', bool $finalizing = false)
     {
         $this->postAggregations[] = new FieldAccessPostAggregator(
             $aggregatorOutputName,

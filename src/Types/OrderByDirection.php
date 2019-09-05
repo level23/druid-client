@@ -3,32 +3,27 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Types;
 
-use MyCLabs\Enum\Enum;
 use InvalidArgumentException;
 
 /**
  * Class OrderByDirection
  *
- * @method static self ASC()
- * @method static self DESC()
- *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
-class OrderByDirection extends Enum
+final class OrderByDirection extends Enum
 {
-    private const ASC  = 'ascending';
-    private const DESC = 'descending';
+    public const ASC  = 'ascending';
+    public const DESC = 'descending';
 
     /**
-     * @param string|\Level23\Druid\Types\OrderByDirection $direction
+     * @param string $direction
      *
-     * @return string|\Level23\Druid\Types\OrderByDirection
+     * @return string
      * @throws InvalidArgumentException
      */
     public static function validate($direction)
     {
-        if (is_string($direction) && !OrderByDirection::isValid($direction = strtolower($direction))) {
+        if (is_string($direction) && !OrderByDirection::isValidValue($direction = strtolower($direction))) {
             throw new InvalidArgumentException(
                 'Invalid order by direction given: ' . $direction .
                 '. Valid options are: ' . implode(', ', OrderByDirection::values())

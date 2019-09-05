@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\PostAggregations;
 
+use Level23\Druid\Collections\PostAggregationCollection;
+
 class JavaScriptPostAggregator implements PostAggregatorInterface
 {
     /**
@@ -11,7 +13,7 @@ class JavaScriptPostAggregator implements PostAggregatorInterface
     protected $outputName;
 
     /**
-     * @var array|string[]
+     * @var \Level23\Druid\Collections\PostAggregationCollection
      */
     protected $fields;
 
@@ -26,11 +28,11 @@ class JavaScriptPostAggregator implements PostAggregatorInterface
      * NOTE: JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming
      * guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it.
      *
-     * @param string         $outputName
-     * @param array|string[] $fields
-     * @param string         $javascriptFunction
+     * @param string                    $outputName
+     * @param PostAggregationCollection $fields
+     * @param string                    $javascriptFunction
      */
-    public function __construct(string $outputName, array $fields, string $javascriptFunction)
+    public function __construct(string $outputName, PostAggregationCollection $fields, string $javascriptFunction)
     {
         $this->outputName         = $outputName;
         $this->fields             = $fields;
@@ -47,7 +49,7 @@ class JavaScriptPostAggregator implements PostAggregatorInterface
         return [
             'type'       => 'javascript',
             'name'       => $this->outputName,
-            'fieldNames' => $this->fields,
+            'fieldNames' => $this->fields->toArray(),
             'function'   => $this->javascriptFunction,
         ];
     }

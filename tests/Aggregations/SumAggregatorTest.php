@@ -13,10 +13,10 @@ class SumAggregatorTest extends TestCase
     public function dataProvider(): array
     {
         return [
-            [DataType::LONG()],
-            [DataType::DOUBLE()],
-            [DataType::FLOAT()],
-            [DataType::STRING(), true],
+            [DataType::LONG],
+            [DataType::DOUBLE],
+            [DataType::FLOAT],
+            [DataType::STRING, true],
             ["asDF", true],
             ["LONG"],
         ];
@@ -25,10 +25,10 @@ class SumAggregatorTest extends TestCase
     /**
      * @dataProvider  dataProvider
      *
-     * @param DataType|string $type
-     * @param bool            $expectException
+     * @param string $type
+     * @param bool   $expectException
      */
-    public function testAggregator($type, bool $expectException = false)
+    public function testAggregator(string $type, bool $expectException = false)
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);

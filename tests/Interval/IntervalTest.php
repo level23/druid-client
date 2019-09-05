@@ -53,7 +53,7 @@ class IntervalTest extends TestCase
         $interval = new Interval($start, $stop);
 
         if (strpos($start, '/') !== false) {
-            list($start, $stop) = explode('/', $start, 2);
+            list($start, $stop) = explode('/', $start);
         }
 
         $startObj = new DateTime($start);

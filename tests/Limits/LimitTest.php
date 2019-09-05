@@ -29,8 +29,8 @@ class LimitTest extends TestCase
 
         $obj = new OrderBy(
             'name',
-            OrderByDirection::DESC(),
-            SortingOrder::NUMERIC()
+            OrderByDirection::DESC,
+            SortingOrder::NUMERIC
         );
 
         $limit->addOrderBy($obj);
@@ -41,8 +41,8 @@ class LimitTest extends TestCase
             'columns' => [
                 [
                     'dimension'      => 'name',
-                    'direction'      => OrderByDirection::DESC()->getValue(),
-                    'dimensionOrder' => SortingOrder::NUMERIC()->getValue(),
+                    'direction'      => OrderByDirection::DESC,
+                    'dimensionOrder' => SortingOrder::NUMERIC,
                 ],
             ],
         ], $limit->toArray());

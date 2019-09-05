@@ -11,7 +11,6 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
-use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
@@ -24,11 +23,9 @@ use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\ExtractionInterface;
-use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 trait HasFilter
 {
-    // use BuildsExtraction;
     /**
      * @var \Level23\Druid\Filters\FilterInterface|null
      */
@@ -61,7 +58,11 @@ trait HasFilter
                 $operator = '=';
             }
 
-            $operator = strtolower((string)$operator);
+            if ($operator === null || $value === null) {
+                throw new InvalidArgumentException('You have to supply an operator and an compare value when you supply a dimension as string');
+            }
+
+            $operator = strtolower($operator);
 
             if ($operator == '=') {
                 $filter = new SelectorFilter(
@@ -132,16 +133,9 @@ trait HasFilter
             );
         }
 
-        if ($this->filter === null) {
-            $this->filter = $filter;
-
-            return $this;
-        }
-
-        $this->addFilter(
-            $filter,
-            strtolower($boolean) == 'and' ? AndFilter::class : OrFilter::class
-        );
+        strtolower($boolean) == 'and' ?
+            $this->addAndFilter($filter) :
+            $this->addOrFilter($filter);
 
         return $this;
     }
@@ -184,11 +178,11 @@ trait HasFilter
      * WHERE dimension => $minValue AND dimension <= $maxValue
      * ```
      *
-     * @param string                   $dimension
-     * @param string|int               $minValue
-     * @param string|int               $maxValue
-     * @param \Closure|null            $extraction
-     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     * @param string        $dimension
+     * @param string|int    $minValue
+     * @param string|int    $maxValue
+     * @param \Closure|null $extraction
+     * @param null|string   $ordering            Specifies the sorting order to use when comparing values against the
      *                                           between filter. Can be one of the following values: "lexicographic",
      *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
      *                                           more details. By default it will be "numeric" if the values are
@@ -196,8 +190,13 @@ trait HasFilter
      *
      * @return $this
      */
-    public function whereBetween(string $dimension, $minValue, $maxValue, Closure $extraction = null, $ordering = null)
-    {
+    public function whereBetween(
+        string $dimension,
+        $minValue,
+        $maxValue,
+        Closure $extraction = null,
+        string $ordering = null
+    ) {
         $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
         return $this->where($filter);
@@ -211,11 +210,11 @@ trait HasFilter
      * WHERE dimension < $minValue AND dimension > $maxValue
      * ```
      *
-     * @param string                   $dimension
-     * @param string|int               $minValue
-     * @param string|int               $maxValue
-     * @param \Closure|null            $extraction
-     * @param null|string|SortingOrder $ordering Specifies the sorting order to use when comparing values against the
+     * @param string        $dimension
+     * @param string|int    $minValue
+     * @param string|int    $maxValue
+     * @param \Closure|null $extraction
+     * @param null|string   $ordering            Specifies the sorting order to use when comparing values against the
      *                                           between filter. Can be one of the following values: "lexicographic",
      *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
      *                                           more details. By default it will be "numeric" if the values are
@@ -228,7 +227,7 @@ trait HasFilter
         $minValue,
         $maxValue,
         Closure $extraction = null,
-        $ordering = null
+        string $ordering = null
     ) {
         $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
@@ -333,7 +332,7 @@ trait HasFilter
 
             // If it is a string we explode it into to elements
             if (is_string($interval)) {
-                $interval = explode('/', $interval, 2);
+                $interval = explode('/', $interval);
             }
 
             // If the value is an array and is not empty and has either one or 2 values its an interval array
@@ -365,20 +364,47 @@ trait HasFilter
     }
 
     /**
-     * Helper method to add a filter
+     * Helper method to add an OR filter
      *
      * @param FilterInterface $filter
-     * @param string          $type
      */
-    protected function addFilter(FilterInterface $filter, string $type)
+    protected function addOrFilter(FilterInterface $filter): void
     {
-        if ($this->filter instanceof LogicalExpressionFilterInterface && $this->filter instanceof $type) {
-            $this->filter->addFilter($filter);
-        } else {
-            $filters = [$this->filter, $filter];
+        if (!$this->filter instanceof FilterInterface) {
+            $this->filter = $filter;
 
-            $this->filter = new $type($filters);
+            return;
         }
+
+        if ($this->filter instanceof OrFilter) {
+            $this->filter->addFilter($filter);
+
+            return;
+        }
+
+        $this->filter = new OrFilter([$this->filter, $filter]);
+    }
+
+    /**
+     * Helper method to add an AND filter
+     *
+     * @param FilterInterface $filter
+     */
+    protected function addAndFilter(FilterInterface $filter): void
+    {
+        if (!$this->filter instanceof FilterInterface) {
+            $this->filter = $filter;
+
+            return;
+        }
+
+        if ($this->filter instanceof AndFilter) {
+            $this->filter->addFilter($filter);
+
+            return;
+        }
+
+        $this->filter = new AndFilter([$this->filter, $filter]);
     }
 
     /**

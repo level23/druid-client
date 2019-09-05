@@ -3,38 +3,30 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Types;
 
-use MyCLabs\Enum\Enum;
 use InvalidArgumentException;
 
 /**
  * Class SortingOrder
  *
- * @method static self LEXICOGRAPHIC()
- * @method static self ALPHANUMERIC()
- * @method static self NUMERIC()
- * @method static self STRLEN()
- * @method static self VERSION()
- *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
-class SortingOrder extends Enum
+final class SortingOrder extends Enum
 {
-    private const LEXICOGRAPHIC = 'lexicographic';
-    private const ALPHANUMERIC  = 'alphanumeric';
-    private const NUMERIC       = 'numeric';
-    private const STRLEN        = 'strlen';
-    private const VERSION       = 'version';
+    public const LEXICOGRAPHIC = 'lexicographic';
+    public const ALPHANUMERIC  = 'alphanumeric';
+    public const NUMERIC       = 'numeric';
+    public const STRLEN        = 'strlen';
+    public const VERSION       = 'version';
 
     /**
-     * @param string|\Level23\Druid\Types\SortingOrder $ordering
+     * @param string $ordering
      *
-     * @return string|\Level23\Druid\Types\SortingOrder
+     * @return string
      * @throws InvalidArgumentException
      */
     public static function validate($ordering)
     {
-        if (is_string($ordering) && !SortingOrder::isValid($ordering = strtolower($ordering))) {
+        if (is_string($ordering) && !SortingOrder::isValidValue($ordering = strtolower($ordering))) {
             throw new InvalidArgumentException(
                 'The given sorting order is invalid: ' . $ordering . '. ' .
                 'Allowed are: ' . implode(',', SortingOrder::values())
