@@ -20,7 +20,7 @@ class Dimension implements DimensionInterface
     protected $outputName;
 
     /**
-     * @var string|DataType
+     * @var string
      */
     protected $outputType;
 
@@ -34,13 +34,13 @@ class Dimension implements DimensionInterface
      *
      * @param string                   $dimension
      * @param string                   $outputName
-     * @param string|DataType          $outputType This can either be "long", "float" or "string"
+     * @param string                   $outputType This can either be "long", "float" or "string"
      * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $outputName = null,
-        $outputType = "string",
+        string $outputType = "string",
         ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension  = $dimension;
@@ -55,7 +55,7 @@ class Dimension implements DimensionInterface
         if (is_string($outputType)) {
             $outputType = strtolower($outputType);
         }
-        $outputType = $outputType ?: DataType::STRING();
+        $outputType = $outputType ?: DataType::STRING;
 
         if (!in_array($outputType, ["string", "long", "float"])) {
             throw new InvalidArgumentException(

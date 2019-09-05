@@ -6,7 +6,6 @@ namespace tests\Level23\Druid\Tasks;
 use Mockery;
 use tests\TestCase;
 use InvalidArgumentException;
-use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tasks\CompactTask;
@@ -23,7 +22,9 @@ class CompactTaskBuilderTest extends TestCase
         $client  = new DruidClient([]);
         $builder = new CompactTaskBuilder($client, 'dataSource');
 
-        $builder->targetCompactionSize(1024);
+        $response = $builder->targetCompactionSize(1024);
+
+        $this->assertEquals($response, $builder);
 
         $this->assertEquals(
             $client,
@@ -96,7 +97,8 @@ class CompactTaskBuilderTest extends TestCase
 
         $intervalObject = new Interval($interval);
 
-        $builder->interval($interval);
+        $response = $builder->interval($interval);
+        $this->assertEquals($builder, $response);
 
         $builder->shouldAllowMockingProtectedMethods()
             ->shouldReceive('validateInterval')

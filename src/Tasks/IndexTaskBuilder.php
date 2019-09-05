@@ -81,8 +81,8 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Add a dimension.
      *
-     * @param string                               $name
-     * @param string|\Level23\Druid\Types\DataType $type
+     * @param string $name
+     * @param string $type
      *
      * @return $this
      */
@@ -189,7 +189,6 @@ class IndexTaskBuilder extends TaskBuilder
     {
         $builder = new TransformBuilder();
         call_user_func($transformBuilder, $builder);
-        $builder->getFilter();
 
         if (!$builder->getTransforms()) {
             return $this;

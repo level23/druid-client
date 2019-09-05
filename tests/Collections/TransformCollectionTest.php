@@ -6,11 +6,8 @@ namespace tests\Level23\Druid\Collections;
 
 use Mockery;
 use tests\TestCase;
-use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Transforms\TransformInterface;
 use Level23\Druid\Transforms\ExpressionTransform;
-use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\TransformCollection;
 
 class TransformCollectionTest extends TestCase

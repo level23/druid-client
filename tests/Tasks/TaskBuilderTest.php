@@ -103,6 +103,36 @@ class TaskBuilderTest extends TestCase
                     "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => ["size" => 75208, "count" => 4],
                     "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => ["size" => 161870, "count" => 8],
                 ],
+                true,
+            ],
+            [
+                "2019-08-19T13:00:00.000Z/2019-08-19T16:00:00.000Z",
+                [
+                    "2019-08-19T15:00:00.000Z/2019-08-19T16:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => ["size" => 161870, "count" => 8],
+                ],
+                true,
+            ],
+            [
+                "2019-08-19T15:30:00.000Z/2019-08-19T16:00:00.000Z",
+                [
+                    "2019-08-19T15:10:00.000Z/2019-08-19T16:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T15:00:00.000Z/2019-08-19T16:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => ["size" => 161870, "count" => 8],
+                ],
+                false,
+            ],
+            [
+                "2019-08-19T13:00:00.000Z/2019-08-19T13:30:00.000Z",
+                [
+                    "2019-08-19T15:00:00.000Z/2019-08-19T16:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => ["size" => 75208, "count" => 4],
+                    "2019-08-19T13:00:00.000Z/2019-08-19T14:30:00.000Z" => ["size" => 161870, "count" => 8],
+                    "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => ["size" => 161870, "count" => 8],
+                ],
+                false,
             ],
             [
                 "2011-04-19T00:00:00.000Z/2011-04-19T00:00:00.000Z",
@@ -110,6 +140,7 @@ class TaskBuilderTest extends TestCase
                     "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => ["size" => 75208, "count" => 4],
                     "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => ["size" => 161870, "count" => 8],
                 ],
+                false,
             ],
         ];
     }
@@ -118,10 +149,12 @@ class TaskBuilderTest extends TestCase
      * @param string $givenInterval
      * @param array  $allIntervals
      *
+     * @param bool   $expectsValid
+     *
      * @throws \Exception
      * @dataProvider validateIntervalDataProvider
      */
-    public function testValidateInterval(string $givenInterval, array $allIntervals)
+    public function testValidateInterval(string $givenInterval, array $allIntervals, bool $expectsValid)
     {
         $dataSource = 'animals';
 
@@ -141,7 +174,7 @@ class TaskBuilderTest extends TestCase
             ->once()
             ->andReturn($metadata);
 
-        if (!array_key_exists($givenInterval, $allIntervals)) {
+        if (!$expectsValid) {
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage('Error, invalid interval given.');
         }

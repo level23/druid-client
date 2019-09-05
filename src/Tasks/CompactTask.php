@@ -20,7 +20,7 @@ class CompactTask implements TaskInterface
     protected $interval;
 
     /**
-     * @var string|\Level23\Druid\Types\Granularity|null
+     * @var string|null
      */
     protected $segmentGranularity;
 
@@ -57,7 +57,7 @@ class CompactTask implements TaskInterface
      *
      * @param string                                        $dataSource
      * @param \Level23\Druid\Interval\IntervalInterface     $interval
-     * @param null|string|\Level23\Druid\Types\Granularity  $segmentGranularity
+     * @param null|string                                   $segmentGranularity
      * @param \Level23\Druid\TuningConfig\TuningConfig|null $tuningConfig
      * @param \Level23\Druid\Context\TaskContext|null       $context
      * @param int|null                                      $targetCompactionSizeBytes

@@ -9,15 +9,14 @@ use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\HavingFilters\HavingBuilder;
 use Level23\Druid\HavingFilters\OrHavingFilter;
-use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\NotHavingFilter;
+use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
 use Level23\Druid\HavingFilters\LessThanHavingFilter;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
-use Level23\Druid\Filters\LogicalExpressionHavingFilterInterface;
 
 trait HasHaving
 {
@@ -99,16 +98,9 @@ trait HasHaving
             );
         }
 
-        if ($this->having === null) {
-            $this->having = $having;
-
-            return $this;
-        }
-
-        $this->addHaving(
-            $having,
-            $boolean == 'and' ? AndHavingFilter::class : OrHavingFilter::class
-        );
+        strtolower($boolean) == 'and' ?
+            $this->addAndHaving($having) :
+            $this->addOrHaving($having);
 
         return $this;
     }
@@ -136,19 +128,46 @@ trait HasHaving
     }
 
     /**
-     * Helper method to add a filter
+     * Helper method to add an OR filter
      *
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $havingFilter
-     * @param string                                             $type
      */
-    protected function addHaving(HavingFilterInterface $havingFilter, string $type)
+    protected function addOrHaving(HavingFilterInterface $havingFilter): void
     {
-        if ($this->having instanceof LogicalExpressionHavingFilterInterface && $this->having instanceof $type) {
-            $this->having->addHavingFilter($havingFilter);
-        } else {
-            $havingFilters = [$this->having, $havingFilter];
+        if (!$this->having instanceof HavingFilterInterface) {
+            $this->having = $havingFilter;
 
-            $this->having = new $type($havingFilters);
+            return;
         }
+
+        if ($this->having instanceof OrHavingFilter) {
+            $this->having->addHavingFilter($havingFilter);
+
+            return;
+        }
+
+        $this->having = new OrHavingFilter([$this->having, $havingFilter]);
+    }
+
+    /**
+     * Helper method to add an OR filter
+     *
+     * @param \Level23\Druid\HavingFilters\HavingFilterInterface $havingFilter
+     */
+    protected function addAndHaving(HavingFilterInterface $havingFilter): void
+    {
+        if (!$this->having instanceof HavingFilterInterface) {
+            $this->having = $havingFilter;
+
+            return;
+        }
+
+        if ($this->having instanceof AndHavingFilter) {
+            $this->having->addHavingFilter($havingFilter);
+
+            return;
+        }
+
+        $this->having = new AndHavingFilter([$this->having, $havingFilter]);
     }
 }
