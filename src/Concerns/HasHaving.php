@@ -45,7 +45,7 @@ trait HasHaving
     ) {
         $having = null;
 
-        if ($value === null && !empty($operator)) {
+        if ($value === null && $operator !== null) {
             $value    = $operator;
             $operator = '=';
         }
