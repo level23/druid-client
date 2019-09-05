@@ -54,6 +54,7 @@ class HasFilterTest extends TestCase
             ['name', '=', 'John', 'and'],
             ['name', '=', 1, 'and'],
             ['name', 'John', null, 'and'],
+            ['id', '0', null, 'and'],
             ['name', '!=', 'John', 'and'],
             ['name', '!=', 1, 'and'],
             ['name', '<>', 'John', 'AND'],
@@ -178,7 +179,7 @@ class HasFilterTest extends TestCase
      */
     public function testWhere($field, $operator, $value, $boolean)
     {
-        if ($value === null && !empty($operator)) {
+        if ($value === null && $operator !== null) {
             $testingValue    = $operator;
             $testingOperator = '=';
         } else {
