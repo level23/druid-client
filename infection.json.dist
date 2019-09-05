@@ -41,6 +41,11 @@
             "ignore": [
                 "Level23\\Druid\\DruidClient::executeRawRequest"
             ]
+        },
+        "Increment": {
+            "ignore": [
+                "Level23\\Druid\\DruidClient::executeRawRequest"
+            ]
         }
     }
 }
