@@ -9,7 +9,6 @@ use InvalidArgumentException;
  * Class BoundOperator
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
 final class BoundOperator extends Enum
 {

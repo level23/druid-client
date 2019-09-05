@@ -9,7 +9,6 @@ use InvalidArgumentException;
  * Class DataType
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
 final class DataType extends Enum
 {

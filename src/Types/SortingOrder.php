@@ -9,7 +9,6 @@ use InvalidArgumentException;
  * Class SortingOrder
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
 final class SortingOrder extends Enum
 {

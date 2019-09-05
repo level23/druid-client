@@ -9,7 +9,6 @@ use InvalidArgumentException;
  * Class OrderByDirection
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
 final class OrderByDirection extends Enum
 {

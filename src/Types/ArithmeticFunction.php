@@ -9,7 +9,6 @@ use InvalidArgumentException;
  * Class ArithmeticFunction
  *
  * @package Level23\Druid\Types
- * @codeCoverageIgnore
  */
 final class ArithmeticFunction extends Enum
 {
@@ -20,20 +19,20 @@ final class ArithmeticFunction extends Enum
     public const QUOTIENT = 'quotient';
 
     /**
-     * @param string $operator
+     * @param string $function
      *
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($operator)
+    public static function validate($function)
     {
-        if (is_string($operator) && !ArithmeticFunction::isValidValue($operator = strtolower($operator))) {
+        if (is_string($function) && !ArithmeticFunction::isValidValue($function = strtolower($function))) {
             throw new InvalidArgumentException(
-                'Invalid operator given: ' . $operator .
+                'Invalid arithmetic function given: ' . $function .
                 '. Valid options are: ' . implode(',', ArithmeticFunction::values())
             );
         }
 
-        return $operator;
+        return $function;
     }
 }
