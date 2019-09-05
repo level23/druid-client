@@ -6,8 +6,6 @@ parameters:
     ignoreErrors:
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
       - '#Parameter (.*) of class (.*) constructor expects (.*), Mockery\\LegacyMockInterface given.#'
-      - '#FilterInterface::addFilter\(\)#'
-      - '#HavingFilterInterface::addHavingFilter\(\)#'
     excludes_analyse:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php

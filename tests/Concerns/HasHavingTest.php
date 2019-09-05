@@ -229,8 +229,11 @@ class HasHavingTest extends TestCase
         $this->builder->having('name', '!=', 'Jane', 'AnD');
 
         $filter = $this->builder->getHaving();
-        if ($filter instanceof AndHavingFilter) {
+        if ($filter != null) {
             $this->assertEquals(AndHavingFilter::class, get_class($filter));
+        }
+
+        if ($filter instanceof AndHavingFilter) {
             $this->assertEquals(3, count($filter->toArray()['havingSpecs']));
         }
     }
@@ -242,8 +245,10 @@ class HasHavingTest extends TestCase
         $this->builder->having('name', '!=', 'Jane', 'OR');
 
         $filter = $this->builder->getHaving();
-        if ($filter instanceof OrHavingFilter) {
+        if ($filter != null) {
             $this->assertEquals(OrHavingFilter::class, get_class($filter));
+        }
+        if ($filter instanceof OrHavingFilter) {
             $this->assertEquals(3, count($filter->toArray()['havingSpecs']));
         }
     }

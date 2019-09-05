@@ -35,15 +35,14 @@ abstract class Enum
 
     /**
      * @param string $value
-     * @param bool   $strict
      *
      * @return bool
      */
-    public static function isValidValue(string $value, bool $strict = true): bool
+    public static function isValidValue(string $value): bool
     {
         $values = array_values(self::getConstants());
 
-        return in_array($value, $values, $strict);
+        return in_array($value, $values, true);
     }
 
     /**
