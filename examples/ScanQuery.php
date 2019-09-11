@@ -12,10 +12,12 @@ $client = new DruidClient([
     'broker_url'      => 'http://127.0.0.1:8888',
     'coordinator_url' => 'http://127.0.0.1:8888',
     'overlord_url'    => 'http://127.0.0.1:8888',
-
 ]);
 
-$response = $client->metadata()->intervals('traffic-conversions');
-print_r($response);
+$response = $client->query('my_counters')
+    ->interval('now - 2 hours', 'now')
+    ->select(['__time', 'number_id', 'country_id', 'range', 'messages', 'releases'])
+    ->limit(3)
+    ->scan([]);
 
-//  php -f examples/GroupByQuery.php | curl -X 'POST' -H 'Content-Type:application/json' -d @- http://127.0.0.1:8888/druid/v2 | jq
+print_r($response);

@@ -25,7 +25,7 @@ final class BoundOperator extends Enum
      */
     public static function validate($operator)
     {
-        if (is_string($operator) && !BoundOperator::isValidValue($operator)) {
+        if (!BoundOperator::isValidValue($operator)) {
             throw new InvalidArgumentException(
                 'Invalid operator given: ' . $operator .
                 '. Valid options are: ' . implode(',', BoundOperator::values())
