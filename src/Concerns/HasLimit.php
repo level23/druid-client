@@ -51,13 +51,6 @@ trait HasLimit
      */
     public function orderBy(string $dimension, string $direction, string $dimensionOrder = 'lexicographic')
     {
-        $direction = strtolower($direction);
-        if ($direction == 'asc') {
-            $direction = OrderByDirection::ASC;
-        } elseif ($direction == 'desc') {
-            $direction = OrderByDirection::DESC;
-        }
-
         $order = new OrderBy($dimension, $direction, $dimensionOrder);
 
         if (!$this->limit) {

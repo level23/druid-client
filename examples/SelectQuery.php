@@ -14,15 +14,22 @@ $client = new DruidClient([
     'overlord_url'    => 'http://127.0.0.1:8888',
 ]);
 
+echo "Start query";
 $response = $client->query('my_counters', 'all')
-    ->interval("now - 2 hours", 'tomorrow')
-    ->longSum('releases')
-    ->select('destination')
-    ->limit(10)
-    ->orderBy('releases', 'desc')
-    //->toJson();
-    ->execute();
+    ->interval('now - 1 day', 'now')
+    ->limit(2)
+    ->selectQuery();
 
+$identifier = $client->getPagingIdentifier();
 print_r($response);
+print_r($identifier);
 
-//  php -f examples/GroupByQuery.php | curl -X 'POST' -H 'Content-Type:application/json' -d @- http://127.0.0.1:8888/druid/v2 | jq
+$response = $client->query('my_counters', 'all')
+    ->interval('now - 1 day', 'now')
+    ->limit(2)
+    ->pagingIdentifier($identifier)
+    ->selectQuery();
+
+$identifier = $client->getPagingIdentifier();
+print_r($response);
+print_r($identifier);

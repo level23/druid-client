@@ -10,13 +10,17 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Concerns\HasFilter;
 use Level23\Druid\Concerns\HasHaving;
 use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Concerns\HasIntervals;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Concerns\HasDimensions;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
+use Level23\Druid\OrderBy\OrderByInterface;
+use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Concerns\HasVirtualColumns;
+use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByV1QueryContext;
@@ -51,6 +55,13 @@ class QueryBuilder
      * @var array|\Level23\Druid\PostAggregations\PostAggregatorInterface[]
      */
     protected $postAggregations = [];
+
+    /**
+     * Set a paging identifier for a Select query.
+     *
+     * @var array|null
+     */
+    protected $pagingIdentifier;
 
     /**
      * QueryBuilder constructor.
@@ -114,7 +125,7 @@ class QueryBuilder
      *
      * @return $this
      */
-    public function dataSource(string $dataSource)
+    public function dataSource(string $dataSource): QueryBuilder
     {
         $this->dataSource = $dataSource;
 
@@ -128,7 +139,7 @@ class QueryBuilder
      *
      * @return $this
      */
-    public function granularity(string $granularity)
+    public function granularity(string $granularity): QueryBuilder
     {
         $this->granularity = Granularity::validate($granularity);
 
@@ -261,17 +272,61 @@ class QueryBuilder
     }
 
     /**
-     * Execute a timeseries query.
+     * Execute a TimeSeries query.
      *
      * @param array $context
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function timeseries(array $context = [])
+    public function timeseries(array $context = []): array
     {
         $query = $this->buildTimeSeriesQuery($context);
 
+        $rawResponse = $this->client->executeQuery($query);
+
+        return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * Execute a Scan Query.
+     *
+     * @param array    $context      Query context parameters
+     * @param string   $resultFormat Result Format. Use one of the ScanQueryResultFormat::* constants.
+     * @param int|null $rowBatchSize How many rows buffered before return to client. Default is 20480
+     * @param bool     $legacy       Return results consistent with the legacy "scan-query" contrib extension. Defaults
+     *                               to the value set by druid.query.scan.legacy, which in turn defaults to false. See
+     *                               Legacy mode for details.
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function scan(
+        array $context = [],
+        string $resultFormat = ScanQueryResultFormat::NORMAL_LIST,
+        int $rowBatchSize = null,
+        bool $legacy = false
+    ): array {
+        $query = $this->buildScanQuery($context);
+
+        $rawResponse = $this->client->executeQuery($query);
+
+        return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * Execute a select query.
+     *
+     * @param array $context
+     *
+     * @return array
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function selectQuery(array $context = []): array
+    {
+        $query = $this->buildSelectQuery($context);
+
+        print_r($query->toArray());
         $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
@@ -285,7 +340,7 @@ class QueryBuilder
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function topN(array $context = [])
+    public function topN(array $context = []): array
     {
         $query = $this->buildTopNQuery($context);
 
@@ -302,7 +357,7 @@ class QueryBuilder
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function groupBy($context = [])
+    public function groupBy($context = []): array
     {
         $query = $this->buildGroupByQuery($context, 'v2');
 
@@ -319,7 +374,7 @@ class QueryBuilder
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function groupByV1($context = [])
+    public function groupByV1($context = []): array
     {
         $query = $this->buildGroupByQuery($context, 'v1');
 
@@ -331,7 +386,121 @@ class QueryBuilder
     //<editor-fold desc="Protected methods">
 
     /**
-     * Build a timeseries query.
+     * Build a select query.
+     *
+     * @param array $context
+     *
+     * @return \Level23\Druid\Queries\SelectQuery
+     */
+    protected function buildSelectQuery(array $context = []): SelectQuery
+    {
+        if (count($this->intervals) == 0) {
+            throw new InvalidArgumentException('You have to specify at least one interval');
+        }
+
+        $descending = false;
+
+        if ($this->limit) {
+            $limit   = $this->limit->getLimit();
+            $orderBy = $this->limit->getOrderByCollection();
+
+            if ($orderBy->count() > 0) {
+                $orderByItems = $orderBy->toArray();
+                $first        = reset($orderByItems);
+
+                if ($first instanceof OrderByInterface && $first->getDirection() == OrderByDirection::DESC) {
+                    $descending = true;
+                }
+            }
+        } else {
+            $limit = 50;
+        }
+
+        $query = new SelectQuery(
+            $this->dataSource,
+            new IntervalCollection(...$this->intervals),
+            $limit,
+            count($this->dimensions) > 0 ? new DimensionCollection(...$this->dimensions) : null,
+            [], // @todo: how to supply these metrics?
+            $descending
+        );
+
+        if ($this->pagingIdentifier) {
+            $query->setPagingIdentifier($this->pagingIdentifier);
+        }
+
+        if (count($context) > 0) {
+            $query->setContext(new QueryContext($context));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Build a scan query.
+     *
+     * @param array $context
+     *
+     * @return \Level23\Druid\Queries\ScanQuery
+     * @throws InvalidArgumentException
+     */
+    protected function buildScanQuery(array $context = [])
+    {
+        if (count($this->intervals) == 0) {
+            throw new InvalidArgumentException('You have to specify at least one interval');
+        }
+
+        $query = new ScanQuery(
+            $this->dataSource,
+            new IntervalCollection(...$this->intervals)
+        );
+
+        if (!$this->isDimensionsListScanCompliant()) {
+            throw new InvalidArgumentException(
+                'Only simple dimension or metric selects are available in a scan query. ' .
+                'Aliases, extractions or lookups are not available.'
+            );
+        }
+        $columns = [];
+        foreach ($this->dimensions as $dimension) {
+            $columns[] = $dimension->getDimension();
+        }
+
+        if ($this->limit) {
+            $orderBy = $this->limit->getOrderByCollection();
+
+            if ($orderBy->count() > 0) {
+                $orderByItems = $orderBy->toArray();
+                $first        = reset($orderByItems);
+
+                if ($first instanceof OrderByInterface
+                    && $first->getDimension() == '__time') {
+                    $query->setOrder($first->getDirection());
+                }
+            }
+        }
+
+        if (count($columns) > 0) {
+            $query->setColumns($columns);
+        }
+
+        if ($this->filter) {
+            $query->setFilter($this->filter);
+        }
+
+        if ($this->limit->getLimit() && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+            $query->setLimit($this->limit->getLimit());
+        }
+
+        if (count($context) > 0) {
+            $query->setContext(new ScanQueryContext($context));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Build a TimeSeries query.
      *
      * @param array $context
      *
@@ -551,6 +720,10 @@ class QueryBuilder
      */
     protected function buildQuery(array $context = []): QueryInterface
     {
+        if ($this->isScanQuery()) {
+            return $this->buildScanQuery();
+        }
+
         /**
          * If we only have "grouped" by __time, then we can use a time series query.
          * This is preferred, because it's a lot faster then doing a group by query.
@@ -564,6 +737,10 @@ class QueryBuilder
             return $this->buildTopNQuery($context);
         }
 
+        if ($this->isSelectQuery()) {
+            return $this->buildSelectQuery($context);
+        }
+
         return $this->buildGroupByQuery($context);
     }
 
@@ -572,7 +749,7 @@ class QueryBuilder
      *
      * @return bool
      */
-    protected function isTimeSeriesQuery()
+    protected function isTimeSeriesQuery(): bool
     {
         if (count($this->dimensions) != 1) {
             return false;
@@ -588,7 +765,7 @@ class QueryBuilder
      *
      * @return bool
      */
-    protected function isTopNQuery()
+    protected function isTopNQuery(): bool
     {
         if (count($this->dimensions) != 1) {
             return false;
@@ -598,6 +775,65 @@ class QueryBuilder
             && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT
             && count($this->limit->getOrderByCollection()) == 1;
     }
+
+    /**
+     * Check if we should use a select query.
+     *
+     * @return bool
+     */
+    protected function isSelectQuery(): bool
+    {
+        return $this->pagingIdentifier !== null;
+    }
+
+    /**
+     * Check if we should use a scan query.
+     *
+     * @return bool
+     */
+    protected function isScanQuery(): bool
+    {
+        return count($this->aggregations) == 0 && $this->isDimensionsListScanCompliant();
+    }
+
+    /**
+     * Return true if the dimensions which are selected can be used as "columns" in a scan query.
+     *
+     * @return bool
+     */
+    protected function isDimensionsListScanCompliant(): bool
+    {
+        foreach ($this->dimensions as $dimension) {
+            if (!$dimension instanceof Dimension) {
+                return false;
+            }
+
+            if ($dimension->getExtractionFunction()) {
+                return false;
+            }
+
+            if ($dimension->getDimension() != $dimension->getOutputName()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //</editor-fold>
+
+    /**
+     * Set a paging identifier. This is only applied for a SELECT query!
+     *
+     * @param array $pagingIdentifier
+     *
+     * @return \Level23\Druid\Queries\QueryBuilder
+     */
+    public function pagingIdentifier(array $pagingIdentifier): QueryBuilder
+    {
+        $this->pagingIdentifier = $pagingIdentifier;
+
+        return $this;
+    }
 }
 
