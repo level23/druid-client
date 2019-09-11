@@ -27,7 +27,8 @@ final class DataType extends Enum
      */
     public static function validate($outputType)
     {
-        if (is_string($outputType) && !self::isValidValue($outputType = strtolower($outputType))) {
+        $outputType = strtolower($outputType);
+        if (!self::isValidValue($outputType)) {
             throw new InvalidArgumentException(
                 'The given output type is invalid: ' . $outputType . '. ' .
                 'Allowed are: ' . implode(',', DataType::values())

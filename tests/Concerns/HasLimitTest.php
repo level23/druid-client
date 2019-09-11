@@ -8,6 +8,7 @@ use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\Limit;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Queries\QueryBuilder;
@@ -91,11 +92,7 @@ class HasLimitTest extends TestCase
     {
         Mockery::mock('overload:' . OrderBy::class)
             ->shouldReceive('__construct')
-            ->andReturnUsing(function ($dimension, $direction, $dimensionOrder) {
-                $this->assertEquals('name', $dimension);
-                $this->assertEquals(OrderByDirection::DESC, $direction);
-                $this->assertEquals(SortingOrder::ALPHANUMERIC, $dimensionOrder);
-            })
+            ->with('name', 'DeSc', SortingOrder::ALPHANUMERIC)
             ->once();
 
         $limitMock = Mockery::mock('overload:' . Limit::class);
@@ -105,10 +102,8 @@ class HasLimitTest extends TestCase
             ->once();
 
         $limitMock->shouldReceive('addOrderBy')
-            ->once()
-            ->andReturnUsing(function ($orderBy) {
-                $this->assertInstanceOf(OrderBy::class, $orderBy);
-            });
+            ->with(new IsInstanceOf(OrderBy::class))
+            ->once();
 
         $result = $this->builder->orderBy('name', 'DeSc', SortingOrder::ALPHANUMERIC);
 

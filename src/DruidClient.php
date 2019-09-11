@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\TaskInterface;
+use Level23\Druid\Queries\SelectQuery;
 use Level23\Druid\Queries\QueryBuilder;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\ServerException;
@@ -28,6 +29,11 @@ class DruidClient
      * @var LoggerInterface|null
      */
     protected $logger = null;
+
+    /**
+     * @var array
+     */
+    protected $pagingIdentifier = [];
 
     /**
      * @var array
@@ -110,6 +116,10 @@ class DruidClient
         $result = $this->executeRawRequest('post', $this->config('broker_url') . '/druid/v2', $query);
 
         $this->log('Received druid response', ['response' => $result]);
+
+        if ($druidQuery instanceof SelectQuery) {
+            $this->pagingIdentifier = $result[0]['result']['pagingIdentifiers'];
+        }
 
         return $result;
     }
@@ -405,5 +415,16 @@ class DruidClient
         }
 
         return $builder;
+    }
+
+    /**
+     * Return the last known paging identifier known by a select query. (If any is executed).
+     * If no paging identifier is known, an empty array is returned.
+     *
+     * @return array
+     */
+    public function getPagingIdentifier(): array
+    {
+        return $this->pagingIdentifier;
     }
 }

@@ -40,24 +40,18 @@ class Dimension implements DimensionInterface
     public function __construct(
         string $dimension,
         string $outputName = null,
-        string $outputType = "string",
+        string $outputType = 'string',
         ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;
-
-        if ($this->outputName == '__time') {
-            throw new InvalidArgumentException(
-                '__time cannot be used as an output name for dimensions, aggregators, or post-aggregators.'
-            );
-        }
 
         if (is_string($outputType)) {
             $outputType = strtolower($outputType);
         }
         $outputType = $outputType ?: DataType::STRING;
 
-        if (!in_array($outputType, ["string", "long", "float"])) {
+        if (!in_array($outputType, ['string', 'long', 'float'])) {
             throw new InvalidArgumentException(
                 'Incorrect type given: ' . $outputType . '. This can either be "long", "float" or "string"'
             );

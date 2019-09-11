@@ -33,7 +33,8 @@ final class Granularity extends Enum
      */
     public static function validate($granularity)
     {
-        if (is_string($granularity) && !Granularity::isValidValue($granularity = strtolower($granularity))) {
+        $granularity = strtolower($granularity);
+        if (!Granularity::isValidValue($granularity)) {
             throw new InvalidArgumentException(
                 'The given granularity is invalid: ' . $granularity . '. ' .
                 'Allowed are: ' . implode(',', Granularity::values())
