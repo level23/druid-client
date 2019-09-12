@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Queries;
 
+use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Filters\FilterInterface;
-use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Collections\IntervalCollection;
 
@@ -64,12 +64,12 @@ class ScanQuery implements QueryInterface
     protected $limit;
 
     /**
-     * @var \Level23\Druid\Context\ScanQueryContext
+     * @var \Level23\Druid\Context\QueryContext|null
      */
     protected $context;
 
     /**
-     * @var \Level23\Druid\Filters\FilterInterface
+     * @var \Level23\Druid\Filters\FilterInterface|null
      */
     protected $filter;
 
@@ -134,7 +134,7 @@ class ScanQuery implements QueryInterface
     public function parseResponse(array $response): array
     {
         $result = [];
-        array_walk($response, function($row) use( &$result) {
+        array_walk($response, function ($row) use (&$result) {
             array_push($result, ...$row['events']);
         });
 
@@ -180,9 +180,9 @@ class ScanQuery implements QueryInterface
     }
 
     /**
-     * @param \Level23\Druid\Context\ScanQueryContext $context
+     * @param \Level23\Druid\Context\QueryContext $context
      */
-    public function setContext(ScanQueryContext $context): void
+    public function setContext(QueryContext $context): void
     {
         $this->context = $context;
     }

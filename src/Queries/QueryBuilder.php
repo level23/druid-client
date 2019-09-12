@@ -440,7 +440,7 @@ class QueryBuilder
     /**
      * Build a scan query.
      *
-     * @param array|ScanQueryContext $context
+     * @param array|QueryContext $context
      * @param int|null               $rowBatchSize
      * @param bool                   $legacy
      * @param string                 $resultFormat
@@ -495,7 +495,7 @@ class QueryBuilder
             $query->setFilter($this->filter);
         }
 
-        if ($this->limit->getLimit() && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+        if ($this->limit && $this->limit->getLimit() && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
             $query->setLimit($this->limit->getLimit());
         }
 
@@ -521,7 +521,7 @@ class QueryBuilder
     /**
      * Build a TimeSeries query.
      *
-     * @param array|TimeSeriesQueryContext $context
+     * @param array|QueryContext $context
      *
      * @return TimeSeriesQuery
      */
@@ -603,7 +603,7 @@ class QueryBuilder
     /**
      * Build a topN query.
      *
-     * @param array|TopNQueryContext $context
+     * @param array|QueryContext $context
      *
      * @return TopNQuery
      */
@@ -675,7 +675,7 @@ class QueryBuilder
     /**
      * Build the group by query
      *
-     * @param array|GroupByV2QueryContext|GroupByV1QueryContext $context
+     * @param array|QueryContext $context
      * @param string                                            $type
      *
      * @return GroupByQuery
