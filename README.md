@@ -11,6 +11,13 @@ This project gives you an easy query builder to create the complex druid queries
 
 It also gives you a way to manage dataSources (tables) in druid and import new data from files.
 
+## Requirements
+
+This package only requires Guzzle from version 4 or higher. 
+
+It requires PHP version 7.2 or higher. 
+
+
 ## Installation
 
 To install this package, you can use composer:
@@ -18,6 +25,8 @@ To install this package, you can use composer:
 ```
 composer require level23/druid-client
 ```
+
+You can also download it as a ZIP file and include it in your project, as long as you have guzzle also in your project.
 
 ## Laravel/Lumen support.
 
@@ -60,7 +69,12 @@ DRUID_ROUTER_URL=http://druid-router.url:8082
  - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 
-## Example usage
+## Examples
+
+There are several examples which are written on the single-server tutorial of druid. 
+See [this](examples/README.md) page for more information.
+
+## Documentation
 
 Here is an example of how you can use this package.
 
@@ -80,9 +94,9 @@ use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
 
-$client = new DruidClient(['broker_url' => 'https://broker.url']);
+$client = new DruidClient(['router_url' => 'https://broker.url']);
 
-$response = $client->query('traffic-hits')
+$response = $client->query('traffic-hits', 'all')
     // REQUIRED: you have to select the interval where to select the data from.
     ->interval('now - 1 day', 'now')
     // Simple dimension select

@@ -18,8 +18,7 @@ class ScanQueryResultFormat extends Enum
      */
     public static function validate($resultFormat)
     {
-        $resultFormat = strtolower($resultFormat);
-        if (!OrderByDirection::isValidValue($resultFormat)) {
+        if (!ScanQueryResultFormat::isValidValue($resultFormat)) {
             throw new InvalidArgumentException(
                 'Invalid scanQuery resultFormat given: ' . $resultFormat .
                 '. Valid options are: ' . implode(', ', ScanQueryResultFormat::values())

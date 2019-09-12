@@ -245,12 +245,12 @@ class QueryBuilder
     /**
      * Return the query as a JSON string
      *
-     * @param array $context
+     * @param array|QueryContext $context
      *
      * @return string
      * @throws \InvalidArgumentException if the JSON cannot be encoded.
      */
-    public function toJson(array $context = []): string
+    public function toJson($context = []): string
     {
         $query = $this->buildQuery($context);
 
@@ -262,11 +262,11 @@ class QueryBuilder
     /**
      * Return the query as an array
      *
-     * @param array $context
+     * @param array|QueryContext $context
      *
      * @return array
      */
-    public function toArray(array $context = []): array
+    public function toArray($context = []): array
     {
         return $this->buildQuery($context)->toArray();
     }
@@ -274,12 +274,12 @@ class QueryBuilder
     /**
      * Execute a TimeSeries query.
      *
-     * @param array $context
+     * @param array|TimeSeriesQueryContext $context
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function timeseries(array $context = []): array
+    public function timeseries($context = []): array
     {
         $query = $this->buildTimeSeriesQuery($context);
 
@@ -291,23 +291,23 @@ class QueryBuilder
     /**
      * Execute a Scan Query.
      *
-     * @param array    $context      Query context parameters
-     * @param string   $resultFormat Result Format. Use one of the ScanQueryResultFormat::* constants.
-     * @param int|null $rowBatchSize How many rows buffered before return to client. Default is 20480
-     * @param bool     $legacy       Return results consistent with the legacy "scan-query" contrib extension. Defaults
-     *                               to the value set by druid.query.scan.legacy, which in turn defaults to false. See
-     *                               Legacy mode for details.
+     * @param array|ScanQueryContext $context      Query context parameters
+     * @param int|null               $rowBatchSize How many rows buffered before return to client. Default is 20480
+     * @param bool                   $legacy       Return results consistent with the legacy "scan-query" contrib
+     *                                             extension. Defaults to the value set by druid.query.scan.legacy,
+     *                                             which in turn defaults to false. See Legacy mode for details.
+     * @param string                 $resultFormat Result Format. Use one of the ScanQueryResultFormat::* constants.
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function scan(
-        array $context = [],
-        string $resultFormat = ScanQueryResultFormat::NORMAL_LIST,
+        $context = [],
         int $rowBatchSize = null,
-        bool $legacy = false
+        bool $legacy = false,
+        string $resultFormat = ScanQueryResultFormat::NORMAL_LIST
     ): array {
-        $query = $this->buildScanQuery($context);
+        $query = $this->buildScanQuery($context, $rowBatchSize, $legacy, $resultFormat);
 
         $rawResponse = $this->client->executeQuery($query);
 
@@ -317,16 +317,15 @@ class QueryBuilder
     /**
      * Execute a select query.
      *
-     * @param array $context
+     * @param array|QueryContext $context
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function selectQuery(array $context = []): array
+    public function selectQuery($context = []): array
     {
         $query = $this->buildSelectQuery($context);
 
-        print_r($query->toArray());
         $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
@@ -335,12 +334,12 @@ class QueryBuilder
     /**
      * Execute a topN query.
      *
-     * @param array $context
+     * @param array|TopNQueryContext $context
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function topN(array $context = []): array
+    public function topN($context = []): array
     {
         $query = $this->buildTopNQuery($context);
 
@@ -388,11 +387,11 @@ class QueryBuilder
     /**
      * Build a select query.
      *
-     * @param array $context
+     * @param array|QueryContext $context
      *
      * @return \Level23\Druid\Queries\SelectQuery
      */
-    protected function buildSelectQuery(array $context = []): SelectQuery
+    protected function buildSelectQuery($context = []): SelectQuery
     {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
@@ -429,8 +428,10 @@ class QueryBuilder
             $query->setPagingIdentifier($this->pagingIdentifier);
         }
 
-        if (count($context) > 0) {
+        if (is_array($context) && count($context) > 0) {
             $query->setContext(new QueryContext($context));
+        } elseif ($context instanceof QueryContext) {
+            $query->setContext($context);
         }
 
         return $query;
@@ -439,13 +440,19 @@ class QueryBuilder
     /**
      * Build a scan query.
      *
-     * @param array $context
+     * @param array|ScanQueryContext $context
+     * @param int|null               $rowBatchSize
+     * @param bool                   $legacy
+     * @param string                 $resultFormat
      *
      * @return \Level23\Druid\Queries\ScanQuery
-     * @throws InvalidArgumentException
      */
-    protected function buildScanQuery(array $context = [])
-    {
+    protected function buildScanQuery(
+        $context = [],
+        int $rowBatchSize = null,
+        bool $legacy = false,
+        string $resultFormat = ScanQueryResultFormat::NORMAL_LIST
+    ) {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
         }
@@ -492,9 +499,21 @@ class QueryBuilder
             $query->setLimit($this->limit->getLimit());
         }
 
-        if (count($context) > 0) {
+        if (is_array($context) && count($context) > 0) {
             $query->setContext(new ScanQueryContext($context));
+        } elseif ($context instanceof QueryContext) {
+            $query->setContext($context);
         }
+
+        if ($resultFormat) {
+            $query->setResultFormat($resultFormat);
+        }
+
+        if ($rowBatchSize) {
+            $query->setBatchSize($rowBatchSize);
+        }
+
+        $query->setLegacy($legacy);
 
         return $query;
     }
@@ -502,11 +521,11 @@ class QueryBuilder
     /**
      * Build a TimeSeries query.
      *
-     * @param array $context
+     * @param array|TimeSeriesQueryContext $context
      *
      * @return TimeSeriesQuery
      */
-    protected function buildTimeSeriesQuery(array $context = []): TimeSeriesQuery
+    protected function buildTimeSeriesQuery($context = []): TimeSeriesQuery
     {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
@@ -528,8 +547,10 @@ class QueryBuilder
             }
         }
 
-        if (count($context) > 0) {
+        if (is_array($context) && count($context) > 0) {
             $query->setContext(new TimeSeriesQueryContext($context));
+        } elseif ($context instanceof QueryContext) {
+            $query->setContext($context);
         }
 
         if ($this->filter) {
@@ -582,11 +603,11 @@ class QueryBuilder
     /**
      * Build a topN query.
      *
-     * @param array $context
+     * @param array|TopNQueryContext $context
      *
      * @return TopNQuery
      */
-    protected function buildTopNQuery(array $context = []): TopNQuery
+    protected function buildTopNQuery($context = []): TopNQuery
     {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
@@ -638,8 +659,10 @@ class QueryBuilder
             $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
         }
 
-        if (count($context) > 0) {
+        if (is_array($context) && count($context) > 0) {
             $query->setContext(new TopNQueryContext($context));
+        } elseif ($context instanceof QueryContext) {
+            $query->setContext($context);
         }
 
         if ($this->filter) {
@@ -714,20 +737,20 @@ class QueryBuilder
     /**
      * Return the query automatically detected based on the requested data.
      *
-     * @param array $context
+     * @param array|QueryContext $context
      *
      * @return \Level23\Druid\Queries\QueryInterface
      */
-    protected function buildQuery(array $context = []): QueryInterface
+    protected function buildQuery($context = []): QueryInterface
     {
+        // Check if this is a scan query. This is the preferred way to query when there are
+        // no aggregations done.
         if ($this->isScanQuery()) {
-            return $this->buildScanQuery();
+            return $this->buildScanQuery($context);
         }
 
-        /**
-         * If we only have "grouped" by __time, then we can use a time series query.
-         * This is preferred, because it's a lot faster then doing a group by query.
-         */
+        // If we only have "grouped" by __time, then we can use a time series query.
+        // This is preferred, because it's a lot faster then doing a group by query.
         if ($this->isTimeSeriesQuery()) {
             return $this->buildTimeSeriesQuery($context);
         }
@@ -737,15 +760,16 @@ class QueryBuilder
             return $this->buildTopNQuery($context);
         }
 
+        // Check if we can use a select query.
         if ($this->isSelectQuery()) {
             return $this->buildSelectQuery($context);
         }
 
-        return $this->buildGroupByQuery($context);
+        return $this->buildGroupByQuery($context, 'v2');
     }
 
     /**
-     * Determine if the current query is a timeseries query
+     * Determine if the current query is a TimeSeries query
      *
      * @return bool
      */

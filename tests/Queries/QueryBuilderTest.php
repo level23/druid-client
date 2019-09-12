@@ -9,6 +9,9 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
+use Level23\Druid\Queries\ScanQuery;
+use Level23\Druid\Interval\Interval;
+use Level23\Druid\Queries\SelectQuery;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
@@ -196,6 +199,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
      */
     public function testTopN()
     {
@@ -323,6 +327,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
      */
     public function testGroupByV1()
     {
@@ -354,6 +359,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
      */
     public function testGroupBy()
     {
@@ -384,22 +390,48 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @param bool $isTimeseries
+     * @param bool $isTimeSeries
      * @param bool $isTopNQuery
+     * @param bool $isScanQuery
+     * @param bool $isSelectQuery
      *
-     * @testWith [true, false]
-     *           [false, true]
-     *           [false, false]
+     * @throws \Exception
+     * @testWith [true, false, false, false]
+     *           [false, true, false, false]
+     *           [false, false, true, false]
+     *           [false, false, false, true]
+     *           [false, false, false, false]
+     *
      */
-    public function testBuildQuery(bool $isTimeseries, bool $isTopNQuery)
+    public function testBuildQuery(bool $isTimeSeries, bool $isTopNQuery, bool $isScanQuery, bool $isSelectQuery)
     {
         $context = ['foo' => 'bar'];
 
+        $this->builder->interval('12-02-2015', '13-02-2015');
+
+        $this->builder->shouldReceive('isScanQuery')
+            ->once()
+            ->andReturn($isScanQuery);
+
+        if ($isScanQuery) {
+            $scanQuery = $this->getScanQueryMock();
+            $this->builder->shouldReceive('buildScanQuery')
+                ->once()
+                ->with($context)
+                ->andReturn($scanQuery);
+
+            /** @noinspection PhpUndefinedMethodInspection */
+            $response = $this->builder->shouldAllowMockingProtectedMethods()->buildQuery($context);
+
+            $this->assertEquals($scanQuery, $response);
+            return;
+        }
+
         $this->builder->shouldReceive('isTimeSeriesQuery')
             ->once()
-            ->andReturn($isTimeseries);
+            ->andReturn($isTimeSeries);
 
-        if ($isTimeseries) {
+        if ($isTimeSeries) {
             $timeseries = $this->getTimeseriesQueryMock();
             $this->builder->shouldReceive('buildTimeSeriesQuery')
                 ->once()
@@ -433,11 +465,30 @@ class QueryBuilderTest extends TestCase
             return;
         }
 
+        $this->builder->shouldReceive('isSelectQuery')
+            ->once()
+            ->andReturn($isSelectQuery);
+
+        if ($isSelectQuery) {
+            $selectQuery = $this->getSelectQueryMock();
+            $this->builder->shouldReceive('buildSelectQuery')
+                ->once()
+                ->with($context)
+                ->andReturn($selectQuery);
+
+            /** @noinspection PhpUndefinedMethodInspection */
+            $response = $this->builder->shouldAllowMockingProtectedMethods()->buildQuery($context);
+
+            $this->assertEquals($selectQuery, $response);
+
+            return;
+        }
+
         $groupBy = $this->getGroupByQueryMock();
 
         $this->builder->shouldReceive('buildGroupByQuery')
             ->once()
-            ->with($context)
+            ->with($context, 'v2')
             ->andReturn($groupBy);
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -859,24 +910,54 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
+     * @return \Level23\Druid\Queries\ScanQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @throws \Exception
+     */
+    protected function getScanQueryMock()
+    {
+        return Mockery::mock(ScanQuery::class,
+            ['test', new IntervalCollection(new Interval('12-02-2015', '13-02-2015'))]);
+    }
+
+    /**
      * @return \Level23\Druid\Queries\GroupByQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @throws \Exception
      */
     protected function getGroupByQueryMock()
     {
         return Mockery::mock(
             GroupByQuery::class,
-            ['test', new DimensionCollection(), new IntervalCollection()]
+            ['test', new DimensionCollection(), new IntervalCollection(new Interval('12-02-2015', '13-02-2015'))]
         );
     }
 
     /**
      * @return \Level23\Druid\Queries\TopNQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @throws \Exception
      */
     protected function getTopNQueryMock()
     {
         return Mockery::mock(
             TopNQuery::class,
-            ['test', new IntervalCollection(), new Dimension('age'), 5, 'messages']
+            [
+                'test',
+                new IntervalCollection(new Interval('12-02-2015', '13-02-2015')),
+                new Dimension('age'),
+                5,
+                'messages',
+            ]
+        );
+    }
+
+    /**
+     * @return \Level23\Druid\Queries\SelectQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @throws \Exception
+     */
+    protected function getSelectQueryMock()
+    {
+        return Mockery::mock(
+            SelectQuery::class,
+            ['test', new IntervalCollection(new Interval('12-02-2015', '13-02-2015')), 50]
         );
     }
 }

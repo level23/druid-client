@@ -5,47 +5,53 @@ error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
 include __DIR__ . '/../vendor/autoload.php';
+include __DIR__ . '/helpers/ConsoleLogger.php';
+include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Context\GroupByV2QueryContext;
 
-$client = new DruidClient(['broker_url' => 'http://127.0.0.1:8888']);
+try {
+    $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
 
-$response = $client->query('traffic-hits')
-    ->interval(new DateTime("now - 1 day"), new DateTime())
-    ->lookup('operator_title', 'mccmnc', 'carrier', 'Unknown')
-    ->select('__time', 'datetime', function (ExtractionBuilder $builder) {
-        $builder->timeFormat('yyyy-MM-dd HH:00:00');
-    })
-    ->where('promo_id', '!=', 'iets', function (ExtractionBuilder $builder) {
-        $builder->lookup('');
-        $builder->partial('');
-    })
-    ->select('browser')
-    //->select('country_iso', 'iso')
-    ->select('country_iso', 'country_iso', function (ExtractionBuilder $builder) {
-        $builder->lookup('full_country_name');
-    })
-    ->select(['mccmnc' => 'operator_code'])
-    ->select('browser_version', 'browserVersie')
-    ->sum('hits', 'total_hits')
-    ->count('totals')
-    //->distinctCount('promo_id')
-    ->where('hits', '>', 1000)
-    ->where('browser', 'Yandex.Browser')
-    ->orWhere('browser_version', '17.4.0')
-    ->orWhere(function (FilterBuilder $builder) {
-        $builder->where('browser_version', '17.5.0');
-        $builder->where('browser_version', '17.6.0');
-    })
-    ->whereIn('added', [1])
-    ->limit(5)
-    ->having('total_hits', '>', 100)
-    ->orderBy('total_hits', 'desc')
-    ->divide('average', 'hits', 'totals')
-    ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
+    // Enable this to see some more data
+    // $client->setLogger(new ConsoleLogger());
 
-print_r($response);
+    // Build a groupby query.
+    $builder = $client->query('wikipedia')
+        ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+        ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
+            $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
+        })
+        ->select('page', 'edited_page')
+        ->select('namespace')
+        ->count('edits')
+        ->longSum('added')
+        ->longSum('deleted')
+        ->where('isRobot', 'false')
+        ->where('channel', '!=', '#vi.wikipedia')
+        ->whereIn('isNew', ['true', 'false'])
+        ->Where(function (FilterBuilder $filterBuilder) {
+            $filterBuilder->orWhere('namespace', 'Talk');
+            $filterBuilder->orWhere('namespace', 'Main');
+        })
+        ->limit(10)
+        ->orderBy('edits', 'desc')
+        ->having('edits', '>', '5');
 
-//  php -f examples/GroupByQuery.php | curl -X 'POST' -H 'Content-Type:application/json' -d @- http://127.0.0.1:8888/druid/v2 | jq
+    // Example of setting query context. It can also be supplied as an array in the groupBy() method call.
+    $context = new GroupByV2QueryContext();
+    $context->setMaxOnDiskStorage(1024 * 1024);
+
+    // Execute the query.
+    $response = $builder->groupBy($context);
+
+    // Display the result as a console table.
+    new ConsoleTable($response);
+} catch (Exception $exception) {
+    echo "Something went wrong during retrieving druid data\n";
+    echo $exception->getMessage() . "\n";
+    echo $exception->getTraceAsString();
+}
