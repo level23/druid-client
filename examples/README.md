@@ -10,5 +10,12 @@ this tutorial how to load the data:
 https://druid.apache.org/docs/latest/tutorials/tutorial-batch.html  
 
 
+Each example can be tested on the console.
+
+Execute the examples like:
+
+```
+php -f examples/GroupByQuery.php
+```
 
  

@@ -39,6 +39,13 @@ class DruidClient
      * @var array
      */
     protected $config = [
+
+        /**
+         * Domain + optional port or the druid router. If this is set, it will be used for the broker,
+         * coordinator and overlord.
+         */
+        'router_url'      => '',
+
         /**
          * Domain + optional port. Don't add the api path like "/druid/v2"
          */
@@ -186,8 +193,13 @@ class DruidClient
             $configDelay   = $this->config('retry_delay_ms', 500);
             // Should we attempt a retry?
             if ($retries++ < $configRetries) {
+                $this->log(
+                    'Query failed due to a server exception. Doing a retry. Retry attempt ' . $retries . ' of ' . $configRetries,
+                    [$exception->getMessage(), $exception->getTraceAsString()]
+                );
 
                 if ($configDelay > 0) {
+                    $this->log('Sleep for '. $configDelay .' ms');
                     $this->usleep(($configDelay * 1000));
                 }
                 goto begin;
@@ -269,6 +281,13 @@ class DruidClient
      */
     public function config($key, $default = null)
     {
+        // when the broker, coordinator or overlord url's are empty, then use the router url.
+        $routerFallback = in_array($key, ['broker_url', 'coordinator_url', 'overlord_url']);
+
+        if ($routerFallback) {
+            return $this->config[$key] ?: $this->config('router_url', $default);
+        }
+
         return $this->config[$key] ?? $default;
     }
 
