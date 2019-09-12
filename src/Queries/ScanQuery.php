@@ -133,7 +133,12 @@ class ScanQuery implements QueryInterface
      */
     public function parseResponse(array $response): array
     {
-        return $response[0]['events'];
+        $result = [];
+        array_walk($response, function($row) use( &$result) {
+            array_push($result, ...$row['events']);
+        });
+
+        return $result;
     }
 
     /**
