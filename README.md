@@ -60,7 +60,7 @@ DRUID_RETRY_DELAY_MS=500
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
 overlord and the coordinator:
 ```
-DRUID_ROUTER_URL=http://druid-router.url:8082
+DRUID_ROUTER_URL=http://druid-router.url:8080
 ```
 
 ## Todo's
@@ -94,7 +94,7 @@ use Level23\Druid\DruidClient;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
 
-$client = new DruidClient(['router_url' => 'https://broker.url']);
+$client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
 $response = $client->query('traffic-hits', 'all')
     // REQUIRED: you have to select the interval where to select the data from.
