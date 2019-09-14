@@ -7,6 +7,8 @@ use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Filters\FilterInterface;
+use Level23\Druid\Responses\QueryResponse;
+use Level23\Druid\Responses\SelectQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\DimensionCollection;
 
@@ -140,13 +142,11 @@ class SelectQuery implements QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return SelectQueryResponse
      */
-    public function parseResponse(array $response): array
+    public function parseResponse(array $response): SelectQueryResponse
     {
-        return array_map(function ($row) {
-            return $row['event'];
-        }, $response[0]['result']['events']);
+        return new SelectQueryResponse($response);
     }
 
     /**

@@ -17,6 +17,7 @@ use Psr\Http\Message\ResponseInterface;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Queries\QueryInterface;
 use GuzzleHttp\Exception\ServerException;
+use Level23\Druid\Responses\TaskResponse;
 use GuzzleHttp\Exception\RequestException;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
@@ -249,7 +250,8 @@ class DruidClientTest extends TestCase
 
         $response = $client->taskStatus('abcd1234');
 
-        $this->assertEquals($expectedResponse, $response);
+        $this->assertInstanceOf(TaskResponse::class, $response);
+        $this->assertEquals($expectedResponse['id'] ?? '', $response->getId());
     }
 
     public function testLogHandler()

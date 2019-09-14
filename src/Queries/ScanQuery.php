@@ -7,6 +7,7 @@ use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Types\ScanQueryResultFormat;
+use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 
 /**
@@ -129,16 +130,11 @@ class ScanQuery implements QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return ScanQueryResponse
      */
-    public function parseResponse(array $response): array
+    public function parseResponse(array $response): ScanQueryResponse
     {
-        $result = [];
-        array_walk($response, function ($row) use (&$result) {
-            array_push($result, ...$row['events']);
-        });
-
-        return $result;
+        return new ScanQueryResponse($response);
     }
 
     /**

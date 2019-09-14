@@ -7,6 +7,7 @@ use tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class SegmentMetadataQueryTest extends TestCase
 {
@@ -23,8 +24,8 @@ class SegmentMetadataQueryTest extends TestCase
             'intervals'  => $intervals->toArray(),
         ], $query->toArray());
 
-        $response = ['some' => 'data'];
+        $response = $query->parseResponse([]);
 
-        $this->assertEquals($response, $query->parseResponse($response));
+        $this->assertInstanceOf(SegmentMetadataQueryResponse::class, $response);
     }
 }

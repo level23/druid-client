@@ -21,6 +21,7 @@ use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Extractions\UpperExtraction;
+use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Dimensions\DimensionInterface;
@@ -28,11 +29,14 @@ use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
+use Level23\Druid\Responses\GroupByQueryResponse;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Responses\TimeSeriesQueryResponse;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilderTest extends TestCase
 {
@@ -64,7 +68,7 @@ class QueryBuilderTest extends TestCase
 
         $result = ['result' => 'here'];
 
-        $normalized = ['normalized' => 'result'];
+        $responseObj = new TimeSeriesQueryResponse([], 'timestamp');
 
         $this->builder
             ->shouldReceive('buildQuery')
@@ -80,11 +84,11 @@ class QueryBuilderTest extends TestCase
         $query->shouldReceive('parseResponse')
             ->once()
             ->with($result)
-            ->andReturn($normalized);
+            ->andReturn($responseObj);
 
         $response = $this->builder->execute($context);
 
-        $this->assertEquals($normalized, $response);
+        $this->assertEquals($responseObj, $response);
     }
 
     /**
@@ -173,7 +177,7 @@ class QueryBuilderTest extends TestCase
         $query   = $this->getTimeseriesQueryMock();
 
         $result       = ['event' => ['result' => 'here']];
-        $parsedResult = ['result' => 'here'];
+        $timeSeriesResponse = new TimeSeriesQueryResponse([], 'timestamp');
 
         $this->builder
             ->shouldReceive('buildTimeSeriesQuery')
@@ -190,11 +194,11 @@ class QueryBuilderTest extends TestCase
         $query->shouldReceive('parseResponse')
             ->once()
             ->with($result)
-            ->andReturn($parsedResult);
+            ->andReturn($timeSeriesResponse);
 
         $response = $this->builder->timeseries($context);
 
-        $this->assertEquals($parsedResult, $response);
+        $this->assertEquals($timeSeriesResponse, $response);
     }
 
     /**
@@ -207,7 +211,7 @@ class QueryBuilderTest extends TestCase
         $query   = $this->getTopNQueryMock();
 
         $result       = ['event' => ['result' => 'here']];
-        $parsedResult = ['result' => 'here'];
+        $topNResponse = new TopNQueryResponse([]);
 
         $this->builder->shouldReceive('buildTopNQuery')
             ->with($context)
@@ -222,11 +226,11 @@ class QueryBuilderTest extends TestCase
         $query->shouldReceive('parseResponse')
             ->once()
             ->with($result)
-            ->andReturn($parsedResult);
+            ->andReturn($topNResponse);
 
         $response = $this->builder->topN($context);
 
-        $this->assertEquals($parsedResult, $response);
+        $this->assertEquals($topNResponse, $response);
     }
 
     /**
@@ -245,6 +249,7 @@ class QueryBuilderTest extends TestCase
         $query->shouldReceive('__construct')->once();
 
         $result       = ['event' => ['result' => 'here']];
+        $segmentResponse = new SegmentMetadataQueryResponse([]);
         $parsedResult = ['result' => 'here'];
 
         $this->client->shouldReceive('executeQuery')
@@ -255,11 +260,11 @@ class QueryBuilderTest extends TestCase
         $query->shouldReceive('parseResponse')
             ->once()
             ->with($result)
-            ->andReturn($parsedResult);
+            ->andReturn($segmentResponse);
 
         $response = $this->builder->segmentMetadata();
 
-        $this->assertEquals($parsedResult, $response);
+        $this->assertEquals($segmentResponse, $response);
     }
 
     /**
@@ -334,8 +339,8 @@ class QueryBuilderTest extends TestCase
         $context = ['foo' => 'bar'];
         $query   = $this->getGroupByQueryMock();
 
-        $result       = ['event' => ['result' => 'here']];
-        $parsedResult = ['result' => 'here'];
+        $result       = [['event' => ['result' => 'here']]];
+        $parsedResult = new GroupByQueryResponse($result);
 
         $this->builder->shouldReceive('buildGroupByQuery')
             ->with($context, 'v1')
@@ -366,8 +371,8 @@ class QueryBuilderTest extends TestCase
         $context = ['foo' => 'bar'];
         $query   = $this->getGroupByQueryMock();
 
-        $result       = ['event' => ['result' => 'here']];
-        $parsedResult = ['result' => 'here'];
+        $result       = [['event' => ['result' => 'here']]];
+        $parsedResult = new GroupByQueryResponse($result);
 
         $this->builder->shouldReceive('buildGroupByQuery')
             ->with($context, 'v2')
