@@ -9,7 +9,6 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
-use Level23\Druid\Types\Granularity;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -29,19 +28,20 @@ try {
     // Start polling task status.
     while (true) {
         $status = $client->taskStatus($taskId);
-        echo $status['id'] . ': ' . $status['status'] . "\n";
+        echo $status->getId() . ': ' . $status->getStatus() . "\n";
 
-        if ($status['status'] != 'RUNNING') {
+        if ($status->getStatus() != 'RUNNING') {
             break;
         }
         sleep(2);
     }
 
     echo "Final status: \n";
-    unset($status['location']);
+    $response = $status->getResponse();
+    unset($response['location']);
 
     // Display the result as a console table.
-    new ConsoleTable([$status]);
+    new ConsoleTable([$response]);
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

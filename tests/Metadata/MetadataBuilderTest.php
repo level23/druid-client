@@ -11,6 +11,7 @@ use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Exceptions\QueryResponseException;
+use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class MetadataBuilderTest extends TestCase
 {
@@ -110,7 +111,8 @@ class MetadataBuilderTest extends TestCase
         ];
 
         $columnsResponse = [
-            '__time'      => [
+            [
+                'field' => '__time',
                 'type'         => 'LONG',
                 'size'         => 0,
                 'cardinality'  => 84,
@@ -118,7 +120,8 @@ class MetadataBuilderTest extends TestCase
                 'maxValue'     => 74807,
                 'errorMessage' => '',
             ],
-            'country_iso' => [
+            [
+                'field' => 'country_iso',
                 'type'         => 'STRING',
                 'size'         => 0,
                 'cardinality'  => 4,
@@ -126,7 +129,8 @@ class MetadataBuilderTest extends TestCase
                 'maxValue'     => '',
                 'errorMessage' => '',
             ],
-            'revenue'     => [
+            [
+                'field' => 'revenue',
                 'type'         => 'DOUBLE',
                 'size'         => 0,
                 'cardinality'  => 84,
@@ -245,7 +249,6 @@ class MetadataBuilderTest extends TestCase
 
     /**
      * @testWith [[{"columns": {"__time": {"type":"LONG"}}}]]
-     *           [[]]
      *
      * @param array $segmentMetadataResponse
      */
@@ -268,22 +271,18 @@ class MetadataBuilderTest extends TestCase
             ->with($interval)
             ->andReturn($queryBuilder);
 
+        $responseObj = new SegmentMetadataQueryResponse($segmentMetadataResponse);
+
         $queryBuilder->shouldReceive('segmentMetadata')
             ->once()
-            ->andReturn($segmentMetadataResponse);
-
-        if (empty($segmentMetadataResponse[0]['columns'])) {
-            $this->expectException(QueryResponseException::class);
-        }
+            ->andReturn($responseObj);
 
         /** @noinspection PhpUndefinedMethodInspection */
         $response = $metadataBuilder
             ->shouldAllowMockingProtectedMethods()
-            ->getColumnsForInterval(
-                $dataSource, $interval
-            );
+            ->getColumnsForInterval($dataSource, $interval);
 
-        $this->assertEquals($segmentMetadataResponse[0]['columns'], $response);
+        $this->assertEquals($responseObj->getResponse(), $response);
     }
 
     /**

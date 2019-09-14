@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Queries;
 
+use Level23\Druid\Responses\QueryResponse;
+
 interface QueryInterface
 {
     /**
@@ -17,7 +19,7 @@ interface QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return QueryResponse
      */
-    public function parseResponse(array $response): array;
+    public function parseResponse(array $response);
 }

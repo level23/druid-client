@@ -33,7 +33,9 @@ try {
     $response = $builder->topN($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response[0]);
+    new ConsoleTable($response->getResponse());
+
+    print_r($response->getRawResponse());
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

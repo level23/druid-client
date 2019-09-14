@@ -33,7 +33,7 @@ try {
     $response = $builder->timeseries($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response);
+    new ConsoleTable($response->getResponse());
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

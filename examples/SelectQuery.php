@@ -31,22 +31,22 @@ try {
     $response = $builder->selectQuery($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response);
+    new ConsoleTable($response->getResponse());
 
-    echo "Identifier for page 2: " . var_export($client->getPagingIdentifier(), true) . "\n\n";
+    echo "Identifier for page 2: " . var_export($response->getPagingIdentifier(), true) . "\n\n";
 
     /**
      * Now, request "page 2".
      */
-    $builder->pagingIdentifier($client->getPagingIdentifier());
+    $builder->pagingIdentifier($response->getPagingIdentifier());
 
     // Execute the query.
     $response = $builder->selectQuery($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response);
+    new ConsoleTable($response->getResponse());
 
-    echo "Identifier for page 3: " . var_export($client->getPagingIdentifier(), true) . "\n\n";
+    echo "Identifier for page 3: " . var_export($response->getPagingIdentifier(), true) . "\n\n";
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";
