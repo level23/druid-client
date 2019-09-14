@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Queries;
 
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class SegmentMetadataQuery implements QueryInterface
 {
@@ -42,10 +43,10 @@ class SegmentMetadataQuery implements QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return SegmentMetadataQueryResponse
      */
-    public function parseResponse(array $response): array
+    public function parseResponse(array $response): SegmentMetadataQueryResponse
     {
-        return $response;
+        return new SegmentMetadataQueryResponse( $response);
     }
 }

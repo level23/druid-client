@@ -23,20 +23,16 @@ try {
     $interval = array_key_first($response);
 
     // Build our compact task.
-    $structure = $client->query('wikipedia')
+    $response = $client->query('wikipedia')
         ->interval($interval)
         ->segmentMetadata();
 
-    $columns = [];
-    array_walk($structure[0]['columns'], function ($value, $key) use (&$columns) {
-        $columns[] = array_merge($value, ['field' => $key]);
-    });
 
     // Display the result as a console table.
-    new ConsoleTable($columns);
+    new ConsoleTable($response->getResponse());
 
     // Uncomment this to see the raw response
-    // print_r($structure);
+    //print_r($response->getRawResponse());
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

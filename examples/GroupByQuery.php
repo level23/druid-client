@@ -17,7 +17,7 @@ try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
 
     // Enable this to see some more data
-    // $client->setLogger(new ConsoleLogger());
+    $client->setLogger(new ConsoleLogger());
 
     // Build a groupby query.
     $builder = $client->query('wikipedia')
@@ -49,7 +49,7 @@ try {
     $response = $builder->groupBy($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response);
+    new ConsoleTable($response->getResponse());
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

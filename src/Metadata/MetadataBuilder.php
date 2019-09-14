@@ -126,8 +126,9 @@ class MetadataBuilder
      *
      *   Array
      *  (
-     *      [__time] => Array
+     *      0 => Array
      *          (
+     *              [field] => __time
      *              [type] => LONG
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -136,8 +137,9 @@ class MetadataBuilder
      *              [maxValue] =>
      *              [errorMessage] =>
      *          )
-     *      [conversions] => Array
+     *      1 => Array
      *          (
+     *              [field] => delta
      *              [type] => LONG
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -146,8 +148,9 @@ class MetadataBuilder
      *              [maxValue] =>
      *              [errorMessage] =>
      *          )
-     *      [country_iso] => Array
+     *      2 => Array
      *          (
+     *              [field] => cityName
      *              [type] => STRING
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -156,8 +159,9 @@ class MetadataBuilder
      *              [maxValue] => zm
      *              [errorMessage] =>
      *          )
-     *      [mccmnc] => Array
+     *      3 => Array
      *          (
+     *              [field] => comment
      *              [type] => STRING
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -166,8 +170,9 @@ class MetadataBuilder
      *              [maxValue] => 74807
      *              [errorMessage] =>
      *          )
-     *      [offer_id] => Array
+     *      4 => Array
      *          (
+     *              [field] => added
      *              [type] => LONG
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -187,18 +192,11 @@ class MetadataBuilder
      */
     protected function getColumnsForInterval(string $dataSource, string $interval): array
     {
-
         $response = $this->client->query($dataSource)
             ->interval($interval)
             ->segmentMetadata();
 
-        if (empty($response[0]['columns'])) {
-            throw new QueryResponseException(
-                [], 'We failed to parse the response of our segmentMetadataQuery!'
-            );
-        }
-
-        return $response[0]['columns'];
+        return $response->getResponse();
     }
 
     /**
@@ -266,7 +264,11 @@ class MetadataBuilder
 
         $columns = $this->getColumnsForInterval($dataSource, $interval);
 
-        foreach ($columns as $column => $info) {
+        //print_r($columns);
+
+        foreach ($columns as $info) {
+            $column = $info['field'];
+
             if (in_array($column, $dimensionFields)) {
                 $dimensions[$column] = $info['type'];
             }

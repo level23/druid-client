@@ -15,22 +15,29 @@ use Level23\Druid\Concerns\HasIntervals;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Concerns\HasDimensions;
 use Level23\Druid\Types\OrderByDirection;
+use Level23\Druid\Responses\QueryResponse;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\OrderBy\OrderByInterface;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\Types\ScanQueryResultFormat;
+use Level23\Druid\Responses\ScanQueryResponse;
+use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
+use Level23\Druid\Responses\SelectQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
+use Level23\Druid\Responses\GroupByQueryResponse;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Responses\TimeSeriesQueryResponse;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilder
 {
@@ -106,10 +113,10 @@ class QueryBuilder
      *
      * @param array $context
      *
-     * @return array
+     * @return QueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function execute(array $context = []): array
+    public function execute(array $context = []): QueryResponse
     {
         $query = $this->buildQuery($context);
 
@@ -147,93 +154,26 @@ class QueryBuilder
     }
 
     /**
+     * Set a paging identifier. This is only applied for a SELECT query!
+     *
+     * @param array $pagingIdentifier
+     *
+     * @return \Level23\Druid\Queries\QueryBuilder
+     */
+    public function pagingIdentifier(array $pagingIdentifier): QueryBuilder
+    {
+        $this->pagingIdentifier = $pagingIdentifier;
+
+        return $this;
+    }
+
+    /**
      * Do a segment metadata query and return the response
      *
-     * This will return something like this:
-     * Array
-     * (
-     *     [0] => Array
-     *         (
-     *             [id] =>
-     *             traffic-conversions_2019-04-15T08:00:00.000Z_2019-04-15T09:00:00.000Z_2019-08-20T12:24:44.384Z
-     *             [intervals] => Array
-     *                 (
-     *                     [0] => 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
-     *                 )
-     *
-     *             [columns] => Array
-     *                 (
-     *                     [__time] => Array
-     *                         (
-     *                             [type] => LONG
-     *                             [hasMultipleValues] =>
-     *                             [size] => 0
-     *                             [cardinality] =>
-     *                             [minValue] =>
-     *                             [maxValue] =>
-     *                             [errorMessage] =>
-     *                         )
-     *
-     *                     [conversions] => Array
-     *                         (
-     *                             [type] => LONG
-     *                             [hasMultipleValues] =>
-     *                             [size] => 0
-     *                             [cardinality] =>
-     *                             [minValue] =>
-     *                             [maxValue] =>
-     *                             [errorMessage] =>
-     *                         )
-     *
-     *                     [country_iso] => Array
-     *                         (
-     *                             [type] => STRING
-     *                             [hasMultipleValues] =>
-     *                             [size] => 0
-     *                             [cardinality] => 59
-     *                             [minValue] => af
-     *                             [maxValue] => zm
-     *                             [errorMessage] =>
-     *                         )
-     *
-     *                     [mccmnc] => Array
-     *                         (
-     *                             [type] => STRING
-     *                             [hasMultipleValues] =>
-     *                             [size] => 0
-     *                             [cardinality] => 84
-     *                             [minValue] =>
-     *                             [maxValue] => 74807
-     *                             [errorMessage] =>
-     *                         )
-     *
-     *                     [offer_id] => Array
-     *                         (
-     *                             [type] => LONG
-     *                             [hasMultipleValues] =>
-     *                             [size] => 0
-     *                             [cardinality] =>
-     *                             [minValue] =>
-     *                             [maxValue] =>
-     *                             [errorMessage] =>
-     *                         )
-     *                 )
-     *
-     *             [size] => 0
-     *             [numRows] => 449
-     *             [aggregators] =>
-     *             [aggregators] =>
-     *             [timestampSpec] =>
-     *             [queryGranularity] =>
-     *             [rollup] =>
-     *         )
-     *
-     * )
-     *
-     * @return array
+     * @return SegmentMetadataQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function segmentMetadata(): array
+    public function segmentMetadata(): SegmentMetadataQueryResponse
     {
         $query = new SegmentMetadataQuery($this->dataSource, new IntervalCollection(...$this->intervals));
 
@@ -276,10 +216,10 @@ class QueryBuilder
      *
      * @param array|TimeSeriesQueryContext $context
      *
-     * @return array
+     * @return TimeSeriesQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function timeseries($context = []): array
+    public function timeseries($context = []): TimeSeriesQueryResponse
     {
         $query = $this->buildTimeSeriesQuery($context);
 
@@ -298,7 +238,7 @@ class QueryBuilder
      *                                             which in turn defaults to false. See Legacy mode for details.
      * @param string                 $resultFormat Result Format. Use one of the ScanQueryResultFormat::* constants.
      *
-     * @return array
+     * @return ScanQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function scan(
@@ -306,7 +246,7 @@ class QueryBuilder
         int $rowBatchSize = null,
         bool $legacy = false,
         string $resultFormat = ScanQueryResultFormat::NORMAL_LIST
-    ): array {
+    ): ScanQueryResponse {
         $query = $this->buildScanQuery($context, $rowBatchSize, $legacy, $resultFormat);
 
         $rawResponse = $this->client->executeQuery($query);
@@ -319,10 +259,10 @@ class QueryBuilder
      *
      * @param array|QueryContext $context
      *
-     * @return array
+     * @return SelectQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function selectQuery($context = []): array
+    public function selectQuery($context = []): SelectQueryResponse
     {
         $query = $this->buildSelectQuery($context);
 
@@ -336,10 +276,10 @@ class QueryBuilder
      *
      * @param array|TopNQueryContext $context
      *
-     * @return array
+     * @return TopNQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function topN($context = []): array
+    public function topN($context = []): TopNQueryResponse
     {
         $query = $this->buildTopNQuery($context);
 
@@ -353,10 +293,10 @@ class QueryBuilder
      *
      * @param array|GroupByV2QueryContext|GroupByV1QueryContext $context
      *
-     * @return array
+     * @return GroupByQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function groupBy($context = []): array
+    public function groupBy($context = []): GroupByQueryResponse
     {
         $query = $this->buildGroupByQuery($context, 'v2');
 
@@ -370,10 +310,10 @@ class QueryBuilder
      *
      * @param array|GroupByV2QueryContext|GroupByV1QueryContext $context
      *
-     * @return array
+     * @return GroupByQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function groupByV1($context = []): array
+    public function groupByV1($context = []): GroupByQueryResponse
     {
         $query = $this->buildGroupByQuery($context, 'v1');
 
@@ -441,9 +381,9 @@ class QueryBuilder
      * Build a scan query.
      *
      * @param array|QueryContext $context
-     * @param int|null               $rowBatchSize
-     * @param bool                   $legacy
-     * @param string                 $resultFormat
+     * @param int|null           $rowBatchSize
+     * @param bool               $legacy
+     * @param string             $resultFormat
      *
      * @return \Level23\Druid\Queries\ScanQuery
      */
@@ -676,7 +616,7 @@ class QueryBuilder
      * Build the group by query
      *
      * @param array|QueryContext $context
-     * @param string                                            $type
+     * @param string             $type
      *
      * @return GroupByQuery
      */
@@ -807,7 +747,7 @@ class QueryBuilder
      */
     protected function isSelectQuery(): bool
     {
-        return $this->pagingIdentifier !== null;
+        return $this->pagingIdentifier !== null && count($this->aggregations) == 0;
     }
 
     /**
@@ -845,19 +785,5 @@ class QueryBuilder
     }
 
     //</editor-fold>
-
-    /**
-     * Set a paging identifier. This is only applied for a SELECT query!
-     *
-     * @param array $pagingIdentifier
-     *
-     * @return \Level23\Druid\Queries\QueryBuilder
-     */
-    public function pagingIdentifier(array $pagingIdentifier): QueryBuilder
-    {
-        $this->pagingIdentifier = $pagingIdentifier;
-
-        return $this;
-    }
 }
 

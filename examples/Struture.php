@@ -16,17 +16,10 @@ try {
     // Enable this to see some more data
     //$client->setLogger(new ConsoleLogger());
 
-    // Build a scan query
-    $builder = $client->query('wikipedia')
-        ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
-        ->select(['__time', 'channel', 'user', 'deleted', 'added'])
-        ->limit(10);
+    // Retrieve all intervals.
+    $structure = $client->metadata()->structure('wikipedia');
 
-    // Execute the query.
-    $response = $builder->scan(['priority' => 75], 5, true);
-
-    // Display the result as a console table.
-    new ConsoleTable($response->getResponse());
+    print_r($structure);
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";
