@@ -179,6 +179,7 @@ class IndexTaskBuilderTest extends TestCase
      *
      * @throws \ReflectionException
      * @throws \Exception
+     *
      * @dataProvider        buildTaskDataProvider
      *
      * @runInSeparateProcess

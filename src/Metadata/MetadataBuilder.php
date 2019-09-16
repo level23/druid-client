@@ -204,13 +204,15 @@ class MetadataBuilder
      *
      * We will return something like "2017-01-01T00:00:00.000Z/2017-01-02T00:00:00.000Z"
      *
+     * We will return an empty array when no interval data is found.
+     *
      * @param string $dataSource
      * @param string $shortHand
      *
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    protected function getIntervalByShorthand(string $dataSource, string $shortHand)
+    protected function getIntervalByShorthand(string $dataSource, string $shortHand): string
     {
         // Get the interval which we will use to do a "structure" scan.
         $shortHand = strtolower($shortHand);
@@ -219,11 +221,12 @@ class MetadataBuilder
         }
 
         $intervals = array_keys($this->intervals($dataSource));
+
         if ($shortHand == 'last') {
-            return $intervals[0];
+            return $intervals[0] ?? '';
         }
 
-        return $intervals[count($intervals) - 1];
+        return $intervals[count($intervals) - 1] ?? '';
     }
 
     /**
@@ -241,6 +244,12 @@ class MetadataBuilder
         // shorthand given? Then retrieve the real interval for them.
         if (in_array(strtolower($interval), ['first', 'last'])) {
             $interval = $this->getIntervalByShorthand($dataSource, $interval);
+        }
+
+        if (empty($interval)) {
+            throw new InvalidArgumentException(
+                'Error, interval "' . $interval . '" is invalid. Maybe there are no intervals for this dataSource?'
+            );
         }
 
         $rawStructure = $this->interval($dataSource, $interval);
