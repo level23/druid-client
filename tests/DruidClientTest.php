@@ -133,6 +133,8 @@ class DruidClientTest extends TestCase
      */
     public function testReindex()
     {
+        $dataSource = 'somethingElse';
+
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
         $builder->setName(MetadataBuilder::class);
@@ -142,17 +144,21 @@ class DruidClientTest extends TestCase
         $client = Mockery::mock(DruidClient::class, [[]]);
         $client->makePartial();
 
-        $structure = new Structure('somethingElse', ['name' => 'string', 'room' => 'long'], ['salary' => 'double']);
+        $structure = new Structure($dataSource, ['name' => 'string', 'room' => 'long'], ['salary' => 'double']);
 
         $metaDataBuilder->shouldReceive('structure')
             ->once()
-            ->with('somethingElse')
+            ->with($dataSource)
             ->andReturn($structure);
 
         $indexTaskBuilder = Mockery::mock('overload:' . IndexTaskBuilder::class);
         $indexTaskBuilder->shouldReceive('__construct')
             ->once()
-            ->with($client, 'somethingElse', IngestSegmentFirehose::class);
+            ->with($client, $dataSource, IngestSegmentFirehose::class);
+
+        $indexTaskBuilder->shouldReceive('setFromDataSource')
+            ->with($dataSource)
+            ->once();
 
         $indexTaskBuilder->shouldReceive('dimension')
             ->with('name', 'string')
@@ -170,7 +176,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->andReturn($metaDataBuilder);
 
-        $client->reindex('somethingElse');
+        $client->reindex($dataSource);
     }
 
     /**
