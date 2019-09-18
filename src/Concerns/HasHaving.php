@@ -93,9 +93,7 @@ trait HasHaving
         }
 
         if ($having === null) {
-            throw new InvalidArgumentException(
-                'The arguments which you have supplied cannot be parsed: ' . var_export(func_get_args(), true)
-            );
+            throw new InvalidArgumentException('The arguments which you have supplied cannot be parsed');
         }
 
         strtolower($boolean) == 'and' ?
