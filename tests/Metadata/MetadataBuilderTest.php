@@ -7,6 +7,7 @@ use Mockery;
 use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Facades\Druid;
 use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
@@ -112,7 +113,7 @@ class MetadataBuilderTest extends TestCase
 
         $columnsResponse = [
             [
-                'field' => '__time',
+                'field'        => '__time',
                 'type'         => 'LONG',
                 'size'         => 0,
                 'cardinality'  => 84,
@@ -121,7 +122,7 @@ class MetadataBuilderTest extends TestCase
                 'errorMessage' => '',
             ],
             [
-                'field' => 'country_iso',
+                'field'        => 'country_iso',
                 'type'         => 'STRING',
                 'size'         => 0,
                 'cardinality'  => 4,
@@ -130,7 +131,7 @@ class MetadataBuilderTest extends TestCase
                 'errorMessage' => '',
             ],
             [
-                'field' => 'revenue',
+                'field'        => 'revenue',
                 'type'         => 'DOUBLE',
                 'size'         => 0,
                 'cardinality'  => 84,
@@ -184,6 +185,19 @@ class MetadataBuilderTest extends TestCase
                 null,
             ],
         ];
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testStructureWithEmptyInterval()
+    {
+        $druidClient = new DruidClient([]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(' Maybe there are no intervals for this dataSource?');
+
+        $druidClient->metadata()->structure('wikipedia', '');
     }
 
     /**

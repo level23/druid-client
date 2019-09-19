@@ -14,11 +14,16 @@ class SelectQueryResponse extends QueryResponse
     {
         $this->rawResponse = $response;
 
-        $this->response = array_map(function ($row) {
-            return $row['event'];
-        }, $response[0]['result']['events']);
+        if (isset($response[0])) {
+            $this->response = array_map(function ($row) {
+                return $row['event'];
+            }, $response[0]['result']['events']);
 
-        $this->pagingIdentifier = $response[0]['result']['pagingIdentifiers'];
+            $this->pagingIdentifier = $response[0]['result']['pagingIdentifiers'];
+        } else {
+            $this->response         = [];
+            $this->pagingIdentifier = [];
+        }
     }
 
     /**
