@@ -51,7 +51,7 @@ class SelectQueryTest extends TestCase
             'dataSource'  => 'myDataSource',
             'intervals'   => $intervalCollection->toArray(),
             'descending'  => $descending,
-            'dimensions'  => $dimensions ? $dimensions->toArray() : [],
+            'dimensions'  => $dimensions->toArray(),
             'metrics'     => $metrics,
             'granularity' => Granularity::ALL,
             'pagingSpec'  => [
