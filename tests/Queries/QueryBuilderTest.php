@@ -15,11 +15,15 @@ use Level23\Druid\Queries\SelectQuery;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\QueryInterface;
+use Level23\Druid\Filters\SelectorFilter;
+use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\TopNQueryContext;
+use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\Responses\ScanQueryResponse;
@@ -699,8 +703,8 @@ class QueryBuilderTest extends TestCase
      * @testWith ["theTime", {}, true, true, true, false, 0, ""]
      *           ["myTime", {"skipEmptyBuckets":true}, false, true, false, true, 5, ""]
      *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, true, 5, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "myTime", "desc"]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "__time", "desc"]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "myTime", "desc", true]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "__time", "desc", false]
      *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "Whatever", "desc"]
      *
      * @runInSeparateProcess
@@ -715,6 +719,7 @@ class QueryBuilderTest extends TestCase
      * @param int    $limit
      * @param string $orderBy
      * @param string $direction
+     * @param bool   $contextAsObject
      *
      * @throws \Exception
      */
@@ -727,7 +732,8 @@ class QueryBuilderTest extends TestCase
         bool $withPostAggregations,
         int $limit,
         string $orderBy,
-        string $direction = "asc"
+        string $direction = "asc",
+        bool $contextAsObject = true
     ) {
         $dataSource = 'phones';
 
@@ -775,7 +781,7 @@ class QueryBuilderTest extends TestCase
                 ->with($timeAlias);
         }
 
-        if ($context) {
+        if ($context || $contextAsObject) {
             $query->shouldReceive('setContext')
                 ->once()
                 ->with(new IsInstanceOf(TimeSeriesQueryContext::class));
@@ -819,6 +825,10 @@ class QueryBuilderTest extends TestCase
             }
         }
 
+        if ($contextAsObject) {
+            $context = new TimeSeriesQueryContext($context);
+        }
+
         /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery($context);
     }
@@ -860,6 +870,108 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function testBuildSelectQueryWithoutLimit()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to supply a limit');
+
+        $this->builder->interval('12-02-2019/13-02-2019');
+
+        $this->builder->selectQuery([]);
+    }
+
+    /**
+     * @testWith [{}, true, 50, true, true, "asc", true]
+     *           [{}, false, 10, false, false, "asc", false]
+     *           [{"priority": 10}, false, 10, false, true, "desc", true]
+     *           [{"priority": 10}, true, 10, false, false, "desc", false]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @param array  $context
+     * @param bool   $contextAsObject
+     * @param int    $limit
+     * @param bool   $withDimensions
+     * @param bool   $withOrderBy
+     * @param string $orderByDirection
+     *
+     * @param bool   $withPagingIdentifier
+     *
+     * @throws \Exception
+     */
+    public function testBuildSelectQuery(
+        array $context,
+        bool $contextAsObject,
+        int $limit,
+        bool $withDimensions,
+        bool $withOrderBy,
+        string $orderByDirection,
+        bool $withPagingIdentifier
+    ) {
+        $this->builder->dataSource('wikipedia');
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->limit($limit);
+
+        if ($withDimensions) {
+            $this->builder->select('channel');
+            $this->builder->select('delta');
+        }
+
+        $pagingIdentifier = [
+            'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-12T14:15:44.694Z' => 9,
+        ];
+        if ($withPagingIdentifier) {
+            $this->builder->pagingIdentifier($pagingIdentifier);
+        }
+
+        $query = Mockery::mock('overload:' . SelectQuery::class);
+
+        $descending = false;
+
+        if ($withOrderBy) {
+            $this->builder->orderBy('__time', $orderByDirection);
+
+            if (OrderByDirection::validate($orderByDirection) == OrderByDirection::DESC) {
+                $descending = true;
+            }
+        }
+
+        $query->shouldReceive('__construct')
+            ->once()
+            ->with(
+                'wikipedia',
+                new IsInstanceOf(IntervalCollection::class),
+                $limit,
+                ($withDimensions ? new IsInstanceOf(DimensionCollection::class) : null),
+                [], // @todo
+                $descending
+            );
+
+        if ($context || $contextAsObject) {
+            $query->shouldReceive('setContext')
+                ->once()
+                ->with(new IsInstanceOf(QueryContext::class));
+        }
+
+        if ($withPagingIdentifier) {
+            $query->shouldReceive('setPagingIdentifier')
+                ->once()
+                ->with($pagingIdentifier);
+        }
+
+        if ($contextAsObject) {
+            $context = new QueryContext($context);
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildSelectQuery($context);
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function testBuildScanQueryWithoutInterval()
     {
@@ -867,6 +979,147 @@ class QueryBuilderTest extends TestCase
         $this->expectExceptionMessage('You have to specify at least one interval');
 
         $this->builder->scan([]);
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function testBuildScanQueryWithIncorrectResultFormatType()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid scanQuery resultFormat given');
+
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->scan([], 10, true, 'none');
+    }
+
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function testBuildScanQueryWithoutCorrectDimensions()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Only simple dimension or metric selects are available in a scan query.');
+
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->lookup('country', 'iso');
+        $this->builder->scan([]);
+    }
+
+    /**
+     * @testWith [true, true, {}, true, 10, null, false, "list", "", true]
+     *           [false, false, {}, false, 50, 10, true, "compactedList", "channel", false]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 0, 200, false, "list", "__time", true]
+     *           [false, true, {"maxRowsQueuedForOrdering":5}, false, 999999, 0, true, "compactedList", "__time", false]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @param bool     $withDimensions
+     * @param bool     $withFilter
+     * @param array    $context
+     * @param bool     $contextAsObj
+     * @param int      $limit
+     * @param int|null $rowBatchSize
+     * @param bool     $legacy
+     * @param string   $resultFormat
+     * @param string   $orderByField
+     * @param bool     $asc
+     *
+     * @throws \Exception
+     */
+    public function testBuildScanQuery(
+        bool $withDimensions,
+        bool $withFilter,
+        array $context,
+        bool $contextAsObj,
+        int $limit,
+        ?int $rowBatchSize,
+        bool $legacy,
+        string $resultFormat,
+        string $orderByField,
+        bool $asc
+    ) {
+        $this->builder->interval('12-02-2019/13-02-2019');
+        $this->builder->dataSource('wikipedia');
+
+        if ($withDimensions) {
+            $this->builder->select('channel');
+            $this->builder->select('delta');
+        }
+
+        $filter = new SelectorFilter('cityName', 'Auburn');
+        if ($withFilter) {
+            $this->builder->where($filter);
+        }
+
+        if ($limit > 0) {
+            $this->builder->limit($limit);
+        }
+
+        if (!empty($orderByField)) {
+            $this->builder->orderBy($orderByField, $asc ? 'asc' : 'desc');
+        }
+
+        $query = Mockery::mock('overload:' . ScanQuery::class);
+
+        $query->shouldReceive('__construct')
+            ->once()
+            ->with('wikipedia', new IsInstanceOf(IntervalCollection::class));
+
+        if ($withDimensions) {
+            $query->shouldReceive('setColumns')
+                ->once()
+                ->with(['channel', 'delta']);
+        }
+
+        if ($withFilter) {
+            $query->shouldReceive('setFilter')
+                ->once()
+                ->with($filter);
+        }
+
+        if ($context || $contextAsObj) {
+            $query->shouldReceive('setContext')
+                ->once()
+                ->with(new IsInstanceOf(ScanQueryContext::class));
+        }
+
+        if ($limit > 0 && $limit != QueryBuilder::$DEFAULT_MAX_LIMIT) {
+            $query->shouldReceive('setLimit')
+                ->once()
+                ->with($limit);
+        }
+
+        $query->shouldReceive('setResultFormat')
+            ->once()
+            ->with($resultFormat);
+
+        if ($rowBatchSize) {
+            $query->shouldReceive('setBatchSize')
+                ->once()
+                ->with($rowBatchSize);
+        }
+
+        if ($orderByField == '__time') {
+            $query->shouldReceive('setOrder')
+                ->once()
+                ->with($asc ? OrderByDirection::ASC : OrderByDirection::DESC);
+        }
+
+        $query->shouldReceive('setLegacy')
+            ->once()
+            ->with($legacy);
+
+        if ($contextAsObj) {
+            $context = new ScanQueryContext($context);
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->buildScanQuery($context, $rowBatchSize, $legacy,
+            $resultFormat);
     }
 
     /**

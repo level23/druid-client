@@ -68,6 +68,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Implement Kill Task
  - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
+ - metrics selection for select query (currently all columns are returned)
+ - whereColumn filter
 
 ## Examples
 
@@ -277,6 +279,129 @@ See: https://druid.apache.org/docs/latest/querying/aggregations.html#first-last-
 #### `javascript()`
 
 See: https://druid.apache.org/docs/latest/querying/aggregations.html#javascript-aggregator
+
+## Filters
+
+With filters you can filter on certain values. The following filters are available:
+
+#### `where()`
+
+This is probably the most used filter. It is very flexible.
+
+This method uses the following arguments:
+
+
+| **Argument** | **Type** | **Example**        |
+|--------------|----------|--------------------|
+| $dimension   | string   | "cityName"         |
+| $operator    | string   | "="                |
+| $value       | mixed    | "Auburn"           |
+| $extraction  | Closure  | See example below. |
+| $boolean     | string   | "and" / "or"       |
+
+The following `$operator` values are supported:
+
+| **Operator**   | **Description**                                                                                                                                                                                |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =              | Check if the dimension is equal to the given value.                                                                                                                                            |
+| !=             | Check if the dimension is not equal to the given value.                                                                                                                                        |
+| <>             | Same as `!=`                                                                                                                                                                                   |
+| >              | Check if the dimension is greater than the given value.                                                                                                                                        |
+| >=             | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
+| <              | Check if the dimension is less than the given value.                                                                                                                                           |
+| <=             | Check if the dimension is less than or equal to the given value.                                                                                                                               |
+| like           | Check if the dimension matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character).                             |
+| not like       | Same as `like`, only now the dimension should not match.                                                                                                                                       |
+| javascript     | Check if the dimension matches by using the given javascript function. The function takes a single argument, the dimension value, and returns either true or false.                            |
+| not javascript | Same as `javascript`, only now the dimension should not match.                                                                                                                                 |
+| regex          | Check if the dimension matches the given regular expression.                                                                                                                                   |
+| not regex      | Check if the dimension does not match the given regular expression.                                                                                                                            |
+| search         | Check if the dimension partially matches the given string(s). When an array of values are given, we expect the dimension value contains all of the values specified in this search query spec. |
+| not search     | Same as `search`, only now the dimension should not match.                                                                                                                                     | 
+
+We support retrieving a value using an extraction function. This can be done by passing a `Closure` function in the 
+`$extraction` parameter. This function will receive a `ExtractionBuilder`, which allows you to extract the value which 
+you want.
+
+For example:
+```php
+
+// Build a groupby query.
+$builder = $client->query('wikipedia')
+    // Filter on all names starting with "jo"    
+    ->where('name', '=', 'jo' function (ExtractionBuilder $extractionBuilder) {
+        $extractionBuilder->substring(2);
+    })
+```
+For a full list of extraction functions, see the Extractions chapter
+
+
+This method supports a quick equals shorthand. Example:
+```php
+$builder->where('name', 'John');
+```
+Is the same as
+```php
+$builder->where('name', '=', 'John');
+```
+
+
+We also support using a Closure to group various filters in 1 filter. For example:
+```php
+$builder->where(function (FilterBuilder $filterBuilder) {
+    $filterBuilder->orWhere('namespace', 'Talk');
+    $filterBuilder->orWhere('namespace', 'Main');
+});
+$builder->where('channel', 'en');
+```
+
+This would be the same as an SQL equivalent:
+```SELECT ... WHERE (namespace = 'Talk' OR 'namespace' = 'Main') AND 'channel' = 'en'; ``` 
+
+
+#### `orWhere()`
+
+Same as where, but now we will join previous added filters with a `or` instead of an `and`.
+
+#### `whereIn()`
+
+With this method you can filter on records using multiple values. 
+
+This method has the following arguments:
+
+| **Type** | **Argument**  | **Example**        | **Description**                                                                |
+|----------|---------------|--------------------|--------------------------------------------------------------------------------|
+| string   | `$dimension`  | country_iso        | The dimension which you want to filter                                         |
+| array    | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
+| Closure  | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
+
+#### `whereNotIn()`
+
+This works the same as `whereIn()`, only now we will check if the dimension is NOT in the given values. See `whereIn()` 
+for more details.  
+
+#### `whereBetween()`
+
+@todo
+
+#### `whereNotBetween()`
+
+@todo
+
+#### `whereInterval()`
+
+@todo
+
+#### `whereNotInterval()`
+
+@todo
+
+## Extractions
+
+@todo
+
+
+## MISC
 
 More info to come!
 
