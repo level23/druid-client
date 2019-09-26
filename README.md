@@ -155,12 +155,12 @@ To select a _dimension_, you can use one of the methods below:
 
 This method has the following arguments:
 
-| **Type**        | **Argument**  | **Example**                        | **Description**                                                                                                                                                    |
-|-----------------|---------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string or array | `$dimension`  | country_iso                        |  The dimension which you want to select                                                                                                                            |
-| string          | `$as`         | country                            | The name where the result will be available by in the result set.                                                                                                  |
-| Closure         | `$extraction` | A PHP closure, see example below.  | A PHP Closure function. This function will receive an instance of the ExtractionBuilder, which allows you to extract data from the dimension as you would like it. |
-| string          | `$outputType` | string                             | The output type of the data. If left unspecified, we will use `string`.                                                                                            |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**                        | **Description**                                                                                                                                                    |
+|-----------------|-----------------------|---------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string or array | Required              | `$dimension`  | country_iso                        |  The dimension which you want to select                                                                                                                            |
+| string          | Optional              | `$as`         | country                            | The name where the result will be available by in the result set.                                                                                                  |
+| Closure         | Optional              | `$extraction` | A PHP closure, see example below.  | A PHP Closure function. This function will receive an instance of the ExtractionBuilder, which allows you to extract data from the dimension as you would like it. |
+| string          | Optional              | `$outputType` | string                             | The output type of the data. If left unspecified, we will use `string`.                                                                                            |
 
 This method allows you to select a dimension in various way's, as shown in the example above. 
 
@@ -219,13 +219,17 @@ Lookup's are a handy way to transform an ID value into a user readable name, lik
 
 This method has the following arguments:
 
-| **Type**       | **Argument**           | **Example**    | **Description**                                                                                                                                                                                                                                                      |
-|----------------|------------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string         | `$lookupFunction`      | username_by_id | The name of the lookup function which you want to use for this dimension.                                                                                                                                                                                            |
-| string         | `$dimension`           | user_id        | The dimension which you want to transform.                                                                                                                                                                                                                           |
-| string         | `$as`                  | username       | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
-| bool or string | `$replaceMissingValue` | Unknown        | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
+| **Type**       | **Optional/Required** | **Argument**           | **Example**    | **Description**                                                                                                                                                                                                                                                      |
+|----------------|-----------------------|------------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$lookupFunction`      | username_by_id | The name of the lookup function which you want to use for this dimension.                                                                                                                                                                                            |
+| string         | Required              | `$dimension`           | user_id        | The dimension which you want to transform.                                                                                                                                                                                                                           |
+| string         | Optional              | `$as`                  | username       | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
+| bool or string | Optional              | `$replaceMissingValue` | Unknown        | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
 
+Example:
+```php
+$builder->lookup('lookupUsername', 'user_id', 'username', 'Unknown'); 
+```
 
 ## Metric Aggregations
 
@@ -291,13 +295,13 @@ This is probably the most used filter. It is very flexible.
 This method uses the following arguments:
 
 
-| **Argument** | **Type** | **Example**        |
-|--------------|----------|--------------------|
-| $dimension   | string   | "cityName"         |
-| $operator    | string   | "="                |
-| $value       | mixed    | "Auburn"           |
-| $extraction  | Closure  | See example below. |
-| $boolean     | string   | "and" / "or"       |
+| **Type** | **Optional/Required** | **Argument**   | **Example**        |
+|----------|-----------------------|----------------|--------------------|
+| string   | Required              | `$dimension`   | "cityName"         |
+| string   | Required              | `$operator`    | "="                |
+| mixed    | Required              | `$value`       | "Auburn"           |
+| Closure  | Optional              | `$extraction`  | See example below. |
+| string   | Optional              | `$boolean`     | "and" / "or"       |
 
 The following `$operator` values are supported:
 
@@ -345,8 +349,7 @@ Is the same as
 $builder->where('name', '=', 'John');
 ```
 
-
-We also support using a Closure to group various filters in 1 filter. For example:
+We also support using a `Closure` to group various filters in 1 filter. It will receive a `FilterBuilder`. For example:
 ```php
 $builder->where(function (FilterBuilder $filterBuilder) {
     $filterBuilder->orWhere('namespace', 'Talk');
@@ -369,11 +372,11 @@ With this method you can filter on records using multiple values.
 
 This method has the following arguments:
 
-| **Type** | **Argument**  | **Example**        | **Description**                                                                |
-|----------|---------------|--------------------|--------------------------------------------------------------------------------|
-| string   | `$dimension`  | country_iso        | The dimension which you want to filter                                         |
-| array    | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
-| Closure  | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                |
+|----------|-----------------------|---------------|--------------------|--------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | country_iso        | The dimension which you want to filter                                         |
+| array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
+| Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
 
 #### `whereNotIn()`
 
@@ -382,19 +385,61 @@ for more details.
 
 #### `whereBetween()`
 
-@todo
+This filter will select records where the given dimension is greater than or equal to the given `$minValue`, and 
+less than the given `$maxValue`.
+
+The SQL equivalent would be:
+```SELECT ... WHERE field >= $minValue AND field < $maxValue```
+
+This method has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                                                                                                                                                                                                                      |
+|-------------|-----------------------|---------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string      | Required              | `$dimension`  | year            | The dimension which you want to filter                                                                                                                                                                                                                                               |
+| int|string  | Required              | `$minValue`   | 1990            | The minimum value where the dimension should match. It should be equal or greater than this value.                                                                                                                                                                                   |
+| int |string | Required              | `$maxValue`   | 2000            | The maximum value where the dimension should match. It should be less than this value.                                                                                                                                                                                 |
+| Closure     | Optional              | `$extraction` | See Extractions | Extraction function to extract a different value from the dimension.                                                                                                                                                                                                                 |
+| string      | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
 
 #### `whereNotBetween()`
 
-@todo
+This works the same as `whereBetween()`, only now we will check if the dimension is NOT in between the given values. 
+See `whereBetween()` for more details.  
 
 #### `whereInterval()`
 
-@todo
+The Interval filter enables range filtering on columns that contain long millisecond values, with the boundaries 
+specified as ISO 8601 time intervals. It is suitable for the __time column, long metric columns, and dimensions 
+with values that can be parsed as long milliseconds.
+
+This filter converts the ISO 8601 intervals to long millisecond start/end ranges.
+It will then use a between filter to see if the interval matches. 
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**       | **Description**                                                      |
+|----------|-----------------------|---------------|-------------------|----------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | __time            | The dimension which you want to filter                               |
+| array    | Required              | `$intervals`  | ["yesterday/now"] | See below for more info                                              |
+| Closure  | Optional              | `$extraction` | See Extractions   | Extraction function to extract a different value from the dimension. |
+
+
+The `$intervals` array can contain the following:
+- an `Interval` object
+- an raw interval string as used in druid. For example: "2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"
+- an interval string, separating the start and the stop with a / (for example "12-02-2019/13-02-2019") 
+- an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp or anything which can be parsed by DateTime::__construct
+
+Example:
+
+```php
+$builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-2019']);
+```
 
 #### `whereNotInterval()`
 
-@todo
+This works the same as `whereInterval()`, only now we will check if the dimension is NOT matching the given intervals. 
+See `whereInterval()` for more details.  
 
 ## Extractions
 
