@@ -18,7 +18,6 @@ use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Responses\QueryResponse;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
-use Level23\Druid\OrderBy\OrderByInterface;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\Types\ScanQueryResultFormat;
@@ -337,22 +336,21 @@ class QueryBuilder
             throw new InvalidArgumentException('You have to specify at least one interval');
         }
 
+        if (!$this->limit || $this->limit->getLimit() == self::$DEFAULT_MAX_LIMIT) {
+            throw new InvalidArgumentException('You have to supply a limit');
+        }
+
+        $limit = $this->limit->getLimit();
+
+        $orderBy    = $this->limit->getOrderByCollection();
         $descending = false;
+        if ($orderBy->count() > 0) {
+            $orderByItems = $orderBy->toArray();
+            $first        = reset($orderByItems);
 
-        if ($this->limit) {
-            $limit   = $this->limit->getLimit();
-            $orderBy = $this->limit->getOrderByCollection();
-
-            if ($orderBy->count() > 0) {
-                $orderByItems = $orderBy->toArray();
-                $first        = reset($orderByItems);
-
-                if ($first instanceof OrderByInterface && $first->getDirection() == OrderByDirection::DESC) {
-                    $descending = true;
-                }
+            if ($first['direction'] == OrderByDirection::DESC) {
+                $descending = true;
             }
-        } else {
-            $limit = 50;
         }
 
         $query = new SelectQuery(
@@ -397,17 +395,18 @@ class QueryBuilder
             throw new InvalidArgumentException('You have to specify at least one interval');
         }
 
-        $query = new ScanQuery(
-            $this->dataSource,
-            new IntervalCollection(...$this->intervals)
-        );
-
         if (!$this->isDimensionsListScanCompliant()) {
             throw new InvalidArgumentException(
                 'Only simple dimension or metric selects are available in a scan query. ' .
                 'Aliases, extractions or lookups are not available.'
             );
         }
+
+        $query = new ScanQuery(
+            $this->dataSource,
+            new IntervalCollection(...$this->intervals)
+        );
+
         $columns = [];
         foreach ($this->dimensions as $dimension) {
             $columns[] = $dimension->getDimension();
@@ -420,9 +419,8 @@ class QueryBuilder
                 $orderByItems = $orderBy->toArray();
                 $first        = reset($orderByItems);
 
-                if ($first instanceof OrderByInterface
-                    && $first->getDimension() == '__time') {
-                    $query->setOrder($first->getDirection());
+                if ($first['dimension'] == '__time') {
+                    $query->setOrder($first['direction']);
                 }
             }
         }
@@ -783,7 +781,6 @@ class QueryBuilder
 
         return true;
     }
-
     //</editor-fold>
 }
 

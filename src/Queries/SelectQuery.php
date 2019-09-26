@@ -7,7 +7,6 @@ use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Filters\FilterInterface;
-use Level23\Druid\Responses\QueryResponse;
 use Level23\Druid\Responses\SelectQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\DimensionCollection;
@@ -134,7 +133,7 @@ class SelectQuery implements QueryInterface
             $result['context'] = $this->context->toArray();
         }
 
-        if( $this->filter ) {
+        if ($this->filter) {
             $result['filter'] = $this->filter->toArray();
         }
 
