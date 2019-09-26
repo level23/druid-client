@@ -336,13 +336,18 @@ class DruidClientTest extends TestCase
 
     public function testConfig()
     {
-        $client = new DruidClient(['pieter' => 'okay']);
+        $routerUrl = 'http://router.url.here';
+        $client    = new DruidClient(['pieter' => 'okay', 'router_url' => $routerUrl]);
 
         $this->assertEquals('okay', $client->config('pieter'));
         $this->assertEquals('bar', $client->config('foo', 'bar'));
 
         // test a default config param
         $this->assertEquals(500, $client->config('retry_delay_ms'));
+
+        $this->assertEquals($routerUrl, $client->config('overlord_url'));
+        $this->assertEquals($routerUrl, $client->config('coordinator_url'));
+        $this->assertEquals($routerUrl, $client->config('broker_url'));
     }
 
     public function executeRawRequestDataProvider(): array

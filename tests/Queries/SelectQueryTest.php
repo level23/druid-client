@@ -166,5 +166,7 @@ class SelectQueryTest extends TestCase
                  'added'     => 18,
              ],
          ], $response->getResponse());
+
+        $this->assertEquals($rawResponse, $response->getRawResponse());
     }
 }

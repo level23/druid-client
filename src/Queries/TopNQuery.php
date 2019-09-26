@@ -5,7 +5,6 @@ namespace Level23\Druid\Queries;
 
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterInterface;
-use Level23\Druid\Responses\QueryResponse;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\Dimensions\DimensionInterface;

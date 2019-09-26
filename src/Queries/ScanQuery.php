@@ -122,6 +122,10 @@ class ScanQuery implements QueryInterface
             $result['context'] = $this->context->toArray();
         }
 
+        if ($this->order) {
+            $result['order'] = $this->order;
+        }
+
         return $result;
     }
 

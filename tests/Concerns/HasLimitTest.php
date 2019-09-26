@@ -56,6 +56,8 @@ class HasLimitTest extends TestCase
      */
     public function testLimit()
     {
+        $this->assertEquals(null, $this->builder->getLimit());
+
         $this->getLimitMock(Limit::class)
             ->shouldReceive('__construct')
             ->with(15)
