@@ -12,6 +12,10 @@ class TopNQueryResponse extends QueryResponse
      */
     public function data(): array
     {
+        if (!isset($this->response[0])) {
+            return [];
+        }
+
         return array_map(function ($row) {
             return $row['result'];
         }, $this->response)[0];

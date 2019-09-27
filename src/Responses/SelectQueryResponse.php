@@ -27,6 +27,10 @@ class SelectQueryResponse extends QueryResponse
      */
     public function data(): array
     {
+        if (!isset($this->response[0]['result']['events'])) {
+            return [];
+        }
+
         return array_map(function ($row) {
             return $row['event'];
         }, $this->response[0]['result']['events']);
