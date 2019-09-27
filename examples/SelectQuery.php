@@ -31,7 +31,7 @@ try {
     $response = $builder->selectQuery($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response->getResponse());
+    new ConsoleTable($response->data());
 
     echo "Identifier for page 2: " . var_export($response->getPagingIdentifier(), true) . "\n\n";
 
@@ -44,7 +44,7 @@ try {
     $response = $builder->selectQuery($context);
 
     // Display the result as a console table.
-    new ConsoleTable($response->getResponse());
+    new ConsoleTable($response->data());
 
     echo "Identifier for page 3: " . var_export($response->getPagingIdentifier(), true) . "\n\n";
 } catch (Exception $exception) {

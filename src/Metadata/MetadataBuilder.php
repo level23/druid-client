@@ -196,7 +196,7 @@ class MetadataBuilder
             ->interval($interval)
             ->segmentMetadata();
 
-        return $response->getResponse();
+        return $response->data();
     }
 
     /**
@@ -272,8 +272,6 @@ class MetadataBuilder
         $metrics    = [];
 
         $columns = $this->getColumnsForInterval($dataSource, $interval);
-
-        //print_r($columns);
 
         foreach ($columns as $info) {
             $column = $info['field'];

@@ -29,7 +29,7 @@ try {
 
 
     // Display the result as a console table.
-    new ConsoleTable($response->getResponse());
+    new ConsoleTable($response->data());
 
     // Uncomment this to see the raw response
     //print_r($response->getRawResponse());

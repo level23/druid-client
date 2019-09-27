@@ -12,8 +12,8 @@ class TaskResponseTest extends TestCase
     {
         $response = new TaskResponse([]);
 
-        $this->assertEquals([], $response->getResponse());
-        $this->assertEquals([], $response->getRawResponse());
+        $this->assertEquals([], $response->data());
+        $this->assertEquals([], $response->raw());
         $this->assertEquals('', $response->getStatus());
         $this->assertEquals('', $response->getStatusCode());
         $this->assertEquals('', $response->getErrorMsg());
@@ -45,8 +45,8 @@ class TaskResponseTest extends TestCase
         ];
         $response    = new TaskResponse($rawResponse);
 
-        $this->assertEquals($rawResponse['status'], $response->getResponse());
-        $this->assertEquals($rawResponse, $response->getRawResponse());
+        $this->assertEquals($rawResponse['status'], $response->data());
+        $this->assertEquals($rawResponse, $response->raw());
         $this->assertEquals($rawResponse['status']['status'], $response->getStatus());
         $this->assertEquals($rawResponse['status']['statusCode'], $response->getStatusCode());
         $this->assertEquals($rawResponse['status']['errorMsg'], $response->getErrorMsg());

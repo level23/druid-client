@@ -13,7 +13,7 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 ## Requirements
 
-This package only requires Guzzle from version 4 or higher. 
+This package only requires Guzzle from version 6.2 or higher. 
 
 It requires PHP version 7.2 or higher. 
 
@@ -333,9 +333,9 @@ For example:
 // Build a groupby query.
 $builder = $client->query('wikipedia')
     // Filter on all names starting with "jo"    
-    ->where('name', '=', 'jo' function (ExtractionBuilder $extractionBuilder) {
+    ->where('name', '=', 'jo', function (ExtractionBuilder $extractionBuilder) {
         $extractionBuilder->substring(2);
-    })
+    });
 ```
 For a full list of extraction functions, see the Extractions chapter
 
