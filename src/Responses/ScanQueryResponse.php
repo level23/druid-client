@@ -5,15 +5,18 @@ namespace Level23\Druid\Responses;
 
 class ScanQueryResponse extends QueryResponse
 {
-    public function __construct(array $response)
+    /**
+     * Return the data in a "normalized" way so we can easily iterate over it
+     *
+     * @return array
+     */
+    public function data(): array
     {
-        $this->rawResponse = $response;
-
         $result = [];
-        array_walk($response, function ($row) use (&$result) {
+        array_walk($this->response, function ($row) use (&$result) {
             array_push($result, ...$row['events']);
         });
 
-        $this->response = $result;
+        return $result;
     }
 }

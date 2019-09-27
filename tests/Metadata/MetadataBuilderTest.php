@@ -296,7 +296,7 @@ class MetadataBuilderTest extends TestCase
             ->shouldAllowMockingProtectedMethods()
             ->getColumnsForInterval($dataSource, $interval);
 
-        $this->assertEquals($responseObj->getResponse(), $response);
+        $this->assertEquals($responseObj->data(), $response);
     }
 
     /**

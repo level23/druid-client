@@ -96,8 +96,8 @@ class GroupByQueryTest extends TestCase
         $response = $query->parseResponse([['event' => ['name' => 'John']]]);
 
         $this->assertInstanceOf(GroupByQueryResponse::class, $response);
-        $this->assertEquals([['name' => 'John']], $response->getResponse());
-        $this->assertEquals([['event' => ['name' => 'John']]], $response->getRawResponse());
+        $this->assertEquals([['name' => 'John']], $response->data());
+        $this->assertEquals([['event' => ['name' => 'John']]], $response->raw());
 
         $query->setLimit(15);
 

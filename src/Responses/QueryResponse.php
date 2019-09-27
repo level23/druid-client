@@ -8,20 +8,27 @@ abstract class QueryResponse implements ResponseInterface
     /**
      * @var array
      */
-    protected $rawResponse;
-
-    /**
-     * @var array
-     */
     protected $response;
 
-    public function getRawResponse(): array
+    public function __construct(array $response)
     {
-        return $this->rawResponse;
+        $this->response = $response;
     }
 
-    public function getResponse(): array
+    /**
+     * Return the raw response as we have received it from druid.
+     *
+     * @return array
+     */
+    public function raw(): array
     {
         return $this->response;
     }
+
+    /**
+     * Return the data in a "normalized" way so we can easily iterate over it
+     *
+     * @return array
+     */
+    abstract public function data(): array;
 }

@@ -26,7 +26,7 @@ try {
     $response = $builder->scan(['priority' => 75], 5, true);
 
     // Display the result as a console table.
-    new ConsoleTable($response->getResponse());
+    new ConsoleTable($response->data());
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

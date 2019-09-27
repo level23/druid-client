@@ -3,25 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Responses;
 
-class TaskResponse
+class TaskResponse extends QueryResponse
 {
-    /**
-     * @var array
-     */
-    protected $response;
-
-    /**
-     * @var array
-     */
-    protected $rawResponse;
-
-
-    public function __construct(array $response)
-    {
-        $this->rawResponse = $response;
-        $this->response    = $response['status'] ?? [];
-    }
-
     /**
      * We will return an array like this:
      *
@@ -46,38 +29,52 @@ class TaskResponse
      *    [errorMsg] =>
      * ]
      *
+     * or an empty array when no status was found.
+     *
      * @return array
      */
-    public function getResponse(): array
+    public function data(): array
     {
-        return $this->response;
-    }
-
-    public function getId()
-    {
-        return $this->response['id'] ?? '';
-    }
-
-    public function getStatusCode()
-    {
-        return $this->response['statusCode'] ?? '';
-    }
-
-    public function getStatus()
-    {
-        return $this->response['status'] ?? '';
-    }
-
-    public function getErrorMsg()
-    {
-        return $this->response['errorMsg'] ?? '';
+        return $this->response['status'] ?? [];
     }
 
     /**
-     * @return array
+     * Return the task id or an empty string when not known
+     *
+     * @return string
      */
-    public function getRawResponse(): array
+    public function getId(): string
     {
-        return $this->rawResponse;
+        return $this->response['status']['id'] ?? '';
+    }
+
+    /**
+     * Return the status code or an empty string when not known.
+     *
+     * @return string
+     */
+    public function getStatusCode(): string
+    {
+        return $this->response['status']['statusCode'] ?? '';
+    }
+
+    /**
+     * Return the status or an empty string when not known.
+     *
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->response['status']['status'] ?? '';
+    }
+
+    /**
+     * Return the error message or an empty string when not known.
+     *
+     * @return string
+     */
+    public function getErrorMsg(): string
+    {
+        return $this->response['status']['errorMsg'] ?? '';
     }
 }

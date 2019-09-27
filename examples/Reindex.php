@@ -43,7 +43,7 @@ try {
     }
 
     echo "Final status: \n";
-    $response = $status->getResponse();
+    $response = $status->data();
     unset($response['location']);
 
     // Display the result as a console table.
