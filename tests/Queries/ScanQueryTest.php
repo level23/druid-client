@@ -188,8 +188,8 @@ class ScanQueryTest extends TestCase
                 'deleted'   => 20,
                 'added'     => 0,
             ],
-        ], $response->getResponse());
+        ], $response->data());
 
-        $this->assertEquals($rawResponse, $response->getRawResponse());
+        $this->assertEquals($rawResponse, $response->raw());
     }
 }

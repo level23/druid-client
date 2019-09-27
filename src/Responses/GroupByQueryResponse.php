@@ -5,12 +5,15 @@ namespace Level23\Druid\Responses;
 
 class GroupByQueryResponse extends QueryResponse
 {
-    public function __construct(array $response)
+    /**
+     * Return the data in a "normalized" way so we can easily iterate over it
+     *
+     * @return array
+     */
+    public function data(): array
     {
-        $this->rawResponse = $response;
-
-        $this->response    = array_map(function ($row) {
+        return array_map(function ($row) {
             return $row['event'];
-        }, $response);
+        }, $this->response);
     }
 }
