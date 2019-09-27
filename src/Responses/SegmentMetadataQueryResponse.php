@@ -13,7 +13,7 @@ class SegmentMetadataQueryResponse extends QueryResponse
     public function data(): array
     {
         $columns = [];
-        if (isset($response[0]['columns'])) {
+        if (isset($this->response[0]['columns'])) {
             array_walk($this->response[0]['columns'], function ($value, $key) use (&$columns) {
                 $columns[] = array_merge($value, ['field' => $key]);
             });
