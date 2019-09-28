@@ -615,7 +615,33 @@ The `timeParse()` extraction function has the following arguments:
 
 #### `timeFormat()`
 
-@todo
+The `timeFormat()` extraction function will format the dimension according to the given format string, time zone, and locale.
+The format should be given in Joda DateTimeFormat. 
+
+See: http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
+
+For `__time` dimension values, this formats the time value bucketed by the aggregation granularity.
+
+For a regular dimension, it assumes the string is formatted in ISO-8601 date and time format.
+
+Example:
+```php
+// Format the time like "23 May 2019"
+$builder->select('__time', 'time', function(ExtractionBuilder $extraction) {
+    $extraction->timeFormat('dd MMMM yyyy', Granularity::DAY);
+});
+```
+
+The `timeFormat()` extraction function has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                      |
+|-------------|-----------------------|-------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/null | Optional              | `$format`         | dd-MM-yyyy    | Date time format for the resulting dimension value, in Joda TimeDateTimeFormat, or null to use the default ISO8601 format.                                                           |
+| string/null | Optional              | `$granularity`    | day           | Granularity to apply before formatting, or omit to not apply any granularity.                                                                                                        |
+| string/null | Optional              | `$locale`         | en-GB         | Locale (language and country) to use, given as a IETF BCP 47 language tag, e.g. en-US, en-GB, fr-FR, fr-CA, etc.                                                                     |
+| string/null | Optional              | `$timeZone`       | Europe/Berlin | time zone to use in IANA tz database format, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)                                                      |
+| bool/null   | Optional              | `$asMilliseconds` | `true`        | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
+
 
 #### `partial()`
 
