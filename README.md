@@ -456,7 +456,7 @@ With an extraction you can _extract_ a value from the dimension. These extractio
 There are several extraction methods available. These are described below. 
 See also this page in the druid manual: https://druid.apache.org/docs/latest/querying/dimensionspecs.html#extraction-functions
 
-Please not that it is possible to use multiple extraction functions at the same time. They will be executed in order 
+Please note that it is possible to use multiple extraction functions at the same time. They will be executed in order 
 of requested. 
 
 For example, this will extract the first 3 letters of a surname in upper case:
