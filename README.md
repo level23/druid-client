@@ -361,6 +361,13 @@ $builder->where('channel', 'en');
 This would be the same as an SQL equivalent:
 ```SELECT ... WHERE (namespace = 'Talk' OR 'namespace' = 'Main') AND 'channel' = 'en'; ``` 
 
+As last, you can also supply a raw filter object. For example:
+```php
+$builder->where( new SelectorFilter('name', 'John') );
+```
+
+However, this is not recommended and should not be needed.
+
 
 #### `orWhere()`
 
@@ -443,8 +450,196 @@ See `whereInterval()` for more details.
 
 ## Extractions
 
+With an extraction you can _extract_ a value from the dimension. These extractions can be used to select the data (see
+`select()`), or to filter on  (see `where()`).
+
+There are several extraction methods available. These are described below. 
+See also this page in the druid manual: https://druid.apache.org/docs/latest/querying/dimensionspecs.html#extraction-functions
+
+Please not that it is possible to use multiple extraction functions at the same time. They will be executed in order 
+of requested. 
+
+For example, this will extract the first 3 letters of a surname in upper case:
+
+```php
+$builder->select('surName', 'nameCategory', function(ExtractionBuilder $extraction) {
+    $extraction->substring(3)->upper();
+});
+```
+
+#### `lookup()`
+
+With this extraction function, you can use a registered lookup function to transform the dimension value to something else.
+
+For example, when you have stored a dimension called `country_id`. However, you want to filter on the country name.
+Then you could use a lookup function to transform the `country_id` to a country name, and use that value in your 
+where statement. 
+
+Example:
+```php
+// Match any country like %Nether%
+$builder->where('country_id', 'like', '%Nether%', function (ExtractionBuilder $extractionBuilder) {
+    // Extract the country name by it's id by usin this lookup function. 
+    $extractionBuilder->lookup('country_name_by_id');
+});
+```
+
+The `lookup()` extraction function has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**           | **Example**            | **Description**                                                                                                                                                                                                                                                                                                 |
+|-------------|-----------------------|------------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string      | Required              | `$lookupName`          | "country_name_by_id"   | The name of the registered lookup function to transform the dimension value to another value.                                                                                                                                                                                                                   |
+| bool|string | Optional              | `$replaceMissingValue` | `false` or `"Unknown"` | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                        |
+| bool        | Optional              | `$optimize`            | `true`                 | When set to true, we allow the optimization layer (which will run on thebroker) to rewrite the extraction filter if needed.                                                                                                                                                                                     |
+| bool|null   | Optional              | `$injective`           | `true`                 | This can override the lookup's own sense of whether or not it is injective. If left unspecified, Druid will use the registered cluster-wide lookup configuration. In general, you should set this property for any lookup that is naturally one-to-one, to allow Druid to run your queries as fast as possible. |
+
+#### `inlineLookup()`
+
+With the `inlineLookup()` extraction function, you can transform the dimension's value using a given list, instead of
+using a registered lookup function (as `lookup()` does).
+
+Example:
+
+```php
+$builder->select('likesAnimals', 'LikesAnimals', function(ExtractionBuilder $extraction) {
+    $extraction->inlineLookup(['y' => 'Yes', 'n' => 'No']);
+});
+```
+
+The `inlineLookup()` extraction function has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**           | **Example**                 | **Description**                                                                                                                                                                                                                                                                                                                                                                                         |
+|-------------|-----------------------|------------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array       | Required              | `$map`                 | ["y" => "Yes", "n" => "No"] | An array with key => value items which will be used as lookup map.                                                                                                                                                                                                                                                                                                                                      |
+| bool|string | Optional              | `$replaceMissingValue` | `false` or `"Unknown"`      | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                                                                                                                |
+| bool        | Optional              | `$optimize`            | `true`                      | When set to true, we allow the optimization layer (which will run on thebroker) to rewrite the extraction filter if needed.                                                                                                                                                                                                                                                                             |
+| bool|null   | Optional              | `$injective`           | `true`                      | Whether or not this list is injective. Injective lookups should include all possible keys that may show up in your dataset, and should also map all keys to unique values. This matters because non-injective lookups may map different keys to the same value, which must be accounted for during aggregation, lest query results contain two result values that should have been aggregated into one. |
+
+#### `format()`
+
+With the extraction function `format()` you can format a dimension value according to the given format string.
+The formatting is equal to the format used in the PHP's sprintf method. 
+
+Example:
+```php
+// Display the number with leading zero's
+$builder->select('number', 'myBigNumber', function(ExtractionBuilder $extraction) {
+  $extraction->format('%03d');
+});
+```
+
+The `format()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**         | **Example**   | **Description**                                                                                                                                  |
+|----------|-----------------------|----------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$sprintfExpression` | "%02d"        | The format string which will be used to format the dimensions value.                                                                             |
+| string   | Optional              | `$nullHandling`      | "emptyString" | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. |
+
+#### `upper()`
+
+The `upper()` extraction function will change the given dimension value to upper case. Optionally user can specify the 
+language to use in order to perform upper transformation.
+
+Example:
+```php
+// Return the city name in upper case.
+$builder->select('cityName', 'city', function(ExtractionBuilder $extraction) {
+  $extraction->upper();
+});
+```
+
+The `upper()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
+|----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
+| string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform upper transformation |
+
+#### `lower()`
+
+The `lower()` extraction function will change the given dimension value to lower case. Optionally user can specify the 
+language to use in order to perform lower transformation.
+
+Example:
+```php
+// compare the city name in lower case
+$builder->where('cityName', '=', strtolower($city), function(ExtractionBuilder $extraction) {
+  $extraction->lower();
+});
+```
+
+The `lower()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
+|----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
+| string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform lower transformation |
+
+#### `timeParse()`
+
+The `timeParse()` extraction function parses dimension values as timestamps using the given input format, 
+and returns them formatted using the given output format. 
+
+The date format can be given in the Joda DateTimeFormat or in SimpleDateFormat. 
+
+If `$jodaFormat` is true, time formats are described in the Joda DateTimeFormat documentation. If `$jodaFormat` is
+false (or unspecified) then formats are described in the SimpleDateFormat documentation. In general, we
+recommend setting `$jodaFormat` to true since Joda format strings are more common in Druid APIs and since Joda 
+handles certain edge cases (like weeks and week-years near the start and end of calendar years) 
+in a more ISO8601 compliant way.
+
+See: 
+  * Joda DateTimeFormat: http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
+  * SimpleDateFormat: http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html
+
+**Note**: if you are working with the `__time` dimension, you should consider using the `timeFormat()` extraction function instead 
+instead, which works on time value directly as opposed to string values.
+
+If a value cannot be parsed using the provided timeFormat, it will be returned as-is.
+
+Example:
+
+```php
+// Change the date format from something like "1984-05-23" to "23 May 1984"
+$builder->select('birthday', 'dayOfBirth', function(ExtractionBuilder $extraction) {
+    $extraction->timeParse('yyyy-MM-dd', 'dd MMMM yy');
+});
+```
+
+The `timeParse()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**    | **Example** | **Description**                                                         |
+|----------|-----------------------|-----------------|-------------|-------------------------------------------------------------------------|
+| string   | Required              | `$inputFormat`  | yyyy-MM-dd  | The format which is used to parse the dimensions value.                 |
+| string   | Required              | `$outputFormat` | dd MMMM yy  | The format which is used to display the parsed value.                   |
+| bool     | Optional              | `$jodaFormat`   | true        | Whether or not to use the Joda DateTimeFornat. See for more info above. |
+
+
+#### `timeFormat()`
+
 @todo
 
+#### `partial()`
+
+@todo
+
+#### `regex()`
+
+@todo
+
+#### `searchQuery()`
+
+@todo
+
+#### `substring()`
+
+@todo
+
+#### `javascript()`
+
+@todo
+
+#### `bucket()`
+
+@todo
 
 ## MISC
 
