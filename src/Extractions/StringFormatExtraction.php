@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Extractions;
 
+use Level23\Druid\Types\NullHandling;
+
 class StringFormatExtraction implements ExtractionInterface
 {
     /**
@@ -10,9 +12,15 @@ class StringFormatExtraction implements ExtractionInterface
      */
     protected $sprintfExpression;
 
-    public function __construct(string $sprintfExpression)
+    /**
+     * @var string
+     */
+    protected $nullHandling;
+
+    public function __construct(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING)
     {
         $this->sprintfExpression = $sprintfExpression;
+        $this->nullHandling      = NullHandling::validate($nullHandling);
     }
 
     /**
@@ -23,8 +31,9 @@ class StringFormatExtraction implements ExtractionInterface
     public function toArray(): array
     {
         return [
-            'name'   => 'stringFormat',
-            'format' => $this->sprintfExpression,
+            'name'         => 'stringFormat',
+            'format'       => $this->sprintfExpression,
+            'nullHandling' => $this->nullHandling,
         ];
     }
 }

@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
+use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\RegexExtraction;
 use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\Extractions\LowerExtraction;
 use Level23\Druid\Extractions\LookupExtraction;
+use Level23\Druid\Extractions\BucketExtraction;
 use Level23\Druid\Extractions\PartialExtraction;
 use Level23\Druid\Extractions\CascadeExtraction;
 use Level23\Druid\Extractions\ExtractionInterface;
@@ -33,7 +35,7 @@ trait HasExtractions
      *                                         the missing values and replace them with the string value.
      * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
      *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
+     * @param bool|null   $injective           This can override the lookup's own sense of whether
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
      *
@@ -59,9 +61,12 @@ trait HasExtractions
      *                                         the missing values and replace them with the string value.
      * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
      *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
-     *                                         or not it is injective. If left unspecified, Druid will use the
-     *                                         registered cluster-wide lookup configuration.
+     * @param bool|null   $injective           Whether or not this list is injective. Injective lookups should include
+     *                                         all possible keys that may show up in your dataset, and should also map
+     *                                         all keys to unique values. This matters because non-injective lookups
+     *                                         may map different keys to the same value, which must be accounted for
+     *                                         during aggregation, lest query results contain two result values that
+     *                                         should have been aggregated into one.
      *
      * @return $this
      */
@@ -83,12 +88,14 @@ trait HasExtractions
      * "[%s]" as format string.
      *
      * @param string $sprintfExpression
+     * @param string $nullHandling Can be one of nullString, emptyString or returnNull. With "[%s]" format, each
+     *                             configuration will result [null], [], null. Default is nullString.
      *
      * @return $this
      */
-    public function format(string $sprintfExpression)
+    public function format(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING)
     {
-        $this->addExtraction(new StringFormatExtraction($sprintfExpression));
+        $this->addExtraction(new StringFormatExtraction($sprintfExpression, $nullHandling));
 
         return $this;
     }
@@ -253,6 +260,29 @@ trait HasExtractions
     public function javascript(string $javascript, bool $injective = false)
     {
         $this->addExtraction(new JavascriptExtraction($javascript, $injective));
+
+        return $this;
+    }
+
+    /**
+     * Bucket extraction function is used to bucket numerical values in each range of the given size by converting them
+     * to the same base value. Non numeric values are converted to null.
+     *
+     * The following extraction function creates buckets of 5 starting from 2. In this case, values in the range of [2,
+     * 7) will be converted to 2, values in [7, 12) will be converted to 7, etc.
+     *
+     * ```
+     * bucket(5, 2);
+     * ```
+     *
+     * @param int $size   the size of the buckets (optional, default 1)
+     * @param int $offset the offset for the buckets (optional, default 0)
+     *
+     * @return $this
+     */
+    public function bucket(int $size = 1, int $offset = 0)
+    {
+        $this->addExtraction(new BucketExtraction($size, $offset));
 
         return $this;
     }
