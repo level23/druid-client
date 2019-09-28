@@ -5,10 +5,12 @@ namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
 use tests\TestCase;
+use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\RegexExtraction;
 use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\Extractions\LowerExtraction;
 use Level23\Druid\Extractions\LookupExtraction;
+use Level23\Druid\Extractions\BucketExtraction;
 use Level23\Druid\Extractions\CascadeExtraction;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Extractions\PartialExtraction;
@@ -70,6 +72,42 @@ class HasExtractionsTest extends TestCase
         $response = $builder->lookup('username');
         $this->assertEquals($builder, $response);
         $this->assertInstanceOf(LookupExtraction::class, $builder->getExtraction());
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testBucket()
+    {
+        $this->getExtractionMock(BucketExtraction::class)
+            ->shouldReceive('__construct')
+            ->with(5, 2);
+
+        $builder  = new ExtractionBuilder();
+        $response = $builder->bucket(5, 2);
+
+        $this->assertEquals($builder, $response);
+
+        $this->assertInstanceOf(BucketExtraction::class, $builder->getExtraction());
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testBucketDefault()
+    {
+        $this->getExtractionMock(BucketExtraction::class)
+            ->shouldReceive('__construct')
+            ->with(1, 0);
+
+        $builder  = new ExtractionBuilder();
+        $response = $builder->bucket(1, 0);
+
+        $this->assertEquals($builder, $response);
+
+        $this->assertInstanceOf(BucketExtraction::class, $builder->getExtraction());
     }
 
     /**
@@ -295,7 +333,24 @@ class HasExtractionsTest extends TestCase
     {
         $this->getExtractionMock(StringFormatExtraction::class)
             ->shouldReceive('__construct')
-            ->with('[%s]');
+            ->with('[%s]', NullHandling::EMPTY_STRING);
+
+        $builder  = new ExtractionBuilder();
+        $response = $builder->format('[%s]', NullHandling::EMPTY_STRING);
+
+        $this->assertEquals($builder, $response);
+        $this->assertInstanceOf(StringFormatExtraction::class, $builder->getExtraction());
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testFormatDefaults()
+    {
+        $this->getExtractionMock(StringFormatExtraction::class)
+            ->shouldReceive('__construct')
+            ->with('[%s]', NullHandling::NULL_STRING);
 
         $builder  = new ExtractionBuilder();
         $response = $builder->format('[%s]');
