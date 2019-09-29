@@ -429,11 +429,70 @@ The `javascript()` aggregation method has the following parameters:
 
 #### `hyperUnique()`
 
-@todo
+https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
+
+
+@todo 
+
 
 #### `cardinality()`
 
-@todo
+The `cardinality()` aggregation computes the cardinality of a set of Apache Druid (incubating) dimensions, 
+using HyperLogLog to estimate the cardinality. 
+
+Please note: use `distinctCount()` when the Theta Sketch extension is available, as it is much faster. 
+This aggregator will also be much slower than indexing a column with the `hyperUnique()` aggregator. 
+
+In general, we strongly recommend using the `distinctCount()` or `hyperUnique()` aggregator instead of the `cardinality()` 
+aggregator if you do not care about the individual values of a dimension.
+
+When setting `$byRow` to `false` (the default) it computes the cardinality of the set composed of the union of al
+dimension values for all the given dimensions. For a single dimension, this is equivalent to:
+```sql
+SELECT COUNT(DISTINCT(dimension)) FROM <datasource>
+```
+For multiple dimensions, this is equivalent to something akin to
+```sql
+SELECT COUNT(DISTINCT(value)) FROM (
+SELECT dim_1 as value FROM <datasource>
+UNION
+SELECT dim_2 as value FROM <datasource>
+UNION
+SELECT dim_3 as value FROM <datasource>
+)
+```
+
+When setting `$byRow` to `true` it computes the cardinality by row, i.e. the cardinality of distinct dimension
+combinations. This is equivalent to something akin to
+```sql
+SELECT COUNT(*) FROM ( SELECT DIM1, DIM2, DIM3 FROM <datasource> GROUP BY DIM1, DIM2, DIM3 )
+```
+
+For more information, see https://druid.apache.org/docs/latest/querying/hll-old.html#cardinality-aggregator.
+
+Example:
+
+```php 
+$builder->cardinality(
+    'category_user_count',
+    function(DimensionBuilder $dimensions) {
+        $dimensions->select('category_id');
+        $dimensions->select('user_id');
+    },
+    true, # byRow
+    false # round
+);
+```
+
+The `cardinality()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**        | **Example**        | **Description**                                                                                                                                                                                                      |
+|----------|-----------------------|---------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$as`               | "distinct_count"   | The name which will be used in the output result                                                                                                                                                                     |
+| Closure  | Required              | `$dimensionBuilder` | See example above. | A function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                                                       |
+| bool     | Optional              | `$byRow`            | false              | See above for more info.                                                                                                                                                                                             |
+| bool     | Optional              | `$round`            | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
+
 
 #### `distinctCount()`
 
