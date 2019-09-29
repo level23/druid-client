@@ -72,6 +72,7 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - whereColumn filter
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement index_parallel
+ - Implement support for Spatial filters
 
 ## Examples
 
@@ -240,10 +241,43 @@ Metrics are fields which you normally aggregate, like summing the values of this
 - Hits
 - NrOfTimes Clicked / Watched / Bought
 - Conversions
+- PageViews
+- Counters
 
-To aggregate a metric, you can use one of the methods below:
+To aggregate a metric, you can use one of the methods below. 
+
+All of the metrics support a filter selection. If this is given, the metric aggregation will only be applied to the 
+records where the filters match.  
+
+Example:
+
+```php
+// count how many page views are done by kids
+$builder->longSum('pageViews', 'pageViewsByKids', function(FilterBuilder $filter) {
+    $filter->where('age', '<=', 16); 
+});
+```
+  
+This method uses the following arguments:
 
 #### `count()`
+
+This aggregation will return the number of rows which match the filters.
+
+Please note the count aggregator counts the number of Druid rows, which does not always reflect the number of raw 
+events ingested. This is because Druid can be configured to roll up data at ingestion time. To count the number 
+of ingested rows of data, include a count aggregator at ingestion time, and a longSum aggregator at query time.
+
+Example:
+```
+$builder->count('nrOfResults');
+```
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                         |
+|----------|-----------------------|------------------|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$as`            | "nrOfRows"                                   | The size of the bucket where the numerical values are grouped in                                                        |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter. |
+
 
 See: https://druid.apache.org/docs/latest/querying/aggregations.html#count-aggregator
 
