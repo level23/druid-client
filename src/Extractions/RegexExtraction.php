@@ -29,7 +29,8 @@ class RegexExtraction implements ExtractionInterface
      * RegexExtraction constructor.
      *
      * @param string      $regexp
-     * @param int         $groupToExtract
+     * @param int         $groupToExtract      If "$groupToExtract" is set, it will control which group from the match
+     *                                         to extract. Index zero extracts the string matching the entire pattern.
      * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
      *                                         value will be null. If false, the missing items will not be kept in the
      *                                         result set. If this is a string, we will keep the missing values and
@@ -37,7 +38,7 @@ class RegexExtraction implements ExtractionInterface
      */
     public function __construct(
         string $regexp,
-        $groupToExtract = 1,
+        int $groupToExtract = 1,
         $replaceMissingValue = false
     ) {
         $this->regexp                  = $regexp;

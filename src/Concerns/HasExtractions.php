@@ -176,7 +176,8 @@ trait HasExtractions
      * RegexExtraction constructor.
      *
      * @param string      $regexp
-     * @param int         $groupToExtract
+     * @param int         $groupToExtract      If "$groupToExtract" is set, it will control which group from the match
+     *                                         to extract. Index zero extracts the string matching the entire pattern.
      * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
      *                                         value will be null. If false, the missing items will not be kept in the
      *                                         result set. If this is a string, we will keep the missing values and
@@ -184,7 +185,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function regex(string $regexp, $groupToExtract = 1, $replaceMissingValue = true)
+    public function regex(string $regexp, int $groupToExtract = 1, $replaceMissingValue = true)
     {
         $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $replaceMissingValue));
 
