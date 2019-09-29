@@ -70,6 +70,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
  - metrics selection for select query (currently all columns are returned)
  - whereColumn filter
+ - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
+ - Implement index_parallel
 
 ## Examples
 
@@ -642,30 +644,177 @@ The `timeFormat()` extraction function has the following arguments:
 | string/null | Optional              | `$timeZone`       | Europe/Berlin | time zone to use in IANA tz database format, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)                                                      |
 | bool/null   | Optional              | `$asMilliseconds` | `true`        | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
 
+#### `regex()`
+
+The `regex()` extraction function will return the first matching group for the given regular expression. 
+If there is no match, it returns the dimension value as is.
+
+Example:
+
+```php
+// Zipcodes
+$builder->select('day', 'day', function(ExtractionBuilder $extraction) {
+    // Transform 'Monday', 'Tuesday', 'Wednesday' into 'Mon', 'Tue', 'Wed'.
+    $extraction->regex('(\\w\\w\\w).*');
+});
+```
+
+The `regex()` extraction function has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**           | **Example** | **Description**                                                                                                                                                                                                                                          |
+|-------------|-----------------------|------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string      | Required              | `$regularExpression`   | `[0-9]*`    | The regular expression where the dimensions value should match with.                                                                                                                                                                                     |
+| int         | Optional              | `$groupToExtract`      | 1           | If "$groupToExtract" is set, it will control which group from the match to extract. Index zero extracts the string matching the entire pattern.                                                                                                          |
+| bool/string | Optional              | `$replaceMissingValue` | "Unknown"   | When true, we will keep values which are not matched by the regexp. The value will be null. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value. |
+
 
 #### `partial()`
 
-@todo
+The `partial()` extraction function will return the dimension value unchanged if the regular expression matches, otherwise returns null.
 
-#### `regex()`
+See this page for more information about the regular expression format: http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
 
-@todo
+Example:
+
+```php
+// Zipcodes
+$builder->select('zipcode', 'zipcode', function(ExtractionBuilder $extraction) {
+    // filter out all incorrect zipcodes, only allow zipcodes in format "2881 AB"
+    $extraction->partial('[0-9]{4} [A-Z]{2}');
+});
+```
+
+The `partial()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                     |
+|----------|-----------------------|----------------------|-------------|---------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$regularExpression` | `[0-9]*`    | The regular expression where the dimensions value should match with. All none matching values are changed to `null` |
+
 
 #### `searchQuery()`
 
-@todo
+The `searchQuery()` extraction function will return the values which will match the given 
+search string(s), or `null` when there is no match. 
+
+Example:
+
+```php
+// Zipcodes
+$builder->select('page', 'page', function(ExtractionBuilder $extraction) {
+    // Filter out all pages containing the word "talk" (case insensitive)
+    $extraction->searchQuery('talk', false);
+});
+``` 
+
+The `searchQuery()` extraction function has the following arguments:
+
+| **Type**     | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                                                                            |
+|--------------|-----------------------|------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/array | Required              | `$valueOrValues` | "Talk"      | The word (string) or words (array) where the dimension should match with. If this word is in the dimension, it matches. When multiple words are given, all of then should match with the dimensions value. |
+| bool         | Optional              | `$caseSensitive` | true        | If "$groupToExtract" is set, it will control which group from the match to extract. Index zero extracts the string matching the entire pattern.                                                            |
+
 
 #### `substring()`
 
-@todo
+The `substring()` extraction function will return a substring of the dimension value starting from the supplied index 
+and of the desired length. Both index and length are measured in the number of Unicode code units present in the string 
+as if it were encoded in UTF-16. Note that some Unicode characters may be represented by two code units. 
+This is the same behavior as the Java String class's "substring" method.
+
+If the desired length exceeds the length of the dimension value, the remainder of the string starting at 
+index will be returned. If index is greater than the length of the dimension value, null will be returned.
+
+Example:
+
+```php
+// Filter on all surname's starting with the letter B
+$builder->where('surname', '=', 'B', function(ExtractionBuilder $extraction) {
+    $extraction->substring(0, 1);
+});
+```
+
+The `substring()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                             |
+|----------|-----------------------|--------------|-------------|-----------------------------------------------------------------------------|
+| int      | Required              | `$index`     | 2           | The starting index from where the dimension's value should be returned.     |
+| int      | Optional              | `$length`    | 5           | The number of characters which should be returned from the $index position. |
 
 #### `javascript()`
 
-@todo
+The `javascript()` extraction function will return the dimension value, as transformed by the given JavaScript function.
+
+For regular dimensions, the input value is passed as a string.
+
+For the `__time` dimension, the input value is passed as a number representing the number of milliseconds since January 1, 1970 UTC.
+
+Example:
+```php
+$builder->select('__time', 'second', function(ExtractionBuilder $extraction) {
+    $extraction->javascript("function(t) { return 'Second ' + Math.floor((t % 60000) / 1000); }");
+});
+```
+
+**Advanced example:**
+
+The javascript function is a good alternative to do bitwise operator expressions, as they are currently not yet 
+supported by druid. A feature request has been opened, see: https://github.com/apache/incubator-druid/issues/8560
+
+Until then, you can use something like this to extract a value using a "bitwise and":
+```php
+int $binaryFlagToMatch = 16;
+
+// Select the fields where the 5th bit is enabled
+$builder->where('flags', '=', $binaryFlagToMatch, function(ExtractionBuilder $extraction) use( $binaryFlagToMatch ) {   
+    // Do a binary "AND" flag comparison on a 64 bit int. The result will either be the 
+    // $binaryFlagToMatch, or 0 when it's bit is not set. 
+    $extraction->javascript('
+        function(v1) { 
+            var v2 = '.$binaryFlagToMatch.'; 
+            var hi = 0x80000000; 
+            var low = 0x7fffffff; 
+            var hi1 = ~~(v1 / hi); 
+            var hi2 = ~~(v2 / hi); 
+            var low1 = v1 & low; 
+            var low2 = v2 & low; 
+            var h = hi1 & hi2; 
+            var l = low1 & low2; 
+            return (h*hi + l); 
+        }
+    ');
+});
+``` 
+
+**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide 
+for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+https://druid.apache.org/docs/latest/development/javascript.html
+
+The `javascript()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                          |
+|----------|-----------------------|---------------|--------------------|----------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$javascript` | See examples above | The javascript function which transforms the given dimension value.                                      |
+| boolean  | Optional              | `$injective`  | true               | Set to true if this function preserves the uniqueness of the dimensions value. Default value is `false`. |
 
 #### `bucket()`
 
-@todo
+The `bucket()` extraction function is used to bucket numerical values in each range of the given size by converting 
+them to the same base value. Non numeric values are converted to null.
+
+Example:
+```php
+// Group all ages into "groups" by 10, 20, 30, etc. 
+$builder->select('age', 'age_group', function(ExtractionBuilder $extraction) {
+    $extraction->bucket(10);
+}); 
+```
+
+The `bucket()` extraction function has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                  |
+|----------|-----------------------|--------------|-------------|------------------------------------------------------------------|
+| int      | Optional              | `$size`      | 10          | The size of the bucket where the numerical values are grouped in |
+| int      | Optional              | `$offset`    | 2           | The offset for the buckets                                       |
 
 ## MISC
 
