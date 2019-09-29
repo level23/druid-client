@@ -597,10 +597,9 @@ trait HasAggregations
      *
      * @param string        $as            The output name as the result will be available
      * @param array         $fieldNames    The columns which will be given to the fnAggregate function. Both metrics
-     *                                     and
-     *                                     dimensions are allowed.
+     *                                     and dimensions are allowed.
      * @param string        $fnAggregate   A javascript function which does the aggregation. This function will receive
-     *                                     as first parameter the "current" value. The other parameters will be the
+     *                                     the "current" value as first parameter. The other parameters will be the
      *                                     values of the columns as given in the $fieldNames parameter.
      * @param string        $fnCombine     A function which can combine two aggregation results.
      * @param string        $fnReset       A function which will reset a value.
