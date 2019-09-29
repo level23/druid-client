@@ -257,6 +257,8 @@ $builder->longSum('pageViews', 'pageViewsByKids', function(FilterBuilder $filter
     $filter->where('age', '<=', 16); 
 });
 ```
+
+See also this page: https://druid.apache.org/docs/latest/querying/aggregations.html
   
 This method uses the following arguments:
 
@@ -269,7 +271,8 @@ events ingested. This is because Druid can be configured to roll up data at inge
 of ingested rows of data, include a count aggregator at ingestion time, and a longSum aggregator at query time.
 
 Example:
-```
+
+```php
 $builder->count('nrOfResults');
 ```
 
@@ -279,47 +282,181 @@ $builder->count('nrOfResults');
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter. |
 
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#count-aggregator
-
 #### `sum()`
 
-Alternatives are: `longSum()`, `doubleSum()` and `floatSum()`, which allow you to directly specify the output type by
-using the appropriate method name. 
+The `sum()` aggregation computes the sum of values as a 64-bit, signed integer.
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#sum-aggregators
+**Note:** Alternatives are: `longSum()`, `doubleSum()` and `floatSum()`, which allow you to directly specify the output type by
+using the appropriate method name. These methods do not have the `$type` parameter.
+
+Example:
+
+```php
+$builder->sum('views', 'totalViews');
+```
+
+The `sum()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                       |
+|----------|-----------------------|------------------|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`        | "views"                                      | The metric which you want to sum                                                                                      |
+| string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                      |
+| string   | Optional              | `$type`          | "long"                                       | The output type of the sum. This can either be long, float or double.                                                 |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only sum the records which match with the given filter. |
 
 #### `min()`
 
-Alternatives are: `longMin()`, `doubleMin()` and `floatMin()`, which allow you to directly specify the output type by
-using the appropriate method name. 
+The `min()` aggregation computes the minimum of all metric values.
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#min-max-aggregators
+**Note:** Alternatives are: `longMin()`, `doubleMin()` and `floatMin()`, which allow you to directly specify the output type by
+using the appropriate method name.  These methods do not have the `$type` parameter.
+
+Example:
+```php
+$builder->min('age', 'minAge');
+```
+
+The `min()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
+|----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the minimum value of.                                                                                     |
+| string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
+| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be long, float or double.                                                                                       |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only calculate the minimum value of the records which match with the given filter. |
+
 
 #### `max()`
 
-Alternatives are: `longMax()`, `doubleMax()` and `floatMax()`, which allow you to directly specify the output type by
-using the appropriate method name.
+The `max()` aggregation computes the maximum of all metric values.
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#min-max-aggregators 
+**Note:** Alternatives are: `longMax()`, `doubleMax()` and `floatMax()`, which allow you to directly specify the output type by
+using the appropriate method name.  These methods do not have the `$type` parameter.
+
+Example:
+```php
+$builder->max('age', 'maxAge');
+```
+
+The `max()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
+|----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the maximum value of.                                                                                     |
+| string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
+| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be long, float or double.                                                                                       |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only calculate the maximum value of the records which match with the given filter. |
+
 
 #### `first()`
 
-Alternatives are: `longFirst()`, `doubleFirst()`, `floatFirst()` and `stringFirst()`, which allow you to directly specify the output type by
-using the appropriate method name.
+The `first()` aggregation computes the metric value with the minimum timestamp or 0 if no row exist.
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#first-last-aggregator 
+**Note:** Alternatives are: `longFirst()`, `doubleFirst()`, `floatFirst()` and `stringFirst()`, which allow you to 
+directly specify the output type by using the appropriate method name.  These methods do not have the `$type` parameter.
+
+Example:
+```php
+$builder->first('device')
+```
+
+The `first()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                              |
+|----------|-----------------------|------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`        | "device"                                     | The metric which you want to compute the first value of.                                                                                     |
+| string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                             |
+| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be string, long, float or double.                                                                           |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the first value of the records which match with the given filter. |
+
 
 #### `last()`
 
-Alternatives are: `longLast()`, `doubleLast()`, `floatLast()` and `stringLast()`, which allow you to directly specify the output type by
-using the appropriate method name.
+The `last()` aggregation computes the metric value with the maximum timestamp or 0 if no row exist.
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#first-last-aggregator 
+Note that queries with last aggregators on a segment created with rollup enabled will return the rolled up value, 
+and not the last value within the raw ingested data.
+
+**Note:** Alternatives are: `longLast()`, `doubleLast()`, `floatLast()` and `stringLast()`, which allow you to 
+directly specify the output type by using the appropriate method name.  These methods do not have the `$type` parameter.
+
+Example:
+```php
+$builder->last('email')
+```
+
+The `last()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                             |
+|----------|-----------------------|------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`        | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
+| string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                            |
+| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be string, long, float or double.                                                                          |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
+ 
 
 #### `javascript()`
 
-See: https://druid.apache.org/docs/latest/querying/aggregations.html#javascript-aggregator
+The `javascript()` aggregation computes an arbitrary JavaScript function over a set of columns (both metrics and dimensions 
+are allowed). Your JavaScript functions are expected to return floating-point values.
 
+**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide 
+for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+https://druid.apache.org/docs/latest/development/javascript.html
+
+Example:
+
+```php
+$builder->javascript(
+    'result',
+    ['x', 'y'],
+    "function(current, a, b)      { return current + (Math.log(a) * b); }",
+    "function(partialA, partialB) { return partialA + partialB; }",
+    "function()                   { return 10; }"
+);
+```
+
+The `javascript()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                                                      |
+|----------|-----------------------|------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$as`            | "result"                                     | The name which will be used in the output result                                                                                                                                                                     |
+| array    | Required              | `$fieldNames`    | ["metric_field", "dimension_field"]          | The columns which will be given to the fnAggregate function. Both metrics and dimensions are allowed.                                                                                                                |
+| string   | Required              | `$fnAggregate`   | See example above.                           | A javascript function which does the aggregation. This function will receive the "current" value as first parameter. The other parameters will be the values of the columns as given in the `$fieldNames` parameter. |
+| string   | Required              | `$fnCombine`     | See example above.                           | A function which can combine two aggregation results.                                                                                                                                                                |
+| string   | Required              | `$fnReset`       | See example above.                           | A function which will reset a value.                                                                                                                                                                                 |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only apply the javascript function to the records which match with the given filter.                                                                   |
+
+#### `hyperUnique()`
+
+@todo
+
+#### `cardinality()`
+
+@todo
+
+#### `distinctCount()`
+
+The `distinctCount()` aggregation function computes the distinct number of occurrences of the given dimension.
+
+This method uses the Theta Sketch extension and it should be enabled to make use of this aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Count the distinct number of categories. 
+$builder->distinctCount('category_id', 'category_count');
+```
+
+The `distinctCount()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                |
+|----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`     | "category_id"                                | The dimension where you want to count the distinct values from.                                                                                                                |
+| string   | Optional              | `$as`            | "category_count"                             | The name which will be used in the output result                                                                                                                               |
+| int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches.  |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                        |
+  
 ## Filters
 
 With filters you can filter on certain values. The following filters are available:
