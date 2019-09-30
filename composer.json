@@ -1,11 +1,25 @@
 {
   "name": "level23/druid-client",
-  "description": "Druid client for executing queries.",
+  "description": "Druid php client for executing queries and more",
   "keywords": [
-    "level23"
+    "druid",
+    "Apache Druid",
+    "incubating",
+    "analytics database",
+    "timeseries"
   ],
-  "license": "MIT",
-  "type": "project",
+  "authors": [
+    {
+      "name": "Teye Heimans",
+      "email": "teye@level23.nl"
+    },
+    {
+      "name": "Marc van der Meulen",
+      "email": "marc@level23.nl"
+    }
+  ],
+  "license": "Apache-2.0",
+  "type": "library",
   "require": {
     "php": ">=7.2",
     "ext-json": "*",
@@ -37,7 +51,7 @@
     "sort-packages": true,
     "optimize-autoloader": true
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true,
   "extra": {
     "laravel": {
