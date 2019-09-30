@@ -1,6 +1,13 @@
 <?php
 
 return [
+
+    /**
+     * Domain + optional port or the druid router. If this is set, it will be used for the broker,
+     * coordinator and overlord.
+     */
+    'router_url'      => env('DRUID_ROUTER_URL', ''),
+
     /**
      * Domain + optional port. Don't add the api path like "/druid/v2"
      */

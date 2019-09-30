@@ -37,6 +37,7 @@ class IndexTaskBuilder extends TaskBuilder
     protected $append = false;
 
     /**
+     * The data source where we will write to.
      * @var string
      */
     protected $dataSource;
@@ -65,18 +66,28 @@ class IndexTaskBuilder extends TaskBuilder
     protected $granularityType = UniformGranularity::class;
 
     /**
+     * The data source where the data will be read from.
+     * This will only be used in case of IngestSegmentFirehose.
+     *
+     * @var string
+     */
+    protected $fromDataSource;
+
+    /**
      * IndexTaskBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
-     * @param string                     $dataSource
-     * @param string|null                $firehoseType
+     * @param string                     $toDataSource Data source where the data will be imported in.
+     * @param string|null                $firehoseType The type of FireHose to use (where to retrieve the data from).
      */
-    public function __construct(DruidClient $client, string $dataSource, string $firehoseType = null)
+    public function __construct(DruidClient $client, string $toDataSource, string $firehoseType = null)
     {
         $this->client       = $client;
-        $this->dataSource   = $dataSource;
+        $this->dataSource   = $toDataSource;
         $this->firehoseType = $firehoseType;
     }
+
+
 
     /**
      * Add a dimension.
@@ -102,6 +113,20 @@ class IndexTaskBuilder extends TaskBuilder
     public function append(): IndexTaskBuilder
     {
         $this->append = true;
+
+        return $this;
+    }
+
+    /**
+     * The data source where the data will be read from. This will only be used in case of IngestSegmentFirehose.
+     *
+     * @param string $fromDataSource
+     *
+     * @return $this
+     */
+    public function setFromDataSource(string $fromDataSource)
+    {
+        $this->fromDataSource = $fromDataSource;
 
         return $this;
     }
@@ -144,16 +169,19 @@ class IndexTaskBuilder extends TaskBuilder
         $firehose = null;
         switch ($this->firehoseType) {
             case IngestSegmentFirehose::class:
+                $fromDataSource = $this->fromDataSource ?? $this->dataSource;
 
                 // First, validate the given from and to. Make sure that these
                 // match the beginning and end of an interval.
-                $this->validateInterval($this->dataSource, $this->interval);
+                $this->validateInterval($fromDataSource, $this->interval);
 
-                $firehose = new IngestSegmentFirehose($this->dataSource, $this->interval);
+                $firehose = new IngestSegmentFirehose($fromDataSource, $this->interval);
                 break;
 
             default:
-                throw new InvalidArgumentException('No firehose known. Currently we only support re-indexing.');
+                throw new InvalidArgumentException(
+                    'No firehose known. Currently we only support re-indexing (IngestSegmentFirehose).'
+                );
         }
 
         if (!$context instanceof TaskContext) {

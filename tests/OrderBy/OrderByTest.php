@@ -13,13 +13,12 @@ class OrderByTest extends TestCase
 {
     public function dataProvider(): array
     {
-
         return [
             ['name', OrderByDirection::DESC, SortingOrder::NUMERIC],
             ['name', OrderByDirection::ASC, SortingOrder::ALPHANUMERIC],
             ['name', OrderByDirection::ASC, 'numeric'],
             ['name', OrderByDirection::ASC, 'wrong', true],
-            ['name', 'desc', 'strlen', true],
+            ['name', 'desc', 'strlen'],
             ['name', 'descending', 'strlen'],
         ];
     }
@@ -40,12 +39,16 @@ class OrderByTest extends TestCase
 
         $orderBy = new OrderBy($dimension, $direction, $sorting);
 
+        $expectedDirection = ($direction == 'desc' || $direction == 'descending')
+            ? OrderByDirection::DESC
+            : OrderByDirection::ASC;
+
         $this->assertEquals($orderBy->getDimension(), $dimension);
-        $this->assertEquals($orderBy->getDirection(), $direction);
+        $this->assertEquals($orderBy->getDirection(), $expectedDirection);
 
         $this->assertEquals([
             'dimension'      => $dimension,
-            'direction'      => $direction,
+            'direction'      => $expectedDirection,
             'dimensionOrder' => $sorting,
         ], $orderBy->toArray());
     }

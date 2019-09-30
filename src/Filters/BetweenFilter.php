@@ -88,7 +88,7 @@ class BetweenFilter implements FilterInterface
             'lower'       => (string)$this->minValue,
             'lowerStrict' => false,
             'upper'       => (string)$this->maxValue,
-            'upperStrict' => false,
+            'upperStrict' => true,
         ];
 
         if ($this->extractionFunction) {

@@ -14,6 +14,7 @@ use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Responses\GroupByQueryResponse;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
@@ -92,10 +93,11 @@ class GroupByQueryTest extends TestCase
         ];
         $this->assertEquals($expected, $query->toArray());
 
-        $this->assertEquals(
-            [['name' => 'John']],
-            $query->parseResponse([['event' => ['name' => 'John']]])
-        );
+        $response = $query->parseResponse([['event' => ['name' => 'John']]]);
+
+        $this->assertInstanceOf(GroupByQueryResponse::class, $response);
+        $this->assertEquals([['name' => 'John']], $response->data());
+        $this->assertEquals([['event' => ['name' => 'John']]], $response->raw());
 
         $query->setLimit(15);
 

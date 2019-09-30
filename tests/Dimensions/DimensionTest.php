@@ -17,7 +17,7 @@ class DimensionTest extends TestCase
 
         return [
             ["name", "full_name", "string", null, false],
-            ["name", "__time", "string", null, true],
+            ["name", "__time", "string", null, false],
             ["name", null, "STRING", null, false],
             ["name", "full_name", "double", null, true],
             ["name", "full_name", "whatever", null, true],

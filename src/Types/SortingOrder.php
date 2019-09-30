@@ -26,7 +26,9 @@ final class SortingOrder extends Enum
      */
     public static function validate($ordering)
     {
-        if (is_string($ordering) && !SortingOrder::isValidValue($ordering = strtolower($ordering))) {
+        $ordering = strtolower($ordering);
+
+        if (!SortingOrder::isValidValue($ordering)) {
             throw new InvalidArgumentException(
                 'The given sorting order is invalid: ' . $ordering . '. ' .
                 'Allowed are: ' . implode(',', SortingOrder::values())

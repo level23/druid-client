@@ -17,6 +17,7 @@ use Psr\Http\Message\ResponseInterface;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Queries\QueryInterface;
 use GuzzleHttp\Exception\ServerException;
+use Level23\Druid\Responses\TaskResponse;
 use GuzzleHttp\Exception\RequestException;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
@@ -132,6 +133,8 @@ class DruidClientTest extends TestCase
      */
     public function testReindex()
     {
+        $dataSource = 'somethingElse';
+
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
         $builder->setName(MetadataBuilder::class);
@@ -141,17 +144,21 @@ class DruidClientTest extends TestCase
         $client = Mockery::mock(DruidClient::class, [[]]);
         $client->makePartial();
 
-        $structure = new Structure('somethingElse', ['name' => 'string', 'room' => 'long'], ['salary' => 'double']);
+        $structure = new Structure($dataSource, ['name' => 'string', 'room' => 'long'], ['salary' => 'double']);
 
         $metaDataBuilder->shouldReceive('structure')
             ->once()
-            ->with('somethingElse')
+            ->with($dataSource)
             ->andReturn($structure);
 
         $indexTaskBuilder = Mockery::mock('overload:' . IndexTaskBuilder::class);
         $indexTaskBuilder->shouldReceive('__construct')
             ->once()
-            ->with($client, 'somethingElse', IngestSegmentFirehose::class);
+            ->with($client, $dataSource, IngestSegmentFirehose::class);
+
+        $indexTaskBuilder->shouldReceive('setFromDataSource')
+            ->with($dataSource)
+            ->once();
 
         $indexTaskBuilder->shouldReceive('dimension')
             ->with('name', 'string')
@@ -169,7 +176,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->andReturn($metaDataBuilder);
 
-        $client->reindex('somethingElse');
+        $client->reindex($dataSource);
     }
 
     /**
@@ -249,7 +256,8 @@ class DruidClientTest extends TestCase
 
         $response = $client->taskStatus('abcd1234');
 
-        $this->assertEquals($expectedResponse, $response);
+        $this->assertInstanceOf(TaskResponse::class, $response);
+        $this->assertEquals($expectedResponse['id'] ?? '', $response->getId());
     }
 
     public function testLogHandler()
@@ -328,13 +336,18 @@ class DruidClientTest extends TestCase
 
     public function testConfig()
     {
-        $client = new DruidClient(['pieter' => 'okay']);
+        $routerUrl = 'http://router.url.here';
+        $client    = new DruidClient(['pieter' => 'okay', 'router_url' => $routerUrl]);
 
         $this->assertEquals('okay', $client->config('pieter'));
         $this->assertEquals('bar', $client->config('foo', 'bar'));
 
         // test a default config param
         $this->assertEquals(500, $client->config('retry_delay_ms'));
+
+        $this->assertEquals($routerUrl, $client->config('overlord_url'));
+        $this->assertEquals($routerUrl, $client->config('coordinator_url'));
+        $this->assertEquals($routerUrl, $client->config('broker_url'));
     }
 
     public function executeRawRequestDataProvider(): array

@@ -8,6 +8,7 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Responses\GroupByQueryResponse;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
@@ -210,13 +211,11 @@ class GroupByQuery implements QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return GroupByQueryResponse
      */
-    public function parseResponse(array $response): array
+    public function parseResponse(array $response): GroupByQueryResponse
     {
-        return array_map(function ($row) {
-            return $row['event'];
-        }, $response);
+        return new GroupByQueryResponse($response);
     }
 
     /**
