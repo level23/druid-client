@@ -6,6 +6,7 @@ namespace Level23\Druid\Queries;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
+use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\AggregationCollection;
@@ -189,13 +190,11 @@ class TopNQuery implements QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return TopNQueryResponse
      */
-    public function parseResponse(array $response): array
+    public function parseResponse(array $response): TopNQueryResponse
     {
-        return array_map(function ($row) {
-            return $row['result'];
-        }, $response);
+        return new TopNQueryResponse($response);
     }
 
     /**

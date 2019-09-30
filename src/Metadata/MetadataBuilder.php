@@ -126,8 +126,9 @@ class MetadataBuilder
      *
      *   Array
      *  (
-     *      [__time] => Array
+     *      0 => Array
      *          (
+     *              [field] => __time
      *              [type] => LONG
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -136,8 +137,9 @@ class MetadataBuilder
      *              [maxValue] =>
      *              [errorMessage] =>
      *          )
-     *      [conversions] => Array
+     *      1 => Array
      *          (
+     *              [field] => delta
      *              [type] => LONG
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -146,8 +148,9 @@ class MetadataBuilder
      *              [maxValue] =>
      *              [errorMessage] =>
      *          )
-     *      [country_iso] => Array
+     *      2 => Array
      *          (
+     *              [field] => cityName
      *              [type] => STRING
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -156,8 +159,9 @@ class MetadataBuilder
      *              [maxValue] => zm
      *              [errorMessage] =>
      *          )
-     *      [mccmnc] => Array
+     *      3 => Array
      *          (
+     *              [field] => comment
      *              [type] => STRING
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -166,8 +170,9 @@ class MetadataBuilder
      *              [maxValue] => 74807
      *              [errorMessage] =>
      *          )
-     *      [offer_id] => Array
+     *      4 => Array
      *          (
+     *              [field] => added
      *              [type] => LONG
      *              [hasMultipleValues] =>
      *              [size] => 0
@@ -187,18 +192,11 @@ class MetadataBuilder
      */
     protected function getColumnsForInterval(string $dataSource, string $interval): array
     {
-
         $response = $this->client->query($dataSource)
             ->interval($interval)
             ->segmentMetadata();
 
-        if (empty($response[0]['columns'])) {
-            throw new QueryResponseException(
-                [], 'We failed to parse the response of our segmentMetadataQuery!'
-            );
-        }
-
-        return $response[0]['columns'];
+        return $response->data();
     }
 
     /**
@@ -206,13 +204,15 @@ class MetadataBuilder
      *
      * We will return something like "2017-01-01T00:00:00.000Z/2017-01-02T00:00:00.000Z"
      *
+     * We will return an empty array when no interval data is found.
+     *
      * @param string $dataSource
      * @param string $shortHand
      *
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    protected function getIntervalByShorthand(string $dataSource, string $shortHand)
+    protected function getIntervalByShorthand(string $dataSource, string $shortHand): string
     {
         // Get the interval which we will use to do a "structure" scan.
         $shortHand = strtolower($shortHand);
@@ -221,11 +221,12 @@ class MetadataBuilder
         }
 
         $intervals = array_keys($this->intervals($dataSource));
+
         if ($shortHand == 'last') {
-            return $intervals[0];
+            return $intervals[0] ?? '';
         }
 
-        return $intervals[count($intervals) - 1];
+        return $intervals[count($intervals) - 1] ?? '';
     }
 
     /**
@@ -243,6 +244,12 @@ class MetadataBuilder
         // shorthand given? Then retrieve the real interval for them.
         if (in_array(strtolower($interval), ['first', 'last'])) {
             $interval = $this->getIntervalByShorthand($dataSource, $interval);
+        }
+
+        if (empty($interval)) {
+            throw new InvalidArgumentException(
+                'Error, interval "' . $interval . '" is invalid. Maybe there are no intervals for this dataSource?'
+            );
         }
 
         $rawStructure = $this->interval($dataSource, $interval);
@@ -266,7 +273,9 @@ class MetadataBuilder
 
         $columns = $this->getColumnsForInterval($dataSource, $interval);
 
-        foreach ($columns as $column => $info) {
+        foreach ($columns as $info) {
+            $column = $info['field'];
+
             if (in_array($column, $dimensionFields)) {
                 $dimensions[$column] = $info['type'];
             }

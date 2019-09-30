@@ -21,9 +21,16 @@ final class OrderByDirection extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($direction)
+    public static function validate(string $direction)
     {
-        if (is_string($direction) && !OrderByDirection::isValidValue($direction = strtolower($direction))) {
+        $direction = strtolower($direction);
+        if ($direction == 'asc') {
+            $direction = OrderByDirection::ASC;
+        } elseif ($direction == 'desc') {
+            $direction = OrderByDirection::DESC;
+        }
+
+        if (!OrderByDirection::isValidValue($direction)) {
             throw new InvalidArgumentException(
                 'Invalid order by direction given: ' . $direction .
                 '. Valid options are: ' . implode(', ', OrderByDirection::values())

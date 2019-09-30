@@ -12,6 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\ServerException;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Tasks\IndexTaskBuilder;
+use Level23\Druid\Responses\TaskResponse;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
 use Level23\Druid\Firehoses\IngestSegmentFirehose;
@@ -33,6 +34,13 @@ class DruidClient
      * @var array
      */
     protected $config = [
+
+        /**
+         * Domain + optional port or the druid router. If this is set, it will be used for the broker,
+         * coordinator and overlord.
+         */
+        'router_url'      => '',
+
         /**
          * Domain + optional port. Don't add the api path like "/druid/v2"
          */
@@ -176,8 +184,13 @@ class DruidClient
             $configDelay   = $this->config('retry_delay_ms', 500);
             // Should we attempt a retry?
             if ($retries++ < $configRetries) {
+                $this->log(
+                    'Query failed due to a server exception. Doing a retry. Retry attempt ' . $retries . ' of ' . $configRetries,
+                    [$exception->getMessage(), $exception->getTraceAsString()]
+                );
 
                 if ($configDelay > 0) {
+                    $this->log('Sleep for ' . $configDelay . ' ms');
                     $this->usleep(($configDelay * 1000));
                 }
                 goto begin;
@@ -259,6 +272,13 @@ class DruidClient
      */
     public function config($key, $default = null)
     {
+        // when the broker, coordinator or overlord url's are empty, then use the router url.
+        $routerFallback = in_array($key, ['broker_url', 'coordinator_url', 'overlord_url']);
+
+        if ($routerFallback) {
+            return $this->config[$key] ?: $this->config('router_url', $default);
+        }
+
         return $this->config[$key] ?? $default;
     }
 
@@ -326,41 +346,20 @@ class DruidClient
     }
 
     /**
-     * Fetch the status of a druid task. We will return an array like this:
-     *
-     * [
-     *    [id] => index_traffic-conversions-TEST2_2019-03-18T16:26:05.186Z
-     *    [type] => index
-     *    [createdTime] => 2019-03-18T16:26:05.202Z
-     *    [queueInsertionTime] => 1970-01-01T00:00:00.000Z
-     *    [statusCode] => SUCCESS
-     *    [status] => SUCCESS
-     *    [runnerStatusCode] => WAITING
-     *    [duration] => 10255
-     *    [location] => Array
-     *        (
-     *            [host] =>
-     *            [port] => -1
-     *            [tlsPort] => -1
-     *        )
-     *
-     *
-     *    [dataSource] => traffic-conversions-TEST2
-     *    [errorMsg] =>
-     * ]
+     * Fetch the status of a druid task.
      *
      * @param string $taskId
      *
-     * @return array
+     * @return \Level23\Druid\Responses\TaskResponse
      * @throws \Exception
      */
-    public function taskStatus(string $taskId): array
+    public function taskStatus(string $taskId): TaskResponse
     {
         $url = $this->config('overlord_url') . '/druid/indexer/v1/task/' . urlencode($taskId) . '/status';
 
         $response = $this->executeRawRequest('get', $url);
 
-        return $response['status'] ?? [];
+        return new TaskResponse($response);
     }
 
     /**
@@ -395,6 +394,7 @@ class DruidClient
         $structure = $this->metadata()->structure($dataSource);
 
         $builder = new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
+        $builder->setFromDataSource($dataSource);
 
         foreach ($structure->dimensions as $dimension => $type) {
             $builder->dimension($dimension, $type);

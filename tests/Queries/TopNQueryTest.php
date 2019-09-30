@@ -10,6 +10,7 @@ use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\AggregationCollection;
@@ -88,10 +89,8 @@ class TopNQueryTest extends TestCase
             ],
         ];
 
-        $this->assertEquals([
-            [
-                'fields' => 'here',
-            ],
-        ], $query->parseResponse($response));
+        $responseObj = $query->parseResponse($response);
+
+        $this->assertInstanceOf(TopNQueryResponse::class, $responseObj);
     }
 }

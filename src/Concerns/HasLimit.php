@@ -6,7 +6,6 @@ namespace Level23\Druid\Concerns;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Limits\LimitInterface;
-use Level23\Druid\Types\OrderByDirection;
 
 trait HasLimit
 {
@@ -51,13 +50,6 @@ trait HasLimit
      */
     public function orderBy(string $dimension, string $direction, string $dimensionOrder = 'lexicographic')
     {
-        $direction = strtolower($direction);
-        if ($direction == 'asc') {
-            $direction = OrderByDirection::ASC;
-        } elseif ($direction == 'desc') {
-            $direction = OrderByDirection::DESC;
-        }
-
         $order = new OrderBy($dimension, $direction, $dimensionOrder);
 
         if (!$this->limit) {

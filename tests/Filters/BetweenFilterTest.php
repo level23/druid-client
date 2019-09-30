@@ -42,7 +42,7 @@ class BetweenFilterTest extends TestCase
             'lower'       => (string)$minValue,
             'lowerStrict' => false,
             'upper'       => (string)$maxValue,
-            'upperStrict' => false,
+            'upperStrict' => true,
         ];
 
         $this->assertEquals($expected, $filter->toArray());
@@ -63,7 +63,7 @@ class BetweenFilterTest extends TestCase
             'lower'        => '12',
             'lowerStrict'  => false,
             'upper'        => '18',
-            'upperStrict'  => false,
+            'upperStrict'  => true,
             'extractionFn' => $extractionFunction->toArray(),
         ];
 
@@ -90,7 +90,7 @@ class BetweenFilterTest extends TestCase
             'lower'       => $minValue,
             'lowerStrict' => false,
             'upper'       => $maxValue,
-            'upperStrict' => false,
+            'upperStrict' => true,
         ];
 
         $this->assertEquals($expected, $filter->toArray());
