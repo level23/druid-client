@@ -1,0 +1,28 @@
+language: php
+
+sudo: false
+
+cache:
+  directories:
+        - $HOME/.composer/cache
+
+php:
+  - '7.2'
+  - '7.3'
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y ant
+
+install:
+  -
+
+before_script:
+ - phpunit --version
+ - travis_retry composer install
+
+script:
+  - ant gitlab
+
+after_success:
+ - travis_retry php vendor/bin/php-coveralls -v
