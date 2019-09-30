@@ -8,6 +8,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Responses\TimeSeriesQueryResponse;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 
@@ -174,15 +175,11 @@ class TimeSeriesQuery implements QueryInterface
      *
      * @param array $response
      *
-     * @return array
+     * @return TimeSeriesQueryResponse
      */
-    public function parseResponse(array $response): array
+    public function parseResponse(array $response): TimeSeriesQueryResponse
     {
-        return array_map(function ($row) {
-            $row['result'][$this->timeOutputName] = $row['timestamp'];
-
-            return $row['result'];
-        }, $response);
+        return new TimeSeriesQueryResponse($response, $this->timeOutputName);
     }
 
     /**

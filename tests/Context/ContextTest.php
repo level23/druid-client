@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\TopNQueryContext;
+use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
@@ -24,6 +25,7 @@ class ContextTest extends TestCase
             [TopNQueryContext::class],
             [TimeSeriesQueryContext::class],
             [TaskContext::class],
+            [ScanQueryContext::class],
         ];
     }
 

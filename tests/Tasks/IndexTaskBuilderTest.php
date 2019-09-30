@@ -94,6 +94,20 @@ class IndexTaskBuilderTest extends TestCase
     }
 
     /**
+     * @throws \ReflectionException
+     */
+    public function testSetFromDataSource()
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'aliens';
+        $builder    = new IndexTaskBuilder($client, $dataSource);
+
+        $builder->setFromDataSource('humans');
+
+        $this->assertEquals('humans', $this->getProperty($builder, 'fromDataSource'));
+    }
+
+    /**
      * @testWith [true]
      *           [false]
      *
@@ -179,6 +193,7 @@ class IndexTaskBuilderTest extends TestCase
      *
      * @throws \ReflectionException
      * @throws \Exception
+     *
      * @dataProvider        buildTaskDataProvider
      *
      * @runInSeparateProcess

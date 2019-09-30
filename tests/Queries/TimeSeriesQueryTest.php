@@ -12,6 +12,7 @@ use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Responses\TimeSeriesQueryResponse;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
@@ -82,11 +83,8 @@ class TimeSeriesQueryTest extends TestCase
             ],
         ];
 
-        $this->assertEquals([
-            [
-                'fields' => 'here',
-                'myTime' => '12-02-2019 00:00:00',
-            ],
-        ], $query->parseResponse($response));
+        $responseObj = $query->parseResponse($response);
+
+        $this->assertInstanceOf(TimeSeriesQueryResponse::class, $responseObj);
     }
 }
