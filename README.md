@@ -1,7 +1,7 @@
 # Druid-Client
 
-[![pipeline status](https://git.level23.nl/packages/druid-client/badges/master/pipeline.svg)](https://git.level23.nl/packages/druid-client/commits/master)
-[![coverage report](https://git.level23.nl/packages/druid-client/badges/master/coverage.svg)](https://git.level23.nl/packages/druid-client/commits/master)
+[![Build Status](https://travis-ci.org/level23/druid-client.svg?branch=master)](https://travis-ci.org/level23/druid-client)
+[![Coverage Status](https://coveralls.io/repos/github/level23/druid-client/badge.svg?branch=master)](https://coveralls.io/github/level23/druid-client?branch=master)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
 
 
