@@ -14,10 +14,10 @@
   "require-dev": {
     "illuminate/support": "~5.0",
     "mockery/mockery": "^1.2",
+    "php-coveralls/php-coveralls": "^2.1",
     "phpstan/phpstan": "^0.11.9",
     "phpstan/phpstan-mockery": "^0.11.2",
-    "phpunit/phpunit": "^8.2",
-    "timeweb/phpstan-enum": "^2.2"
+    "phpunit/phpunit": "^8.2"
   },
   "suggest": {
     "psr/log": "Required for using the log handler"

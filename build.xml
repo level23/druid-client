@@ -232,7 +232,7 @@
             depends="prepare"
             description="Run unit tests with PHPUnit (for gitlab ci)">
         <exec executable="${phpunit}" resultproperty="result.phpunit" taskname="phpunit">
-            <arg line="--configuration=${basedir}/build/phpunit.xml --colors=never --coverage-text"/>
+            <arg line="--configuration=${basedir}/build/phpunit.xml --colors=never --coverage-text --coverage-clover build/logs/clover.xml"/>
         </exec>
 
         <property name="phpunit.done" value="true"/>
