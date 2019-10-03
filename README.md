@@ -1227,7 +1227,7 @@ To use a virtual column, you should use the `virtualColumn()` method:
 ## `virtualColumn()`
 
 
- 
+@todo 
 
 ## `DruidClient::metadata()`
 
