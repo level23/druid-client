@@ -76,7 +76,7 @@ class QueryBuilder
      * @param string                     $dataSource
      * @param string                     $granularity
      */
-    public function __construct(DruidClient $client, string $dataSource, string $granularity = 'all')
+    public function __construct(DruidClient $client, string $dataSource, string $granularity = Granularity::ALL)
     {
         $this->client      = $client;
         $this->dataSource  = $dataSource;

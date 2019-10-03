@@ -46,7 +46,7 @@ in `bootstrap/app.php`:
 $app->register(Level23\Druid\DruidServiceProvider::class);
 ```
 
-#### Configuration:
+#### Laravel/Lumen Configuration:
 
 You should also define the correct endpoint url's in your `.env` in your Laravel/Lumen project:
 ```
@@ -55,6 +55,8 @@ DRUID_COORDINATOR_URL=http://coordinator.url:8081
 DRUID_OVERLORD_URL=http://overlord.url:8090
 DRUID_RETRIES=2
 DRUID_RETRY_DELAY_MS=500
+DRUID_TIMEOUT=60
+DRUID_CONNECT_TIMEOUT=10
 ```
 
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
@@ -147,6 +149,76 @@ $response = $client->query('traffic-hits', 'all')
     // Execute the query. Optionally you can specify Query Context parameters.
     ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
 ```
+
+## DruidClient
+
+The `DruidClient` class is the class where it all begins. You initiate an instance of the druid client, which holds the
+configuration of your instance.
+
+The `DruidClient` constructor has the following arguments:
+
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **Description**                                                                                                                         |
+|---------------------|-----------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
+| `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
+
+By default we will use a guzzle client. 
+If you want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
+
+Example of using a custom guzzle client:
+```php
+
+// Create a custom guzzle client which uses an http proxy.
+$guzzleClient = new GuzzleHttp\Client([
+    'proxy' => 'tcp://localhost:8125',
+    'timeout' => 30,
+    'connect_timeout' => 10
+]);
+
+// Create a new DruidClient, which uses our custom Guzzle Client 
+$druidClient = new DruidClient(
+    ['router_url' => 'http://druid.router.com'], 
+    $guzzleClient
+);
+
+// Query stuff here.... 
+```  
+
+The `DruidClient` class gives you various methods. The most commonly used is the `query()` method, which allows you
+to build and execute a query.
+
+#### `DruidClient::query()`
+
+The `query()` method gives you a `QueryBuilder` instance, which allows you to build a query and then execute it. 
+
+Example:
+```php
+$client = new DruidClient(['router_url' => 'https://router.url:8080']);
+
+// retrieve our query builder.
+$builder = $client->query('wikipedia');
+
+// Now build your query ....
+// $builder->select( ... )->where( ... )->interval( ... );  
+```
+
+The query method has 2 parameters: 
+
+| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
+|----------|-----------------------|----------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to query.                                                                                                                                                                                                                                                                                                          |
+| string   | Optional              | `$granularity` | "all"       | The granularity which you want to use for this query. You can think of this like an extra "group by" per time window. The results will be grouped by this time window. By default we will use "all", which will return the resultSet in 1 set. Valid values are: all, none, second, minute, fifteen_minute, thirty_minute, hour, day, week, month, quarter and year  |
+
+The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
+
+See the following chapters for more information about the query builder.  
+
+  - [Metric aggregations](#metric-aggregations)
+  - [Dimension selections](#dimension-selections)
+  - [Filters](#filters)
+  - [Extractions](#extractions)
+  - [Having](#having)
+  - [Virtual Columns](#virtual-columns)
 
 ## Dimension selections
 
@@ -429,10 +501,27 @@ The `javascript()` aggregation method has the following parameters:
 
 #### `hyperUnique()`
 
+The `hyperUnique()` aggregation uses HyperLogLog to compute the estimated cardinality of a dimension that has been 
+aggregated as a "hyperUnique" metric at indexing time.
+
+Please note: use `distinctCount()` when the Theta Sketch extension is available, as it is much faster. 
+
+See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
 
+Example: 
+```php
+$builder->hyperUnique('dimension', 'myResult');
+```
 
-@todo 
+The `hyperUnique()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**          | **Example** | **Description**                                                                                                                                                                                                      |
+|----------|-----------------------|-----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`             | "dimension" |  The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                  |
+| string   | Required              | `$as`                 | "myField"   | The name which will be used in the output result                                                                                                                                                                     |
+| bool     | Optional              | `$round`              | true        | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
+| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll ise xpected).                                                        | 
 
 
 #### `cardinality()`
@@ -526,14 +615,13 @@ This is probably the most used filter. It is very flexible.
 
 This method uses the following arguments:
 
-
-| **Type** | **Optional/Required** | **Argument**   | **Example**        |
-|----------|-----------------------|----------------|--------------------|
-| string   | Required              | `$dimension`   | "cityName"         |
-| string   | Required              | `$operator`    | "="                |
-| mixed    | Required              | `$value`       | "Auburn"           |
-| Closure  | Optional              | `$extraction`  | See example below. |
-| string   | Optional              | `$boolean`     | "and" / "or"       |
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                                                                                                         |
+|----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
+| string   | Required              | `$operator`   | "="                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                                     |
+| mixed    | Required              | `$value`      | "Auburn"           | The value which you want to use in your filter comparison                                                                                                                               |
+| Closure  | Optional              | `$extraction` | See example below. | A closure which builds one or more extraction function. These are applied _before_ the filter will be applied. So the filter will use the value returned by the extraction function(s). |
+| string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
 
 The following `$operator` values are supported:
 
@@ -600,10 +688,9 @@ $builder->where( new SelectorFilter('name', 'John') );
 
 However, this is not recommended and should not be needed.
 
-
 #### `orWhere()`
 
-Same as where, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `where()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 #### `whereIn()`
 
@@ -1046,13 +1133,249 @@ The `bucket()` extraction function has the following arguments:
 | int      | Optional              | `$size`      | 10          | The size of the bucket where the numerical values are grouped in |
 | int      | Optional              | `$offset`    | 2           | The offset for the buckets                                       |
 
+
+## Having
+
+With having filters, you can filter out records _after_ the data has been retrieved. This allows you to filter on aggregated values.
+
+See also this page: https://druid.apache.org/docs/latest/querying/having.html
+
+Below are all the having methods explained.
+
+#### `having()`
+
+The `having()` filter is very simular to the `where()` filter. It is very flexible.
+
+This method has the following arguments:
+
+| **Type**   | **Optional/Required** | **Argument**   | **Example**        | **Description**                                                                                                                                                            |
+|------------|-----------------------|----------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string     | Required              | `$having`      | "totalClicks"      | The metric which you want to filter.                                                                                                                                       |
+| string     | Required              | `$operator`    | ">"                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
+| string/int | Required              | `$value`       | 50                 | The value which you want to use in your filter comparison                                                                                                                  |
+| string     | Optional              | `$boolean`     | "and" / "or"       | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+The following `$operator` values are supported:
+
+| **Operator**   | **Description**                                                                                                                                                 |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =              | Check if the metric is equal to the given value.                                                                                                                |
+| !=             | Check if the metric is not equal to the given value.                                                                                                            |
+| <>             | Same as `!=`                                                                                                                                                    |
+| >              | Check if the metric is greater than the given value.                                                                                                            |
+| >=             | Check if the metric is greater than or equal to the given value.                                                                                                |
+| <              | Check if the metric is less than the given value.                                                                                                               |
+| <=             | Check if the metric is less than or equal to the given value.                                                                                                   |
+| like           | Check if the metric matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character). |
+| not like       | Same as `like`, only now the metric should not match.                                                                                                           |
+
+This method supports a quick equals shorthand. Example:
+```php
+// select everybody with 2 kids
+$builder->having('sumKids', 2);
+```
+
+Is the same as
+```php
+$builder->having('sumKids', '=', 2);
+```
+
+We also support using a `Closure` to group various havings in 1 filter. It will receive a `HavingBuilder`. For example:
+```php
+$builder->having(function (FilterBuilder $filterBuilder) {
+    $filterBuilder->orHaving('sumKats', '>', 0);
+    $filterBuilder->orHaving('sumDogs', '>', 0);
+});
+$builder->having('sumKids', '=', 0);
+```
+
+This would be the same as an SQL equivalent:
+```SELECT ... HAVING (sumKats > 0 OR sumDogs > 0) AND sumKids = 0;``` 
+
+As last, you can also supply a raw filter or having-filter object. For example:
+```php
+// exampe using a having filter
+$builder->having( new GreaterThanHavingFilter('totalViews', 15) );
+
+// example using a "normal" filter.
+$builder->having( new SelectorFilter('totalViews', '15') );
+```
+
+However, this is not recommended and should not be needed.
+
+#### `orHaving()`
+
+Same as `having()`, but now we will join previous added having-filters with a `or` instead of an `and`.
+
+## Virtual Columns
+
+Virtual columns allow you to create a new "virtual" column based on an expression. This is very powerful, but not well
+documented in the Druid Manual. 
+
+Druid expressions allow you to do various actions, like:
+
+ * Execute a lookup and use the result
+ * Execute mathematical operations on values  
+ * Use if, else expressions
+ * Concat strings
+ * Use a "case" statement
+ * Etc.
+ 
+For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/misc/math-expr.html
+
+To use a virtual column, you should use the `virtualColumn()` method:
+
+## `virtualColumn()`
+
+
+ 
+
+## `DruidClient::metadata()`
+
+Besides querying data, the `DruidClient` class also allows you to extract metadata from your druid setup.
+ 
+The `metadata()` method returns a `MetadataBuilder` instance. With this instance you can retrieve various metadata
+information about your druid setup. 
+
+Below we have described the most common used methods.
+
+#### `metadata()->intervals()`
+
+This method returns all intervals for the given `$dataSource`. 
+
+Example:
+```php
+$intervals = $client->metadata()->intervals('wikipedia');
+```
+
+The `intervals()` method has 1 parameters: 
+
+| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
+|----------|-----------------------|----------------|-------------|-----------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to retrieve the intervals from. |
+
+
+It will return the response like this:
+```
+[
+  "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => [ "size" => 75208,  "count" => 4 ],
+  "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => [ "size" => 161870, "count" => 8 ],
+]
+```
+
+#### `metadata()->interval()`
+
+The `interval()` method on the MetadataBuilder will return all details regarding the given interval.
+
+Example:
+```php
+// retrieve the details regarding the given interval.
+$response = $client->metadata()->interval('wikipedia', '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
+```
+
+The `interval()` method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                         | **Description**                                                                          |
+|----------|-----------------------|---------------|-----------------------------------------------------|------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource` | "wikipedia"                                         | The name of the dataSource (table) which you want to retrieve interval information from. |
+| string   | Required              | `$interval`   | "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" | The "raw" interval where you want to retrieve details for.                               |
+
+It will return an array as below:
+```
+$response = [
+    '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z' =>
+        [
+            'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z' =>
+                [
+                    'metadata' =>
+                        [
+                            'dataSource'    => 'wikipedia',
+                            'interval'      => '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z',
+                            'version'       => '2019-09-26T18:30:14.418Z',
+                            'loadSpec'      =>
+                                [
+                                    'type' => 'local',
+                                    'path' => '/etc/apache-druid-0.15.1-incubating/var/druid/segments/wikipedia/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2019-09-26T18:30:14.418Z/0/index.zip',
+                                ],
+                            'dimensions'    => 'added,channel,cityName,comment,countryIsoCode,countryName,deleted,delta,isAnonymous,isMinor,isNew,isRobot,isUnpatrolled,metroCode,namespace,page,regionIsoCode,regionName,user',
+                            'metrics'       => '',
+                            'shardSpec'     =>
+                                [
+                                    'type'         => 'numbered',
+                                    'partitionNum' => 0,
+                                    'partitions'   => 0,
+                                ],
+                            'binaryVersion' => 9,
+                            'size'          => 4817636,
+                            'identifier'    => 'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z',
+                        ],
+                    'servers'  =>
+                        [
+                            0 => 'localhost:8083',
+                        ],
+                ],
+        ],
+];
+```
+
+#### `metadata()->structure()`
+
+The `structure()` method creates a `Structure` object which represents the structure for the given dataSource.
+It will retrieve the structure for the last known interval, or for the interval which you supply.
+
+Example:
+```php
+// Retrieve the strucutre of our dataSource
+$structure = $client->metadata()->structure('wikipedia');
+``` 
+
+The `structure()` method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                                                                                                   |
+|----------|-----------------------|---------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource` | "wikipedia" | The name of the dataSource (table) which you want to retrieve interval information from.                                                                          |
+| string   | Optional              | `$structure`  | "last"      | The interval where we read the structure data from. You can use "first", "last" or a raw interval string like "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" |
+
+Example response:
+```
+Level23\Druid\Metadata\Structure Object
+(
+    [dataSource] => wikipedia
+    [dimensions] => Array
+        (
+            [channel] => STRING
+            [cityName] => STRING
+            [comment] => STRING
+            [countryIsoCode] => STRING
+            [countryName] => STRING                        
+            [isAnonymous] => STRING
+            [isMinor] => STRING
+            [isNew] => STRING
+            [isRobot] => STRING
+            [isUnpatrolled] => STRING            
+            [namespace] => STRING
+            [page] => STRING
+            [regionIsoCode] => STRING
+            [regionName] => STRING
+            [user] => STRING
+        )
+
+    [metrics] => Array
+        (
+            [added] => LONG
+            [deleted] => LONG
+            [delta] => LONG
+            [metroCode] => LONG 
+        )
+)
+``` 
+
 ## MISC
 
 More info to come!
 
 For testing/building, run:
 ```
-infection --threads=4 --only-covered
+infection --threads=4
 
 ant phpstan
 ```
