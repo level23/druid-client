@@ -42,7 +42,7 @@ trait HasDimensions
         $dimension,
         string $as = '',
         Closure $extraction = null,
-        $outputType = 'string'
+        $outputType = DataType::STRING
     ) {
         if (is_string($dimension)) {
             if (!empty($extraction)) {

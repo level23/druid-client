@@ -5,6 +5,7 @@ namespace Level23\Druid\Concerns;
 
 use Closure;
 use InvalidArgumentException;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\PostAggregations\LeastPostAggregator;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ConstantPostAggregator;
@@ -247,7 +248,7 @@ trait HasPostAggregations
         $this->postAggregations[] = new GreatestPostAggregator(
             $as,
             $this->buildFields($fieldOrClosure),
-            'long'
+            DataType::LONG
         );
 
         return $this;
@@ -270,7 +271,7 @@ trait HasPostAggregations
         $this->postAggregations[] = new GreatestPostAggregator(
             $as,
             $this->buildFields($fieldOrClosure),
-            'double'
+            DataType::DOUBLE
         );
 
         return $this;
@@ -293,7 +294,7 @@ trait HasPostAggregations
         $this->postAggregations[] = new LeastPostAggregator(
             $as,
             $this->buildFields($fieldOrClosure),
-            'long'
+            DataType::LONG
         );
 
         return $this;
@@ -316,7 +317,7 @@ trait HasPostAggregations
         $this->postAggregations[] = new LeastPostAggregator(
             $as,
             $this->buildFields($fieldOrClosure),
-            'double'
+            DataType::DOUBLE
         );
 
         return $this;

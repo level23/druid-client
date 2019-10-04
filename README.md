@@ -70,8 +70,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Implement Kill Task
  - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - metrics selection for select query (currently all columns are returned)
- - whereColumn filter
+ - Metrics selection for select query (currently all columns are returned)
+ - WhereColumn filter
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement index_parallel
  - Implement support for Spatial filters
@@ -219,6 +219,7 @@ See the following chapters for more information about the query builder.
   - [Extractions](#extractions)
   - [Having](#having)
   - [Virtual Columns](#virtual-columns)
+  - [Post Aggregations](#post-aggregations)
 
 ## Dimension selections
 
@@ -1224,10 +1225,119 @@ For the full list of available expressions, see this page: https://druid.apache.
 
 To use a virtual column, you should use the `virtualColumn()` method:
 
-## `virtualColumn()`
+#### `virtualColumn()`
 
+This method creates a virtual column based on the given expression. 
 
-@todo 
+Virtual columns are queryable column "views" created from a set of columns during a query.
+
+A virtual column can potentially draw from multiple underlying columns, although a virtual column always
+presents itself as a single column.
+
+Virtual columns can be used as dimensions or as inputs to aggregators.
+
+**NOTE**: virtual columns are NOT automatically added to your output. You should select it separately if you want to
+add it also to your output. Use `selectVirtual()` to do both at once.
+
+Example:
+
+```php
+// Increase our reward with $2,00 if this sale was done by a promoter. 
+$builder->virtualColumn('if(promo_id > 0, reward + 2, 0)', 'rewardWithPromoterPayout', 'double')
+    // Now sum all our rewards with the promoter payouts included.
+    ->doubleSum('rewardWithPromoterPayout', 'totalRewardWithPromoterPayout');
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**               | **Description**                                                                                                          |
+|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
+| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
+| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+ 
+#### `selectVirtual()`
+
+This method creates a virtual column as the method `virtualColumn()` does, but this method also selects the virtual
+column in the output. 
+
+Example:
+```php
+// Select the mobile device type as text, but only if isMobileDevice = 1 
+$builder->selectVirtual(
+    "if( isMobileDevice = 1, case_simple( mobileDeviceType, '1', 'samsung', '2', 'apple', '3', 'nokia', 'other'), 'no mobile device')", 
+    "deviceType"
+);
+```  
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**               | **Description**                                                                                                          |
+|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
+| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
+| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+
+## Post Aggregations
+
+#### `fieldAccess()`
+
+This post aggregation method is not really a aggregation method itself, but you need it to access fields which are used 
+in the other post aggregations. 
+
+For example, when you want to calculate the average salary per job function:
+```php
+
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', function(PostAggregationsBuilder $builder) {
+        $builder->fieldAccess('totalSalary');
+        $builder->fieldAccess('nrOfEmployees');
+    });
+```
+
+#### `constant()`
+
+@todo
+
+#### `divide()`
+
+@todo
+
+#### `multiply()`
+
+@todo
+
+#### `subtract()`
+
+@todo
+
+#### `add()`
+
+@todo
+
+#### `quotient()`
+
+@todo
+
+#### `longGreatest()` and `doubleGreatest()`
+
+@todo
+
+#### `longLeast()` and `doubleLeast()`
+
+@todo
+
+#### `postJavascript()`
+
+@todo
+
+#### `hyperUniqueCardinality()`
+
+@todo
 
 ## `DruidClient::metadata()`
 

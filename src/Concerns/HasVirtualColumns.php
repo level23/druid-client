@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
+use Level23\Druid\Types\DataType;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 
 trait HasVirtualColumns
@@ -33,7 +34,7 @@ trait HasVirtualColumns
      * @return $this
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function virtualColumn(string $expression, string $as, $outputType = 'string')
+    public function virtualColumn(string $expression, string $as, $outputType = DataType::STRING)
     {
         $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
 
