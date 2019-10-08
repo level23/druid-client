@@ -1308,7 +1308,7 @@ $builder
     ->doubleSum('salary', 'totalSalary')
     ->longSum('nrOfEmployees')
     // avgSalary = totalSalary / nrOfEmployees   
-    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees]);
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
 ```
 
 This is exactly the same. We will convert the given fields to `fieldAccess()` for you.
@@ -1346,19 +1346,116 @@ The `constant()` post aggregator has the following arguments:
 
 #### `divide()`
 
-@todo
+The `divide()` post aggregator method divides the given fields. If a value is divided by 0, the result will always be 0.
+
+Example:
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+The first parameter is the name as the result will be available in the output. The fields which you want to divide can 
+be supplied in various ways. These ways are described below:
+
+**Method 1: array**
+
+You can supply the fields which you want to use in your division as an array. They will be converted to `fieldAccess()` 
+calls for you. 
+
+Example:
+```php
+$builder->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+**Method 2: Variable-length argument lists**
+
+You can supply the fields which you want to use in your division as extra arguments in the method call. 
+They will be converted to `fieldAccess()` calls for you.
+
+Example:
+```php
+// This will become: avgSalary = totalSalary / nrOfEmployees / totalBonus
+$builder->divide('avgSalary', 'totalSalary', 'nrOfEmployees', 'totalBonus');
+``` 
+
+**Method 3: Closure**
+
+You can also supply a closure, which allows you to build more advance math calculations.
+
+Example:
+```php
+// This will become: avgSalary = totalSalary / nrOfEmployees / ( bonus + tips )
+$builder->divide('avgSalary', function(PostAggregationsBuilder $builder){    
+    $builder->fieldAccess('totalSalary');
+    $builder->fieldAccess('nrOfEmployees');    
+
+    $builder->add('totalBonus', ['bonus', 'tips']);    
+});
+```
+
+
+The `divide()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                      |
+|-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                              |
+| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to divide. See above for more information. |
+
 
 #### `multiply()`
 
-@todo
+The `multiply()` post aggregator method multiply the given fields. 
+
+Example:
+```php
+$builder->multiply('volume', ['width', 'height', 'depth']);
+```
+
+The `multiply()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to multiply. See the `divide()` method for more info. |
+
 
 #### `subtract()`
 
-@todo
+The `subtract()` post aggregator method subtract the given fields. 
+
+Example:
+```php
+$builder->subtract('total', 'revenue', 'taxes');
+```
+
+The `subtract()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to subtract. See the `divide()` method for more info. |
+
 
 #### `add()`
 
-@todo
+The `add()` post aggregator method add the given fields. 
+
+Example:
+```php
+$builder->add('total', 'salary', 'bonus');
+```
+
+The `add()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                            |
+|-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                    |
+| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to add. See the `divide()` method for more info. |
+
 
 #### `quotient()`
 
