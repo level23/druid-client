@@ -1157,6 +1157,7 @@ This method has the following arguments:
 | string     | Required              | `$operator`    | ">"                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
 | string/int | Required              | `$value`       | 50                 | The value which you want to use in your filter comparison                                                                                                                  |
 | string     | Optional              | `$boolean`     | "and" / "or"       | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
 The following `$operator` values are supported:
 
 | **Operator**   | **Description**                                                                                                                                                 |
