@@ -1403,7 +1403,7 @@ The `divide()` post aggregator has the following arguments:
 | **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                      |
 |-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                              |
-| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to divide. See above for more information. |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to divide. See above for more information. |
 
 
 #### `multiply()`
@@ -1420,7 +1420,7 @@ The `multiply()` post aggregator has the following arguments:
 | **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
 |-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
-| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to multiply. See the `divide()` method for more info. |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to multiply. See the `divide()` method for more info. |
 
 
 #### `subtract()`
@@ -1437,7 +1437,7 @@ The `subtract()` post aggregator has the following arguments:
 | **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
 |-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
-| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to subtract. See the `divide()` method for more info. |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to subtract. See the `divide()` method for more info. |
 
 
 #### `add()`
@@ -1454,7 +1454,7 @@ The `add()` post aggregator has the following arguments:
 | **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                            |
 |-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                    |
-| array/Closure/...string | Required              | ``$fieldOrClosure | ['totalSalary', 'nrOfEmployees'] | The fields which you want to add. See the `divide()` method for more info. |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to add. See the `divide()` method for more info. |
 
 
 #### `quotient()`

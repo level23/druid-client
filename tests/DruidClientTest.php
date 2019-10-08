@@ -34,7 +34,7 @@ class DruidClientTest extends TestCase
      * @param array                   $config
      * @param \GuzzleHttp\Client|null $guzzle
      *
-     * @return \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface]
+     * @return \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
     protected function mockDruidClient(array $config = [], GuzzleClient $guzzle = null)
     {
@@ -500,6 +500,7 @@ class DruidClientTest extends TestCase
         $url  = 'http://test.dev/v2/task';
         $data = ['payload' => 'here'];
 
+        /** @var GuzzleClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface $guzzle */
         $guzzle = Mockery::mock(GuzzleClient::class);
         $guzzle->shouldReceive(strtolower($method))
             ->once()

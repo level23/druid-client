@@ -71,9 +71,9 @@ trait HasHaving
                     new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value)),
                 ]);
             } elseif (strtolower($operator) == 'like') {
-                $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, $value));
+                $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value));
             } elseif (strtolower($operator) == 'not like') {
-                $having = new NotHavingFilter(new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, $value)));
+                $having = new NotHavingFilter(new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value)));
             }
         } elseif ($havingOrMetricOrClosure instanceof FilterInterface) {
             $having = new QueryHavingFilter($havingOrMetricOrClosure);

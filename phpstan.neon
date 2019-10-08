@@ -5,7 +5,7 @@ parameters:
       - vendor/phpstan/phpstan-mockery/extension.neon
     ignoreErrors:
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
-      - '#Parameter (.*) of class (.*) constructor expects (.*), Mockery\\LegacyMockInterface given.#'
+      - '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
     excludes_analyse:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php
