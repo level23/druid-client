@@ -11,6 +11,7 @@ use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Queries\ScanQuery;
 use Level23\Druid\Interval\Interval;
+use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Queries\SelectQuery;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
@@ -59,7 +60,9 @@ class QueryBuilderTest extends TestCase
 
     public function setUp(): void
     {
-        $this->client  = Mockery::mock(DruidClient::class, [[]]);
+        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        $this->client = Mockery::mock(DruidClient::class, [[], $guzzle]);
         $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'dataSourceName']);
         $this->builder->makePartial();
         $this->builder->shouldAllowMockingProtectedMethods();

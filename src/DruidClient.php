@@ -94,9 +94,9 @@ class DruidClient
      */
     public function __construct(array $config, GuzzleClient $client = null)
     {
-        $this->client = $client ?: $this->makeGuzzleClient();
-
         $this->config = array_merge($this->config, $config);
+
+        $this->client = $client ?: $this->makeGuzzleClient();
     }
 
     /**

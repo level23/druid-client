@@ -199,9 +199,11 @@ trait HasPostAggregations
      * Set $finalizing to `false`  to return the raw aggregation object, or use `true`
      * to return a finalized value, such as an estimated cardinality.
      *
-     * @param string $aggregatorOutputName
-     * @param string $as
-     * @param bool   $finalizing
+     * @param string $aggregatorOutputName This refers to the output name of the aggregator given in the aggregations
+     *                                     portion of the query
+     * @param string $as                   The output name as how we can access it
+     * @param bool   $finalizing           Set this to true if you want to return a finalized value, such as an
+     *                                     estimated cardinality.
      *
      * @return $this
      */
@@ -219,8 +221,8 @@ trait HasPostAggregations
     /**
      * The constant post-aggregator always returns the specified value.
      *
-     * @param int|float $numericValue
-     * @param string    $as
+     * @param int|float $numericValue This will be our static value
+     * @param string    $as           The output name as how we can access it
      *
      * @return $this
      */

@@ -85,6 +85,8 @@ See [this](examples/README.md) page for more information.
 
 Here is an example of how you can use this package.
 
+**NOTE**: This documentation is still under development. Feel free to give feedback.
+
 Please see the inline comment for more information / feedback.
 
 Example:
@@ -1282,12 +1284,11 @@ This method has the following arguments:
 
 #### `fieldAccess()`
 
-This post aggregation method is not really a aggregation method itself, but you need it to access fields which are used 
+The `fieldAccess()` post aggregator method is not really a aggregation method itself, but you need it to access fields which are used 
 in the other post aggregations. 
 
 For example, when you want to calculate the average salary per job function:
 ```php
-
 $builder
     ->select('jobFunction')
     ->doubleSum('salary', 'totalSalary')
@@ -1299,9 +1300,49 @@ $builder
     });
 ```
 
+However, we you can also use this shorthand, which will be converted to `fieldAccess` methods:
+
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees]);
+```
+
+This is exactly the same. We will convert the given fields to `fieldAccess()` for you.
+
+The `fieldAccess()` post aggregator has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**            | **Example**  | **Description**                                                                                 |
+|----------|-----------------------|-------------------------|--------------|-------------------------------------------------------------------------------------------------|
+| string   | Required              | `$aggregatorOutputName` | totalRevenue | This refers to the output name of the aggregator given in the aggregations portion of the query |
+| string   | Required              | `$as`                   | myField      | The output name as how we can access it                                                         |
+| string   | Optional              | `$finalizing`           | false        | Set this to true if you want to return a finalized value, such as an estimated cardinality      |
+
 #### `constant()`
 
-@todo
+The `constant()` post aggregator method allows you to define a constant which can be used in a post aggregation function. 
+
+For example, when you want to calculate the area of a circle based on the radius, you can use a formula like below:
+
+Find the circle area based on the formula radius x radius x pi. 
+```php
+$builder
+    ->select('radius')
+    ->multiply('area', function(PostAggregationsBuilder $builder){
+        $builder->multipli('r2', ['radius', 'radius']);
+        $builder->constant('3.141592654', 'pi');
+    });
+```
+
+The `constant()` post aggregator has the following arguments:
+
+| **Type**  | **Optional/Required** | **Argument**    | **Example** | **Description**                          |
+|-----------|-----------------------|-----------------|-------------|------------------------------------------|
+| int/float | Required              | `$numericValue` | 3.14        | This will be our static value            |
+| string    | Required              | `$as`           | pi          | The output name as how we can access it  |
 
 #### `divide()`
 

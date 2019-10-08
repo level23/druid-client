@@ -80,6 +80,7 @@ class HasHavingTest extends TestCase
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
             ['name', 'LiKE', 'John%', 'and'],
+            ['name', 'NoT LiKE', 'John%', 'and'],
         ];
     }
 
@@ -172,6 +173,23 @@ class HasHavingTest extends TestCase
                             'dimension' => $field,
                             'pattern'   => $testingValue,
                             'escape'    => '\\',
+                        ],
+                ];
+                break;
+
+            case 'not like':
+                $expected = [
+                    'type'       => 'not',
+                    'havingSpec' =>
+                        [
+                            'type'   => 'filter',
+                            'filter' =>
+                                [
+                                    'type'      => 'like',
+                                    'dimension' => $field,
+                                    'pattern'   => $testingValue,
+                                    'escape'    => '\\',
+                                ],
                         ],
                 ];
                 break;

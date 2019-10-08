@@ -30,6 +30,19 @@ use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
 {
+    /**
+     * @param array                   $config
+     * @param \GuzzleHttp\Client|null $guzzle
+     *
+     * @return \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface]
+     */
+    protected function mockDruidClient(array $config = [], GuzzleClient $guzzle = null)
+    {
+        $guzzle = $guzzle ?: new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        return Mockery::mock(DruidClient::class, [['retries' => 0], $guzzle]);
+    }
+
     public function testInvalidGranularity()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -49,18 +62,14 @@ class DruidClientTest extends TestCase
             ->shouldReceive('__construct')
             ->once()
             ->with([
-                'timeout'         => 60,
-                'connect_timeout' => 10,
+                'timeout'         => 16,
+                'connect_timeout' => 5,
                 'headers'         => [
                     'User-Agent' => 'level23 druid client package',
                 ],
             ]);
 
-        $client = Mockery::mock(DruidClient::class, [[]]);
-        $client->makePartial();
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        $client->shouldAllowMockingProtectedMethods()->makeGuzzleClient();
+        new DruidClient(['timeout' => 16, 'connect_timeout' => 5]);
     }
 
     /**
@@ -141,7 +150,7 @@ class DruidClientTest extends TestCase
 
         $metaDataBuilder = Mockery::mock($builder);
 
-        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client = $this->mockDruidClient();
         $client->makePartial();
 
         $structure = new Structure($dataSource, ['name' => 'string', 'room' => 'long'], ['salary' => 'double']);
@@ -194,7 +203,7 @@ class DruidClientTest extends TestCase
         /** @var \Mockery\MockInterface|\Mockery\LegacyMockInterface|IndexTask $task */
         $task = Mockery::mock($builder);
 
-        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client = $this->mockDruidClient();
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
@@ -238,7 +247,7 @@ class DruidClientTest extends TestCase
      */
     public function testTaskStatus(array $executeRequestResponse, array $expectedResponse)
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client = $this->mockDruidClient();
         $client->makePartial();
 
         $client->shouldAllowMockingProtectedMethods()
@@ -262,7 +271,7 @@ class DruidClientTest extends TestCase
 
     public function testLogHandler()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client = $this->mockDruidClient();
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
@@ -281,8 +290,8 @@ class DruidClientTest extends TestCase
      */
     public function testExecuteDruidQuery()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
-        $client->makePartial();
+        $client = $this->mockDruidClient();
+        $client->makePartial();;
 
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -318,7 +327,7 @@ class DruidClientTest extends TestCase
 
     public function testParseResponse()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
+        $client = $this->mockDruidClient();
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
@@ -487,8 +496,6 @@ class DruidClientTest extends TestCase
             $this->expectException($expectException);
         }
 
-        $client = Mockery::mock(DruidClient::class, [['retries' => 0]]);
-        $client->makePartial();
 
         $url  = 'http://test.dev/v2/task';
         $data = ['payload' => 'here'];
@@ -499,7 +506,9 @@ class DruidClientTest extends TestCase
             ->with($url, (strtolower($method) == 'post' ? ['json' => $data] : ['query' => $data]))
             ->andReturnUsing($responseFunction);
 
-        $client->setGuzzleClient($guzzle);
+        $client = $this->mockDruidClient([], $guzzle);
+        $client->makePartial();
+
 
         $expectedResponse = [];
         if (!$is204 && (!$expectException || $expectException instanceof ResponseInterface)) {
@@ -534,7 +543,12 @@ class DruidClientTest extends TestCase
      */
     public function testExecuteRawRequestWithRetries(int $retries, int $delay)
     {
-        $client = Mockery::mock(DruidClient::class, [['retries' => $retries, 'retry_delay_ms' => $delay]]);
+        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        $client = Mockery::mock(DruidClient::class, [
+            ['retries' => $retries, 'retry_delay_ms' => $delay],
+            $guzzle,
+        ]);
         $client->makePartial();
 
         $url  = 'http://test.dev/v2/task';

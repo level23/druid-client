@@ -65,11 +65,16 @@ trait HasDimensions
     }
 
     /**
+     * Select a dimension and transform it using a lookup function.
      *
-     * @param string      $lookupFunction
-     * @param string      $dimension
-     * @param string      $as
-     * @param bool|string $replaceMissingValue
+     * @param string      $lookupFunction      The name of the registered lookup function which you want to use
+     * @param string      $dimension           The dimension which you want to transform using the lookup function.
+     * @param string      $as                  The name as it will be used in the result set. If left empty, we will
+     *                                         use the same name as the dimension.
+     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     *                                         function. The original value will be kept. If false, the missing items
+     *                                         will not be kept in the result set. If this is a string, we will keep
+     *                                         the missing values and replace them with the string value.
      *
      * @return $this
      */
