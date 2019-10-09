@@ -207,7 +207,7 @@ class DruidClientTest extends TestCase
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('info')->twice();
+        $logger->shouldReceive('debug')->twice();
 
         $client->setLogger($logger);
 
@@ -308,7 +308,7 @@ class DruidClientTest extends TestCase
             ->andReturn(['query' => 'here']);
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('info')->twice();
+        $logger->shouldReceive('debug')->twice();
 
         $client->shouldReceive('config')
             ->with('broker_url')
@@ -331,7 +331,7 @@ class DruidClientTest extends TestCase
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('info')->times(3);
+        $logger->shouldReceive('debug')->times(3);
 
         $client->setLogger($logger);
 
