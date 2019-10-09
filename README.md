@@ -70,8 +70,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Implement Kill Task
  - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - metrics selection for select query (currently all columns are returned)
- - whereColumn filter
+ - Metrics selection for select query (currently all columns are returned)
+ - WhereColumn filter
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement index_parallel
  - Implement support for Spatial filters
@@ -84,6 +84,8 @@ See [this](examples/README.md) page for more information.
 ## Documentation
 
 Here is an example of how you can use this package.
+
+**NOTE**: This documentation is still under development. Feel free to give feedback.
 
 Please see the inline comment for more information / feedback.
 
@@ -219,6 +221,7 @@ See the following chapters for more information about the query builder.
   - [Extractions](#extractions)
   - [Having](#having)
   - [Virtual Columns](#virtual-columns)
+  - [Post Aggregations](#post-aggregations)
 
 ## Dimension selections
 
@@ -1154,6 +1157,7 @@ This method has the following arguments:
 | string     | Required              | `$operator`    | ">"                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
 | string/int | Required              | `$value`       | 50                 | The value which you want to use in your filter comparison                                                                                                                  |
 | string     | Optional              | `$boolean`     | "and" / "or"       | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
 The following `$operator` values are supported:
 
 | **Operator**   | **Description**                                                                                                                                                 |
@@ -1224,10 +1228,255 @@ For the full list of available expressions, see this page: https://druid.apache.
 
 To use a virtual column, you should use the `virtualColumn()` method:
 
-## `virtualColumn()`
+#### `virtualColumn()`
+
+This method creates a virtual column based on the given expression. 
+
+Virtual columns are queryable column "views" created from a set of columns during a query.
+
+A virtual column can potentially draw from multiple underlying columns, although a virtual column always
+presents itself as a single column.
+
+Virtual columns can be used as dimensions or as inputs to aggregators.
+
+**NOTE**: virtual columns are NOT automatically added to your output. You should select it separately if you want to
+add it also to your output. Use `selectVirtual()` to do both at once.
+
+Example:
+
+```php
+// Increase our reward with $2,00 if this sale was done by a promoter. 
+$builder->virtualColumn('if(promo_id > 0, reward + 2, 0)', 'rewardWithPromoterPayout', 'double')
+    // Now sum all our rewards with the promoter payouts included.
+    ->doubleSum('rewardWithPromoterPayout', 'totalRewardWithPromoterPayout');
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**               | **Description**                                                                                                          |
+|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
+| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
+| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+ 
+#### `selectVirtual()`
+
+This method creates a virtual column as the method `virtualColumn()` does, but this method also selects the virtual
+column in the output. 
+
+Example:
+```php
+// Select the mobile device type as text, but only if isMobileDevice = 1 
+$builder->selectVirtual(
+    "if( isMobileDevice = 1, case_simple( mobileDeviceType, '1', 'samsung', '2', 'apple', '3', 'nokia', 'other'), 'no mobile device')", 
+    "deviceType"
+);
+```  
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**               | **Description**                                                                                                          |
+|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
+| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
+| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+
+## Post Aggregations
+
+#### `fieldAccess()`
+
+The `fieldAccess()` post aggregator method is not really a aggregation method itself, but you need it to access fields which are used 
+in the other post aggregations. 
+
+For example, when you want to calculate the average salary per job function:
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', function(PostAggregationsBuilder $builder) {
+        $builder->fieldAccess('totalSalary');
+        $builder->fieldAccess('nrOfEmployees');
+    });
+```
+
+However, we you can also use this shorthand, which will be converted to `fieldAccess` methods:
+
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+This is exactly the same. We will convert the given fields to `fieldAccess()` for you.
+
+The `fieldAccess()` post aggregator has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**            | **Example**  | **Description**                                                                                 |
+|----------|-----------------------|-------------------------|--------------|-------------------------------------------------------------------------------------------------|
+| string   | Required              | `$aggregatorOutputName` | totalRevenue | This refers to the output name of the aggregator given in the aggregations portion of the query |
+| string   | Required              | `$as`                   | myField      | The output name as how we can access it                                                         |
+| string   | Optional              | `$finalizing`           | false        | Set this to true if you want to return a finalized value, such as an estimated cardinality      |
+
+#### `constant()`
+
+The `constant()` post aggregator method allows you to define a constant which can be used in a post aggregation function. 
+
+For example, when you want to calculate the area of a circle based on the radius, you can use a formula like below:
+
+Find the circle area based on the formula radius x radius x pi. 
+```php
+$builder
+    ->select('radius')
+    ->multiply('area', function(PostAggregationsBuilder $builder){
+        $builder->multipli('r2', ['radius', 'radius']);
+        $builder->constant('3.141592654', 'pi');
+    });
+```
+
+The `constant()` post aggregator has the following arguments:
+
+| **Type**  | **Optional/Required** | **Argument**    | **Example** | **Description**                          |
+|-----------|-----------------------|-----------------|-------------|------------------------------------------|
+| int/float | Required              | `$numericValue` | 3.14        | This will be our static value            |
+| string    | Required              | `$as`           | pi          | The output name as how we can access it  |
+
+#### `divide()`
+
+The `divide()` post aggregator method divides the given fields. If a value is divided by 0, the result will always be 0.
+
+Example:
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+The first parameter is the name as the result will be available in the output. The fields which you want to divide can 
+be supplied in various ways. These ways are described below:
+
+**Method 1: array**
+
+You can supply the fields which you want to use in your division as an array. They will be converted to `fieldAccess()` 
+calls for you. 
+
+Example:
+```php
+$builder->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+**Method 2: Variable-length argument lists**
+
+You can supply the fields which you want to use in your division as extra arguments in the method call. 
+They will be converted to `fieldAccess()` calls for you.
+
+Example:
+```php
+// This will become: avgSalary = totalSalary / nrOfEmployees / totalBonus
+$builder->divide('avgSalary', 'totalSalary', 'nrOfEmployees', 'totalBonus');
+``` 
+
+**Method 3: Closure**
+
+You can also supply a closure, which allows you to build more advance math calculations.
+
+Example:
+```php
+// This will become: avgSalary = totalSalary / nrOfEmployees / ( bonus + tips )
+$builder->divide('avgSalary', function(PostAggregationsBuilder $builder){    
+    $builder->fieldAccess('totalSalary');
+    $builder->fieldAccess('nrOfEmployees');    
+
+    $builder->add('totalBonus', ['bonus', 'tips']);    
+});
+```
 
 
-@todo 
+The `divide()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                      |
+|-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                              |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to divide. See above for more information. |
+
+
+#### `multiply()`
+
+The `multiply()` post aggregator method multiply the given fields. 
+
+Example:
+```php
+$builder->multiply('volume', ['width', 'height', 'depth']);
+```
+
+The `multiply()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to multiply. See the `divide()` method for more info. |
+
+
+#### `subtract()`
+
+The `subtract()` post aggregator method subtract the given fields. 
+
+Example:
+```php
+$builder->subtract('total', 'revenue', 'taxes');
+```
+
+The `subtract()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to subtract. See the `divide()` method for more info. |
+
+
+#### `add()`
+
+The `add()` post aggregator method add the given fields. 
+
+Example:
+```php
+$builder->add('total', 'salary', 'bonus');
+```
+
+The `add()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                            |
+|-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                    |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to add. See the `divide()` method for more info. |
+
+
+#### `quotient()`
+
+@todo
+
+#### `longGreatest()` and `doubleGreatest()`
+
+@todo
+
+#### `longLeast()` and `doubleLeast()`
+
+@todo
+
+#### `postJavascript()`
+
+@todo
+
+#### `hyperUniqueCardinality()`
+
+@todo
 
 ## `DruidClient::metadata()`
 

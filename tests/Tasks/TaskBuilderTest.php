@@ -9,16 +9,29 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
+use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\CompactTaskBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
 
 class TaskBuilderTest extends TestCase
 {
+    /**
+     * @var \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected $client;
+
+    protected function setUp(): void
+    {
+        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        $this->client = Mockery::mock(DruidClient::class, [[], $guzzle]);
+
+        parent::setUp();
+    }
+
     public function testExecute()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
-
-        $builder = Mockery::mock(CompactTaskBuilder::class, [$client, 'animals']);
+        $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
         $builder->makePartial();
 
         $task = new CompactTask('animals', new Interval('12-02-2019', '13-02-2019'));
@@ -30,7 +43,7 @@ class TaskBuilderTest extends TestCase
             ->with([])
             ->andReturn($task);
 
-        $client->shouldReceive('executeTask')
+        $this->client->shouldReceive('executeTask')
             ->once()
             ->with($task)
             ->andReturn('myTaskId');
@@ -45,9 +58,7 @@ class TaskBuilderTest extends TestCase
      */
     public function testToJson()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
-
-        $builder = Mockery::mock(CompactTaskBuilder::class, [$client, 'animals']);
+        $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
         $builder->makePartial();
 
         $task = Mockery::mock(CompactTask::class, ['animals', new Interval('12-02-2019', '13-02-2019')]);
@@ -72,9 +83,7 @@ class TaskBuilderTest extends TestCase
      */
     public function testToArray()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
-
-        $builder = Mockery::mock(CompactTaskBuilder::class, [$client, 'animals']);
+        $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
         $builder->makePartial();
 
         $task = Mockery::mock(CompactTask::class, ['animals', new Interval('12-02-2019', '13-02-2019')]);
@@ -158,19 +167,17 @@ class TaskBuilderTest extends TestCase
     {
         $dataSource = 'animals';
 
-        $client = Mockery::mock(DruidClient::class, [[]]);
-
-        $builder = Mockery::mock(CompactTaskBuilder::class, [$client, $dataSource]);
+        $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, $dataSource]);
         $builder->makePartial();
 
-        $metadata = Mockery::mock(MetadataBuilder::class, [$client]);
+        $metadata = Mockery::mock(MetadataBuilder::class, [$this->client]);
 
         $metadata->shouldReceive('intervals')
             ->once()
             ->with($dataSource)
             ->andReturn($allIntervals);
 
-        $client->shouldReceive('metadata')
+        $this->client->shouldReceive('metadata')
             ->once()
             ->andReturn($metadata);
 

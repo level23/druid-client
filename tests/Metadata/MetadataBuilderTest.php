@@ -7,8 +7,8 @@ use Mockery;
 use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use Level23\Druid\Facades\Druid;
 use Level23\Druid\Metadata\Structure;
+use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Exceptions\QueryResponseException;
@@ -16,6 +16,20 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class MetadataBuilderTest extends TestCase
 {
+    /**
+     * @var \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     */
+    protected $client;
+
+    protected function setUp(): void
+    {
+        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        $this->client = Mockery::mock(DruidClient::class, [[], $guzzle]);
+
+        parent::setUp();
+    }
+
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
@@ -26,13 +40,12 @@ class MetadataBuilderTest extends TestCase
             "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => ["size" => 161870, "count" => 8],
         ];
 
-        $client = Mockery::mock(DruidClient::class, [[]]);
-        $client->shouldReceive('config')
+        $this->client->shouldReceive('config')
             ->once()
             ->with('coordinator_url')
             ->andReturn('http://coordinator.url');
 
-        $client->shouldReceive('executeRawRequest')
+        $this->client->shouldReceive('executeRawRequest')
             ->once()
             ->with('get',
                 'http://coordinator.url/druid/coordinator/v1/datasources/' . urlencode('dataSource') . '/intervals',
@@ -40,7 +53,7 @@ class MetadataBuilderTest extends TestCase
             )
             ->andReturn($intervals);
 
-        $builder  = new MetadataBuilder($client);
+        $builder  = new MetadataBuilder($this->client);
         $response = $builder->intervals('dataSource');
 
         $this->assertEquals($intervals, $response);
@@ -56,18 +69,16 @@ class MetadataBuilderTest extends TestCase
      */
     public function testInterval()
     {
-        $client = Mockery::mock(DruidClient::class, [[]]);
-
-        $builder = new MetadataBuilder($client);
+        $builder = new MetadataBuilder($this->client);
 
         $intervalResponse = ['druid' => ['response' => 'here']];
 
-        $client->shouldReceive('config')
+        $this->client->shouldReceive('config')
             ->once()
             ->with('coordinator_url')
             ->andReturn('http://coordinator.url');
 
-        $client->shouldReceive('executeRawRequest')
+        $this->client->shouldReceive('executeRawRequest')
             ->once()
             ->with('get',
                 'http://coordinator.url/druid/coordinator/v1/datasources/' . urlencode('dataSource') .
@@ -218,8 +229,7 @@ class MetadataBuilderTest extends TestCase
         $expectedResponse
     ) {
 
-        $druidClient     = Mockery::mock(DruidClient::class, [[]]);
-        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$druidClient]);
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
 
         $metadataBuilder->makePartial();
 
@@ -270,12 +280,11 @@ class MetadataBuilderTest extends TestCase
     {
         $dataSource      = 'myDataSource';
         $interval        = '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z';
-        $druidClient     = Mockery::mock(DruidClient::class, [[]]);
-        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$druidClient]);
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
         $metadataBuilder->makePartial();
-        $queryBuilder = Mockery::mock(QueryBuilder::class, [$druidClient, 'myDataSource']);
+        $queryBuilder = Mockery::mock(QueryBuilder::class, [$this->client, 'myDataSource']);
 
-        $druidClient->shouldReceive('query')
+        $this->client->shouldReceive('query')
             ->with($dataSource)
             ->once()
             ->andReturn($queryBuilder);
@@ -312,8 +321,7 @@ class MetadataBuilderTest extends TestCase
      */
     public function testGetIntervalByShorthand(string $dataSource, string $shortHand)
     {
-        $druidClient     = Mockery::mock(DruidClient::class, [[]]);
-        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$druidClient]);
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
         $metadataBuilder->makePartial();
 
         $intervals = [
