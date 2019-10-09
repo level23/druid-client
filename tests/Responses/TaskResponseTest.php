@@ -50,5 +50,6 @@ class TaskResponseTest extends TestCase
         $this->assertEquals($rawResponse['status']['status'], $response->getStatus());
         $this->assertEquals($rawResponse['status']['statusCode'], $response->getStatusCode());
         $this->assertEquals($rawResponse['status']['errorMsg'], $response->getErrorMsg());
+        $this->assertEquals($rawResponse['status']['id'], $response->getId());
     }
 }

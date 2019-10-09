@@ -46,7 +46,7 @@ in `bootstrap/app.php`:
 $app->register(Level23\Druid\DruidServiceProvider::class);
 ```
 
-#### Configuration:
+#### Laravel/Lumen Configuration:
 
 You should also define the correct endpoint url's in your `.env` in your Laravel/Lumen project:
 ```
@@ -55,6 +55,8 @@ DRUID_COORDINATOR_URL=http://coordinator.url:8081
 DRUID_OVERLORD_URL=http://overlord.url:8090
 DRUID_RETRIES=2
 DRUID_RETRY_DELAY_MS=500
+DRUID_TIMEOUT=60
+DRUID_CONNECT_TIMEOUT=10
 ```
 
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
@@ -68,8 +70,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Implement Kill Task
  - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - metrics selection for select query (currently all columns are returned)
- - whereColumn filter
+ - Metrics selection for select query (currently all columns are returned)
+ - WhereColumn filter
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement index_parallel
  - Implement support for Spatial filters
@@ -82,6 +84,8 @@ See [this](examples/README.md) page for more information.
 ## Documentation
 
 Here is an example of how you can use this package.
+
+**NOTE**: This documentation is still under development. Feel free to give feedback.
 
 Please see the inline comment for more information / feedback.
 
@@ -147,6 +151,77 @@ $response = $client->query('traffic-hits', 'all')
     // Execute the query. Optionally you can specify Query Context parameters.
     ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
 ```
+
+## DruidClient
+
+The `DruidClient` class is the class where it all begins. You initiate an instance of the druid client, which holds the
+configuration of your instance.
+
+The `DruidClient` constructor has the following arguments:
+
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **Description**                                                                                                                         |
+|---------------------|-----------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
+| `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
+
+By default we will use a guzzle client. 
+If you want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
+
+Example of using a custom guzzle client:
+```php
+
+// Create a custom guzzle client which uses an http proxy.
+$guzzleClient = new GuzzleHttp\Client([
+    'proxy' => 'tcp://localhost:8125',
+    'timeout' => 30,
+    'connect_timeout' => 10
+]);
+
+// Create a new DruidClient, which uses our custom Guzzle Client 
+$druidClient = new DruidClient(
+    ['router_url' => 'http://druid.router.com'], 
+    $guzzleClient
+);
+
+// Query stuff here.... 
+```  
+
+The `DruidClient` class gives you various methods. The most commonly used is the `query()` method, which allows you
+to build and execute a query.
+
+#### `DruidClient::query()`
+
+The `query()` method gives you a `QueryBuilder` instance, which allows you to build a query and then execute it. 
+
+Example:
+```php
+$client = new DruidClient(['router_url' => 'https://router.url:8080']);
+
+// retrieve our query builder.
+$builder = $client->query('wikipedia');
+
+// Now build your query ....
+// $builder->select( ... )->where( ... )->interval( ... );  
+```
+
+The query method has 2 parameters: 
+
+| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
+|----------|-----------------------|----------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to query.                                                                                                                                                                                                                                                                                                          |
+| string   | Optional              | `$granularity` | "all"       | The granularity which you want to use for this query. You can think of this like an extra "group by" per time window. The results will be grouped by this time window. By default we will use "all", which will return the resultSet in 1 set. Valid values are: all, none, second, minute, fifteen_minute, thirty_minute, hour, day, week, month, quarter and year  |
+
+The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
+
+See the following chapters for more information about the query builder.  
+
+  - [Metric aggregations](#metric-aggregations)
+  - [Dimension selections](#dimension-selections)
+  - [Filters](#filters)
+  - [Extractions](#extractions)
+  - [Having](#having)
+  - [Virtual Columns](#virtual-columns)
+  - [Post Aggregations](#post-aggregations)
 
 ## Dimension selections
 
@@ -429,10 +504,27 @@ The `javascript()` aggregation method has the following parameters:
 
 #### `hyperUnique()`
 
+The `hyperUnique()` aggregation uses HyperLogLog to compute the estimated cardinality of a dimension that has been 
+aggregated as a "hyperUnique" metric at indexing time.
+
+Please note: use `distinctCount()` when the Theta Sketch extension is available, as it is much faster. 
+
+See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
 
+Example: 
+```php
+$builder->hyperUnique('dimension', 'myResult');
+```
 
-@todo 
+The `hyperUnique()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**          | **Example** | **Description**                                                                                                                                                                                                      |
+|----------|-----------------------|-----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`             | "dimension" |  The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                  |
+| string   | Required              | `$as`                 | "myField"   | The name which will be used in the output result                                                                                                                                                                     |
+| bool     | Optional              | `$round`              | true        | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
+| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll ise xpected).                                                        | 
 
 
 #### `cardinality()`
@@ -526,14 +618,13 @@ This is probably the most used filter. It is very flexible.
 
 This method uses the following arguments:
 
-
-| **Type** | **Optional/Required** | **Argument**   | **Example**        |
-|----------|-----------------------|----------------|--------------------|
-| string   | Required              | `$dimension`   | "cityName"         |
-| string   | Required              | `$operator`    | "="                |
-| mixed    | Required              | `$value`       | "Auburn"           |
-| Closure  | Optional              | `$extraction`  | See example below. |
-| string   | Optional              | `$boolean`     | "and" / "or"       |
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                                                                                                         |
+|----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
+| string   | Required              | `$operator`   | "="                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                                     |
+| mixed    | Required              | `$value`      | "Auburn"           | The value which you want to use in your filter comparison                                                                                                                               |
+| Closure  | Optional              | `$extraction` | See example below. | A closure which builds one or more extraction function. These are applied _before_ the filter will be applied. So the filter will use the value returned by the extraction function(s). |
+| string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
 
 The following `$operator` values are supported:
 
@@ -600,10 +691,9 @@ $builder->where( new SelectorFilter('name', 'John') );
 
 However, this is not recommended and should not be needed.
 
-
 #### `orWhere()`
 
-Same as where, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `where()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 #### `whereIn()`
 
@@ -1046,13 +1136,495 @@ The `bucket()` extraction function has the following arguments:
 | int      | Optional              | `$size`      | 10          | The size of the bucket where the numerical values are grouped in |
 | int      | Optional              | `$offset`    | 2           | The offset for the buckets                                       |
 
+
+## Having
+
+With having filters, you can filter out records _after_ the data has been retrieved. This allows you to filter on aggregated values.
+
+See also this page: https://druid.apache.org/docs/latest/querying/having.html
+
+Below are all the having methods explained.
+
+#### `having()`
+
+The `having()` filter is very simular to the `where()` filter. It is very flexible.
+
+This method has the following arguments:
+
+| **Type**   | **Optional/Required** | **Argument**   | **Example**        | **Description**                                                                                                                                                            |
+|------------|-----------------------|----------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string     | Required              | `$having`      | "totalClicks"      | The metric which you want to filter.                                                                                                                                       |
+| string     | Required              | `$operator`    | ">"                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
+| string/int | Required              | `$value`       | 50                 | The value which you want to use in your filter comparison                                                                                                                  |
+| string     | Optional              | `$boolean`     | "and" / "or"       | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+The following `$operator` values are supported:
+
+| **Operator**   | **Description**                                                                                                                                                 |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =              | Check if the metric is equal to the given value.                                                                                                                |
+| !=             | Check if the metric is not equal to the given value.                                                                                                            |
+| <>             | Same as `!=`                                                                                                                                                    |
+| >              | Check if the metric is greater than the given value.                                                                                                            |
+| >=             | Check if the metric is greater than or equal to the given value.                                                                                                |
+| <              | Check if the metric is less than the given value.                                                                                                               |
+| <=             | Check if the metric is less than or equal to the given value.                                                                                                   |
+| like           | Check if the metric matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character). |
+| not like       | Same as `like`, only now the metric should not match.                                                                                                           |
+
+This method supports a quick equals shorthand. Example:
+```php
+// select everybody with 2 kids
+$builder->having('sumKids', 2);
+```
+
+Is the same as
+```php
+$builder->having('sumKids', '=', 2);
+```
+
+We also support using a `Closure` to group various havings in 1 filter. It will receive a `HavingBuilder`. For example:
+```php
+$builder->having(function (FilterBuilder $filterBuilder) {
+    $filterBuilder->orHaving('sumKats', '>', 0);
+    $filterBuilder->orHaving('sumDogs', '>', 0);
+});
+$builder->having('sumKids', '=', 0);
+```
+
+This would be the same as an SQL equivalent:
+```SELECT ... HAVING (sumKats > 0 OR sumDogs > 0) AND sumKids = 0;``` 
+
+As last, you can also supply a raw filter or having-filter object. For example:
+```php
+// exampe using a having filter
+$builder->having( new GreaterThanHavingFilter('totalViews', 15) );
+
+// example using a "normal" filter.
+$builder->having( new SelectorFilter('totalViews', '15') );
+```
+
+However, this is not recommended and should not be needed.
+
+#### `orHaving()`
+
+Same as `having()`, but now we will join previous added having-filters with a `or` instead of an `and`.
+
+## Virtual Columns
+
+Virtual columns allow you to create a new "virtual" column based on an expression. This is very powerful, but not well
+documented in the Druid Manual. 
+
+Druid expressions allow you to do various actions, like:
+
+ * Execute a lookup and use the result
+ * Execute mathematical operations on values  
+ * Use if, else expressions
+ * Concat strings
+ * Use a "case" statement
+ * Etc.
+ 
+For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/misc/math-expr.html
+
+To use a virtual column, you should use the `virtualColumn()` method:
+
+#### `virtualColumn()`
+
+This method creates a virtual column based on the given expression. 
+
+Virtual columns are queryable column "views" created from a set of columns during a query.
+
+A virtual column can potentially draw from multiple underlying columns, although a virtual column always
+presents itself as a single column.
+
+Virtual columns can be used as dimensions or as inputs to aggregators.
+
+**NOTE**: virtual columns are NOT automatically added to your output. You should select it separately if you want to
+add it also to your output. Use `selectVirtual()` to do both at once.
+
+Example:
+
+```php
+// Increase our reward with $2,00 if this sale was done by a promoter. 
+$builder->virtualColumn('if(promo_id > 0, reward + 2, 0)', 'rewardWithPromoterPayout', 'double')
+    // Now sum all our rewards with the promoter payouts included.
+    ->doubleSum('rewardWithPromoterPayout', 'totalRewardWithPromoterPayout');
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**               | **Description**                                                                                                          |
+|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
+| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
+| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+ 
+#### `selectVirtual()`
+
+This method creates a virtual column as the method `virtualColumn()` does, but this method also selects the virtual
+column in the output. 
+
+Example:
+```php
+// Select the mobile device type as text, but only if isMobileDevice = 1 
+$builder->selectVirtual(
+    "if( isMobileDevice = 1, case_simple( mobileDeviceType, '1', 'samsung', '2', 'apple', '3', 'nokia', 'other'), 'no mobile device')", 
+    "deviceType"
+);
+```  
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**               | **Description**                                                                                                          |
+|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
+| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
+| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+
+## Post Aggregations
+
+#### `fieldAccess()`
+
+The `fieldAccess()` post aggregator method is not really a aggregation method itself, but you need it to access fields which are used 
+in the other post aggregations. 
+
+For example, when you want to calculate the average salary per job function:
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', function(PostAggregationsBuilder $builder) {
+        $builder->fieldAccess('totalSalary');
+        $builder->fieldAccess('nrOfEmployees');
+    });
+```
+
+However, we you can also use this shorthand, which will be converted to `fieldAccess` methods:
+
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+This is exactly the same. We will convert the given fields to `fieldAccess()` for you.
+
+The `fieldAccess()` post aggregator has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**            | **Example**  | **Description**                                                                                 |
+|----------|-----------------------|-------------------------|--------------|-------------------------------------------------------------------------------------------------|
+| string   | Required              | `$aggregatorOutputName` | totalRevenue | This refers to the output name of the aggregator given in the aggregations portion of the query |
+| string   | Required              | `$as`                   | myField      | The output name as how we can access it                                                         |
+| string   | Optional              | `$finalizing`           | false        | Set this to true if you want to return a finalized value, such as an estimated cardinality      |
+
+#### `constant()`
+
+The `constant()` post aggregator method allows you to define a constant which can be used in a post aggregation function. 
+
+For example, when you want to calculate the area of a circle based on the radius, you can use a formula like below:
+
+Find the circle area based on the formula radius x radius x pi. 
+```php
+$builder
+    ->select('radius')
+    ->multiply('area', function(PostAggregationsBuilder $builder){
+        $builder->multipli('r2', ['radius', 'radius']);
+        $builder->constant('3.141592654', 'pi');
+    });
+```
+
+The `constant()` post aggregator has the following arguments:
+
+| **Type**  | **Optional/Required** | **Argument**    | **Example** | **Description**                          |
+|-----------|-----------------------|-----------------|-------------|------------------------------------------|
+| int/float | Required              | `$numericValue` | 3.14        | This will be our static value            |
+| string    | Required              | `$as`           | pi          | The output name as how we can access it  |
+
+#### `divide()`
+
+The `divide()` post aggregator method divides the given fields. If a value is divided by 0, the result will always be 0.
+
+Example:
+```php
+$builder
+    ->select('jobFunction')
+    ->doubleSum('salary', 'totalSalary')
+    ->longSum('nrOfEmployees')
+    // avgSalary = totalSalary / nrOfEmployees   
+    ->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+The first parameter is the name as the result will be available in the output. The fields which you want to divide can 
+be supplied in various ways. These ways are described below:
+
+**Method 1: array**
+
+You can supply the fields which you want to use in your division as an array. They will be converted to `fieldAccess()` 
+calls for you. 
+
+Example:
+```php
+$builder->divide('avgSalary', ['totalSalary', 'nrOfEmployees']);
+```
+
+**Method 2: Variable-length argument lists**
+
+You can supply the fields which you want to use in your division as extra arguments in the method call. 
+They will be converted to `fieldAccess()` calls for you.
+
+Example:
+```php
+// This will become: avgSalary = totalSalary / nrOfEmployees / totalBonus
+$builder->divide('avgSalary', 'totalSalary', 'nrOfEmployees', 'totalBonus');
+``` 
+
+**Method 3: Closure**
+
+You can also supply a closure, which allows you to build more advance math calculations.
+
+Example:
+```php
+// This will become: avgSalary = totalSalary / nrOfEmployees / ( bonus + tips )
+$builder->divide('avgSalary', function(PostAggregationsBuilder $builder){    
+    $builder->fieldAccess('totalSalary');
+    $builder->fieldAccess('nrOfEmployees');    
+
+    $builder->add('totalBonus', ['bonus', 'tips']);    
+});
+```
+
+
+The `divide()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                      |
+|-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                              |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to divide. See above for more information. |
+
+
+#### `multiply()`
+
+The `multiply()` post aggregator method multiply the given fields. 
+
+Example:
+```php
+$builder->multiply('volume', ['width', 'height', 'depth']);
+```
+
+The `multiply()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to multiply. See the `divide()` method for more info. |
+
+
+#### `subtract()`
+
+The `subtract()` post aggregator method subtract the given fields. 
+
+Example:
+```php
+$builder->subtract('total', 'revenue', 'taxes');
+```
+
+The `subtract()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to subtract. See the `divide()` method for more info. |
+
+
+#### `add()`
+
+The `add()` post aggregator method add the given fields. 
+
+Example:
+```php
+$builder->add('total', 'salary', 'bonus');
+```
+
+The `add()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                            |
+|-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                    |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to add. See the `divide()` method for more info. |
+
+
+#### `quotient()`
+
+@todo
+
+#### `longGreatest()` and `doubleGreatest()`
+
+@todo
+
+#### `longLeast()` and `doubleLeast()`
+
+@todo
+
+#### `postJavascript()`
+
+@todo
+
+#### `hyperUniqueCardinality()`
+
+@todo
+
+## `DruidClient::metadata()`
+
+Besides querying data, the `DruidClient` class also allows you to extract metadata from your druid setup.
+ 
+The `metadata()` method returns a `MetadataBuilder` instance. With this instance you can retrieve various metadata
+information about your druid setup. 
+
+Below we have described the most common used methods.
+
+#### `metadata()->intervals()`
+
+This method returns all intervals for the given `$dataSource`. 
+
+Example:
+```php
+$intervals = $client->metadata()->intervals('wikipedia');
+```
+
+The `intervals()` method has 1 parameters: 
+
+| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
+|----------|-----------------------|----------------|-------------|-----------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to retrieve the intervals from. |
+
+
+It will return the response like this:
+```
+[
+  "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => [ "size" => 75208,  "count" => 4 ],
+  "2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z" => [ "size" => 161870, "count" => 8 ],
+]
+```
+
+#### `metadata()->interval()`
+
+The `interval()` method on the MetadataBuilder will return all details regarding the given interval.
+
+Example:
+```php
+// retrieve the details regarding the given interval.
+$response = $client->metadata()->interval('wikipedia', '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
+```
+
+The `interval()` method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                         | **Description**                                                                          |
+|----------|-----------------------|---------------|-----------------------------------------------------|------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource` | "wikipedia"                                         | The name of the dataSource (table) which you want to retrieve interval information from. |
+| string   | Required              | `$interval`   | "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" | The "raw" interval where you want to retrieve details for.                               |
+
+It will return an array as below:
+```
+$response = [
+    '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z' =>
+        [
+            'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z' =>
+                [
+                    'metadata' =>
+                        [
+                            'dataSource'    => 'wikipedia',
+                            'interval'      => '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z',
+                            'version'       => '2019-09-26T18:30:14.418Z',
+                            'loadSpec'      =>
+                                [
+                                    'type' => 'local',
+                                    'path' => '/etc/apache-druid-0.15.1-incubating/var/druid/segments/wikipedia/2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2019-09-26T18:30:14.418Z/0/index.zip',
+                                ],
+                            'dimensions'    => 'added,channel,cityName,comment,countryIsoCode,countryName,deleted,delta,isAnonymous,isMinor,isNew,isRobot,isUnpatrolled,metroCode,namespace,page,regionIsoCode,regionName,user',
+                            'metrics'       => '',
+                            'shardSpec'     =>
+                                [
+                                    'type'         => 'numbered',
+                                    'partitionNum' => 0,
+                                    'partitions'   => 0,
+                                ],
+                            'binaryVersion' => 9,
+                            'size'          => 4817636,
+                            'identifier'    => 'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z',
+                        ],
+                    'servers'  =>
+                        [
+                            0 => 'localhost:8083',
+                        ],
+                ],
+        ],
+];
+```
+
+#### `metadata()->structure()`
+
+The `structure()` method creates a `Structure` object which represents the structure for the given dataSource.
+It will retrieve the structure for the last known interval, or for the interval which you supply.
+
+Example:
+```php
+// Retrieve the strucutre of our dataSource
+$structure = $client->metadata()->structure('wikipedia');
+``` 
+
+The `structure()` method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                                                                                                   |
+|----------|-----------------------|---------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource` | "wikipedia" | The name of the dataSource (table) which you want to retrieve interval information from.                                                                          |
+| string   | Optional              | `$structure`  | "last"      | The interval where we read the structure data from. You can use "first", "last" or a raw interval string like "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" |
+
+Example response:
+```
+Level23\Druid\Metadata\Structure Object
+(
+    [dataSource] => wikipedia
+    [dimensions] => Array
+        (
+            [channel] => STRING
+            [cityName] => STRING
+            [comment] => STRING
+            [countryIsoCode] => STRING
+            [countryName] => STRING                        
+            [isAnonymous] => STRING
+            [isMinor] => STRING
+            [isNew] => STRING
+            [isRobot] => STRING
+            [isUnpatrolled] => STRING            
+            [namespace] => STRING
+            [page] => STRING
+            [regionIsoCode] => STRING
+            [regionName] => STRING
+            [user] => STRING
+        )
+
+    [metrics] => Array
+        (
+            [added] => LONG
+            [deleted] => LONG
+            [delta] => LONG
+            [metroCode] => LONG 
+        )
+)
+``` 
+
 ## MISC
 
 More info to come!
 
 For testing/building, run:
 ```
-infection --threads=4 --only-covered
+infection --threads=4
 
 ant phpstan
 ```

@@ -24,6 +24,16 @@ return [
     'overlord_url'    => env('DRUID_OVERLORD_URL', env('DRUID_ROUTER_URL')),
 
     /**
+     * The maximum duration of a druid query. If the response takes longer, we will close the connection.
+     */
+    'timeout'         => env('DRUID_TIMEOUT', 60),
+
+    /**
+     * The maximum duration of connecting to the druid instance.
+     */
+    'connect_timeout' => env('DRUID_CONNECT_TIMEOUT', 10),
+
+    /**
      * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
      * execute the query in worst case 3 times.
      *

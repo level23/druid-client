@@ -5,6 +5,7 @@ namespace Level23\Druid\Queries;
 
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Concerns\HasLimit;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Concerns\HasFilter;
@@ -76,7 +77,7 @@ class QueryBuilder
      * @param string                     $dataSource
      * @param string                     $granularity
      */
-    public function __construct(DruidClient $client, string $dataSource, string $granularity = 'all')
+    public function __construct(DruidClient $client, string $dataSource, string $granularity = Granularity::ALL)
     {
         $this->client      = $client;
         $this->dataSource  = $dataSource;
@@ -98,7 +99,7 @@ class QueryBuilder
      * @return $this
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function selectVirtual(string $expression, string $as, $outputType = 'string')
+    public function selectVirtual(string $expression, string $as, $outputType = DataType::STRING)
     {
         $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
 

@@ -31,8 +31,8 @@ trait HasHaving
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like'
      *
      * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|null                          $operator
-     * @param string|null                          $value
+     * @param string|null|int                      $operator
+     * @param string|null|int                      $value
      * @param string                               $boolean
      *
      * @return $this
@@ -71,7 +71,9 @@ trait HasHaving
                     new EqualToHavingFilter($havingOrMetricOrClosure, floatval($value)),
                 ]);
             } elseif (strtolower($operator) == 'like') {
-                $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, $value));
+                $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value));
+            } elseif (strtolower($operator) == 'not like') {
+                $having = new NotHavingFilter(new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value)));
             }
         } elseif ($havingOrMetricOrClosure instanceof FilterInterface) {
             $having = new QueryHavingFilter($havingOrMetricOrClosure);

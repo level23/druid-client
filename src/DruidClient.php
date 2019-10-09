@@ -5,6 +5,7 @@ namespace Level23\Druid;
 
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
+use Level23\Druid\Types\Granularity;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
@@ -57,6 +58,16 @@ class DruidClient
         'overlord_url'    => '',
 
         /**
+         * The maximum duration of a druid query. If the response takes longer, we will close the connection.
+         */
+        'timeout'         => 60,
+
+        /**
+         * The maximum duration of connecting to the druid instance.
+         */
+        'connect_timeout' => 10,
+
+        /**
          * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
          * execute the query in worst case 3 times.
          *
@@ -96,7 +107,7 @@ class DruidClient
      *
      * @return \Level23\Druid\Queries\QueryBuilder
      */
-    public function query(string $dataSource, $granularity = 'all'): QueryBuilder
+    public function query(string $dataSource, $granularity = Granularity::ALL): QueryBuilder
     {
         return new QueryBuilder($this, $dataSource, $granularity);
     }
@@ -288,8 +299,8 @@ class DruidClient
     protected function makeGuzzleClient(): GuzzleClient
     {
         return new GuzzleClient([
-            'timeout'         => 60,
-            'connect_timeout' => 10,
+            'timeout'         => $this->config('timeout', 60),
+            'connect_timeout' => $this->config('connect_timeout', 10),
             'headers'         => [
                 'User-Agent' => 'level23 druid client package',
             ],
