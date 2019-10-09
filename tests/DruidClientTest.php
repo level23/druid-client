@@ -275,7 +275,7 @@ class DruidClientTest extends TestCase
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('info')->once();
+        $logger->shouldReceive('debug')->once();
 
         $client->setLogger($logger);
 
