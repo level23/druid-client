@@ -11,13 +11,23 @@ class HyperUniqueCardinalityPostAggregatorTest extends TestCase
     public function testAggregator()
     {
         $aggregator = new HyperUniqueCardinalityPostAggregator(
-            'myHyperUniqueCardinality',
-            'myHyperUniqueField'
+            'myHyperUniqueField',
+            'myOutputName'
         );
 
         $this->assertEquals([
             'type'      => 'hyperUniqueCardinality',
-            'name'      => 'myHyperUniqueCardinality',
+            'name'      => 'myOutputName',
+            'fieldName' => 'myHyperUniqueField',
+        ], $aggregator->toArray());
+    }
+
+    public function testAggregatorWithoutName()
+    {
+        $aggregator = new HyperUniqueCardinalityPostAggregator('myHyperUniqueField');
+
+        $this->assertEquals([
+            'type'      => 'hyperUniqueCardinality',
             'fieldName' => 'myHyperUniqueField',
         ], $aggregator->toArray());
     }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
+use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Aggregations\MaxAggregator;
@@ -167,22 +169,35 @@ trait HasAggregations
      *
      * @see https://druid.apache.org/docs/latest/querying/hll-old.html
      *
-     * @param string   $as               The output name which is used for the result.
-     * @param \Closure $dimensionBuilder A closure which will receive a DimensionBuilder. You should build the
-     *                                   dimensions which are used to calculate the cardinality over.
-     * @param bool     $byRow            For more details see method description.
-     * @param bool     $round            Only affects query-time behavior, and is ignored at ingestion-time. The
-     *                                   HyperLogLog algorithm generates decimal estimates with some error. "round" can
-     *                                   be set to true to round off estimated values to whole numbers. Note that even
-     *                                   with rounding, the cardinality is still an estimate.
+     * @param string         $as                           The output name which is used for the result.
+     * @param \Closure|array $dimensionsOrDimensionBuilder An array with the dimensions which you want to calculate the
+     *                                                     cardinality over, or a closure which will receive a
+     *                                                     DimensionBuilder. You should build the dimensions which are
+     *                                                     used to calculate the cardinality over.
+     * @param bool           $byRow                        For more details see method description.
+     * @param bool           $round                        Only affects query-time behavior, and is ignored at
+     *                                                     ingestion-time. The HyperLogLog algorithm generates decimal
+     *                                                     estimates with some error. "round" can be set to true to
+     *                                                     round off estimated values to whole numbers. Note that even
+     *                                                     with rounding, the cardinality is still an estimate.
      *
      * @return $this
      */
-    public function cardinality(string $as, Closure $dimensionBuilder, bool $byRow = false, bool $round = false)
+    public function cardinality(string $as, $dimensionsOrDimensionBuilder, bool $byRow = false, bool $round = false)
     {
-        $builder = new DimensionBuilder();
-        call_user_func($dimensionBuilder, $builder);
-        $dimensions = $builder->getDimensions();
+        if ($dimensionsOrDimensionBuilder instanceof Closure) {
+            $builder = new DimensionBuilder();
+            call_user_func($dimensionsOrDimensionBuilder, $builder);
+            $dimensions = $builder->getDimensions();
+        } elseif (is_array($dimensionsOrDimensionBuilder)) {
+            $dimensions = [];
+
+            foreach ($dimensionsOrDimensionBuilder as $dimension) {
+                $dimensions[] = new Dimension($dimension);
+            }
+        } else {
+            throw new InvalidArgumentException('You should supply a Closure function or an array.');
+        }
 
         $this->aggregations[] = new CardinalityAggregator(
             $as,

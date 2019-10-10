@@ -40,8 +40,8 @@ class HasPostAggregationsTest extends TestCase
         $fields = [
             'field',
             new HyperUniqueCardinalityPostAggregator(
-                'myHyperUniqueCardinality',
-                'myHyperUniqueField'
+                'myHyperUniqueField',
+                'myHyperUniqueCardinality'
             ),
             function (PostAggregationsBuilder $builder) {
                 $builder->constant(3.14, 'pi');
@@ -338,9 +338,9 @@ class HasPostAggregationsTest extends TestCase
         $this->getPostAggregationMock(HyperUniqueCardinalityPostAggregator::class)
             ->shouldReceive('__construct')
             ->once()
-            ->with('myCardinality', 'myHyperUniqueField');
+            ->with('myHyperUniqueField', 'myOutputName');
 
-        $result = $this->builder->hyperUniqueCardinality('myHyperUniqueField', 'myCardinality');
+        $result = $this->builder->hyperUniqueCardinality( 'myHyperUniqueField', 'myOutputName');
 
         $this->assertEquals($this->builder, $result);
     }

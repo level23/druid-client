@@ -369,9 +369,9 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function hyperUniqueCardinality(string $hyperUniqueField, string $as)
+    public function hyperUniqueCardinality(string $hyperUniqueField, string $as = null)
     {
-        $this->postAggregations[] = new HyperUniqueCardinalityPostAggregator($as, $hyperUniqueField);
+        $this->postAggregations[] = new HyperUniqueCardinalityPostAggregator($hyperUniqueField, $as);
 
         return $this;
     }

@@ -246,22 +246,22 @@ You can use:
 
 **Simple dimension selection:**
 ```php 
-->select("country_iso")
+$builder->select("country_iso")
 ```
 
 **Dimension selection with an alternative output name:**
 ```php 
-->select("country_iso", "Country")
+$builder->select("country_iso", "Country")
 ```
 
 **Select various dimensions at once:**
 ```php 
-->select(["browser", "country_iso", "age", "gender"])
+$builder->select(["browser", "country_iso", "age", "gender"])
 ```
 
 **Select various dimensions with alternative output names at once:**
 ```php 
-->select([
+$builder->select([
     "browser"     => "TheBrowser", 
     "country_iso" => "CountryIso", 
     "age"         => "Age",
@@ -272,7 +272,7 @@ You can use:
 **Select a dimension and extract a value from it:**
 ```php 
 // retrieve the first two characters from the "locale" string and use it as language.
-->select("locale", "language", function(ExtractionBuilder $extraction) {
+$builder->select("locale", "language", function(ExtractionBuilder $extraction) {
     $extraction->substring(0, 2);
 })
 ```
@@ -281,7 +281,7 @@ See the chapter __Extractions__ for all available extractions.
 
 **Change the output type of a dimension:**
 ```php 
-->select("age", null, null, "long")
+$builder->select("age", null, null, "long")
 ```
 
 #### `lookup()`
@@ -565,26 +565,34 @@ For more information, see https://druid.apache.org/docs/latest/querying/hll-old.
 Example:
 
 ```php 
+$builder->cardinality( 'nrOfCategories', ['category_id']);    
+```
+
+You can also use a `Closure` function, which will receive a `DimensionBuilder`. In this way you can build more complex
+situations, for example:
+
+```php 
 $builder->cardinality(
-    'category_user_count',
+    'nrOfDistinctFirstLetters',
     function(DimensionBuilder $dimensions) {
-        $dimensions->select('category_id');
-        $dimensions->select('user_id');
+        // select the first character of all the last names.
+        $dimensions->select('last_name', 'last_name', function (ExtractionBuilder $extractionBuilder) {
+            $extractionBuilder->substring(1);
+        });        
     },
-    true, # byRow
+    false, # byRow
     false # round
 );
 ```
 
 The `cardinality()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**        | **Example**        | **Description**                                                                                                                                                                                                      |
-|----------|-----------------------|---------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$as`               | "distinct_count"   | The name which will be used in the output result                                                                                                                                                                     |
-| Closure  | Required              | `$dimensionBuilder` | See example above. | A function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                                                       |
-| bool     | Optional              | `$byRow`            | false              | See above for more info.                                                                                                                                                                                             |
-| bool     | Optional              | `$round`            | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
-
+| **Type**      | **Optional/Required** | **Argument**                    | **Example**        | **Description**                                                                                                                                                                                                      |
+|---------------|-----------------------|---------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`                           | "distinct_count"   | The name which will be used in the output result                                                                                                                                                                     |
+| Closure/array | Required              | `$dimensionsOrDimensionBuilder` | See example above. | An array with dimension(s) or a function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                         |
+| bool          | Optional              | `$byRow`                        | false              | See above for more info.                                                                                                                                                                                             |
+| bool          | Optional              | `$round`                        | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
 
 #### `distinctCount()`
 
@@ -1430,7 +1438,7 @@ The `subtract()` post aggregator method subtract the given fields.
 
 Example:
 ```php
-$builder->subtract('total', 'revenue', 'taxes');
+$builder->subtract('total', ['revenue', 'taxes']);
 ```
 
 The `subtract()` post aggregator has the following arguments:
@@ -1447,7 +1455,7 @@ The `add()` post aggregator method add the given fields.
 
 Example:
 ```php
-$builder->add('total', 'salary', 'bonus');
+$builder->add('total', ['salary', 'bonus']);
 ```
 
 The `add()` post aggregator has the following arguments:
@@ -1460,23 +1468,115 @@ The `add()` post aggregator has the following arguments:
 
 #### `quotient()`
 
-@todo
+The `quotient()` post aggregator method will calculate the quotient over the given field values. The quotient division 
+behaves like regular floating point division. 
+
+Example:
+```php
+// for example: quotient = 15 / 4 = 3 (e.g., how much times fits 4 into 15?)
+$builder->quotient('quotient', ['dividend', 'divisor']);
+```
+
+The `add()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to quotient. See the `divide()` method for more info. |
+
 
 #### `longGreatest()` and `doubleGreatest()`
 
-@todo
+The `longGreatest()` and `doubleGreatest()` post aggregation methods computes the maximum of all fields. 
+
+The difference between the `doubleMax()` aggregator and the `doubleGreatest()` post-aggregator is that doubleMax returns 
+the highest value of all rows for one specific column while doubleGreatest returns the highest value of multiple columns 
+in one row. These are similar to the SQL MAX and GREATEST functions.
+
+Example:
+
+```php
+$builder 
+  ->longSum('a', 'totalA')
+  ->longSum('b', 'totalB')
+  ->longSum('c', 'totalC')
+  ->longGreatest('highestABC', ['a', 'b', 'c']);    
+```
+
+The `longGreatest()` and `doubleGreatest()` post aggregator have the following arguments:
+
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                          |
+|---------------|-----------------------|-------------------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                         |
+| Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the greatest value over. This can be done in multiple ways. See the `divide()` method for more info. |
 
 #### `longLeast()` and `doubleLeast()`
 
-@todo
+The `longLeast()` and `doubleLeast()` post aggregation methods computes the maximum of all fields. 
+
+The difference between the `doubleMin()` aggregator and the `doubleLeast()` post-aggregator is that doubleMin returns 
+the lowest value of all rows for one specific column while doubleLeast returns the lowest value of multiple columns 
+in one row. These are similar to the SQL MIN and LEAST functions.
+
+Example:
+
+```php
+$builder 
+  ->longSum('a', 'totalA')
+  ->longSum('b', 'totalB')
+  ->longSum('c', 'totalC')
+  ->longLeast('lowestABC', ['a', 'b', 'c']);    
+```
+
+The `longLeast()` and `doubleLeast()` post aggregator have the following arguments:
+
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                        |
+|---------------|-----------------------|-------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`             | "lowestValue"      | The name which will be used in the output result                                                                                       |
+| Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the lowest value over. This can be done in multiple ways. See the `divide()` method for more info. |
 
 #### `postJavascript()`
 
-@todo
+The `postJavascript()` post aggregation method allows you to apply the given javascript function over the given fields.
+Fields are passed as arguments to the JavaScript function in the given order.
+
+**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide 
+for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+https://druid.apache.org/docs/latest/development/javascript.html
+
+Example:
+```php
+$builder->postJavascript(
+    'absPercent',
+    'function(delta, total) { return 100 * Math.abs(delta) / total; }',
+    ['delta', 'total']
+);    
+```
+
+The `postJavascript()` post aggregation method has the following arguments:
+
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                                        |
+|---------------|-----------------------|-------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                                       |
+| string        | Required              | `$function`       | See example above. | A string containing the javascript function which will be applied to the given fields.                                                                 |
+| Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to apply the given javascript function over. This can be supplied in multiple ways. See the `divide()` method for more info. |
 
 #### `hyperUniqueCardinality()`
 
-@todo
+The `hyperUniqueCardinality()` post aggregator is used to wrap a hyperUnique object such that it can be used in post aggregations.
+
+Example:
+```php
+$builder
+  ->count('rows')
+  ->hyperUnique('unique_users', 'uniques')
+  ->divide('average_users_per_row', function(PostAggregationsBuilder $builder){    
+      $builder->hyperUniqueCardinality('unique_users');
+      $builder->fieldAccess('rows');    
+  });
+```
+
+The `hyperUniqueCardinality()` post aggregator has the following arguments:
 
 ## `DruidClient::metadata()`
 

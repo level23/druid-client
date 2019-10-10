@@ -18,10 +18,10 @@ class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
     /**
      * HyperUniqueCardinalityPostAggregator constructor.
      *
-     * @param string $outputName The output name
      * @param string $fieldName  The name field value of the hyperUnique aggregator
+     * @param string $outputName The output name
      */
-    public function __construct(string $outputName, string $fieldName)
+    public function __construct(string $fieldName, string $outputName = null)
     {
         $this->outputName = $outputName;
         $this->fieldName  = $fieldName;
@@ -34,10 +34,15 @@ class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
      */
     public function toArray(): array
     {
-        return [
+        $result = [
             'type'      => 'hyperUniqueCardinality',
-            'name'      => $this->outputName,
             'fieldName' => $this->fieldName,
         ];
+
+        if ($this->outputName) {
+            $result['name'] = $this->outputName;
+        }
+
+        return $result;
     }
 }
