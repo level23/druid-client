@@ -1578,6 +1578,11 @@ $builder
 
 The `hyperUniqueCardinality()` post aggregator has the following arguments:
 
+| **Type** | **Optional/Required** | **Argument**        | **Example** | **Description**                                                                     |
+|----------|-----------------------|---------------------|-------------|-------------------------------------------------------------------------------------|
+| string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
+| string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
+
 ## `DruidClient::metadata()`
 
 Besides querying data, the `DruidClient` class also allows you to extract metadata from your druid setup.

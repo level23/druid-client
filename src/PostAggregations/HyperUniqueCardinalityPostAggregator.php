@@ -6,7 +6,7 @@ namespace Level23\Druid\PostAggregations;
 class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
 {
     /**
-     * @var string
+     * @var string|null
      */
     protected $outputName;
 
@@ -18,8 +18,8 @@ class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
     /**
      * HyperUniqueCardinalityPostAggregator constructor.
      *
-     * @param string $fieldName  The name field value of the hyperUnique aggregator
-     * @param string $outputName The output name
+     * @param string      $fieldName  The name field value of the hyperUnique aggregator
+     * @param string|null $outputName The output name
      */
     public function __construct(string $fieldName, string $outputName = null)
     {
