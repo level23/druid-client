@@ -164,7 +164,7 @@ The `DruidClient` constructor has the following arguments:
 | array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
 | `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
 
-By default we will use a guzzle client. 
+By default we will use a guzzle client for handing the connection between your application and the druid server. 
 If you want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
 
 Example of using a custom guzzle client:
@@ -197,8 +197,8 @@ Example:
 ```php
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
-// retrieve our query builder.
-$builder = $client->query('wikipedia');
+// retrieve our query builder, group the results per day.
+$builder = $client->query('wikipedia', 'day');
 
 // Now build your query ....
 // $builder->select( ... )->where( ... )->interval( ... );  
@@ -215,13 +215,65 @@ The QueryBuilder allows you to select dimensions, aggregate metric data, apply f
 
 See the following chapters for more information about the query builder.  
 
-  - [Metric aggregations](#metric-aggregations)
+  - [Generic query methods](#generic-query-methods)
   - [Dimension selections](#dimension-selections)
+  - [Metric aggregations](#metric-aggregations)
   - [Filters](#filters)
   - [Extractions](#extractions)
   - [Having](#having)
   - [Virtual Columns](#virtual-columns)
   - [Post Aggregations](#post-aggregations)
+  
+## Generic query methods
+
+Here we will describe some methods which are generic and can be used by (almost) all queries. 
+
+#### `interval()`
+
+Because Druid is a TimeSeries database, you always need to specify between which times you want to query. With this method
+you can do just that. 
+
+The interval method is very flexible and supports various argument formats. 
+
+All these examples are valid:
+
+```php
+// Select an interval with string values. Anything which can be parsed by the DateTime object
+// can be given. Also "yesterday" or "now" is valid.
+$builder->interval('2019-12-23', '2019-12-24');
+
+// When a string is given which contains a slash, we will split it for you and parse it as "begin/end".
+$builder->interval('yesterday/now');
+
+// An "raw" interval as druid uses them is also allowed
+$builder->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
+
+// You can also give DateTime objects
+$builder->interval(new DateTime('yesterday'), new DateTime('now'));
+
+// Carbon is also supported, as it extends DateTime
+$builder->interval(Carbon::now()->subDay(), Carbon::now());
+
+// Timestamps are also supported:
+$builder->interval(1570643085, 1570729485);
+```
+
+The start date should be before the end date. If not, an `InvalidArgumentException` will be thrown.
+
+The `interval()` method has the following parameters:
+
+| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                    |
+|---------------------------|-----------------------|--------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
+| /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
+  
+#### `limit()`
+
+@todo
+
+#### `orderBy()`
+
+@todo
 
 ## Dimension selections
 
@@ -246,26 +298,26 @@ You can use:
 
 **Simple dimension selection:**
 ```php 
-$builder->select("country_iso")
+$builder->select('country_iso');
 ```
 
 **Dimension selection with an alternative output name:**
 ```php 
-$builder->select("country_iso", "Country")
+$builder->select('country_iso', 'Country');
 ```
 
 **Select various dimensions at once:**
 ```php 
-$builder->select(["browser", "country_iso", "age", "gender"])
+$builder->select(['browser', 'country_iso', 'age', 'gender']);
 ```
 
 **Select various dimensions with alternative output names at once:**
 ```php 
 $builder->select([
-    "browser"     => "TheBrowser", 
-    "country_iso" => "CountryIso", 
-    "age"         => "Age",
-    "gender"      => "MaleOrFemale"
+    'browser'     => 'TheBrowser', 
+    'country_iso' => 'CountryIso', 
+    'age'         => 'Age',
+    'gender'      => 'MaleOrFemale'
 ])
 ```
 
@@ -274,14 +326,14 @@ $builder->select([
 // retrieve the first two characters from the "locale" string and use it as language.
 $builder->select("locale", "language", function(ExtractionBuilder $extraction) {
     $extraction->substring(0, 2);
-})
+});
 ```
 
 See the chapter __Extractions__ for all available extractions.
 
 **Change the output type of a dimension:**
 ```php 
-$builder->select("age", null, null, "long")
+$builder->select('age', null, null, 'long');
 ```
 
 #### `lookup()`
@@ -757,7 +809,7 @@ This method has the following arguments:
 | **Type** | **Optional/Required** | **Argument**  | **Example**       | **Description**                                                      |
 |----------|-----------------------|---------------|-------------------|----------------------------------------------------------------------|
 | string   | Required              | `$dimension`  | __time            | The dimension which you want to filter                               |
-| array    | Required              | `$intervals`  | ["yesterday/now"] | See below for more info                                              |
+| array    | Required              | `$intervals`  | ['yesterday/now'] | See below for more info                                              |
 | Closure  | Optional              | `$extraction` | See Extractions   | Extraction function to extract a different value from the dimension. |
 
 
@@ -766,6 +818,8 @@ The `$intervals` array can contain the following:
 - an raw interval string as used in druid. For example: "2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"
 - an interval string, separating the start and the stop with a / (for example "12-02-2019/13-02-2019") 
 - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp or anything which can be parsed by DateTime::__construct
+
+See for more info also the `interval()` method. 
 
 Example:
 
