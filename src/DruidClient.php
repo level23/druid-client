@@ -344,7 +344,7 @@ class DruidClient
     protected function log(string $message, array $context = []): void
     {
         if ($this->logger) {
-            $this->logger->info($message, $context);
+            $this->logger->debug($message, $context);
         }
     }
 
