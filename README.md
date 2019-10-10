@@ -100,12 +100,13 @@ ini_set('display_errors', 'On');
 include __DIR__ . '/../vendor/autoload.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
 
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
-$response = $client->query('traffic-hits', 'all')
+$response = $client->query('traffic-hits', Granularity::ALL)
     // REQUIRED: you have to select the interval where to select the data from.
     ->interval('now - 1 day', 'now')
     // Simple dimension select
@@ -114,16 +115,20 @@ $response = $client->query('traffic-hits', 'all')
     ->select('country_iso', 'Country')
     // Alternative way to select a dimension with a different output name. 
     // If you want, you can select multiple dimensions at once.
-    ->select(['mccmnc' => 'operator_code'])
+    ->select(['mccmnc' => 'carrierCode'])
     // Select a dimension, but change it's value using a lookup function.
-    ->lookup('operator_title', 'mccmnc', 'carrier', 'Unknown')
+    ->lookup('carrier_title', 'mccmnc', 'carrierName', 'Unknown')
     // Select a dimension, but change it's value by using an extraction function. Multiple functions are available,
     // like timeFormat, upper, lower, substring, lookup, regexp, etc.
-    ->select('__time', 'datetime', function( ExtractionBuilder $builder) {
+    ->select('__time', 'dateTime', function( ExtractionBuilder $builder) {
         $builder->timeFormat('yyyy-MM-dd HH:00:00');
     })    
     // Summing a metric.
-    ->sum('hits', 'total_hits')
+    ->sum('hits', 'totalHits')
+    // Sum hits which only occurred at night
+    ->sum('hits', 'totalHitsNight', function(FilterBuilder $filter) {
+        $filter->whereInterval('__time', ['yesterday 20:00/today 6:00']); 
+    })
     // Count the total number of rows (per the dimensions selected) and store it in totalNrRecords.
     ->count('totalNrRecords')
     // Count the number of dimensions. NOTE: Theta Sketch extension is required to run this aggregation.
@@ -145,9 +150,9 @@ $response = $client->query('traffic-hits', 'all')
     // Limit the number of results.
     ->limit(5)
     // Apply a having filter, this is applied after selecting the records. 
-    ->having('total_hits', '>', 100)
+    ->having('totalHits', '>', 100)
     // Sort the results by this metric/dimension
-    ->orderBy('total_hits', 'desc')
+    ->orderBy('totalHits', 'desc')
     // Execute the query. Optionally you can specify Query Context parameters.
     ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
 ```
@@ -198,7 +203,7 @@ Example:
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
 // retrieve our query builder, group the results per day.
-$builder = $client->query('wikipedia', 'day');
+$builder = $client->query('wikipedia', Granularity::DAY);
 
 // Now build your query ....
 // $builder->select( ... )->where( ... )->interval( ... );  
@@ -628,7 +633,7 @@ $builder->cardinality(
     'nrOfDistinctFirstLetters',
     function(DimensionBuilder $dimensions) {
         // select the first character of all the last names.
-        $dimensions->select('last_name', 'last_name', function (ExtractionBuilder $extractionBuilder) {
+        $dimensions->select('last_name', 'lastName', function (ExtractionBuilder $extractionBuilder) {
             $extractionBuilder->substring(1);
         });        
     },
@@ -641,7 +646,7 @@ The `cardinality()` aggregation method has the following parameters:
 
 | **Type**      | **Optional/Required** | **Argument**                    | **Example**        | **Description**                                                                                                                                                                                                      |
 |---------------|-----------------------|---------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string        | Required              | `$as`                           | "distinct_count"   | The name which will be used in the output result                                                                                                                                                                     |
+| string        | Required              | `$as`                           | "distinctCount"    | The name which will be used in the output result                                                                                                                                                                     |
 | Closure/array | Required              | `$dimensionsOrDimensionBuilder` | See example above. | An array with dimension(s) or a function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                         |
 | bool          | Optional              | `$byRow`                        | false              | See above for more info.                                                                                                                                                                                             |
 | bool          | Optional              | `$round`                        | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
@@ -656,7 +661,7 @@ For more information, see: https://druid.apache.org/docs/latest/development/exte
 Example:
 ```php
 // Count the distinct number of categories. 
-$builder->distinctCount('category_id', 'category_count');
+$builder->distinctCount('category_id', 'categoryCount');
 ```
 
 The `distinctCount()` aggregation method has the following parameters:
@@ -664,7 +669,7 @@ The `distinctCount()` aggregation method has the following parameters:
 | **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                |
 |----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`     | "category_id"                                | The dimension where you want to count the distinct values from.                                                                                                                |
-| string   | Optional              | `$as`            | "category_count"                             | The name which will be used in the output result                                                                                                                               |
+| string   | Optional              | `$as`            | "categoryCount"                              | The name which will be used in the output result                                                                                                                               |
 | int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches.  |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                        |
   
@@ -1186,7 +1191,7 @@ them to the same base value. Non numeric values are converted to null.
 Example:
 ```php
 // Group all ages into "groups" by 10, 20, 30, etc. 
-$builder->select('age', 'age_group', function(ExtractionBuilder $extraction) {
+$builder->select('age', 'ageGroup', function(ExtractionBuilder $extraction) {
     $extraction->bucket(10);
 }); 
 ```
@@ -1624,7 +1629,7 @@ Example:
 $builder
   ->count('rows')
   ->hyperUnique('unique_users', 'uniques')
-  ->divide('average_users_per_row', function(PostAggregationsBuilder $builder){    
+  ->divide('averageUsersPerRow', function(PostAggregationsBuilder $builder){    
       $builder->hyperUniqueCardinality('unique_users');
       $builder->fieldAccess('rows');    
   });
