@@ -534,7 +534,7 @@ class QueryBuilder
         $descending = false;
         if ($this->direction) {
             $descending = ($this->direction === OrderByDirection::DESC);
-        } elseif ($this->legacyIsOrderByDirectionDescending($dimension->getOutputName()) === true) {
+        } elseif ($this->legacyIsOrderByDirectionDescending($dimension ? $dimension->getOutputName() : null) === true) {
             $descending = true;
         }
 
