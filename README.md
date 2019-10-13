@@ -220,16 +220,18 @@ The QueryBuilder allows you to select dimensions, aggregate metric data, apply f
 
 See the following chapters for more information about the query builder.  
 
-  - [Generic query methods](#generic-query-methods)
-  - [Dimension selections](#dimension-selections)
-  - [Metric aggregations](#metric-aggregations)
+  - [Generic Query Methods](#generic-query-methods)
+  - [Dimension Selections](#dimension-selections)
+  - [Metric Aggregations](#metric-aggregations)
   - [Filters](#filters)
   - [Extractions](#extractions)
   - [Having](#having)
   - [Virtual Columns](#virtual-columns)
   - [Post Aggregations](#post-aggregations)
+  - [Execute The Query](#execute-the-query)
   
-## Generic query methods
+   
+## Generic Query Methods
 
 Here we will describe some methods which are generic and can be used by (almost) all queries. 
 
@@ -354,7 +356,88 @@ The `orderByDirection()` method has the following arguments:
 | string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
   
 
-## Dimension selections
+#### `pagingIdentifier()`
+
+The `pagingIdentifier()` allows you to do paginating on the result set. This only works on SELECT queries. 
+
+When you execute a select query, you will return a paging identifier. To request the next "page", use this paging identifier
+in your next request. 
+
+Example:
+```php
+// Build a select query
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
+    ->limit(10);
+
+// Execute the query for "page 1"
+$response1 = $builder->selectQuery();
+
+// Now, request "page 2".
+ $builder->pagingIdentifier($response1->getPagingIdentifier());
+
+// Execute the query for "page 2".
+$response2 = $builder->selectQuery($context);
+```
+
+An paging identifier is an array and looks something like this:
+```array (
+  'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z' => 10,
+)
+```
+
+The `pagingIdentifier()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**        | **Example** | **Description**                                   |
+|----------|-----------------------|---------------------|-------------|---------------------------------------------------|
+| array    | Required              | `$pagingIdentifier` | See above.  | The paging identifier from your previous request. |
+
+#### `toArray()`
+
+The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
+the query and return the query as an array.
+
+Example:
+```php
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
+    ->limit(10);
+
+// Show the query as an array
+print_r($builder->toArray());
+```
+
+The `toArray()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**           |
+|--------------------|-----------------------|--------------|--------------------|---------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
+
+#### `toJson`
+
+The `toJson()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
+the query and return the query as a JSON string.
+
+Example:
+```php
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
+    ->limit(10);
+
+// Show the query as an array
+var_export($builder->toJson());
+```
+
+The `toJson()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**           |
+|--------------------|-----------------------|--------------|--------------------|---------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
+
+## Dimension Selections
 
 Dimensions are fields where you normally filter on, or _Group_ data by. Typical examples are: Country, Name, City, etc.
 
@@ -1716,7 +1799,58 @@ The `hyperUniqueCardinality()` post aggregator has the following arguments:
 | string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
 | string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
 
-## `DruidClient::metadata()`
+## Execute The Query
+
+#### `execute()`
+
+This method will analyse the data which you have supplied in the query builder, and try to use the best suitable query 
+type for you. If you do not want to use the "internal logic", you should use one of the methods below. 
+
+```php 
+$builder
+  ->select('channel')
+  ->longSum('deleted')
+  ->orderBy('deleted', OrderByDirection::DESC)
+  ->execute();
+```
+
+The `execute()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**           |
+|--------------------|-----------------------|--------------|--------------------|---------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
+
+You can supply an array with context parameters, or use a `QueryContext` object (or any context object which is related 
+to the query type of your choice, like a `ScanQueryContext`). For more information about query specific context, see the 
+query descriptions below.
+
+The `QueryContext()` object contains context properties which apply to all queries. 
+
+#### `groupBy()`
+
+@todo
+ 
+#### `topN()`  
+
+@todo 
+
+#### `selectQuery()`
+
+@todo 
+
+#### `topN()`
+
+@todo 
+
+#### `scan()`
+
+@todo 
+
+#### `timeseries()`
+
+@todo 
+
+## Metadata
 
 Besides querying data, the `DruidClient` class also allows you to extract metadata from your druid setup.
  

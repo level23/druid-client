@@ -111,12 +111,12 @@ class QueryBuilder
     /**
      * Execute a druid query. We will try to detect the best possible query type possible.
      *
-     * @param array $context
+     * @param array|QueryContext $context
      *
      * @return QueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function execute(array $context = []): QueryResponse
+    public function execute($context = []): QueryResponse
     {
         $query = $this->buildQuery($context);
 
