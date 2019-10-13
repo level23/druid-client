@@ -274,11 +274,85 @@ The `interval()` method has the following parameters:
   
 #### `limit()`
 
-@todo
+The `limit()` method allows you to limit the result set of the query. 
+
+The Limit can be used for all query types. However, its mandatory for the TopN Query and the Select Query.
+  
+**NOTE:** It is not possible to limit with an offset, like you can do with an SQL query. If you want to use pagination, 
+you can use a Select query. However, the select query does not allow you to aggregate metrics and group by dimensions. 
+See the Select Query for more information. 
+
+Example:
+```
+// Limit the result to 50 rows.
+$builder->limit(50);
+```
+
+The `limit()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                   |
+|----------|-----------------------|--------------|-------------|---------------------------------------------------|
+| int      | Required              | `$limit`     | 50          | Limit the result to this given number of records. | 
+
 
 #### `orderBy()`
 
-@todo
+The `orderBy()` method allows you to order the result in a given way.
+This method only applies to **GroupBy** and **TopN** Queries. You should use `orderByDirection()`.
+
+Example:
+```php 
+$builder
+  ->select('channel')
+  ->longSum('deleted')
+  ->orderBy('deleted', OrderByDirection::DESC)
+  ->groupBy();
+```
+
+The `orderBy()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                           |
+|----------|-----------------------|----------------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                        |
+| string   | Required              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
+| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                 |
+
+See for more information about SortingOrders this page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
+
+Please note: this method differs per query type. Please read below how this method workers per Query Type.
+
+**GroupBy Query**
+
+You can call this method multiple times, adding an order-by to the query. 
+The GroupBy Query only allows ordering the result if there a limit is given. If you do not supply a limit, we will use 
+a default limit of `999999`. 
+
+**TopN Query**
+
+For this query type it is mandatory to call this method. You _should_ call this method with the dimension or metric 
+where you want to order your result by.
+
+#### `orderByDirection()`
+
+The `orderByDirection()` method allows you to specify the direction of the order by. This method only applies to the 
+TimeSeries, Select and Scan Queries. Use `orderBy()` For GroupBy and TopN Queries.
+
+Example:
+```php
+$response = $client->query('wikipedia', 'hour')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->longSum('deleted')    
+    ->select('__time', 'datetime')
+    ->orderByDirection(OrderByDirection::DESC)
+    ->timeseries();
+```
+
+The `orderByDirection()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                           |
+|----------|-----------------------|--------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
+  
 
 ## Dimension selections
 

@@ -62,7 +62,7 @@ class QueryBuilderTest extends TestCase
     {
         $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
 
-        $this->client = Mockery::mock(DruidClient::class, [[], $guzzle]);
+        $this->client  = Mockery::mock(DruidClient::class, [[], $guzzle]);
         $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'dataSourceName']);
         $this->builder->makePartial();
         $this->builder->shouldAllowMockingProtectedMethods();
@@ -703,12 +703,13 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["theTime", {}, true, true, true, false, 0, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, true, false, true, 5, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, true, 5, ""]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "myTime", "desc", true]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "__time", "desc", false]
-     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "Whatever", "desc"]
+     * @testWith ["theTime", {}, true, true, true, false, 0]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, true, false, true, 5]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, true, 5]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "asc", true]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "desc", false]
+     *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "desc", false, true]
+     *           ["__time", {"skipEmptyBuckets":true}, false, false, false, false, 5, "asc", false, true]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -720,9 +721,9 @@ class QueryBuilderTest extends TestCase
      * @param bool   $withAggregations
      * @param bool   $withPostAggregations
      * @param int    $limit
-     * @param string $orderBy
      * @param string $direction
      * @param bool   $contextAsObject
+     * @param bool   $useLegacyOrderBy
      *
      * @throws \Exception
      */
@@ -734,9 +735,9 @@ class QueryBuilderTest extends TestCase
         bool $withAggregations,
         bool $withPostAggregations,
         int $limit,
-        string $orderBy,
-        string $direction = "asc",
-        bool $contextAsObject = true
+        string $direction = 'asc',
+        bool $contextAsObject = true,
+        bool $useLegacyOrderBy = false
     ) {
         $dataSource = 'phones';
 
@@ -761,8 +762,10 @@ class QueryBuilderTest extends TestCase
             $this->builder->limit($limit);
         }
 
-        if ($orderBy) {
-            $this->builder->orderBy($orderBy, $direction);
+        if ($useLegacyOrderBy) {
+            $this->builder->orderBy("__time", $direction);
+        } else {
+            $this->builder->orderByDirection($direction);
         }
 
         if ($withAggregations) {
@@ -820,12 +823,17 @@ class QueryBuilderTest extends TestCase
                 ->with($limit);
         }
 
+        if ($useLegacyOrderBy) {
+            $this->builder->shouldReceive('legacyIsOrderByDirectionDescending')
+                ->once()
+                ->with($timeAlias)
+                ->andReturn(($direction == 'desc'));
+        }
+
         if ($direction == 'desc') {
-            if ($orderBy == '__time' || $orderBy == $timeAlias) {
-                $query->shouldReceive('setDescending')
-                    ->once()
-                    ->with(true);
-            }
+            $query->shouldReceive('setDescending')
+                ->once()
+                ->with(true);
         }
 
         if ($contextAsObject) {
@@ -886,10 +894,10 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [{}, true, 50, true, true, "asc", true]
-     *           [{}, false, 10, false, false, "asc", false]
-     *           [{"priority": 10}, false, 10, false, true, "desc", true]
-     *           [{"priority": 10}, true, 10, false, false, "desc", false]
+     * @testWith [{}, true, 50, true, true, "asc", true, true]
+     *           [{}, false, 10, false, false, "asc", false, false]
+     *           [{"priority": 10}, false, 10, false, true, "desc", true, false]
+     *           [{"priority": 10}, true, 10, false, true, "desc", false, true]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -900,8 +908,8 @@ class QueryBuilderTest extends TestCase
      * @param bool   $withDimensions
      * @param bool   $withOrderBy
      * @param string $orderByDirection
-     *
      * @param bool   $withPagingIdentifier
+     * @param bool   $useLegacyOrderBy
      *
      * @throws \Exception
      */
@@ -912,7 +920,8 @@ class QueryBuilderTest extends TestCase
         bool $withDimensions,
         bool $withOrderBy,
         string $orderByDirection,
-        bool $withPagingIdentifier
+        bool $withPagingIdentifier,
+        bool $useLegacyOrderBy = false
     ) {
         $this->builder->dataSource('wikipedia');
         $this->builder->interval('12-02-2019/13-02-2019');
@@ -934,8 +943,16 @@ class QueryBuilderTest extends TestCase
 
         $descending = false;
 
-        if ($withOrderBy) {
+        if ($withOrderBy && $useLegacyOrderBy) {
             $this->builder->orderBy('__time', $orderByDirection);
+
+            if (OrderByDirection::validate($orderByDirection) == OrderByDirection::DESC) {
+                $descending = true;
+            }
+        }
+
+        if ($withOrderBy && !$useLegacyOrderBy) {
+            $this->builder->orderByDirection($orderByDirection);
 
             if (OrderByDirection::validate($orderByDirection) == OrderByDirection::DESC) {
                 $descending = true;
@@ -1012,10 +1029,12 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [true, true, {}, true, 10, null, false, "list", "", true]
-     *           [false, false, {}, false, 50, 10, true, "compactedList", "channel", false]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 0, 200, false, "list", "__time", true]
-     *           [false, true, {"maxRowsQueuedForOrdering":5}, false, 999999, 0, true, "compactedList", "__time", false]
+     * @testWith [true, true, {}, true, 10, null, false, "list", "", true, true]
+     *           [false, false, {}, false, 50, 10, true, "compactedList", "channel", false, true]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 0, 200, false, "list", "__time", true, true]
+     *           [false, true, {}, false, 999999, 0, true, "compactedList", "__time", false, true]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, false, 0, 200, false, "list", "__time", true, false]
+     *           [false, true, {}, false, 999999, 0, true, "compactedList", "__time", false, false]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -1030,6 +1049,7 @@ class QueryBuilderTest extends TestCase
      * @param string   $resultFormat
      * @param string   $orderByField
      * @param bool     $asc
+     * @param bool     $useLegacyOrderBy
      *
      * @throws \Exception
      */
@@ -1043,7 +1063,8 @@ class QueryBuilderTest extends TestCase
         bool $legacy,
         string $resultFormat,
         string $orderByField,
-        bool $asc
+        bool $asc,
+        bool $useLegacyOrderBy = true
     ) {
         $this->builder->interval('12-02-2019/13-02-2019');
         $this->builder->dataSource('wikipedia');
@@ -1062,8 +1083,12 @@ class QueryBuilderTest extends TestCase
             $this->builder->limit($limit);
         }
 
-        if (!empty($orderByField)) {
+        if (!empty($orderByField) && $useLegacyOrderBy) {
             $this->builder->orderBy($orderByField, $asc ? 'asc' : 'desc');
+        }
+
+        if (!$useLegacyOrderBy) {
+            $this->builder->orderByDirection($asc ? 'asc' : 'desc');
         }
 
         $query = Mockery::mock('overload:' . ScanQuery::class);

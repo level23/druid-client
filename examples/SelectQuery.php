@@ -10,6 +10,7 @@ include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
 use Level23\Druid\Context\QueryContext;
+use Level23\Druid\Types\OrderByDirection;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -17,10 +18,11 @@ try {
     // Enable this to see some more data
     //$client->setLogger(new ConsoleLogger());
 
-    // Build a scan query
+    // Build a select query
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
         ->select(['__time', 'channel', 'user', 'deleted', 'added'])
+        ->orderByDirection(OrderByDirection::DESC)
         ->limit(10);
 
     // Example of setting query context. It can also be supplied as an array in the groupBy() method call.

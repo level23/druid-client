@@ -16,7 +16,7 @@ try {
 
     $response = $client->metadata()->interval('wikipedia', '2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
 
-    // Uncomment this to see the raw response.
+    // See the raw response.
     var_export($response);
 
 } catch (Exception $exception) {

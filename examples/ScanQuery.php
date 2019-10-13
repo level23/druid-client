@@ -9,6 +9,7 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\OrderByDirection;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -20,6 +21,7 @@ try {
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
         ->select(['__time', 'channel', 'user', 'deleted', 'added'])
+        ->orderByDirection(OrderByDirection::DESC)
         ->limit(10);
 
     // Execute the query.

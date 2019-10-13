@@ -325,6 +325,32 @@ class QueryBuilder
     //<editor-fold desc="Protected methods">
 
     /**
+     * In our previous version we required an `order()` with "__time" for TimeSeries, Scan and Select Queries.
+     * This method makes sure that we are backwards compatible.
+     *
+     * @param string|null $dimension If given, we will also check if this dimension was ordered by.
+     *
+     * @return bool|null
+     */
+    protected function legacyIsOrderByDirectionDescending(string $dimension = null): ?bool
+    {
+        if ($this->limit) {
+            $orderBy = $this->limit->getOrderByCollection();
+
+            if ($orderBy->count() > 0) {
+                $orderByItems = $orderBy->toArray();
+                $first        = reset($orderByItems);
+
+                if ($first['dimension'] == '__time' || ($dimension && $dimension == $first['dimension'])) {
+                    return $first['direction'] == OrderByDirection::DESC;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Build a select query.
      *
      * @param array|QueryContext $context
@@ -343,15 +369,11 @@ class QueryBuilder
 
         $limit = $this->limit->getLimit();
 
-        $orderBy    = $this->limit->getOrderByCollection();
         $descending = false;
-        if ($orderBy->count() > 0) {
-            $orderByItems = $orderBy->toArray();
-            $first        = reset($orderByItems);
-
-            if ($first['direction'] == OrderByDirection::DESC) {
-                $descending = true;
-            }
+        if ($this->direction) {
+            $descending = ($this->direction === OrderByDirection::DESC);
+        } elseif ($this->legacyIsOrderByDirectionDescending() === true) {
+            $descending = true;
         }
 
         $query = new SelectQuery(
@@ -413,16 +435,12 @@ class QueryBuilder
             $columns[] = $dimension->getDimension();
         }
 
-        if ($this->limit) {
-            $orderBy = $this->limit->getOrderByCollection();
-
-            if ($orderBy->count() > 0) {
-                $orderByItems = $orderBy->toArray();
-                $first        = reset($orderByItems);
-
-                if ($first['dimension'] == '__time') {
-                    $query->setOrder($first['direction']);
-                }
+        if ($this->direction) {
+            $query->setOrder($this->direction);
+        } else {
+            $isDescending = $this->legacyIsOrderByDirectionDescending();
+            if ($isDescending !== null) {
+                $query->setOrder($isDescending ? OrderByDirection::DESC : OrderByDirection::ASC);
             }
         }
 
@@ -481,7 +499,7 @@ class QueryBuilder
         if (count($this->dimensions) == 1) {
             $dimension = $this->dimensions[0];
             // did we only retrieve the time dimension?
-            if ($dimension->getDimension() == '__time') {
+            if ($dimension->getDimension() == '__time' && $dimension->getOutputName() != '__time') {
                 $query->setTimeOutputName($dimension->getOutputName());
             }
         }
@@ -508,32 +526,20 @@ class QueryBuilder
             $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
         }
 
-        if (!$this->limit) {
-            return $query;
-        }
-
         // If there is a limit set, then apply this on the time series query.
-        if ($this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+        if ($this->limit && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
             $query->setLimit($this->limit->getLimit());
         }
 
-        $orderByCollection = $this->limit->getOrderByCollection();
-
-        if (count($orderByCollection) != 1) {
-            return $query;
+        $descending = false;
+        if ($this->direction) {
+            $descending = ($this->direction === OrderByDirection::DESC);
+        } elseif ($this->legacyIsOrderByDirectionDescending($dimension->getOutputName()) === true) {
+            $descending = true;
         }
 
-        /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
-        $orderBy = $orderByCollection[0];
-
-        if (
-            $orderBy->getDirection() == OrderByDirection::DESC &&
-            (
-                ($dimension && $orderBy->getDimension() == $dimension->getOutputName())
-                || ($orderBy->getDimension() == '__time')
-            )
-        ) {
-            $query->setDescending(true);
+        if ($descending) {
+            $query->setDescending($descending);
         }
 
         return $query;

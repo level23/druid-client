@@ -9,6 +9,7 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 
 try {
@@ -17,13 +18,14 @@ try {
     // Enable this to see some more data
     //$client->setLogger(new ConsoleLogger());
 
-    // Build a scan query
+    // Build a timeSeries query
     $builder = $client->query('wikipedia', 'hour')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
         ->longSum('added')
         ->longSum('deleted')
         ->count('edited')
-        ->select('__time', 'datetime');
+        ->select('__time', 'datetime')
+        ->orderByDirection(OrderByDirection::DESC);
 
     // Example of setting query context. It can also be supplied as an array in the timeseries() method call.
     $context = new TimeSeriesQueryContext();
