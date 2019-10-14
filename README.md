@@ -70,11 +70,11 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Implement Kill Task
  - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - Metrics selection for select query (currently all columns are returned)
- - WhereColumn filter
+ - Metrics selection for select query (currently all columns are returned) 
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement index_parallel
  - Implement support for Spatial filters
+ - Implement support for multi-value dimensions 
 
 ## Examples
 
@@ -646,7 +646,7 @@ directly specify the output type by using the appropriate method name.  These me
 
 Example:
 ```php
-$builder->first('device')
+$builder->first('device');
 ```
 
 The `first()` aggregation method has the following parameters:
@@ -671,7 +671,7 @@ directly specify the output type by using the appropriate method name.  These me
 
 Example:
 ```php
-$builder->last('email')
+$builder->last('email');
 ```
 
 The `last()` aggregation method has the following parameters:
@@ -956,6 +956,34 @@ This method has the following arguments:
 
 This works the same as `whereBetween()`, only now we will check if the dimension is NOT in between the given values. 
 See `whereBetween()` for more details.  
+
+#### `whereColumn()`
+
+The `whereColumn()` filter compares two dimensions with each other. Only records where the dimensions match will be returned.
+
+You can supply the dimension name as a string, or you can build a more advanced dimension (with for example an extraction 
+filter) using a Closure function. Example:
+
+```php
+// Select records where "initials" is equal to the first character of "first_name".
+$builder->whereColumn('initials', function(DimensionBuilder $dimensionBuilder) {
+  $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
+    $extractionBuilder->substring(0, 1);
+  });
+});
+```
+
+The `whereColumn()` filter has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**  | **Example**  | **Description**                                                                                                                                             |
+|----------------|-----------------------|---------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
+| string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
+
+#### `whereNotColumn()`
+
+The `whereNotColumn()` filter works exactly the same as the `whereColumn()` filter, only now it will only return rows
+where `$dimensionA` is different then `$dimensionB`.  
 
 #### `whereInterval()`
 
@@ -1306,7 +1334,7 @@ supported by druid. A feature request has been opened, see: https://github.com/a
 
 Until then, you can use something like this to extract a value using a "bitwise and":
 ```php
-int $binaryFlagToMatch = 16;
+$binaryFlagToMatch = 16;
 
 // Select the fields where the 5th bit is enabled
 $builder->where('flags', '=', $binaryFlagToMatch, function(ExtractionBuilder $extraction) use( $binaryFlagToMatch ) {   

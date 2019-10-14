@@ -14,6 +14,7 @@ use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Filters\IntervalFilter;
@@ -21,7 +22,10 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Interval\IntervalInterface;
+use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Dimensions\DimensionInterface;
+use Level23\Druid\Filters\ColumnComparisonFilter;
 use Level23\Druid\Extractions\ExtractionInterface;
 
 trait HasFilter
@@ -168,6 +172,66 @@ trait HasFilter
     }
 
     /**
+     * Filter records where dimensionA is equal to dimensionB.
+     * You can either supply a string or a Closure. The Closure will receive a DimensionBuilder object, which allows
+     * you to select a dimension and apply extraction functions if needed.
+     *
+     * Example:
+     * ```php
+     * $builder->whereColumn('initials', function(DimensionBuilder $dimensionBuilder) {
+     *   $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
+     *     $extractionBuilder->substring(0, 1);
+     *   });
+     * });
+     * ```
+     *
+     * @param string|Closure $dimensionA
+     * @param string|Closure $dimensionB
+     *
+     * @return $this
+     * @throws InvalidArgumentException
+     */
+    public function whereColumn($dimensionA, $dimensionB)
+    {
+        $filter = new ColumnComparisonFilter(
+            $this->columnCompareDimension($dimensionA),
+            $this->columnCompareDimension($dimensionB)
+        );
+
+        return $this->where($filter);
+    }
+
+    /**
+     * Filter records where dimensionA is NOT equal to dimensionB.
+     * You can either supply a string or a Closure. The Closure will receive a DimensionBuilder object, which allows
+     * you to select a dimension and apply extraction functions if needed.
+     *
+     * Example:
+     * ```php
+     * $builder->whereNotColumn('initials', function(DimensionBuilder $dimensionBuilder) {
+     *   $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
+     *     $extractionBuilder->substring(0, 1);
+     *   });
+     * });
+     * ```
+     *
+     * @param string|Closure $dimensionA
+     * @param string|Closure $dimensionB
+     *
+     * @return $this
+     * @throws InvalidArgumentException
+     */
+    public function whereNotColumn($dimensionA, $dimensionB)
+    {
+        $filter = new ColumnComparisonFilter(
+            $this->columnCompareDimension($dimensionA),
+            $this->columnCompareDimension($dimensionB)
+        );
+
+        return $this->where(new NotFilter($filter));
+    }
+
+    /**
      * This filter will select records where the given dimension is greater than or equal to the given minValue, and
      * less than or equal to the given $maxValue.
      *
@@ -304,6 +368,37 @@ trait HasFilter
         );
 
         return $this->where($filter);
+    }
+
+    /**
+     * Normalize the given dimension to a DimensionInterface object.
+     *
+     * @param string|Closure $dimension
+     *
+     * @return \Level23\Druid\Dimensions\DimensionInterface
+     * @throws InvalidArgumentException
+     */
+    protected function columnCompareDimension($dimension): DimensionInterface
+    {
+        if (is_string($dimension)) {
+            return new Dimension($dimension);
+        }
+        if ($dimension instanceof Closure) {
+            $builder = new DimensionBuilder();
+            call_user_func($dimension, $builder);
+            $dimensions = $builder->getDimensions();
+
+            if (count($dimensions) != 1) {
+                throw new InvalidArgumentException('Your dimension builder should select 1 dimension');
+            }
+
+            /** @var \Level23\Druid\Dimensions\DimensionInterface $dimensionA */
+            return $dimensions[0];
+        }
+
+        throw new InvalidArgumentException(
+            'You need to supply either a string (the dimension) or a Closure which will receive a DimensionBuilder.'
+        );
     }
 
     /**

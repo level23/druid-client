@@ -4,19 +4,23 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Filters;
 
 use tests\TestCase;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\ColumnComparisonFilter;
 
 class ColumnComparisonFilterTest extends TestCase
 {
     public function testFilter()
     {
-        $filter = new ColumnComparisonFilter('name', 'first_name');
+        $dimensionA = new Dimension('name');
+        $dimensionB = new Dimension('first_name');
+
+        $filter = new ColumnComparisonFilter($dimensionA, $dimensionB);
 
         $this->assertEquals([
             'type'       => 'columnComparison',
             'dimensions' => [
-                'name',
-                'first_name',
+                $dimensionA->toArray(),
+                $dimensionB->toArray(),
             ],
         ], $filter->toArray());
     }

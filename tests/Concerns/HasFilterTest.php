@@ -7,9 +7,11 @@ use Mockery;
 use DateTime;
 use Exception;
 use tests\TestCase;
+use Hamcrest\Core\IsEqual;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\AndFilter;
@@ -20,13 +22,17 @@ use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
+use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Filters\ColumnComparisonFilter;
+use Level23\Druid\Extractions\SubstringExtraction;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 class HasFilterTest extends TestCase
@@ -430,6 +436,53 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the whereColumn
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereColumn()
+    {
+        $this->getFilterMock(ColumnComparisonFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(
+                new IsEqual(new Dimension('dimensionA')),
+                new IsEqual(new Dimension('dimensionB'))
+            );
+
+        $response = $this->builder->whereColumn('dimensionA', 'dimensionB');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the whereNotColumn
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereNotColumn()
+    {
+        $this->getFilterMock(ColumnComparisonFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(
+                new IsEqual(new Dimension('dimensionA')),
+                new IsEqual(new Dimension('dimensionB'))
+            );
+
+        $this->getFilterMock(NotFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(new IsInstanceOf(ColumnComparisonFilter::class));
+
+        $response = $this->builder->whereNotColumn('dimensionA', 'dimensionB');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the whereIn
      *
      * @runInSeparateProcess
@@ -555,5 +608,64 @@ class HasFilterTest extends TestCase
         });
 
         $this->assertEquals(1, $counter);
+    }
+
+    /**
+     * @testWith [true]
+     *           [false]
+     *
+     * Test columnCompareDimension with a closure.
+     *
+     * @param bool $withMoreThenOne
+     */
+    public function testColumnCompareDimensionWithClosure(bool $withMoreThenOne)
+    {
+        $dimension = new Dimension(
+            'name',
+            'name',
+            'string',
+            new SubstringExtraction(2)
+        );
+
+        if ($withMoreThenOne) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Your dimension builder should select 1 dimension');
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $response = $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->columnCompareDimension(function (DimensionBuilder $dimensionBuilder) use ($dimension, $withMoreThenOne) {
+                $dimensionBuilder->select($dimension);
+
+                if ($withMoreThenOne) {
+                    $dimensionBuilder->select('first_name');
+                }
+            });
+
+        $this->assertEquals($response, $dimension);
+    }
+
+    /**
+     * Test that a string given to columnCompareDimension() will be converted to a Dimension object.
+     */
+    public function testColumnCompareDimensionWithString()
+    {
+        /** @noinspection PhpUndefinedMethodInspection */
+        $response = $this->builder->shouldAllowMockingProtectedMethods()->columnCompareDimension('hi');
+
+        $this->assertEquals(new Dimension('hi'), $response);
+    }
+
+    /**
+     * Test that columnCompareDimension() will return an exception when an incorrect value is given.
+     */
+    public function testColumnCompareDimensionWithIncorrectValue()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectDeprecationMessage('You need to supply either a string (the dimension) or a Closure which will receive a DimensionBuilder.');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $this->builder->shouldAllowMockingProtectedMethods()->columnCompareDimension(['hi']);
     }
 }
