@@ -100,12 +100,13 @@ ini_set('display_errors', 'On');
 include __DIR__ . '/../vendor/autoload.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
 
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
-$response = $client->query('traffic-hits', 'all')
+$response = $client->query('traffic-hits', Granularity::ALL)
     // REQUIRED: you have to select the interval where to select the data from.
     ->interval('now - 1 day', 'now')
     // Simple dimension select
@@ -114,16 +115,20 @@ $response = $client->query('traffic-hits', 'all')
     ->select('country_iso', 'Country')
     // Alternative way to select a dimension with a different output name. 
     // If you want, you can select multiple dimensions at once.
-    ->select(['mccmnc' => 'operator_code'])
+    ->select(['mccmnc' => 'carrierCode'])
     // Select a dimension, but change it's value using a lookup function.
-    ->lookup('operator_title', 'mccmnc', 'carrier', 'Unknown')
+    ->lookup('carrier_title', 'mccmnc', 'carrierName', 'Unknown')
     // Select a dimension, but change it's value by using an extraction function. Multiple functions are available,
     // like timeFormat, upper, lower, substring, lookup, regexp, etc.
-    ->select('__time', 'datetime', function( ExtractionBuilder $builder) {
+    ->select('__time', 'dateTime', function( ExtractionBuilder $builder) {
         $builder->timeFormat('yyyy-MM-dd HH:00:00');
     })    
     // Summing a metric.
-    ->sum('hits', 'total_hits')
+    ->sum('hits', 'totalHits')
+    // Sum hits which only occurred at night
+    ->sum('hits', 'totalHitsNight', function(FilterBuilder $filter) {
+        $filter->whereInterval('__time', ['yesterday 20:00/today 6:00']); 
+    })
     // Count the total number of rows (per the dimensions selected) and store it in totalNrRecords.
     ->count('totalNrRecords')
     // Count the number of dimensions. NOTE: Theta Sketch extension is required to run this aggregation.
@@ -145,9 +150,9 @@ $response = $client->query('traffic-hits', 'all')
     // Limit the number of results.
     ->limit(5)
     // Apply a having filter, this is applied after selecting the records. 
-    ->having('total_hits', '>', 100)
+    ->having('totalHits', '>', 100)
     // Sort the results by this metric/dimension
-    ->orderBy('total_hits', 'desc')
+    ->orderBy('totalHits', 'desc')
     // Execute the query. Optionally you can specify Query Context parameters.
     ->execute(['groupByIsSingleThreaded' => false, 'sortByDimsFirst' => true]);
 ```
@@ -164,7 +169,7 @@ The `DruidClient` constructor has the following arguments:
 | array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
 | `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
 
-By default we will use a guzzle client. 
+By default we will use a guzzle client for handing the connection between your application and the druid server. 
 If you want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
 
 Example of using a custom guzzle client:
@@ -197,8 +202,8 @@ Example:
 ```php
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
-// retrieve our query builder.
-$builder = $client->query('wikipedia');
+// retrieve our query builder, group the results per day.
+$builder = $client->query('wikipedia', Granularity::DAY);
 
 // Now build your query ....
 // $builder->select( ... )->where( ... )->interval( ... );  
@@ -215,15 +220,224 @@ The QueryBuilder allows you to select dimensions, aggregate metric data, apply f
 
 See the following chapters for more information about the query builder.  
 
-  - [Metric aggregations](#metric-aggregations)
-  - [Dimension selections](#dimension-selections)
+  - [Generic Query Methods](#generic-query-methods)
+  - [Dimension Selections](#dimension-selections)
+  - [Metric Aggregations](#metric-aggregations)
   - [Filters](#filters)
   - [Extractions](#extractions)
   - [Having](#having)
   - [Virtual Columns](#virtual-columns)
   - [Post Aggregations](#post-aggregations)
+  - [Execute The Query](#execute-the-query)
+  
+   
+## Generic Query Methods
 
-## Dimension selections
+Here we will describe some methods which are generic and can be used by (almost) all queries. 
+
+#### `interval()`
+
+Because Druid is a TimeSeries database, you always need to specify between which times you want to query. With this method
+you can do just that. 
+
+The interval method is very flexible and supports various argument formats. 
+
+All these examples are valid:
+
+```php
+// Select an interval with string values. Anything which can be parsed by the DateTime object
+// can be given. Also "yesterday" or "now" is valid.
+$builder->interval('2019-12-23', '2019-12-24');
+
+// When a string is given which contains a slash, we will split it for you and parse it as "begin/end".
+$builder->interval('yesterday/now');
+
+// An "raw" interval as druid uses them is also allowed
+$builder->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
+
+// You can also give DateTime objects
+$builder->interval(new DateTime('yesterday'), new DateTime('now'));
+
+// Carbon is also supported, as it extends DateTime
+$builder->interval(Carbon::now()->subDay(), Carbon::now());
+
+// Timestamps are also supported:
+$builder->interval(1570643085, 1570729485);
+```
+
+The start date should be before the end date. If not, an `InvalidArgumentException` will be thrown.
+
+The `interval()` method has the following parameters:
+
+| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                    |
+|---------------------------|-----------------------|--------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
+| /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
+  
+#### `limit()`
+
+The `limit()` method allows you to limit the result set of the query. 
+
+The Limit can be used for all query types. However, its mandatory for the TopN Query and the Select Query.
+  
+**NOTE:** It is not possible to limit with an offset, like you can do with an SQL query. If you want to use pagination, 
+you can use a Select query. However, the select query does not allow you to aggregate metrics and group by dimensions. 
+See the Select Query for more information. 
+
+Example:
+```
+// Limit the result to 50 rows.
+$builder->limit(50);
+```
+
+The `limit()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                   |
+|----------|-----------------------|--------------|-------------|---------------------------------------------------|
+| int      | Required              | `$limit`     | 50          | Limit the result to this given number of records. | 
+
+
+#### `orderBy()`
+
+The `orderBy()` method allows you to order the result in a given way.
+This method only applies to **GroupBy** and **TopN** Queries. You should use `orderByDirection()`.
+
+Example:
+```php 
+$builder
+  ->select('channel')
+  ->longSum('deleted')
+  ->orderBy('deleted', OrderByDirection::DESC)
+  ->groupBy();
+```
+
+The `orderBy()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                           |
+|----------|-----------------------|----------------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                        |
+| string   | Required              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
+| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                 |
+
+See for more information about SortingOrders this page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
+
+Please note: this method differs per query type. Please read below how this method workers per Query Type.
+
+**GroupBy Query**
+
+You can call this method multiple times, adding an order-by to the query. 
+The GroupBy Query only allows ordering the result if there a limit is given. If you do not supply a limit, we will use 
+a default limit of `999999`. 
+
+**TopN Query**
+
+For this query type it is mandatory to call this method. You _should_ call this method with the dimension or metric 
+where you want to order your result by.
+
+#### `orderByDirection()`
+
+The `orderByDirection()` method allows you to specify the direction of the order by. This method only applies to the 
+TimeSeries, Select and Scan Queries. Use `orderBy()` For GroupBy and TopN Queries.
+
+Example:
+```php
+$response = $client->query('wikipedia', 'hour')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->longSum('deleted')    
+    ->select('__time', 'datetime')
+    ->orderByDirection(OrderByDirection::DESC)
+    ->timeseries();
+```
+
+The `orderByDirection()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                           |
+|----------|-----------------------|--------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
+  
+
+#### `pagingIdentifier()`
+
+The `pagingIdentifier()` allows you to do paginating on the result set. This only works on SELECT queries. 
+
+When you execute a select query, you will return a paging identifier. To request the next "page", use this paging identifier
+in your next request. 
+
+Example:
+```php
+// Build a select query
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
+    ->limit(10);
+
+// Execute the query for "page 1"
+$response1 = $builder->selectQuery();
+
+// Now, request "page 2".
+ $builder->pagingIdentifier($response1->getPagingIdentifier());
+
+// Execute the query for "page 2".
+$response2 = $builder->selectQuery($context);
+```
+
+An paging identifier is an array and looks something like this:
+```array (
+  'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z' => 10,
+)
+```
+
+The `pagingIdentifier()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**        | **Example** | **Description**                                   |
+|----------|-----------------------|---------------------|-------------|---------------------------------------------------|
+| array    | Required              | `$pagingIdentifier` | See above.  | The paging identifier from your previous request. |
+
+#### `toArray()`
+
+The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
+the query and return the query as an array.
+
+Example:
+```php
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
+    ->limit(10);
+
+// Show the query as an array
+print_r($builder->toArray());
+```
+
+The `toArray()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**           |
+|--------------------|-----------------------|--------------|--------------------|---------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
+
+#### `toJson`
+
+The `toJson()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
+the query and return the query as a JSON string.
+
+Example:
+```php
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
+    ->limit(10);
+
+// Show the query as an array
+var_export($builder->toJson());
+```
+
+The `toJson()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**           |
+|--------------------|-----------------------|--------------|--------------------|---------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
+
+## Dimension Selections
 
 Dimensions are fields where you normally filter on, or _Group_ data by. Typical examples are: Country, Name, City, etc.
 
@@ -246,42 +460,42 @@ You can use:
 
 **Simple dimension selection:**
 ```php 
-->select("country_iso")
+$builder->select('country_iso');
 ```
 
 **Dimension selection with an alternative output name:**
 ```php 
-->select("country_iso", "Country")
+$builder->select('country_iso', 'Country');
 ```
 
 **Select various dimensions at once:**
 ```php 
-->select(["browser", "country_iso", "age", "gender"])
+$builder->select(['browser', 'country_iso', 'age', 'gender']);
 ```
 
 **Select various dimensions with alternative output names at once:**
 ```php 
-->select([
-    "browser"     => "TheBrowser", 
-    "country_iso" => "CountryIso", 
-    "age"         => "Age",
-    "gender"      => "MaleOrFemale"
+$builder->select([
+    'browser'     => 'TheBrowser', 
+    'country_iso' => 'CountryIso', 
+    'age'         => 'Age',
+    'gender'      => 'MaleOrFemale'
 ])
 ```
 
 **Select a dimension and extract a value from it:**
 ```php 
 // retrieve the first two characters from the "locale" string and use it as language.
-->select("locale", "language", function(ExtractionBuilder $extraction) {
+$builder->select("locale", "language", function(ExtractionBuilder $extraction) {
     $extraction->substring(0, 2);
-})
+});
 ```
 
 See the chapter __Extractions__ for all available extractions.
 
 **Change the output type of a dimension:**
 ```php 
-->select("age", null, null, "long")
+$builder->select('age', null, null, 'long');
 ```
 
 #### `lookup()`
@@ -565,26 +779,34 @@ For more information, see https://druid.apache.org/docs/latest/querying/hll-old.
 Example:
 
 ```php 
+$builder->cardinality( 'nrOfCategories', ['category_id']);    
+```
+
+You can also use a `Closure` function, which will receive a `DimensionBuilder`. In this way you can build more complex
+situations, for example:
+
+```php 
 $builder->cardinality(
-    'category_user_count',
+    'nrOfDistinctFirstLetters',
     function(DimensionBuilder $dimensions) {
-        $dimensions->select('category_id');
-        $dimensions->select('user_id');
+        // select the first character of all the last names.
+        $dimensions->select('last_name', 'lastName', function (ExtractionBuilder $extractionBuilder) {
+            $extractionBuilder->substring(1);
+        });        
     },
-    true, # byRow
+    false, # byRow
     false # round
 );
 ```
 
 The `cardinality()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**        | **Example**        | **Description**                                                                                                                                                                                                      |
-|----------|-----------------------|---------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$as`               | "distinct_count"   | The name which will be used in the output result                                                                                                                                                                     |
-| Closure  | Required              | `$dimensionBuilder` | See example above. | A function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                                                       |
-| bool     | Optional              | `$byRow`            | false              | See above for more info.                                                                                                                                                                                             |
-| bool     | Optional              | `$round`            | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
-
+| **Type**      | **Optional/Required** | **Argument**                    | **Example**        | **Description**                                                                                                                                                                                                      |
+|---------------|-----------------------|---------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`                           | "distinctCount"    | The name which will be used in the output result                                                                                                                                                                     |
+| Closure/array | Required              | `$dimensionsOrDimensionBuilder` | See example above. | An array with dimension(s) or a function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                         |
+| bool          | Optional              | `$byRow`                        | false              | See above for more info.                                                                                                                                                                                             |
+| bool          | Optional              | `$round`                        | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
 
 #### `distinctCount()`
 
@@ -596,7 +818,7 @@ For more information, see: https://druid.apache.org/docs/latest/development/exte
 Example:
 ```php
 // Count the distinct number of categories. 
-$builder->distinctCount('category_id', 'category_count');
+$builder->distinctCount('category_id', 'categoryCount');
 ```
 
 The `distinctCount()` aggregation method has the following parameters:
@@ -604,7 +826,7 @@ The `distinctCount()` aggregation method has the following parameters:
 | **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                |
 |----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`     | "category_id"                                | The dimension where you want to count the distinct values from.                                                                                                                |
-| string   | Optional              | `$as`            | "category_count"                             | The name which will be used in the output result                                                                                                                               |
+| string   | Optional              | `$as`            | "categoryCount"                              | The name which will be used in the output result                                                                                                                               |
 | int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches.  |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                        |
   
@@ -749,7 +971,7 @@ This method has the following arguments:
 | **Type** | **Optional/Required** | **Argument**  | **Example**       | **Description**                                                      |
 |----------|-----------------------|---------------|-------------------|----------------------------------------------------------------------|
 | string   | Required              | `$dimension`  | __time            | The dimension which you want to filter                               |
-| array    | Required              | `$intervals`  | ["yesterday/now"] | See below for more info                                              |
+| array    | Required              | `$intervals`  | ['yesterday/now'] | See below for more info                                              |
 | Closure  | Optional              | `$extraction` | See Extractions   | Extraction function to extract a different value from the dimension. |
 
 
@@ -758,6 +980,8 @@ The `$intervals` array can contain the following:
 - an raw interval string as used in druid. For example: "2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"
 - an interval string, separating the start and the stop with a / (for example "12-02-2019/13-02-2019") 
 - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp or anything which can be parsed by DateTime::__construct
+
+See for more info also the `interval()` method. 
 
 Example:
 
@@ -1124,7 +1348,7 @@ them to the same base value. Non numeric values are converted to null.
 Example:
 ```php
 // Group all ages into "groups" by 10, 20, 30, etc. 
-$builder->select('age', 'age_group', function(ExtractionBuilder $extraction) {
+$builder->select('age', 'ageGroup', function(ExtractionBuilder $extraction) {
     $extraction->bucket(10);
 }); 
 ```
@@ -1430,7 +1654,7 @@ The `subtract()` post aggregator method subtract the given fields.
 
 Example:
 ```php
-$builder->subtract('total', 'revenue', 'taxes');
+$builder->subtract('total', ['revenue', 'taxes']);
 ```
 
 The `subtract()` post aggregator has the following arguments:
@@ -1447,7 +1671,7 @@ The `add()` post aggregator method add the given fields.
 
 Example:
 ```php
-$builder->add('total', 'salary', 'bonus');
+$builder->add('total', ['salary', 'bonus']);
 ```
 
 The `add()` post aggregator has the following arguments:
@@ -1460,25 +1684,173 @@ The `add()` post aggregator has the following arguments:
 
 #### `quotient()`
 
-@todo
+The `quotient()` post aggregator method will calculate the quotient over the given field values. The quotient division 
+behaves like regular floating point division. 
+
+Example:
+```php
+// for example: quotient = 15 / 4 = 3 (e.g., how much times fits 4 into 15?)
+$builder->quotient('quotient', ['dividend', 'divisor']);
+```
+
+The `add()` post aggregator has the following arguments:
+
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
+|-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
+| string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
+| array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to quotient. See the `divide()` method for more info. |
+
 
 #### `longGreatest()` and `doubleGreatest()`
 
-@todo
+The `longGreatest()` and `doubleGreatest()` post aggregation methods computes the maximum of all fields. 
+
+The difference between the `doubleMax()` aggregator and the `doubleGreatest()` post-aggregator is that doubleMax returns 
+the highest value of all rows for one specific column while doubleGreatest returns the highest value of multiple columns 
+in one row. These are similar to the SQL MAX and GREATEST functions.
+
+Example:
+
+```php
+$builder 
+  ->longSum('a', 'totalA')
+  ->longSum('b', 'totalB')
+  ->longSum('c', 'totalC')
+  ->longGreatest('highestABC', ['a', 'b', 'c']);    
+```
+
+The `longGreatest()` and `doubleGreatest()` post aggregator have the following arguments:
+
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                          |
+|---------------|-----------------------|-------------------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                         |
+| Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the greatest value over. This can be done in multiple ways. See the `divide()` method for more info. |
 
 #### `longLeast()` and `doubleLeast()`
 
-@todo
+The `longLeast()` and `doubleLeast()` post aggregation methods computes the maximum of all fields. 
+
+The difference between the `doubleMin()` aggregator and the `doubleLeast()` post-aggregator is that doubleMin returns 
+the lowest value of all rows for one specific column while doubleLeast returns the lowest value of multiple columns 
+in one row. These are similar to the SQL MIN and LEAST functions.
+
+Example:
+
+```php
+$builder 
+  ->longSum('a', 'totalA')
+  ->longSum('b', 'totalB')
+  ->longSum('c', 'totalC')
+  ->longLeast('lowestABC', ['a', 'b', 'c']);    
+```
+
+The `longLeast()` and `doubleLeast()` post aggregator have the following arguments:
+
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                        |
+|---------------|-----------------------|-------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`             | "lowestValue"      | The name which will be used in the output result                                                                                       |
+| Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the lowest value over. This can be done in multiple ways. See the `divide()` method for more info. |
 
 #### `postJavascript()`
 
-@todo
+The `postJavascript()` post aggregation method allows you to apply the given javascript function over the given fields.
+Fields are passed as arguments to the JavaScript function in the given order.
+
+**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide 
+for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+https://druid.apache.org/docs/latest/development/javascript.html
+
+Example:
+```php
+$builder->postJavascript(
+    'absPercent',
+    'function(delta, total) { return 100 * Math.abs(delta) / total; }',
+    ['delta', 'total']
+);    
+```
+
+The `postJavascript()` post aggregation method has the following arguments:
+
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                                        |
+|---------------|-----------------------|-------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                                       |
+| string        | Required              | `$function`       | See example above. | A string containing the javascript function which will be applied to the given fields.                                                                 |
+| Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to apply the given javascript function over. This can be supplied in multiple ways. See the `divide()` method for more info. |
 
 #### `hyperUniqueCardinality()`
 
-@todo
+The `hyperUniqueCardinality()` post aggregator is used to wrap a hyperUnique object such that it can be used in post aggregations.
 
-## `DruidClient::metadata()`
+Example:
+```php
+$builder
+  ->count('rows')
+  ->hyperUnique('unique_users', 'uniques')
+  ->divide('averageUsersPerRow', function(PostAggregationsBuilder $builder){    
+      $builder->hyperUniqueCardinality('unique_users');
+      $builder->fieldAccess('rows');    
+  });
+```
+
+The `hyperUniqueCardinality()` post aggregator has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**        | **Example** | **Description**                                                                     |
+|----------|-----------------------|---------------------|-------------|-------------------------------------------------------------------------------------|
+| string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
+| string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
+
+## Execute The Query
+
+#### `execute()`
+
+This method will analyse the data which you have supplied in the query builder, and try to use the best suitable query 
+type for you. If you do not want to use the "internal logic", you should use one of the methods below. 
+
+```php 
+$builder
+  ->select('channel')
+  ->longSum('deleted')
+  ->orderBy('deleted', OrderByDirection::DESC)
+  ->execute();
+```
+
+The `execute()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**           |
+|--------------------|-----------------------|--------------|--------------------|---------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
+
+You can supply an array with context parameters, or use a `QueryContext` object (or any context object which is related 
+to the query type of your choice, like a `ScanQueryContext`). For more information about query specific context, see the 
+query descriptions below.
+
+The `QueryContext()` object contains context properties which apply to all queries. 
+
+#### `groupBy()`
+
+@todo
+ 
+#### `topN()`  
+
+@todo 
+
+#### `selectQuery()`
+
+@todo 
+
+#### `topN()`
+
+@todo 
+
+#### `scan()`
+
+@todo 
+
+#### `timeseries()`
+
+@todo 
+
+## Metadata
 
 Besides querying data, the `DruidClient` class also allows you to extract metadata from your druid setup.
  

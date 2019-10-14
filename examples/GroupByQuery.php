@@ -19,7 +19,7 @@ try {
     // Enable this to see some more data
     $client->setLogger(new ConsoleLogger());
 
-    // Build a groupby query.
+    // Build a groupBy query.
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
         ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {

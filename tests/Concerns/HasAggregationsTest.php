@@ -5,9 +5,12 @@ namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
 use tests\TestCase;
+use Hamcrest\Core\IsEqual;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Aggregations\MaxAggregator;
@@ -145,6 +148,37 @@ class HasAggregationsTest extends TestCase
 
         $this->assertEquals($this->builder, $response);
         $this->assertEquals(1, $counter);
+    }
+
+    public function testCardinalityWithInvalidValue()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You should supply a Closure function or an array.');
+
+        $this->builder->cardinality('distinct_last_name_first_char', 'hi');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testCardinalityWithArray()
+    {
+        $dimensions = [new Dimension('last_name')];
+        $this->getAggregationMock(CardinalityAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(
+                'distinct_last_name',
+                new IsEqual(new DimensionCollection(...$dimensions)),
+                true,
+                false);
+
+        $response = $this->builder->cardinality(
+            'distinct_last_name', ['last_name'], true, false
+        );
+
+        $this->assertEquals($this->builder, $response);
     }
 
     /**
