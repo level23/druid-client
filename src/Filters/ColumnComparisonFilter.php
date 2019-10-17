@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
+use Level23\Druid\Dimensions\DimensionInterface;
+
 /**
  * Class ColumnComparisonFilter
  *
@@ -20,12 +22,12 @@ namespace Level23\Druid\Filters;
 class ColumnComparisonFilter implements FilterInterface
 {
     /**
-     * @var string
+     * @var DimensionInterface
      */
     protected $dimensionA;
 
     /**
-     * @var string
+     * @var DimensionInterface
      */
     protected $dimensionB;
 
@@ -37,10 +39,10 @@ class ColumnComparisonFilter implements FilterInterface
     /**
      * ColumnComparisonFilter constructor.
      *
-     * @param string $dimensionA
-     * @param string $dimensionB
+     * @param DimensionInterface $dimensionA
+     * @param DimensionInterface $dimensionB
      */
-    public function __construct(string $dimensionA, string $dimensionB)
+    public function __construct(DimensionInterface $dimensionA, DimensionInterface $dimensionB)
     {
         $this->dimensionA = $dimensionA;
         $this->dimensionB = $dimensionB;
@@ -56,8 +58,8 @@ class ColumnComparisonFilter implements FilterInterface
         return [
             'type'       => 'columnComparison',
             'dimensions' => [
-                $this->dimensionA,
-                $this->dimensionB,
+                $this->dimensionA->toArray(),
+                $this->dimensionB->toArray(),
             ],
         ];
     }
