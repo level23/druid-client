@@ -78,6 +78,14 @@ class QueryBuilder
     protected $subtotals = [];
 
     /**
+     * The metrics to select when using a Select Query.
+     * When empty, all metrics are returned.
+     *
+     * @var array
+     */
+    protected $metrics = [];
+
+    /**
      * QueryBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
@@ -185,6 +193,23 @@ class QueryBuilder
     public function subtotals(array $subtotals)
     {
         $this->subtotals = $subtotals;
+
+        return $this;
+    }
+
+    /**
+     * Select the metrics which should be returned when using a selectQuery.
+     * If this is not specified, all metrics are returned (which is default).
+     *
+     * NOTE: This only applies to select queries!
+     *
+     * @param array $metrics
+     *
+     * @return $this
+     */
+    public function metrics(array $metrics)
+    {
+        $this->metrics = $metrics;
 
         return $this;
     }
@@ -417,7 +442,7 @@ class QueryBuilder
             new IntervalCollection(...$this->intervals),
             $limit,
             count($this->dimensions) > 0 ? new DimensionCollection(...$this->dimensions) : null,
-            [], // @todo: how to supply these metrics?
+            $this->metrics,
             $descending
         );
 
@@ -706,7 +731,7 @@ class QueryBuilder
             $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
         }
 
-        if(count($this->subtotals) > 0 ) {
+        if (count($this->subtotals) > 0) {
             $query->setSubtotals($this->subtotals);
         }
 

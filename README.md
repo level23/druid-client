@@ -71,7 +71,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 
  - Implement Kill Task
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - Metrics selection for select query (currently all columns are returned) 
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement support for Spatial filters
  - Implement support for multi-value dimensions 
@@ -452,6 +451,27 @@ The `subtotals()` method has the following arguments:
 |----------|-----------------------|--------------|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
 
+
+#### `metrics()`
+
+With the `metrics()` method you can specify which metrics you want to select when you are executing a `selectQuery()`. 
+
+**NOTE:** This only applies to the select query type!
+
+Example:
+```php
+$result = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user'])
+    ->metrics(['deleted', 'added'])
+    ->selectQuery();
+```
+
+The `metrics()` method has the following arguments: 
+
+| **Type** | **Optional/Required** | **Argument** | **Example**            | **Description**                                                 |
+|----------|-----------------------|--------------|------------------------|-----------------------------------------------------------------|
+| array    | Required              | `$metrics`   | `['added', 'deleted']` | Array of metrics which you want to select in your select query. |
 
 #### `toArray()`
 

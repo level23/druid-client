@@ -180,6 +180,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * Test the subtotals
+     *
      * @throws \ReflectionException
      */
     public function testSubtotals()
@@ -292,6 +293,20 @@ class QueryBuilderTest extends TestCase
         $response = $this->builder->scan($context, $rowBatchSize, $legacy, $resultFormat);
 
         $this->assertEquals($scanResponse, $response);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testMetrics()
+    {
+        $metrics = ['added', 'deleted'];
+
+        $this->assertEquals([], $this->getProperty($this->builder, 'metrics'));
+
+        $this->builder->metrics($metrics);
+
+        $this->assertEquals($metrics, $this->getProperty($this->builder, 'metrics'));
     }
 
     /**
@@ -1365,7 +1380,7 @@ class QueryBuilderTest extends TestCase
         }
 
         $subtotals = [['country', 'city'], ['country'], []];
-        if( $withSubtotals ) {
+        if ($withSubtotals) {
             $this->builder->subtotals($subtotals);
         }
 
@@ -1415,7 +1430,7 @@ class QueryBuilderTest extends TestCase
                 ->with(new IsInstanceOf(PostAggregationCollection::class));
         }
 
-        if( $withSubtotals ) {
+        if ($withSubtotals) {
             $query->shouldReceive('setSubtotals')
                 ->once()
                 ->with($subtotals);

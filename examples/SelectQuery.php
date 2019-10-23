@@ -21,7 +21,8 @@ try {
     // Build a select query
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
-        ->select(['__time', 'channel', 'user', 'deleted', 'added'])
+        ->select(['__time', 'channel', 'user'])
+        ->metrics(['deleted', 'added'])
         ->orderByDirection(OrderByDirection::DESC)
         ->limit(10);
 
