@@ -9,9 +9,16 @@ class SelectQueryResponse extends QueryResponse
      * Return the last known paging identifier known by a select query. (If any is executed).
      * If no paging identifier is known, an empty array is returned.
      *
+     * The paging identifier will be something like this:
+     * ```
+     * Array(
+     *   'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-12T14:15:44.694Z' => 19,
+     * )
+     * ```
+     *
      * @return array
      */
-    public function getPagingIdentifier(): array
+    public function pagingIdentifier(): array
     {
         if (isset($this->response[0]['result']['pagingIdentifiers'])) {
             return $this->response[0]['result']['pagingIdentifiers'];

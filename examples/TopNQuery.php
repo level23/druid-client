@@ -17,7 +17,7 @@ try {
     // Enable this to see some more data
     //$client->setLogger(new ConsoleLogger());
 
-    // Build a scan query
+    // Build a TopN query
     $builder = $client->query('wikipedia', 'all')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
         ->select('channel')
