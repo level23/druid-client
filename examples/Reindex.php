@@ -15,11 +15,12 @@ try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
 
     // Enable this to see some more data
-    //$client->setLogger(new ConsoleLogger());
+    $client->setLogger(new ConsoleLogger());
 
     // Build our reindex task
     $taskId = $client->reindex('wikipedia')
         ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+        ->parallel()
         ->segmentGranularity('day')
         ->queryGranularity(Granularity::NONE)
         //        ->rollup()

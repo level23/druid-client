@@ -73,7 +73,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
  - Metrics selection for select query (currently all columns are returned) 
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
- - Implement index_parallel
  - Implement support for Spatial filters
  - Implement support for multi-value dimensions 
 
@@ -402,7 +401,9 @@ The `pagingIdentifier()` method has the following arguments:
 #### `subtotals()`
 
 The `subtotals()` method allows you to retrieve your aggregations over various dimensions in your query. This is quite 
-similar to the `WITH ROLLUP` mysql logic.
+similar to the `WITH ROLLUP` mysql logic. 
+
+**NOTE::** This method only applies to groupBy queries!
 
 Example:
 ```php
@@ -450,7 +451,8 @@ The `subtotals()` method has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example**                                | **Description**                                                                                               |
 |----------|-----------------------|--------------|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
- 
+
+
 #### `toArray()`
 
 The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
