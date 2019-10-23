@@ -179,6 +179,18 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
+     * Test the subtotals
+     * @throws \ReflectionException
+     */
+    public function testSubtotals()
+    {
+        $subtotals = [['country', 'city'], ['country'], []];
+        $this->builder->subtotals($subtotals);
+
+        $this->assertEquals($subtotals, $this->getProperty($this->builder, 'subtotals'));
+    }
+
+    /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function testTimeseries()
@@ -1286,10 +1298,10 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["v1", true, true, true, true, true, true]
-     *           ["v1", false, false, true, false, true, false]
-     *           ["v2", true, false, false, true, false, true]
-     *           ["v2", false, false, false, false, false, false]
+     * @testWith ["v1", true, true, true, true, true, true, true]
+     *           ["v1", false, false, true, false, true, false, false]
+     *           ["v2", true, false, false, true, false, true, false]
+     *           ["v2", false, false, false, false, false, false, true]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -1301,6 +1313,7 @@ class QueryBuilderTest extends TestCase
      * @param bool   $withLimit
      * @param bool   $withHaving
      * @param bool   $withPostAggregations
+     * @param bool   $withSubtotals
      *
      * @throws \Exception
      */
@@ -1311,7 +1324,8 @@ class QueryBuilderTest extends TestCase
         bool $withFilter,
         bool $withLimit,
         bool $withHaving,
-        bool $withPostAggregations
+        bool $withPostAggregations,
+        bool $withSubtotals
     ) {
         $dataSource = 'drinks';
 
@@ -1348,6 +1362,11 @@ class QueryBuilderTest extends TestCase
 
         if ($withHaving) {
             $this->builder->having('field', '=', 'value');
+        }
+
+        $subtotals = [['country', 'city'], ['country'], []];
+        if( $withSubtotals ) {
+            $this->builder->subtotals($subtotals);
         }
 
         $query = Mockery::mock('overload:' . GroupByQuery::class);
@@ -1394,6 +1413,12 @@ class QueryBuilderTest extends TestCase
             $query->shouldReceive('setPostAggregations')
                 ->once()
                 ->with(new IsInstanceOf(PostAggregationCollection::class));
+        }
+
+        if( $withSubtotals ) {
+            $query->shouldReceive('setSubtotals')
+                ->once()
+                ->with($subtotals);
         }
 
         /** @noinspection PhpUndefinedMethodInspection */

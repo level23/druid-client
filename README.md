@@ -70,7 +70,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ## Todo's
 
  - Implement Kill Task
- - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
  - Metrics selection for select query (currently all columns are returned) 
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
@@ -400,6 +399,58 @@ The `pagingIdentifier()` method has the following arguments:
 | array    | Required              | `$pagingIdentifier` | See above.  | The paging identifier from your previous request. |
 
 
+#### `subtotals()`
+
+The `subtotals()` method allows you to retrieve your aggregations over various dimensions in your query. This is quite 
+similar to the `WITH ROLLUP` mysql logic.
+
+Example:
+```php
+// Build a groupBy query with subtotals
+$response = $client->query('wikipedia')
+    ->interval('2015-09-12 20:00:00', '2015-09-12 22:00:00')
+    ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
+        $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
+    })
+    ->select('namespace')
+    ->count('edits')
+    ->longSum('added')
+    // select all namespaces which begin with Draft.
+    ->where('namespace', 'like', 'Draft%')
+    ->subtotals([
+        ['hour', 'namespace'], // get the results per hour, namespace 
+        ['hour'], // get the results per hour
+        [] // get the results in total (everything together)
+    ])
+    ->groupBy();
+```
+
+Example response (Note: result is converted to a table for better visibility):
+```
++------------+---------------------+-------+-------+
+| namespace  | hour                | added | edits | 
++------------+---------------------+-------+-------+
+| Draft      | 2015-09-12 20:00:00 | 0     | 1     | 
+| Draft talk | 2015-09-12 20:00:00 | 359   | 1     | 
+| Draft      | 2015-09-12 21:00:00 | 656   | 1     |
++------------+---------------------+-------+-------+ 
+|            | 2015-09-12 20:00:00 | 359   | 2     | 
+|            | 2015-09-12 21:00:00 | 656   | 1     |
++------------+---------------------+-------+-------+ 
+|            |                     | 1015  | 3     | 
++------------+---------------------+-------+-------+
+```
+
+As you can see, the first three records are our result per 'hour' and 'namespace'.<br> 
+Then, two records are just per 'hour'. <br>
+Finally, the last record is the 'total'. 
+
+The `subtotals()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                                | **Description**                                                                                               |
+|----------|-----------------------|--------------|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
+ 
 #### `toArray()`
 
 The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
