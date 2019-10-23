@@ -28,6 +28,17 @@ class SelectQueryResponse extends QueryResponse
     }
 
     /**
+     * Return the paging identifier.
+     *
+     * @return array
+     * @deprecated Use pagingIdentifier() instead.
+     */
+    public function getPagingIdentifier(): array
+    {
+        return $this->pagingIdentifier();
+    }
+
+    /**
      * Return the data in a "normalized" way so we can easily iterate over it
      *
      * @return array
