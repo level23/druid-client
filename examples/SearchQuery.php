@@ -18,12 +18,11 @@ try {
     // Enable this to see some more data
     //$client->setLogger(new ConsoleLogger());
 
-    // Build a select query
+    // Build a search query
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
-        ->select(['__time', 'channel', 'user'])
-        ->metrics(['deleted', 'added'])
-        ->orderByDirection(OrderByDirection::DESC)
+        ->searchDimensions(['channel'])
+        ->searchContains('wikipedia', false)
         ->limit(10);
 
     // Example of setting query context. It can also be supplied as an array in the groupBy() method call.
@@ -31,25 +30,10 @@ try {
     $context->setPriority(100);
 
     // Execute the query.
-    $response = $builder->selectQuery($context);
+    $response = $builder->search($context);
 
     // Display the result as a console table.
     new ConsoleTable($response->data());
-
-    echo "Identifier for page 2: " . var_export($response->getPagingIdentifier(), true) . "\n\n";
-
-    /**
-     * Now, request "page 2".
-     */
-    $builder->pagingIdentifier($response->getPagingIdentifier());
-
-    // Execute the query.
-    $response = $builder->selectQuery($context);
-
-    // Display the result as a console table.
-    new ConsoleTable($response->data());
-
-    echo "Identifier for page 3: " . var_export($response->getPagingIdentifier(), true) . "\n\n";
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

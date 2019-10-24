@@ -10,6 +10,7 @@ use Level23\Druid\Concerns\HasLimit;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Concerns\HasFilter;
 use Level23\Druid\Concerns\HasHaving;
+use Level23\Druid\Concerns\HasMetrics;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Concerns\HasIntervals;
@@ -20,6 +21,7 @@ use Level23\Druid\Responses\QueryResponse;
 use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\ScanQueryContext;
+use Level23\Druid\Concerns\HasSearchFilters;
 use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
@@ -29,6 +31,7 @@ use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Responses\SelectQueryResponse;
+use Level23\Druid\Responses\SearchQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Responses\GroupByQueryResponse;
@@ -41,7 +44,7 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilder
 {
-    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations;
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations, HasSearchFilters, HasMetrics;
 
     /**
      * @var \Level23\Druid\DruidClient
@@ -322,6 +325,23 @@ class QueryBuilder
         return $query->parseResponse($rawResponse);
     }
 
+    /**
+     * Execute a search query and return the response
+     *
+     * @param array|QueryContext $context
+     *
+     * @return \Level23\Druid\Responses\SearchQueryResponse
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function search($context = []): SearchQueryResponse
+    {
+        $query = $this->buildSearchQuery($context);
+
+        $rawResponse = $this->client->executeQuery($query);
+
+        return $query->parseResponse($rawResponse);
+    }
+
     //<editor-fold desc="Protected methods">
 
     /**
@@ -348,6 +368,51 @@ class QueryBuilder
         }
 
         return null;
+    }
+
+    /**
+     * Build a search query.
+     *
+     * @param array $context
+     *
+     * @return \Level23\Druid\Queries\SearchQuery
+     */
+    protected function buildSearchQuery($context = []): SearchQuery
+    {
+        if (count($this->intervals) == 0) {
+            throw new InvalidArgumentException('You have to specify at least one interval');
+        }
+
+        if (!$this->searchFilter) {
+            throw new InvalidArgumentException('You have to specify a search filter!');
+        }
+
+        $query = new SearchQuery(
+            $this->dataSource,
+            $this->granularity,
+            new IntervalCollection(...$this->intervals),
+            $this->searchFilter
+        );
+
+        if (count($this->searchDimensions) > 0) {
+            $query->setDimensions($this->searchDimensions);
+        }
+
+        if (is_array($context) && count($context) > 0) {
+            $query->setContext(new QueryContext($context));
+        } elseif ($context instanceof QueryContext) {
+            $query->setContext($context);
+        }
+
+        if ($this->filter) {
+            $query->setFilter($this->filter);
+        }
+
+        if ($this->limit && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+            $query->setLimit($this->limit->getLimit());
+        }
+
+        return $query;
     }
 
     /**
@@ -381,7 +446,7 @@ class QueryBuilder
             new IntervalCollection(...$this->intervals),
             $limit,
             count($this->dimensions) > 0 ? new DimensionCollection(...$this->dimensions) : null,
-            [], // @todo: how to supply these metrics?
+            $this->metrics,
             $descending
         );
 
@@ -710,6 +775,11 @@ class QueryBuilder
             return $this->buildSelectQuery($context);
         }
 
+        // Check if we can use a search query.
+        if ($this->isSearchQuery()) {
+            return $this->buildSearchQuery($context);
+        }
+
         return $this->buildGroupByQuery($context, 'v2');
     }
 
@@ -753,6 +823,16 @@ class QueryBuilder
     protected function isSelectQuery(): bool
     {
         return $this->pagingIdentifier !== null && count($this->aggregations) == 0;
+    }
+
+    /**
+     * Check if we should use a search query.
+     *
+     * @return bool
+     */
+    protected function isSearchQuery(): bool
+    {
+        return !empty($this->searchFilter);
     }
 
     /**
