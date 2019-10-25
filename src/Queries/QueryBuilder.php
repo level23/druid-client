@@ -71,6 +71,21 @@ class QueryBuilder
     protected $pagingIdentifier;
 
     /**
+     * The subtotal spec (only applies for groupBy queries)
+     *
+     * @var array
+     */
+    protected $subtotals = [];
+
+    /**
+     * The metrics to select when using a Select Query.
+     * When empty, all metrics are returned.
+     *
+     * @var array
+     */
+    protected $metrics = [];
+
+    /**
      * QueryBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
@@ -149,6 +164,52 @@ class QueryBuilder
     public function granularity(string $granularity): QueryBuilder
     {
         $this->granularity = Granularity::validate($granularity);
+
+        return $this;
+    }
+
+    /**
+     * Define an array which should contain arrays with dimensions where you want to retrieve the subtotals for.
+     * NOTE: This only applies for groupBy queries.
+     *
+     * This is like doing a WITH ROLLUP in an SQL query.
+     *
+     * Example: Imagine that you count the number of people. You want to do this for per city, but also
+     * per province, per country and per continent. This method allows you to do that all at once. Druid will
+     * do the "sum(people)" per subtotal row.
+     *
+     * Example:
+     * Array(
+     *   Array('continent', 'country', 'province', 'city'),
+     *   Array('continent', 'country', 'province'),
+     *   Array('continent', 'country'),
+     *   Array('continent'),
+     * )
+     *
+     * @param array $subtotals
+     *
+     * @return $this
+     */
+    public function subtotals(array $subtotals)
+    {
+        $this->subtotals = $subtotals;
+
+        return $this;
+    }
+
+    /**
+     * Select the metrics which should be returned when using a selectQuery.
+     * If this is not specified, all metrics are returned (which is default).
+     *
+     * NOTE: This only applies to select queries!
+     *
+     * @param array $metrics
+     *
+     * @return $this
+     */
+    public function metrics(array $metrics)
+    {
+        $this->metrics = $metrics;
 
         return $this;
     }
@@ -381,7 +442,7 @@ class QueryBuilder
             new IntervalCollection(...$this->intervals),
             $limit,
             count($this->dimensions) > 0 ? new DimensionCollection(...$this->dimensions) : null,
-            [], // @todo: how to supply these metrics?
+            $this->metrics,
             $descending
         );
 
@@ -670,7 +731,9 @@ class QueryBuilder
             $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
         }
 
-        // @todo : subtotalsSpec
+        if (count($this->subtotals) > 0) {
+            $query->setSubtotals($this->subtotals);
+        }
 
         if ($this->having) {
             $query->setHaving($this->having);

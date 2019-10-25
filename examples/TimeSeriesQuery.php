@@ -9,6 +9,7 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 
@@ -19,7 +20,7 @@ try {
     //$client->setLogger(new ConsoleLogger());
 
     // Build a timeSeries query
-    $builder = $client->query('wikipedia', 'hour')
+    $builder = $client->query('wikipedia', Granularity::HOUR)
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
         ->longSum('added')
         ->longSum('deleted')

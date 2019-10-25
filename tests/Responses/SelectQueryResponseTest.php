@@ -71,6 +71,7 @@ class SelectQueryResponseTest extends TestCase
 
         $this->assertEquals($rawResponse, $response->raw());
 
+        $this->assertEquals($response->pagingIdentifier(), $rawResponse[0]['result']['pagingIdentifiers']);
         $this->assertEquals($response->getPagingIdentifier(), $rawResponse[0]['result']['pagingIdentifiers']);
 
         $this->assertEquals([
@@ -97,7 +98,7 @@ class SelectQueryResponseTest extends TestCase
     {
         $response = new SelectQueryResponse([]);
 
-        $this->assertEquals([], $response->getPagingIdentifier());
+        $this->assertEquals([], $response->pagingIdentifier());
         $this->assertEquals([], $response->data());
     }
 }
