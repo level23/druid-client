@@ -10,7 +10,7 @@ use Level23\Druid\Concerns\HasLimit;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Concerns\HasFilter;
 use Level23\Druid\Concerns\HasHaving;
-use Level23\Druid\Concerns\HasMetrics;
+use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Concerns\HasIntervals;
@@ -44,7 +44,7 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilder
 {
-    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations, HasSearchFilters, HasMetrics;
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations, HasSearchFilters;
 
     /**
      * @var \Level23\Druid\DruidClient
@@ -390,13 +390,14 @@ class QueryBuilder
      * Execute a search query and return the response
      *
      * @param array|QueryContext $context
+     * @param string             $sortingOrder
      *
      * @return \Level23\Druid\Responses\SearchQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function search($context = []): SearchQueryResponse
+    public function search($context = [], string $sortingOrder = SortingOrder::LEXICOGRAPHIC): SearchQueryResponse
     {
-        $query = $this->buildSearchQuery($context);
+        $query = $this->buildSearchQuery($context, $sortingOrder);
 
         $rawResponse = $this->client->executeQuery($query);
 
@@ -434,11 +435,12 @@ class QueryBuilder
     /**
      * Build a search query.
      *
-     * @param array $context
+     * @param array  $context
+     * @param string $sortingOrder
      *
      * @return \Level23\Druid\Queries\SearchQuery
      */
-    protected function buildSearchQuery($context = []): SearchQuery
+    protected function buildSearchQuery($context = [], string $sortingOrder = SortingOrder::LEXICOGRAPHIC): SearchQuery
     {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
@@ -467,6 +469,10 @@ class QueryBuilder
 
         if ($this->filter) {
             $query->setFilter($this->filter);
+        }
+
+        if ($sortingOrder) {
+            $query->setSort($sortingOrder);
         }
 
         if ($this->limit && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {

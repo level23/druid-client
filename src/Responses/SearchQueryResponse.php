@@ -14,6 +14,6 @@ class SearchQueryResponse extends QueryResponse
     {
         return array_map(function ($row) {
             return $row['result'];
-        }, $this->response);
+        }, $this->response)[0];
     }
 }

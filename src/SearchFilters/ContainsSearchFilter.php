@@ -35,8 +35,8 @@ class ContainsSearchFilter implements SearchFilterInterface
     public function toArray(): array
     {
         return [
-            'type'   => ($this->caseSensitive ? 'contains' : 'insensitive_contains'),
-            'values' => $this->value,
+            'type'  => ($this->caseSensitive ? 'contains' : 'insensitive_contains'),
+            'value' => $this->value,
         ];
     }
 }

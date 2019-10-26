@@ -83,7 +83,7 @@ class SearchQuery implements QueryInterface
             'dataSource'  => $this->dataSource,
             'granularity' => $this->granularity,
             'intervals'   => $this->intervals->toArray(),
-            'sort'        => $this->sort,
+            'sort'        => ['type' => $this->sort],
             'query'       => $this->searchFilter->toArray(),
         ];
 
@@ -102,6 +102,8 @@ class SearchQuery implements QueryInterface
         if ($this->context) {
             $result['context'] = $this->context->toArray();
         }
+
+        return $result;
     }
 
     /**
