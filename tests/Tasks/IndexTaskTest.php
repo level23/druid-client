@@ -129,5 +129,10 @@ class IndexTaskTest extends TestCase
         }
 
         $this->assertEquals($expected, $task->toArray());
+
+        $task->setParallel(true);
+
+        $expected['type'] = 'index_parallel';
+        $expected['ioConfig']['type'] = 'index_parallel';
     }
 }

@@ -32,10 +32,12 @@ You can also download it as a ZIP file and include it in your project, as long a
 
 This package is Laravel/Lumen ready.  It can be used in a Laravel/Lumen project, but its not required.
 
+
 #### Laravel
 
 For Laravel 5.6+ the package will be auto discovered. For Laravel <= 5.5 you should add the service provider 
 `Level23\Druid\DruidServiceProvider::class` in the file `config/app.php`.
+
 
 #### Lumen 
 
@@ -68,11 +70,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ## Todo's
 
  - Implement Kill Task
- - Support for subtotalsSpec in GroupBy query
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - Metrics selection for select query (currently all columns are returned) 
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
- - Implement index_parallel
  - Implement support for Spatial filters
  - Implement support for multi-value dimensions 
 
@@ -194,6 +193,7 @@ $druidClient = new DruidClient(
 The `DruidClient` class gives you various methods. The most commonly used is the `query()` method, which allows you
 to build and execute a query.
 
+
 #### `DruidClient::query()`
 
 The `query()` method gives you a `QueryBuilder` instance, which allows you to build a query and then execute it. 
@@ -235,6 +235,7 @@ See the following chapters for more information about the query builder.
 
 Here we will describe some methods which are generic and can be used by (almost) all queries. 
 
+
 #### `interval()`
 
 Because Druid is a TimeSeries database, you always need to specify between which times you want to query. With this method
@@ -273,7 +274,8 @@ The `interval()` method has the following parameters:
 |---------------------------|-----------------------|--------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
 | /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
-  
+
+
 #### `limit()`
 
 The `limit()` method allows you to limit the result set of the query. 
@@ -334,6 +336,7 @@ a default limit of `999999`.
 For this query type it is mandatory to call this method. You _should_ call this method with the dimension or metric 
 where you want to order your result by.
 
+
 #### `orderByDirection()`
 
 The `orderByDirection()` method allows you to specify the direction of the order by. This method only applies to the 
@@ -354,7 +357,7 @@ The `orderByDirection()` method has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                           |
 |----------|-----------------------|--------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
-  
+
 
 #### `pagingIdentifier()`
 
@@ -393,6 +396,83 @@ The `pagingIdentifier()` method has the following arguments:
 |----------|-----------------------|---------------------|-------------|---------------------------------------------------|
 | array    | Required              | `$pagingIdentifier` | See above.  | The paging identifier from your previous request. |
 
+
+#### `subtotals()`
+
+The `subtotals()` method allows you to retrieve your aggregations over various dimensions in your query. This is quite 
+similar to the `WITH ROLLUP` mysql logic. 
+
+**NOTE::** This method only applies to groupBy queries!
+
+Example:
+```php
+// Build a groupBy query with subtotals
+$response = $client->query('wikipedia')
+    ->interval('2015-09-12 20:00:00', '2015-09-12 22:00:00')
+    ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
+        $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
+    })
+    ->select('namespace')
+    ->count('edits')
+    ->longSum('added')
+    // select all namespaces which begin with Draft.
+    ->where('namespace', 'like', 'Draft%')
+    ->subtotals([
+        ['hour', 'namespace'], // get the results per hour, namespace 
+        ['hour'], // get the results per hour
+        [] // get the results in total (everything together)
+    ])
+    ->groupBy();
+```
+
+Example response (Note: result is converted to a table for better visibility):
+```
++------------+---------------------+-------+-------+
+| namespace  | hour                | added | edits | 
++------------+---------------------+-------+-------+
+| Draft      | 2015-09-12 20:00:00 | 0     | 1     | 
+| Draft talk | 2015-09-12 20:00:00 | 359   | 1     | 
+| Draft      | 2015-09-12 21:00:00 | 656   | 1     |
++------------+---------------------+-------+-------+ 
+|            | 2015-09-12 20:00:00 | 359   | 2     | 
+|            | 2015-09-12 21:00:00 | 656   | 1     |
++------------+---------------------+-------+-------+ 
+|            |                     | 1015  | 3     | 
++------------+---------------------+-------+-------+
+```
+
+As you can see, the first three records are our result per 'hour' and 'namespace'.<br> 
+Then, two records are just per 'hour'. <br>
+Finally, the last record is the 'total'. 
+
+The `subtotals()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                                | **Description**                                                                                               |
+|----------|-----------------------|--------------|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
+
+
+#### `metrics()`
+
+With the `metrics()` method you can specify which metrics you want to select when you are executing a `selectQuery()`. 
+
+**NOTE:** This only applies to the select query type!
+
+Example:
+```php
+$result = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user'])
+    ->metrics(['deleted', 'added'])
+    ->selectQuery();
+```
+
+The `metrics()` method has the following arguments: 
+
+| **Type** | **Optional/Required** | **Argument** | **Example**            | **Description**                                                 |
+|----------|-----------------------|--------------|------------------------|-----------------------------------------------------------------|
+| array    | Required              | `$metrics`   | `['added', 'deleted']` | Array of metrics which you want to select in your select query. |
+
 #### `toArray()`
 
 The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
@@ -415,7 +495,8 @@ The `toArray()` method has the following arguments:
 |--------------------|-----------------------|--------------|--------------------|---------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
 
-#### `toJson`
+
+#### `toJson()`
 
 The `toJson()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
 the query and return the query as a JSON string.
@@ -442,6 +523,7 @@ The `toJson()` method has the following arguments:
 Dimensions are fields where you normally filter on, or _Group_ data by. Typical examples are: Country, Name, City, etc.
 
 To select a _dimension_, you can use one of the methods below:
+
 
 #### `select()`
 
@@ -498,6 +580,7 @@ See the chapter __Extractions__ for all available extractions.
 $builder->select('age', null, null, 'long');
 ```
 
+
 #### `lookup()`
 
 This method allows you to lookup a dimension using a registered lookup function. See more about registered lookup
@@ -551,6 +634,7 @@ See also this page: https://druid.apache.org/docs/latest/querying/aggregations.h
   
 This method uses the following arguments:
 
+
 #### `count()`
 
 This aggregation will return the number of rows which match the filters.
@@ -592,6 +676,7 @@ The `sum()` aggregation method has the following parameters:
 | string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                      |
 | string   | Optional              | `$type`          | "long"                                       | The output type of the sum. This can either be long, float or double.                                                 |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only sum the records which match with the given filter. |
+
 
 #### `min()`
 
@@ -716,6 +801,7 @@ The `javascript()` aggregation method has the following parameters:
 | string   | Required              | `$fnReset`       | See example above.                           | A function which will reset a value.                                                                                                                                                                                 |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only apply the javascript function to the records which match with the given filter.                                                                   |
 
+
 #### `hyperUnique()`
 
 The `hyperUnique()` aggregation uses HyperLogLog to compute the estimated cardinality of a dimension that has been 
@@ -808,6 +894,7 @@ The `cardinality()` aggregation method has the following parameters:
 | bool          | Optional              | `$byRow`                        | false              | See above for more info.                                                                                                                                                                                             |
 | bool          | Optional              | `$round`                        | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
 
+
 #### `distinctCount()`
 
 The `distinctCount()` aggregation function computes the distinct number of occurrences of the given dimension.
@@ -830,9 +917,12 @@ The `distinctCount()` aggregation method has the following parameters:
 | int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches.  |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                        |
   
+  
+  
 ## Filters
 
 With filters you can filter on certain values. The following filters are available:
+
 
 #### `where()`
 
@@ -913,9 +1003,11 @@ $builder->where( new SelectorFilter('name', 'John') );
 
 However, this is not recommended and should not be needed.
 
+
 #### `orWhere()`
 
 Same as `where()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 
 #### `whereIn()`
 
@@ -929,10 +1021,12 @@ This method has the following arguments:
 | array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
 | Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
 
+
 #### `whereNotIn()`
 
 This works the same as `whereIn()`, only now we will check if the dimension is NOT in the given values. See `whereIn()` 
 for more details.  
+
 
 #### `whereBetween()`
 
@@ -952,10 +1046,12 @@ This method has the following arguments:
 | Closure     | Optional              | `$extraction` | See Extractions | Extraction function to extract a different value from the dimension.                                                                                                                                                                                                                 |
 | string      | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
 
+
 #### `whereNotBetween()`
 
 This works the same as `whereBetween()`, only now we will check if the dimension is NOT in between the given values. 
 See `whereBetween()` for more details.  
+
 
 #### `whereColumn()`
 
@@ -980,10 +1076,12 @@ The `whereColumn()` filter has the following arguments:
 | string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
 | string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
 
+
 #### `whereNotColumn()`
 
 The `whereNotColumn()` filter works exactly the same as the `whereColumn()` filter, only now it will only return rows
 where `$dimensionA` is different then `$dimensionB`.  
+
 
 #### `whereInterval()`
 
@@ -1017,10 +1115,12 @@ Example:
 $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-2019']);
 ```
 
+
 #### `whereNotInterval()`
 
 This works the same as `whereInterval()`, only now we will check if the dimension is NOT matching the given intervals. 
 See `whereInterval()` for more details.  
+
 
 ## Extractions
 
@@ -1040,6 +1140,7 @@ $builder->select('surName', 'nameCategory', function(ExtractionBuilder $extracti
     $extraction->substring(3)->upper();
 });
 ```
+
 
 #### `lookup()`
 
@@ -1067,6 +1168,7 @@ The `lookup()` extraction function has the following arguments:
 | bool        | Optional              | `$optimize`            | `true`                 | When set to true, we allow the optimization layer (which will run on thebroker) to rewrite the extraction filter if needed.                                                                                                                                                                                     |
 | bool/null   | Optional              | `$injective`           | `true`                 | This can override the lookup's own sense of whether or not it is injective. If left unspecified, Druid will use the registered cluster-wide lookup configuration. In general, you should set this property for any lookup that is naturally one-to-one, to allow Druid to run your queries as fast as possible. |
 
+
 #### `inlineLookup()`
 
 With the `inlineLookup()` extraction function, you can transform the dimension's value using a given list, instead of
@@ -1089,6 +1191,7 @@ The `inlineLookup()` extraction function has the following arguments:
 | bool        | Optional              | `$optimize`            | `true`                      | When set to true, we allow the optimization layer (which will run on thebroker) to rewrite the extraction filter if needed.                                                                                                                                                                                                                                                                             |
 | bool/null   | Optional              | `$injective`           | `true`                      | Whether or not this list is injective. Injective lookups should include all possible keys that may show up in your dataset, and should also map all keys to unique values. This matters because non-injective lookups may map different keys to the same value, which must be accounted for during aggregation, lest query results contain two result values that should have been aggregated into one. |
 
+
 #### `format()`
 
 With the extraction function `format()` you can format a dimension value according to the given format string.
@@ -1109,6 +1212,7 @@ The `format()` extraction function has the following arguments:
 | string   | Required              | `$sprintfExpression` | "%02d"        | The format string which will be used to format the dimensions value.                                                                             |
 | string   | Optional              | `$nullHandling`      | "emptyString" | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. |
 
+
 #### `upper()`
 
 The `upper()` extraction function will change the given dimension value to upper case. Optionally user can specify the 
@@ -1128,6 +1232,7 @@ The `upper()` extraction function has the following arguments:
 |----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
 | string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform upper transformation |
 
+
 #### `lower()`
 
 The `lower()` extraction function will change the given dimension value to lower case. Optionally user can specify the 
@@ -1146,6 +1251,7 @@ The `lower()` extraction function has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
 |----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
 | string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform lower transformation |
+
 
 #### `timeParse()`
 
@@ -1215,6 +1321,7 @@ The `timeFormat()` extraction function has the following arguments:
 | string/null | Optional              | `$locale`         | en-GB         | Locale (language and country) to use, given as a IETF BCP 47 language tag, e.g. en-US, en-GB, fr-FR, fr-CA, etc.                                                                     |
 | string/null | Optional              | `$timeZone`       | Europe/Berlin | time zone to use in IANA tz database format, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)                                                      |
 | bool/null   | Optional              | `$asMilliseconds` | `true`        | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
+
 
 #### `regex()`
 
@@ -1312,6 +1419,7 @@ The `substring()` extraction function has the following arguments:
 | int      | Required              | `$index`     | 2           | The starting index from where the dimension's value should be returned.     |
 | int      | Optional              | `$length`    | 5           | The number of characters which should be returned from the $index position. |
 
+
 #### `javascript()`
 
 The `javascript()` extraction function will return the dimension value, as transformed by the given JavaScript function.
@@ -1368,6 +1476,7 @@ The `javascript()` extraction function has the following arguments:
 | string   | Required              | `$javascript` | See examples above | The javascript function which transforms the given dimension value.                                      |
 | boolean  | Optional              | `$injective`  | true               | Set to true if this function preserves the uniqueness of the dimensions value. Default value is `false`. |
 
+
 #### `bucket()`
 
 The `bucket()` extraction function is used to bucket numerical values in each range of the given size by converting 
@@ -1396,6 +1505,7 @@ With having filters, you can filter out records _after_ the data has been retrie
 See also this page: https://druid.apache.org/docs/latest/querying/having.html
 
 Below are all the having methods explained.
+
 
 #### `having()`
 
@@ -1458,9 +1568,11 @@ $builder->having( new SelectorFilter('totalViews', '15') );
 
 However, this is not recommended and should not be needed.
 
+
 #### `orHaving()`
 
 Same as `having()`, but now we will join previous added having-filters with a `or` instead of an `and`.
+
 
 ## Virtual Columns
 
@@ -1479,6 +1591,7 @@ Druid expressions allow you to do various actions, like:
 For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/misc/math-expr.html
 
 To use a virtual column, you should use the `virtualColumn()` method:
+
 
 #### `virtualColumn()`
 
@@ -1510,7 +1623,8 @@ This method has the following arguments:
 | string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
 | string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
 | string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
- 
+
+
 #### `selectVirtual()`
 
 This method creates a virtual column as the method `virtualColumn()` does, but this method also selects the virtual
@@ -1533,7 +1647,11 @@ This method has the following arguments:
 | string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
 | string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
 
+
 ## Post Aggregations
+
+Post aggregations are aggregations which are executed after the result is fetched from the druid database.
+
 
 #### `fieldAccess()`
 
@@ -1574,6 +1692,7 @@ The `fieldAccess()` post aggregator has the following arguments:
 | string   | Required              | `$as`                   | myField      | The output name as how we can access it                                                         |
 | string   | Optional              | `$finalizing`           | false        | Set this to true if you want to return a finalized value, such as an estimated cardinality      |
 
+
 #### `constant()`
 
 The `constant()` post aggregator method allows you to define a constant which can be used in a post aggregation function. 
@@ -1596,6 +1715,7 @@ The `constant()` post aggregator has the following arguments:
 |-----------|-----------------------|-----------------|-------------|------------------------------------------|
 | int/float | Required              | `$numericValue` | 3.14        | This will be our static value            |
 | string    | Required              | `$as`           | pi          | The output name as how we can access it  |
+
 
 #### `divide()`
 
@@ -1754,6 +1874,7 @@ The `longGreatest()` and `doubleGreatest()` post aggregator have the following a
 | string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                         |
 | Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the greatest value over. This can be done in multiple ways. See the `divide()` method for more info. |
 
+
 #### `longLeast()` and `doubleLeast()`
 
 The `longLeast()` and `doubleLeast()` post aggregation methods computes the maximum of all fields. 
@@ -1778,6 +1899,7 @@ The `longLeast()` and `doubleLeast()` post aggregator have the following argumen
 |---------------|-----------------------|-------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | string        | Required              | `$as`             | "lowestValue"      | The name which will be used in the output result                                                                                       |
 | Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the lowest value over. This can be done in multiple ways. See the `divide()` method for more info. |
+
 
 #### `postJavascript()`
 
@@ -1805,6 +1927,7 @@ The `postJavascript()` post aggregation method has the following arguments:
 | string        | Required              | `$function`       | See example above. | A string containing the javascript function which will be applied to the given fields.                                                                 |
 | Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to apply the given javascript function over. This can be supplied in multiple ways. See the `divide()` method for more info. |
 
+
 #### `hyperUniqueCardinality()`
 
 The `hyperUniqueCardinality()` post aggregator is used to wrap a hyperUnique object such that it can be used in post aggregations.
@@ -1827,7 +1950,11 @@ The `hyperUniqueCardinality()` post aggregator has the following arguments:
 | string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
 | string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
 
+
 ## Execute The Query
+
+The following methods allow you to execute the query which you have build using the other methods. There are various
+query types available, or you can use the `execute()` method which tries to detect the best query type for your query.
 
 #### `execute()`
 
@@ -1835,7 +1962,7 @@ This method will analyse the data which you have supplied in the query builder, 
 type for you. If you do not want to use the "internal logic", you should use one of the methods below. 
 
 ```php 
-$builder
+$response = $builder
   ->select('channel')
   ->longSum('deleted')
   ->orderBy('deleted', OrderByDirection::DESC)
@@ -1852,31 +1979,362 @@ You can supply an array with context parameters, or use a `QueryContext` object 
 to the query type of your choice, like a `ScanQueryContext`). For more information about query specific context, see the 
 query descriptions below.
 
-The `QueryContext()` object contains context properties which apply to all queries. 
+The `QueryContext()` object contains context properties which apply to all queries.
+
+**Response** 
+
+The response of this method is dependent of the query which is executed. Each query has it's own response object. However,
+all query responses are extended of the `QueryResponse` object. Each query response has therefor a `$response->raw()` method 
+which will return an array with the raw data returned by druid. There is also an `$response->data()` method which 
+returns the data in a "normalized" way so that it can be directly used. 
 
 #### `groupBy()`
 
-@todo
- 
+The `groupBy()` method will execute your build query as a GroupBy query.
+
+This the most commonly used query type. However, it is not the quickest. If you are doing aggregations with time as your 
+only grouping, or an ordered groupBy over a single dimension, consider Timeseries and TopN queries as well as groupBy. 
+
+For more information, see this page: https://druid.apache.org/docs/latest/querying/groupbyquery.html
+
+With the GroupBy query you can aggregate metrics and group by the dimensions which you have selected.
+
+Example:
+```php
+$builder = $client->query('wikipedia', Granularity::HOUR);
+
+$result = $builder 
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['namespace', 'page'])    
+    ->count('edits')
+    ->longSum('added')
+    ->longSum('deleted')
+    ->where('isRobot', 'false')
+    ->groupBy();
+```
+
+There are two different strategies to execute a GroupBy query. V2 which is the current default, and V1, which is the legacy
+strategy. When execute a query using the `groupBy()` method, the v2 strategy is used. If you want to use the v1 strategy,
+you can make use of the method `groupByV1()`. This method works the same, only uses the v1 strategy to execute the query.  
+
+For more information about groupBy strategies see this page: 
+https://druid.apache.org/docs/latest/querying/groupbyquery.html#implementation-details
+
+The `groupBy()` method and the `groupByV1()` method have the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
+|--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
+
+**Context**
+
+The `groupBy()` method accepts 1 parameter, the query context. This can be given as an array with key => value pairs,
+or an `GroupByV2QueryContext` object.
+
+The context allows you to change the behaviour of the query execution. There is a difference between the available 
+context parameters between the v1 and the v2 query strategy. If you use  `groupByV1()`, then you should also use the 
+`GroupByV1QueryContext`.
+
+Example using query context:
+
+```php
+$builder = $client->query('wikipedia', Granularity::HOUR);
+
+$builder 
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['namespace', 'page'])    
+    ->count('edits')
+    ->longSum('added')
+    ->longSum('deleted')
+    ->where('isRobot', 'false');
+
+// Create the query context 
+$context = new GroupByV2QueryContext();
+$context->setNumParallelCombineThreads(5);
+
+// Execute the query using the query context.
+$result = $builder->groupBy($context);
+```
+
+**Response**
+
+The response of this query will be an `GroupByQueryResponse` (this applies for both query strategies). <br>
+The `$response->raw()` method will return an array with the raw data returned by druid. <br>
+The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used. 
+
 #### `topN()`  
 
-@todo 
+The `topN()` method will execute your query as an TopN query. TopN queries return a sorted set of results for the values 
+in a given dimension according to some criteria. 
+
+For more information about topN queries, see this page: https://druid.apache.org/docs/latest/querying/topnquery.html
+
+Example:
+```php
+$response = $client->query('wikipedia', 'all')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select('channel')
+    ->count('edited')
+    ->limit(10)
+    ->orderBy('edited', 'desc')
+    ->topN();
+```
+
+The `topN()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
+|--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
+
+**Context**
+
+The `topN()` method receives 1 parameter, the query context. The query context is either an array with key => value pairs,
+or an `TopNQueryContext` object. The context allows you to change the behaviour of the query execution.
+
+Example:
+```php
+$builder = $client->query('wikipedia', 'all')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select('channel')
+    ->count('edited')
+    ->limit(10)
+    ->orderBy('edited', 'desc');
+
+// Create specific query context for our query
+$context = new TopNQueryContext();
+$context->setMinTopNThreshold(1000);
+
+// Execute the query
+$response = $builder->topN($context);
+```
+
+**Response**
+
+The response of this query will be an `TopNQueryResponse`. <br>
+The `$response->raw()` method will return an array with the raw data returned by druid. <br>
+The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used. 
 
 #### `selectQuery()`
 
-@todo 
+The `selectQuery()` method will execute your query as an select query. It's important to not mix up this method with the
+`select()` method, which will select dimensions for your query.
 
-#### `topN()`
+The `selectQuery()` returns raw druid data. It does not allow you to aggregate metrics. It _does_ support pagination. 
 
-@todo 
+However, it is encouraged to use the Scan query type rather than Select whenever possible. 
+In situations involving larger numbers of segments, the Select query can have very high memory and performance overhead. 
+The Scan query does not have this issue. The major difference between the two is that the Scan query does not support 
+pagination. However, the Scan query type is able to return a virtually unlimited number of results even without 
+pagination, making it unnecessary in many cases.
+
+For more information, see: https://druid.apache.org/docs/latest/querying/select-query.html
+
+Example:
+```php
+// Build a select query
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])
+    ->orderByDirection(OrderByDirection::DESC)
+    ->limit(10);
+
+// Execute the query.
+$response = $builder->selectQuery($context);
+
+// ... Use your respone (page 1) here! ...
+
+// echo "Identifier for page 2: " . var_export($response->pagingIdentifier(), true) . "\n\n";
+
+// Now, request "page 2".
+$builder->pagingIdentifier($response->pagingIdentifier());
+
+// Execute the query.
+$response = $builder->selectQuery($context);
+
+// ... Use your response (page 2) here! ...
+``` 
+
+The `selectQuery()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
+|--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
+
+**Context**
+
+The `selectQuery()` method receives 1 parameter, the query context. The query context is either an array with key => value pairs,
+or an `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific for this query type.
+The context allows you to change the behaviour of the query execution.
+
+Example:
+
+```php
+// Example of setting query context. It can also be supplied as an array in the selectQuery() method call.
+$context = new QueryContext();
+$context->setPriority(100);
+
+// Execute the query.
+$response = $builder->selectQuery($context);
+```
+
+**Response**
+
+The response of this query will be an `SelectQueryResponse`. <br>
+The `$response->raw()` method will return an array with the raw data returned by druid. <br> 
+The `$response->data()` method  returns the data as an array in a "normalized" way so that it can be directly used. <br>
+The `$response->pagingIdentifier()` method returns paging identifier. The paging identifier will be something like this:
+
+```
+Array(
+    'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-12T14:15:44.694Z' => 19
+)
+```
 
 #### `scan()`
 
-@todo 
+The `scan()` method will execute your query as a scan query. The Scan query returns raw Apache Druid (incubating) rows 
+in streaming mode. The biggest difference between the Select query and the Scan query is that the Scan query does not 
+retain all the returned rows in memory before they are returned to the client. The Select query will retain the rows 
+in memory, causing memory pressure if too many rows are returned. The Scan query can return all the rows without 
+issuing another pagination query.
+                                                             
+For more information see this page: https://druid.apache.org/docs/latest/querying/scan-query.html
+
+Example:
+```php
+// Build a scan query
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added'])
+    ->orderByDirection(OrderByDirection::DESC)
+    ->limit(10);
+
+// Execute the query.
+$response = $builder->scan();
+```
+
+the `scan()` method has the following parameters:
+
+| **Type**           | **Optional/Required** | **Argument**    | **Example**                        | **Description**                                                                                                                                                                                 |
+|--------------------|-----------------------|-----------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array/QueryContext | Optional              | `$context`      | ['priority' => 75]                 | Query context parameters. See below for more information.                                                                                                                                       |
+| int                | Optional              | `$rowBatchSize` | 20480                              | How many rows buffered before return to client. Default is 20480                                                                                                                                |
+| bool               | Optional              | `$legacy`       | false                              | Return results consistent with the legacy "scan-query" contrib extension. Defaults to the value set by druid.query.scan.legacy, which in turn defaults to `false`. See Legacy mode for details. |
+| string             | Optional              | `$resultFormat` | ScanQueryResultFormat::NORMAL_LIST | Result Format. Use one of the ScanQueryResultFormat::* constants.                                                                                                                               |
+
+**Context**
+
+The first parameter of the `scan()` method is the query context. The query context is either an array with key => value pairs,
+or an `ScanQueryContext` object. The context allows you to change the behaviour of the query execution.
+
+Example:
+
+```php
+// Example of setting query context. It can also be supplied as an array in the scan() method call.
+$context = new ScanQueryContext();
+$context->setPriority(100);
+$context->setMaxRowsQueuedForOrdering(5000);
+
+// Execute the query.
+$response = $builder->scan($context);
+```
+
+**Response**
+
+The response of this query will be an `ScanQueryResponse`. <br>
+The `$response->raw()` method will return an array with the raw data returned by druid. <br> 
+The `$response->data()` method  returns the data as an array in a "normalized" way so that it can be directly used. 
+
+**ScanQueryResultFormat**
+
+You can specify two result formats: 
+
+| **Format**                              | **Description**                                        |
+|-----------------------------------------|--------------------------------------------------------|
+| `ScanQueryResultFormat::NORMAL_LIST`    | This will return the data including the field names.   |
+| `ScanQueryResultFormat::COMPACTED_LIST` | This will return the data, but without the fieldnames. |
+
+Example `$response->data()` for `ScanQueryResultFormat::NORMAL_LIST`:
+```
+array (
+  0 => 
+  array (
+    'timestamp' => '2015-09-12T23:59:59.200Z',
+    '__time' => 1442102399200,
+    'channel' => '#en.wikipedia',
+    'user' => 'Eva.pascoe',
+    'deleted' => 0,
+    'added' => 182,
+  ),
+)
+```
+Example `$response->data()` for `ScanQueryResultFormat::COMPACTED_LIST`:
+```
+array (
+  0 => 
+  array (
+    0 => '2015-09-12T23:59:59.200Z',
+    1 => 1442102399200,
+    2 => '#en.wikipedia',
+    3 => 'Eva.pascoe',
+    4 => 0,
+    5 => 182,
+  ),  
+)
+``` 
 
 #### `timeseries()`
 
-@todo 
+The `timeseries()` method executes your query as a TimeSeries query. It will return the data grouped by the given 
+time granularity. 
+
+For more information about the TimeSeries query, see this page: https://druid.apache.org/docs/latest/querying/timeseriesquery.html
+
+Example:
+
+```php
+// Build a TimeSeries query
+$builder = $client->query('wikipedia', Granularity::HOUR)
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->longSum('added')
+    ->longSum('deleted')
+    ->count('edited')
+    ->select('__time', 'datetime')
+    ->orderByDirection(OrderByDirection::DESC);
+
+// Execute the query.
+$response = $builder->timeseries();
+```
+
+The `timeseries()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
+|--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
+| array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
+
+**Context**
+
+The `timeseries()` method receives 1 parameter, the query context. The query context is either an array with key => value pairs,
+or an `TimeSeriesQueryContext` object. 
+The context allows you to change the behaviour of the query execution.
+
+Example:
+
+```php
+// Example of setting query context. It can also be supplied as an array in the timeseries() method call.
+$context = new TimeSeriesQueryContext();
+$context->setSkipEmptyBuckets(true);
+
+// Execute the query.
+$response = $builder->timeseries($context);
+```
+
+**Response**
+
+The response of this query will be an `TimeSeriesQueryResponse`. <br>
+The `$response->raw()` method will return an array with the raw data returned by druid. <br> 
+The `$response->data()` method  returns the data as an array in a "normalized" way so that it can be directly used. 
+
 
 ## Metadata
 

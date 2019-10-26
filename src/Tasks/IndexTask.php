@@ -58,6 +58,13 @@ class IndexTask implements TaskInterface
     protected $dimensions;
 
     /**
+     * Whether or not this task should be executed parallel.
+     *
+     * @var bool
+     */
+    protected $parallel = false;
+
+    /**
      * IndexTask constructor.
      *
      *
@@ -98,7 +105,7 @@ class IndexTask implements TaskInterface
     public function toArray(): array
     {
         $result = [
-            'type' => 'index',
+            'type' => $this->parallel ? 'index_parallel' : 'index',
             'spec' => [
                 'dataSchema' => [
                     'dataSource'      => $this->dateSource,
@@ -120,7 +127,7 @@ class IndexTask implements TaskInterface
                     'transformSpec'   => ($this->transformSpec ? $this->transformSpec->toArray() : null),
                 ],
                 'ioConfig'   => [
-                    'type'             => 'index',
+                    'type'             => $this->parallel ? 'index_parallel' : 'index',
                     'firehose'         => $this->firehose->toArray(),
                     'appendToExisting' => $this->appendToExisting,
                 ],
@@ -134,7 +141,7 @@ class IndexTask implements TaskInterface
         }
 
         if ($this->tuningConfig) {
-            $this->tuningConfig->setType('index');
+            $this->tuningConfig->setType($this->parallel ? 'index_parallel' : 'index');
             $result['spec']['tuningConfig'] = $this->tuningConfig->toArray();
         }
 
@@ -147,5 +154,14 @@ class IndexTask implements TaskInterface
     public function setAppendToExisting(bool $appendToExisting): void
     {
         $this->appendToExisting = $appendToExisting;
+    }
+
+    /**
+     * Whether or not this task should be executed parallel.
+     * @param bool $parallel
+     */
+    public function setParallel(bool $parallel): void
+    {
+        $this->parallel = $parallel;
     }
 }
