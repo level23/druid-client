@@ -475,7 +475,7 @@ class QueryBuilder
             $query->setSort($sortingOrder);
         }
 
-        if ($this->limit && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+        if ($this->limit) {
             $query->setLimit($this->limit->getLimit());
         }
 

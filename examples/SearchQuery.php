@@ -21,7 +21,7 @@ try {
     // Build a search query
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
-        ->searchDimensions(['channel', 'namespace']) // When left out all dimensions are searched
+        ->dimensions(['namespace']) // If left out, all dimensions are searched
         ->searchContains('wikipedia')
         ->limit(150);
 

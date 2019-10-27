@@ -26,7 +26,7 @@ trait HasSearchFilters
      *
      * @return $this
      */
-    public function searchDimensions(array $dimensions)
+    public function dimensions(array $dimensions)
     {
         $this->searchDimensions = $dimensions;
 
