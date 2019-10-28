@@ -38,6 +38,7 @@ class IndexTaskBuilder extends TaskBuilder
 
     /**
      * The data source where we will write to.
+     *
      * @var string
      */
     protected $dataSource;
@@ -51,6 +52,13 @@ class IndexTaskBuilder extends TaskBuilder
      * @var bool
      */
     protected $rollup = false;
+
+    /**
+     * Whether or not this task should be executed parallel.
+     *
+     * @var bool
+     */
+    protected $parallel = false;
 
     /**
      * @var TransformSpec|null
@@ -86,8 +94,6 @@ class IndexTaskBuilder extends TaskBuilder
         $this->dataSource   = $toDataSource;
         $this->firehoseType = $firehoseType;
     }
-
-
 
     /**
      * Add a dimension.
@@ -199,6 +205,10 @@ class IndexTaskBuilder extends TaskBuilder
             $this->dimensions
         );
 
+        if ($this->parallel) {
+            $task->setParallel($this->parallel);
+        }
+
         return $task;
     }
 
@@ -238,6 +248,16 @@ class IndexTaskBuilder extends TaskBuilder
     public function rollup(): IndexTaskBuilder
     {
         $this->rollup = true;
+
+        return $this;
+    }
+
+    /**
+     * Execute this index task as parallel batch.
+     */
+    public function parallel()
+    {
+        $this->parallel = true;
 
         return $this;
     }

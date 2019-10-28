@@ -107,6 +107,19 @@ class IndexTaskBuilderTest extends TestCase
         $this->assertEquals('humans', $this->getProperty($builder, 'fromDataSource'));
     }
 
+    public function testParallel()
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'wikipedia';
+        $builder    = new IndexTaskBuilder($client, $dataSource);
+
+        $this->assertEquals(false, $this->getProperty($builder, 'parallel'));
+
+        $builder->parallel();
+
+        $this->assertEquals(true, $this->getProperty($builder, 'parallel'));
+    }
+
     /**
      * @testWith [true]
      *           [false]
@@ -235,6 +248,7 @@ class IndexTaskBuilderTest extends TestCase
         $builder->queryGranularity($queryGranularity);
         $builder->segmentGranularity($segmentGranularity);
         $builder->interval($interval->getStart(), $interval->getStop());
+        $builder->parallel();
 
         if ($firehoseType) {
             $mock = new Mockery\Generator\MockConfigurationBuilder();
@@ -242,7 +256,9 @@ class IndexTaskBuilderTest extends TestCase
             $mock->setName(IndexTask::class);
             $mock->addTarget(TaskInterface::class);
 
-            Mockery::mock($mock)
+            $indexTask = Mockery::mock($mock);
+
+            $indexTask
                 ->shouldReceive('__construct')
                 ->once()
                 ->with(
@@ -255,6 +271,11 @@ class IndexTaskBuilderTest extends TestCase
                     new IsInstanceOf(AggregationCollection::class),
                     new IsArray()
                 );
+
+            $indexTask->shouldReceive('setParallel')
+                ->once()
+                ->with(true);
+
         }
 
         /** @noinspection PhpUndefinedMethodInspection */

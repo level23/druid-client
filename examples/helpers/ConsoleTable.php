@@ -69,10 +69,11 @@ class ConsoleTable
         $table = $this->buildHeader($data);
 
         // Output table, padding columns
-        foreach ($data as $row_key => $row) {
+        foreach ($data as $i => $row) {
             $table .= '| ';
-            foreach ($row as $cell_key => $cell) {
-                $table .= str_pad((string)$cell, $this->columns[$cell_key]) . ' | ';
+
+            foreach( $this->columns as $column => $length ) {
+                $table .= str_pad((string)($row[$column] ?? ''), $length) . ' | ';
             }
             $table .= PHP_EOL;
         }

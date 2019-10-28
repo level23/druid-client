@@ -73,6 +73,11 @@ class GroupByQuery implements QueryInterface
     protected $intervals;
 
     /**
+     * @var array
+     */
+    protected $subtotals = [];
+
+    /**
      * GroupByQuery constructor.
      *
      * @param string                                         $dataSource
@@ -141,7 +146,9 @@ class GroupByQuery implements QueryInterface
             $query['limitSpec'] = $this->limit->toArray();
         }
 
-        // @todo: subtotalsSpec
+        if (count($this->subtotals) > 0) {
+            $query['subtotalsSpec'] = $this->subtotals;
+        }
 
         return $query;
     }
@@ -224,5 +231,13 @@ class GroupByQuery implements QueryInterface
     public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
     {
         $this->virtualColumns = $virtualColumns;
+    }
+
+    /**
+     * @param array $subtotals
+     */
+    public function setSubtotals(array $subtotals): void
+    {
+        $this->subtotals = $subtotals;
     }
 }

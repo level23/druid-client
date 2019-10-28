@@ -50,6 +50,8 @@ class GroupByQueryTest extends TestCase
             new VirtualColumn("concat(first_name, ' ', last_name)", 'full_name')
         );
 
+        $subtotals = [['country', 'city'], ['country'], []];
+
         $context = new GroupByV2QueryContext();
         $context->setFinalize(true);
         $context->setMaxOnDiskStorage(15000);
@@ -76,6 +78,7 @@ class GroupByQueryTest extends TestCase
         $query->setContext($context);
         $query->setHaving($havingFilter);
         $query->setPostAggregations([$fieldAccess]);
+        $query->setSubtotals($subtotals);
 
         $expected = [
             'queryType'        => 'groupBy',
@@ -90,6 +93,7 @@ class GroupByQueryTest extends TestCase
             'having'           => $havingFilter->toArray(),
             'limitSpec'        => $limit->toArray(),
             'postAggregations' => [$fieldAccess->toArray()],
+            'subtotalsSpec'    => $subtotals,
         ];
         $this->assertEquals($expected, $query->toArray());
 
