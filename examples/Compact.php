@@ -9,6 +9,7 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\Granularity;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -19,7 +20,7 @@ try {
     // Build our compact task.
     $taskId = $client->compact('wikipedia')
         ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
-        ->segmentGranularity('day')
+        ->segmentGranularity(Granularity::DAY)
         ->tuningConfig(['maxRowsInMemory' => 50000])
         ->execute();
 

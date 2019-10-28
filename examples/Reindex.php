@@ -21,8 +21,8 @@ try {
     $taskId = $client->reindex('wikipedia')
         ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
         ->parallel()
-        ->segmentGranularity('day')
-        ->queryGranularity(Granularity::NONE)
+        ->segmentGranularity(Granularity::DAY)
+        ->queryGranularity(Granularity::HOUR)
         //        ->rollup()
         //        ->transform(function (\Level23\Druid\Transforms\TransformBuilder $builder) {
         //            $builder->transform('"true"', 'isRobot');

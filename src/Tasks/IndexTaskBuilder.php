@@ -130,11 +130,25 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function setFromDataSource(string $fromDataSource)
+    public function fromDataSource(string $fromDataSource)
     {
         $this->fromDataSource = $fromDataSource;
 
         return $this;
+    }
+
+    /**
+     * The data source where the data will be read from. This will only be used in case of IngestSegmentFirehose.
+     *
+     * @param string $fromDataSource
+     *
+     * @return $this
+     * @deprecated Use fromDataSource() instead
+     *
+     */
+    public function setFromDataSource(string $fromDataSource)
+    {
+        return $this->fromDataSource($fromDataSource);
     }
 
     /**
