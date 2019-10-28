@@ -813,6 +813,9 @@ Please note: use `distinctCount()` when the Theta Sketch extension is available,
 See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
 
+This page also explains the usage of hyperUniqe very well:
+https://cleanprogrammer.net/getting-unique-counts-from-druid-using-hyperloglog/
+
 Example: 
 ```php
 $builder->hyperUnique('dimension', 'myResult');
