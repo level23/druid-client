@@ -74,6 +74,7 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
  - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
  - Implement support for Spatial filters
  - Implement support for multi-value dimensions 
+ - Update documentation for reindex / compact tasks
 
 ## Examples
 
