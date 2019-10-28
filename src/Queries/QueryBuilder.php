@@ -435,7 +435,7 @@ class QueryBuilder
     /**
      * Build a search query.
      *
-     * @param array  $context
+     * @param array|QueryContext  $context
      * @param string $sortingOrder
      *
      * @return \Level23\Druid\Queries\SearchQuery
