@@ -179,8 +179,6 @@ See [this](examples/README.md) page for more information.
 
 Here is an example of how you can use this package.
 
-**NOTE**: This documentation is still under development. Feel free to give feedback.
-
 Please see the inline comment for more information / feedback.
 
 Example:
@@ -1526,7 +1524,7 @@ The `searchQuery()` extraction function has the following arguments:
 | **Type**     | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                                                                            |
 |--------------|-----------------------|------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/array | Required              | `$valueOrValues` | "Talk"      | The word (string) or words (array) where the dimension should match with. If this word is in the dimension, it matches. When multiple words are given, all of then should match with the dimensions value. |
-| bool         | Optional              | `$caseSensitive` | true        | If "$groupToExtract" is set, it will control which group from the match to extract. Index zero extracts the string matching the entire pattern.                                                            |
+| bool         | Optional              | `$caseSensitive` | true        | Set to true to do a case sensitive match, false for an case insensitive match.       |
 
 
 #### `substring()` extraction
