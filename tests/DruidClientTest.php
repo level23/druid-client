@@ -165,7 +165,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client, $dataSource, IngestSegmentFirehose::class);
 
-        $indexTaskBuilder->shouldReceive('setFromDataSource')
+        $indexTaskBuilder->shouldReceive('fromDataSource')
             ->with($dataSource)
             ->once();
 

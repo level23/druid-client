@@ -96,15 +96,19 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testSetFromDataSource()
+    public function testFromDataSource()
     {
         $client     = new DruidClient([]);
         $dataSource = 'aliens';
         $builder    = new IndexTaskBuilder($client, $dataSource);
 
-        $builder->setFromDataSource('humans');
+        $builder->fromDataSource('humans');
 
         $this->assertEquals('humans', $this->getProperty($builder, 'fromDataSource'));
+
+        $builder->setFromDataSource('wikipedia');
+
+        $this->assertEquals('wikipedia', $this->getProperty($builder, 'fromDataSource'));
     }
 
     public function testParallel()
@@ -275,7 +279,6 @@ class IndexTaskBuilderTest extends TestCase
             $indexTask->shouldReceive('setParallel')
                 ->once()
                 ->with(true);
-
         }
 
         /** @noinspection PhpUndefinedMethodInspection */

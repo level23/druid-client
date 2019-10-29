@@ -405,7 +405,7 @@ class DruidClient
         $structure = $this->metadata()->structure($dataSource);
 
         $builder = new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
-        $builder->setFromDataSource($dataSource);
+        $builder->fromDataSource($dataSource);
 
         foreach ($structure->dimensions as $dimension => $type) {
             $builder->dimension($dimension, $type);

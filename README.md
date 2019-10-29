@@ -70,18 +70,112 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ## Todo's
 
  - Implement Kill Task
- - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
- - Implement SearchQuery: https://druid.apache.org/docs/latest/querying/searchquery.html
+ - Support for building metricSpec and DimensionSpec in CompactTaskBuilder 
  - Implement support for Spatial filters
- - Implement support for multi-value dimensions 
- - Update documentation for reindex / compact tasks
+ - Implement support for multi-value dimensions
+ - Update documentation for reindex / compact tasks 
 
 ## Examples
 
 There are several examples which are written on the single-server tutorial of druid. 
 See [this](examples/README.md) page for more information.
 
-## Documentation
+# Table of Contents
+
+  - [DruidClient](#druidclient)
+    - [DruidClient::query()](#druidclientquery)
+    - [DruidClient::compact()](#druidclientcompact)
+    - [DruidClient::reindex()](#druidclientreindex)
+    - [DruidClient::taskStatus()](#druidclienttaskstatus)
+    - [DruidClient::metadata()](#druidclientmetadata)    
+  - [QueryBuilder: Generic Query Methods](#querybuilder-generic-query-methods)
+    - [interval()](#interval)
+    - [orderBy()](#orderby)
+    - [orderByDirection()](#orderbydirection)
+    - [pagingIdentifier()](#pagingidentifier)
+    - [subtotals()](#subtotals)
+    - [metrics()](#metrics)
+    - [dimensions()](#dimensions)
+    - [toArray()](#toarray)
+    - [toJson()](#tojson)
+  - [QueryBuilder: Dimension Selections](#querybuilder-dimension-selections)
+    - [select()](#select)
+    - [lookup()](#lookup)
+  - [QueryBuilder: Metric Aggregations](#querybuilder-metric-aggregations)
+    - [count()](#count)
+    - [sum()](#sum)
+    - [min()](#min)
+    - [max()](#max)
+    - [first()](#first)
+    - [last()](#last)
+    - [javascript()](#javascript)
+    - [hyperUnique()](#hyperunique)
+    - [cardinality()](#cardinality)
+    - [distinctCount()](#distinctcount)    
+  - [QueryBuilder: Filters](#querybuilder-filters)
+    - [where()](#where)
+    - [orWhere()](#orwhere)
+    - [whereIn()](#wherein)
+    - [whereNotIn()](#wherenotin)
+    - [whereBetween()](#wherebetween)
+    - [whereNotBetween()](#wherenotbetween)
+    - [whereColumn()](#wherecolumn)
+    - [whereNotColumn()](#wherenotcolumn)
+    - [whereInterval()](#whereinterval)
+    - [whereNotInterval()](#wherenotinterval)    
+  - [QueryBuilder: Extractions](#querybuilder-extractions)
+    - [lookup()](#lookup-extraction)
+    - [inlineLookup()](#inlinelookup-extraction)
+    - [format()](#format-extraction)
+    - [upper()](#upper-extraction)
+    - [lower()](#lower-extraction)
+    - [timeParse()](#timeparse-extraction)
+    - [timeFormat()](#timeformat-extraction)
+    - [regex()](#regex-extraction)
+    - [partial()](#partial-extraction)
+    - [searchQuery()](#searchquery-extraction)
+    - [substring()](#substring-extraction)
+    - [javascript()](#javascript-extraction)
+    - [bucket()](#bucket-extraction)
+  - [QueryBuilder: Having Filters](#querybuilder-having-filters)
+    - [having()](#having)
+    - [orHaving()](#orhaving)
+  - [QueryBuilder: Virtual Columns](#querybuilder-virtual-columns)
+    - [virtualColumn()](#virtualcolumn)
+    - [selectVirtual()](#selectvirtual)
+  - [QueryBuilder: Post Aggregations](#querybuilder-post-aggregations)
+    - [fieldAccess()](#fieldaccess)
+    - [constant()](#constant)
+    - [divide()](#divide)
+    - [multiply()](#multiply)
+    - [subtract()](#subtract)
+    - [add()](#add)
+    - [quotient()](#quotient)
+    - [longGreatest() and doubleGreatest()](#longgreatest-and-doublegreatest)
+    - [longLeast() and doubleLeast()](#longleast-and-doubleleast)
+    - [postJavascript()](#postjavascript)
+    - [hyperUniqueCardinality()](#hyperuniquecardinality)
+  - [QueryBuilder: Search Filters](#querybuilder-search-filters)
+    - [searchContains()](#searchcontains)
+    - [searchFragment()](#searchfragment)
+    - [searchRegex()](#searchregex)
+  - [QueryBuilder: Execute The Query](#querybuilder-execute-the-query)
+    - [execute()](#execute)
+    - [groupBy()](#groupby)
+    - [topN()](#topn)
+    - [selectQuery()](#selectquery)
+    - [scan()](#scan)
+    - [timeseries()](#timeseries)
+    - [search()](#search)
+  - [Metadata](#metadata)
+    - [intervals](#metadata-intervals)  
+    - [interval](#metadata-interval)  
+    - [structure](#metadata-structure)
+  - [Reindex/compact data](#reindex--compact-data)
+    - [compact()](#compact)
+    - [reindex()](#reindex)      
+
+# Documentation
 
 Here is an example of how you can use this package.
 
@@ -221,18 +315,31 @@ The QueryBuilder allows you to select dimensions, aggregate metric data, apply f
 
 See the following chapters for more information about the query builder.  
 
-  - [Generic Query Methods](#generic-query-methods)
-  - [Dimension Selections](#dimension-selections)
-  - [Metric Aggregations](#metric-aggregations)
-  - [Filters](#filters)
-  - [Extractions](#extractions)
-  - [Having](#having)
-  - [Virtual Columns](#virtual-columns)
-  - [Post Aggregations](#post-aggregations)
-  - [Execute The Query](#execute-the-query)
-  
+
+#### `DruidClient::compact()`
+
+The `compact()` method returns a `CompactTaskBuilder` object which allows you to build a compact task. 
+
+For more information, see [compact()](#compact).
+
+#### `DruidClient::reindex()`
+
+The `compact()` method returns a `IndexTaskBuilder` object which allows you to build a re-index task. 
+
+For more information, see [reindex()](#reindex).
+
+#### `DruidClient::taskStatus()`
+
+The `taskStatus()` method allows you to fetch the status of a task identifier.
+
+For more information and an example, see [reindex()](#reindex) or [compact()](#compact).  
+
+#### `DruidClient::metadata()`
+
+The `metadata()` method returns a `MetadataBuilder` object, which allows you to retrieve metadata from your druid 
+instance. See for more information the [Metadata](#metadata) chapter.
    
-## Generic Query Methods
+## QueryBuilder: Generic Query Methods
 
 Here we will describe some methods which are generic and can be used by (almost) all queries. 
 
@@ -474,6 +581,31 @@ The `metrics()` method has the following arguments:
 |----------|-----------------------|--------------|------------------------|-----------------------------------------------------------------|
 | array    | Required              | `$metrics`   | `['added', 'deleted']` | Array of metrics which you want to select in your select query. |
 
+
+#### `dimensions()`
+
+With the `dimensions()` method you can specify which dimensions should be used for a Search Query. 
+
+**NOTE:** This only applies to the search query type! See also the [Search](#search) query. This method should not
+be confused with selecting dimensions for your other query types. See [Dimension Selections](#dimension-selections) for
+more information about selecting dimensions for your query.
+
+```php
+// Build a Search Query
+$response = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->dimensions(['namespace', 'channel']) 
+    ->searchContains('wikipedia')
+    ->search();
+```
+
+The `dimensions()` method has the following arguments: 
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**           | **Description**                                  |
+|----------|-----------------------|---------------|-----------------------|--------------------------------------------------|
+| array    | Required              | `$dimensions` | `['name', 'address']` | Array of dimensions where you want to search in. |
+
+
 #### `toArray()`
 
 The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will build
@@ -519,7 +651,7 @@ The `toJson()` method has the following arguments:
 |--------------------|-----------------------|--------------|--------------------|---------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
 
-## Dimension Selections
+## QueryBuilder: Dimension Selections
 
 Dimensions are fields where you normally filter on, or _Group_ data by. Typical examples are: Country, Name, City, etc.
 
@@ -607,7 +739,7 @@ Example:
 $builder->lookup('lookupUsername', 'user_id', 'username', 'Unknown'); 
 ```
 
-## Metric Aggregations
+## QueryBuilder: Metric Aggregations
 
 Metrics are fields which you normally aggregate, like summing the values of this field, Typical examples are:
 - Revenue
@@ -923,7 +1055,7 @@ The `distinctCount()` aggregation method has the following parameters:
   
   
   
-## Filters
+## QueryBuilder: Filters
 
 With filters you can filter on certain values. The following filters are available:
 
@@ -1126,7 +1258,7 @@ This works the same as `whereInterval()`, only now we will check if the dimensio
 See `whereInterval()` for more details.  
 
 
-## Extractions
+## QueryBuilder: Extractions
 
 With an extraction you can _extract_ a value from the dimension. These extractions can be used to select the data (see
 `select()`), or to filter on  (see `where()`).
@@ -1146,7 +1278,7 @@ $builder->select('surName', 'nameCategory', function(ExtractionBuilder $extracti
 ```
 
 
-#### `lookup()`
+#### `lookup()` extraction
 
 With this extraction function, you can use a registered lookup function to transform the dimension value to something else.
 
@@ -1173,7 +1305,7 @@ The `lookup()` extraction function has the following arguments:
 | bool/null   | Optional              | `$injective`           | `true`                 | This can override the lookup's own sense of whether or not it is injective. If left unspecified, Druid will use the registered cluster-wide lookup configuration. In general, you should set this property for any lookup that is naturally one-to-one, to allow Druid to run your queries as fast as possible. |
 
 
-#### `inlineLookup()`
+#### `inlineLookup()` extraction
 
 With the `inlineLookup()` extraction function, you can transform the dimension's value using a given list, instead of
 using a registered lookup function (as `lookup()` does).
@@ -1196,7 +1328,7 @@ The `inlineLookup()` extraction function has the following arguments:
 | bool/null   | Optional              | `$injective`           | `true`                      | Whether or not this list is injective. Injective lookups should include all possible keys that may show up in your dataset, and should also map all keys to unique values. This matters because non-injective lookups may map different keys to the same value, which must be accounted for during aggregation, lest query results contain two result values that should have been aggregated into one. |
 
 
-#### `format()`
+#### `format()` extraction
 
 With the extraction function `format()` you can format a dimension value according to the given format string.
 The formatting is equal to the format used in the PHP's sprintf method. 
@@ -1217,7 +1349,7 @@ The `format()` extraction function has the following arguments:
 | string   | Optional              | `$nullHandling`      | "emptyString" | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. |
 
 
-#### `upper()`
+#### `upper()` extraction
 
 The `upper()` extraction function will change the given dimension value to upper case. Optionally user can specify the 
 language to use in order to perform upper transformation.
@@ -1237,7 +1369,7 @@ The `upper()` extraction function has the following arguments:
 | string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform upper transformation |
 
 
-#### `lower()`
+#### `lower()` extraction
 
 The `lower()` extraction function will change the given dimension value to lower case. Optionally user can specify the 
 language to use in order to perform lower transformation.
@@ -1257,7 +1389,7 @@ The `lower()` extraction function has the following arguments:
 | string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform lower transformation |
 
 
-#### `timeParse()`
+#### `timeParse()` extraction
 
 The `timeParse()` extraction function parses dimension values as timestamps using the given input format, 
 and returns them formatted using the given output format. 
@@ -1297,7 +1429,7 @@ The `timeParse()` extraction function has the following arguments:
 | bool     | Optional              | `$jodaFormat`   | true        | Whether or not to use the Joda DateTimeFornat. See for more info above. |
 
 
-#### `timeFormat()`
+#### `timeFormat()` extraction
 
 The `timeFormat()` extraction function will format the dimension according to the given format string, time zone, and locale.
 The format should be given in Joda DateTimeFormat. 
@@ -1327,7 +1459,7 @@ The `timeFormat()` extraction function has the following arguments:
 | bool/null   | Optional              | `$asMilliseconds` | `true`        | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
 
 
-#### `regex()`
+#### `regex()` extraction
 
 The `regex()` extraction function will return the first matching group for the given regular expression. 
 If there is no match, it returns the dimension value as is.
@@ -1351,7 +1483,7 @@ The `regex()` extraction function has the following arguments:
 | bool/string | Optional              | `$replaceMissingValue` | "Unknown"   | When true, we will keep values which are not matched by the regexp. The value will be null. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value. |
 
 
-#### `partial()`
+#### `partial()` extraction
 
 The `partial()` extraction function will return the dimension value unchanged if the regular expression matches, otherwise returns null.
 
@@ -1374,7 +1506,7 @@ The `partial()` extraction function has the following arguments:
 | string   | Required              | `$regularExpression` | `[0-9]*`    | The regular expression where the dimensions value should match with. All none matching values are changed to `null` |
 
 
-#### `searchQuery()`
+#### `searchQuery()` extraction
 
 The `searchQuery()` extraction function will return the values which will match the given 
 search string(s), or `null` when there is no match. 
@@ -1397,7 +1529,7 @@ The `searchQuery()` extraction function has the following arguments:
 | bool         | Optional              | `$caseSensitive` | true        | If "$groupToExtract" is set, it will control which group from the match to extract. Index zero extracts the string matching the entire pattern.                                                            |
 
 
-#### `substring()`
+#### `substring()` extraction
 
 The `substring()` extraction function will return a substring of the dimension value starting from the supplied index 
 and of the desired length. Both index and length are measured in the number of Unicode code units present in the string 
@@ -1424,7 +1556,7 @@ The `substring()` extraction function has the following arguments:
 | int      | Optional              | `$length`    | 5           | The number of characters which should be returned from the $index position. |
 
 
-#### `javascript()`
+#### `javascript()` extraction 
 
 The `javascript()` extraction function will return the dimension value, as transformed by the given JavaScript function.
 
@@ -1481,7 +1613,7 @@ The `javascript()` extraction function has the following arguments:
 | boolean  | Optional              | `$injective`  | true               | Set to true if this function preserves the uniqueness of the dimensions value. Default value is `false`. |
 
 
-#### `bucket()`
+#### `bucket()` extraction
 
 The `bucket()` extraction function is used to bucket numerical values in each range of the given size by converting 
 them to the same base value. Non numeric values are converted to null.
@@ -1502,7 +1634,7 @@ The `bucket()` extraction function has the following arguments:
 | int      | Optional              | `$offset`    | 2           | The offset for the buckets                                       |
 
 
-## Having
+## QueryBuilder: Having Filters
 
 With having filters, you can filter out records _after_ the data has been retrieved. This allows you to filter on aggregated values.
 
@@ -1578,7 +1710,7 @@ However, this is not recommended and should not be needed.
 Same as `having()`, but now we will join previous added having-filters with a `or` instead of an `and`.
 
 
-## Virtual Columns
+## QueryBuilder: Virtual Columns
 
 Virtual columns allow you to create a new "virtual" column based on an expression. This is very powerful, but not well
 documented in the Druid Manual. 
@@ -1652,7 +1784,7 @@ This method has the following arguments:
 | string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
 
 
-## Post Aggregations
+## QueryBuilder: Post Aggregations
 
 Post aggregations are aggregations which are executed after the result is fetched from the druid database.
 
@@ -1954,8 +2086,86 @@ The `hyperUniqueCardinality()` post aggregator has the following arguments:
 | string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
 | string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
 
+## QueryBuilder: Search Filters
 
-## Execute The Query
+Search filters are filters which are only used for a search query. They allow you to specify which filter should be applied
+to the given dimensions.
+
+There are a few different filters available:
+
+#### `searchContains()`
+
+The `searchContains()` method allows you to filter on dimensions where the dimension contains your given value. You can specify
+if the match should be case sensitive or not. 
+
+Example:
+
+```php
+// Build a Search Query using a "contains" filter
+$response = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->dimensions(['namespace'])
+    ->searchContains('Wikipedia', true) // case sensitive!
+    ->search();
+```
+
+The `searchContains()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                               |
+|----------|-----------------------|------------------|-------------|-------------------------------------------------------------------------------|
+| string   | Required              | `$value`         | "wikipedia" | Rows will be returned if the dimension(s) contain this value.                 |
+| bool     | Optional              | `$caseSensitive` | true        | Set to true for case sensitive matching, false for case insensitive matching. |
+
+
+#### `searchFragment()` 
+
+The `searchFragment()` method allows you to filter on dimensions where the dimension contains ALL of the given string values.
+You can specify if the match should be case sensitive or not.
+
+Example:
+
+```php
+// Build a Search Query using a "fragment" filter.
+$response = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->dimensions(['page'])
+    ->searchFragment(['United', 'States'], true) // case sensitive!     
+    ->search();
+```
+
+The `searchFragment()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example**       | **Description**                                                                            |
+|----------|-----------------------|------------------|-------------------|--------------------------------------------------------------------------------------------|
+| array    | Required              | `$values`        | ["wiki", "pedia"] | An array with strings. Only dimensions which contain ALL of the given values are returned. |
+| bool     | Optional              | `$caseSensitive` | true              | Set to true for case sensitive matching, false for case insensitive matching.              |
+
+
+#### `searchRegex()`
+
+The `searchRegex()` method allows you to filter on dimensions where the dimension matches the given regular expression.
+
+See this page for more information about regular expressions: https://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
+
+Example:
+
+```php
+// Build a Search Query using a "regex" filter.
+$response = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->dimensions(['page'])
+    ->searchRegex('^Wiki')      
+    ->search();
+```
+
+The `searchRegex()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                |
+|----------|-----------------------|------------------|-------------|----------------------------------------------------------------|
+| string   | Required              | `$pattern`       | "^Wiki"     | A regular expression where the dimension should match agains.  |
+
+
+## QueryBuilder: Execute The Query
 
 The following methods allow you to execute the query which you have build using the other methods. There are various
 query types available, or you can use the `execute()` method which tries to detect the best query type for your query.
@@ -2340,6 +2550,62 @@ The `$response->raw()` method will return an array with the raw data returned by
 The `$response->data()` method  returns the data as an array in a "normalized" way so that it can be directly used. 
 
 
+#### `search()`
+
+The `search()` method executes your query as a Search Query. A Search Query will return the unqiue values of a dimension 
+which matches a specific search selection. The response will be containing the dimension which matched your search 
+criteria, the value of your dimension and the number of occurrences.  
+
+**Note:** You should not mix up this method with the [searchQuery()](#searchquery) extraction filter.
+
+For more information about the Search Query, see this page: https://druid.apache.org/docs/latest/querying/searchquery.html
+
+See the [Search Filters](#search-filters) for examples how to specify your search filter.
+
+Example:
+
+```php
+// Build a Search Query
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->dimensions(['namespace']) // If left out, all dimensions are searched
+    ->searchContains('wikipedia')
+    ->limit(150);
+
+// Execute the query, sorting by String Length (shortest first).
+$response = $builder->search([], SortingOrder::STRLEN);
+```
+
+The `search()` method has the following arguments:
+
+| **Type**           | **Optional/Required** | **Argument**    | **Example**            | **Description**                                           |
+|--------------------|-----------------------|-----------------|------------------------|-----------------------------------------------------------|
+| array/QueryContext | Optional              | `$context`      | ['priority' => 75]     | Query context parameters. See below for more information. |
+| string             | Optional              | `$sortingOrder` | `SortingOrder::STRLEN` | This defines how the sorting is executed.                 |
+
+**Context**
+
+The `search()` method receives as first parameter the query context. The query context is either an array with key => value pairs,
+or an `QueryContext` object. The context allows you to change the behaviour of the query execution.
+
+Example:
+
+```php
+// Example of setting query context. It can also be supplied as an array in the search() method call.
+$context = new QueryContext();
+$context->setPriority(100);
+
+// Execute the query.
+$response = $builder->search($context);
+```
+
+**Response**
+
+The response of this query will be an `SearchQueryResponse`. <br>
+The `$response->raw()` method will return an array with the raw data returned by druid. <br> 
+The `$response->data()` method  returns the data as an array in a "normalized" way so that it can be directly used. 
+
+
 ## Metadata
 
 Besides querying data, the `DruidClient` class also allows you to extract metadata from your druid setup.
@@ -2480,13 +2746,102 @@ Level23\Druid\Metadata\Structure Object
 )
 ``` 
 
-## MISC
+## Reindex / compact data
 
-More info to come!
+Druid stores data in segments. When you want to update some data, you have to rebuild the _whole_ segment.
+Therefore we use smaller segments when the data is still "fresh". The change of data needed to be rebuild is the biggest
+when it is fresh. In this way, we only need to rebuild 1 hour of data, instead for a whole month or such. 
 
-For testing/building, run:
+We use for example hour segments for "today" and "yesterday", and we have some processes which will change this data into
+bigger segments after that. 
+
+Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
+
+#### `compact()`
+
+With the `compact()` method you can create a compaction task. A compact task can be used to change the segment size of 
+your existing data.   
+A compaction task internally generates an index task for performing compaction work with some fixed parameters.  
+
+See for more information this page: https://druid.apache.org/docs/latest/ingestion/data-management.html#compact 
+
+Example:
+```php
+$client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
+
+// Build our compact task.
+$taskId = $client->compact('wikipedia')
+    ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+    ->segmentGranularity(Granularity::DAY) // set our new segment size (it was for example "hour")
+    ->execute();
+
+echo "Inserted task with id: " . $taskId . "\n";
+
+// Start polling task status.
+while (true) {
+    $status = $client->taskStatus($taskId);
+    echo $status->getId() . ': ' . $status->getStatus() . "\n";
+
+    if ($status->getStatus() != 'RUNNING') {
+        break;
+    }
+    sleep(2);
+}
+
+echo "Final status: \n";
+print_r($status->data());
 ```
-infection --threads=4
 
-ant phpstan
+The `compact` method will return a `CompactTaskBuilder` object which allows you to specify the rest of the 
+required data. 
+
+**NOTE:** We currently do not have support for building metricSpec and DimensionSpec yet. 
+
+#### `reindex()`
+
+With the `reindex()` method you can re-index data which is already in a druid dataSource. You can do a bit more then 
+with the `compact()` method. 
+
+For example, you can filter or transform existing data or change the query granularity: 
+
+```php
+$client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
+
+// Build our reindex task
+$taskId = $client->reindex('wikipedia-new')
+    ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+    ->parallel()
+    ->fromDataSource('wikipedia') 
+    ->segmentGranularity(Granularity::DAY)
+    ->queryGranularity(Granularity::HOUR)
+    ->rollup()
+    ->transform(function (\Level23\Druid\Transforms\TransformBuilder $builder) {
+        $builder->transform('"true"', 'isRobot');
+        $builder->where('comment', 'like', '%Robot%');
+    })
+    ->execute();
+
+echo "Inserted task with id: " . $taskId . "\n";
+
+// Start polling task status.
+while (true) {
+    $status = $client->taskStatus($taskId);
+    echo $status->getId() . ': ' . $status->getStatus() . "\n";
+
+    if ($status->getStatus() != 'RUNNING') {
+        break;
+    }
+    sleep(2);
+}
+
+echo "Final status: \n";
+print_r($status->data());
 ```
+The `reindex` method will return a `IndexTaskBuilder` object which allows you to specify the rest of the 
+required data. By default we will use a `IngestSegmentFirehose` to ingest data from an existing data source. 
+
+If you want you can change the data source where the data is read from using the `fromDataSource()` method. 
+
+**NOTE:** Currently we only support re-indexing, and thus the IngestSegment Firehose. 
+
+ 
