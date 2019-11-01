@@ -53,7 +53,7 @@ class IntervalTest extends TestCase
         $interval = new Interval($start, $stop);
 
         if (strpos($start, '/') !== false) {
-            list($start, $stop) = explode('/', $start);
+            [$start, $stop] = explode('/', $start);
         }
 
         $startObj = new DateTime($start);
@@ -69,5 +69,16 @@ class IntervalTest extends TestCase
         $this->expectExceptionMessage('The end date must be greater than the start date');
 
         new Interval("2019-04-15", "2019-04-11");
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testWithoutEndDate()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid parameters given for the interval() method.');
+
+        new Interval(new DateTime());
     }
 }
