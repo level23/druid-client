@@ -33,13 +33,22 @@ class Interval implements IntervalInterface
         // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
         if (is_string($start) && $stop === null) {
             if (strpos($start, '/') !== false) {
-                list($start, $stop) = explode('/', $start);
+                [$start, $stop] = explode('/', $start);
             } else {
                 throw new InvalidArgumentException(
                     'Invalid interval given: ' . $start . '. ' .
                     'You should supply a valid interval (start and stop date) which is split by a forward slash (/).'
                 );
             }
+        }
+
+        // Check if some gecko forgot the stop date.
+        if ($stop === null) {
+            throw new InvalidArgumentException(
+                'Invalid parameters given for the interval() method. ' .
+                'You should supply a valid start and stop value. This can be in string form ("start/stop"), or specify ' .
+                'the start and stop parameters individually'
+            );
         }
 
         if (!$start instanceof DateTime) {
