@@ -111,6 +111,9 @@ class IndexTaskBuilderTest extends TestCase
         $this->assertEquals('wikipedia', $this->getProperty($builder, 'fromDataSource'));
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testParallel()
     {
         $client     = new DruidClient([]);

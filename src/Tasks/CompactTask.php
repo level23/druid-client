@@ -40,6 +40,11 @@ class CompactTask implements TaskInterface
     protected $targetCompactionSizeBytes;
 
     /**
+     * @var string|null
+     */
+    protected $taskId;
+
+    /**
      * CompactTask constructor.
      *
      * This compaction task reads all segments of the interval 2017-01-01/2018-01-01 and results in new segments. Since
@@ -61,6 +66,7 @@ class CompactTask implements TaskInterface
      * @param \Level23\Druid\TuningConfig\TuningConfig|null $tuningConfig
      * @param \Level23\Druid\Context\TaskContext|null       $context
      * @param int|null                                      $targetCompactionSizeBytes
+     * @param string|null                                   $taskId
      */
     public function __construct(
         string $dataSource,
@@ -68,7 +74,8 @@ class CompactTask implements TaskInterface
         $segmentGranularity = null,
         TuningConfig $tuningConfig = null,
         TaskContext $context = null,
-        int $targetCompactionSizeBytes = null
+        int $targetCompactionSizeBytes = null,
+        string $taskId = null
     ) {
         $this->dataSource                = $dataSource;
         $this->interval                  = $interval;
@@ -76,6 +83,7 @@ class CompactTask implements TaskInterface
         $this->tuningConfig              = $tuningConfig;
         $this->context                   = $context;
         $this->targetCompactionSizeBytes = $targetCompactionSizeBytes;
+        $this->taskId                    = $taskId;
     }
 
     /**
@@ -90,6 +98,10 @@ class CompactTask implements TaskInterface
             'dataSource' => $this->dataSource,
             'interval'   => $this->interval->getInterval(),
         ];
+
+        if ($this->taskId) {
+            $result['id'] = $this->taskId;
+        }
 
         if ($this->segmentGranularity) {
             $result['segmentGranularity'] = $this->segmentGranularity;

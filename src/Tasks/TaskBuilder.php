@@ -15,6 +15,14 @@ abstract class TaskBuilder
     protected $client;
 
     /**
+     * The task ID. If this is not explicitly specified, Druid generates the task ID using task type,
+     * data source name, interval, and date-time stamp.
+     *
+     * @var string|null
+     */
+    protected $taskId = null;
+
+    /**
      * Check if the given interval is valid for the given dataSource.
      *
      * @param string                                    $dataSource
@@ -100,6 +108,21 @@ abstract class TaskBuilder
         $task = $this->buildTask($context);
 
         return $task->toArray();
+    }
+
+    /**
+     * The task ID. If this is not explicitly specified, Druid generates the task ID using task type,
+     * data source name, interval, and date-time stamp.
+     *
+     * @param string $taskId
+     *
+     * @return $this
+     */
+    public function taskId(string $taskId)
+    {
+        $this->taskId = $taskId;
+
+        return $this;
     }
 
     /**

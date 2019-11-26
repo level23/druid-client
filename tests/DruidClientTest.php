@@ -14,6 +14,7 @@ use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
 use Psr\Http\Message\ResponseInterface;
+use Level23\Druid\Tasks\KillTaskBuilder;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Queries\QueryInterface;
 use GuzzleHttp\Exception\ServerException;
@@ -133,6 +134,22 @@ class DruidClientTest extends TestCase
             ->with($client, 'someDataSource');
 
         $client->compact('someDataSource');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testKill()
+    {
+        $client = new DruidClient([]);
+
+        $builder = Mockery::mock('overload:' . KillTaskBuilder::class);
+        $builder->shouldReceive('__construct')
+            ->once()
+            ->with($client, 'someDataSource');
+
+        $client->kill('someDataSource');
     }
 
     /**

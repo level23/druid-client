@@ -10,6 +10,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
 use Psr\Http\Message\ResponseInterface;
+use Level23\Druid\Tasks\KillTaskBuilder;
 use GuzzleHttp\Exception\ServerException;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Tasks\IndexTaskBuilder;
@@ -383,6 +384,18 @@ class DruidClient
     public function compact(string $dataSource): CompactTaskBuilder
     {
         return new CompactTaskBuilder($this, $dataSource);
+    }
+
+    /**
+     * Create a kill task.
+     *
+     * @param string $dataSource
+     *
+     * @return \Level23\Druid\Tasks\KillTaskBuilder
+     */
+    public function kill(string $dataSource): KillTaskBuilder
+    {
+        return new KillTaskBuilder($this, $dataSource);
     }
 
     /**

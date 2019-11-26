@@ -13,19 +13,20 @@ use Level23\Druid\TuningConfig\TuningConfig;
 class CompactTaskTest extends TestCase
 {
     /**
-     * @testWith ["day", null, null, null]
-     *           ["week", {"maxRowsPerSegment": "1"}, null, null]
-     *           ["week", {"wrong": "index"}, null, null, true]
-     *           ["week", {"type": "index"}, {"priority": 10}, null]
-     *           ["week", {"type": "index"}, {"wrong": 10}, null, true]
-     *           ["week", {"type": "index"}, null, 1024]
+     * @testWith ["day", null, null, null, false, "task-1337"]
+     *           ["week", {"maxRowsPerSegment": "1"}, null, null, false, null]
+     *           ["week", {"wrong": "index"}, null, null, true, "task-1337"]
+     *           ["week", {"type": "index"}, {"priority": 10}]
+     *           ["week", {"type": "index"}, {"wrong": 10}, null, true, null]
+     *           ["week", {"type": "index"}, null, 1024, false, "task-1337"]
      *
      *
-     * @param string     $segmentGranularity
-     * @param array|null $tuningConfig
-     * @param array|null $context
-     * @param int|null   $targetCompactionSizeBytes
-     * @param bool       $expectException
+     * @param string      $segmentGranularity
+     * @param array|null  $tuningConfig
+     * @param array|null  $context
+     * @param int|null    $targetCompactionSizeBytes
+     * @param bool        $expectException
+     * @param string|null $taskId
      *
      * @throws \Exception
      */
@@ -34,7 +35,8 @@ class CompactTaskTest extends TestCase
         array $tuningConfig = null,
         array $context = null,
         int $targetCompactionSizeBytes = null,
-        bool $expectException = false
+        bool $expectException = false,
+        string $taskId = null
     ) {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -48,7 +50,8 @@ class CompactTaskTest extends TestCase
             $segmentGranularity,
             ($tuningConfig ? new TuningConfig($tuningConfig) : null),
             ($context ? new TaskContext($context) : null),
-            $targetCompactionSizeBytes
+            $targetCompactionSizeBytes,
+            $taskId
         );
 
         $expected = [
@@ -56,6 +59,10 @@ class CompactTaskTest extends TestCase
             'dataSource' => 'mySource',
             'interval'   => $interval->getInterval(),
         ];
+
+        if ($taskId) {
+            $expected['id'] = $taskId;
+        }
 
         if ($segmentGranularity) {
             $expected['segmentGranularity'] = $segmentGranularity;
