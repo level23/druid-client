@@ -14,7 +14,7 @@ class KillTask implements TaskInterface
     protected $dataSource;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $taskId;
 
@@ -28,8 +28,12 @@ class KillTask implements TaskInterface
      */
     protected $context;
 
-    public function __construct(string $dataSource, string $taskId, Interval $interval, TaskContext $context = null)
-    {
+    public function __construct(
+        string $dataSource,
+        Interval $interval,
+        string $taskId = null,
+        TaskContext $context = null
+    ) {
         $this->dataSource = $dataSource;
         $this->taskId     = $taskId;
         $this->interval   = $interval;
@@ -44,11 +48,14 @@ class KillTask implements TaskInterface
     public function toArray(): array
     {
         $result = [
-            'type'       => 'kill',
-            'id'         => $this->taskId,
+            'type' => 'kill',
             'dataSource' => $this->dataSource,
-            'interval'   => $this->interval->getInterval(),
+            'interval' => $this->interval->getInterval(),
         ];
+
+        if ($this->taskId) {
+            $result['id'] = $this->taskId;
+        }
 
         $context = $this->context ? $this->context->toArray() : [];
         if (count($context) > 0) {

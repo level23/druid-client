@@ -29,6 +29,18 @@ class TaskBuilderTest extends TestCase
         parent::setUp();
     }
 
+    /**
+     * @throws \ReflectionException
+     */
+    public function testTaskId()
+    {
+        $builder = new CompactTaskBuilder($this->client, 'wikipedia');
+        $response = $builder->taskId('myTaskId');
+
+        $this->assertEquals('myTaskId', $this->getProperty($builder, 'taskId'));
+        $this->assertEquals($builder, $response);
+    }
+
     public function testExecute()
     {
         $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);

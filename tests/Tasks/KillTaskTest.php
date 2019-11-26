@@ -11,14 +11,15 @@ use Level23\Druid\Context\TaskContext;
 class KillTaskTest extends TestCase
 {
     /**
-     * @testWith [true]
-     *           [false]
+     * @testWith [true, null]
+     *           [false, "task-1337"]
      *
-     * @param bool $withContext
+     * @param bool        $withContext
+     * @param string|null $taskId
      *
      * @throws \Exception
      */
-    public function testTask(bool $withContext)
+    public function testTask(bool $withContext, string $taskId = null)
     {
         $dataSource = 'myPets';
         $taskId     = 'task-1337';
@@ -26,14 +27,16 @@ class KillTaskTest extends TestCase
 
         $context = $withContext ? new TaskContext(['priority' => 75]) : null;
 
-        $killTask = new KillTask($dataSource, $taskId, $interval, $context);
+        $killTask = new KillTask($dataSource, $interval, $taskId, $context);
 
         $expected = [
             'type'       => 'kill',
-            'id'         => $taskId,
             'dataSource' => $dataSource,
             'interval'   => $interval->getInterval(),
         ];
+        if (!empty($taskId)) {
+            $expected['id'] = $taskId;
+        }
 
         if ($context) {
             $expected['context'] = $context->toArray();

@@ -20,15 +20,15 @@ use Level23\Druid\Collections\AggregationCollection;
 class IndexTaskTest extends TestCase
 {
     /**
-     * @testWith [true, true, true, true, true]
-     *           [false, false, false, false, false ]
+     * @testWith [true, true, true, true, true, null]
+     *           [false, false, false, false, false, "task-1337"]
      *
      * @param bool $withAggregations
      * @param bool $withTransformSpec
      * @param bool $withAppend
      * @param bool $withTuning
-     *
      * @param bool $withContext
+     * @param string|null $taskId
      *
      * @throws \ReflectionException
      */
@@ -37,7 +37,8 @@ class IndexTaskTest extends TestCase
         bool $withTransformSpec,
         bool $withAppend,
         bool $withTuning,
-        bool $withContext
+        bool $withContext,
+        string $taskId = null
     ) {
         $dataSource = 'people';
         $interval   = new Interval('12-02-2019', '13-02-2019');
@@ -77,7 +78,8 @@ class IndexTaskTest extends TestCase
             $tuningConfig,
             $taskContext,
             $aggregations,
-            $dimensions
+            $dimensions,
+            $taskId
         );
 
         $this->assertFalse($this->getProperty($task, 'appendToExisting'));
@@ -111,9 +113,12 @@ class IndexTaskTest extends TestCase
                     'firehose'         => $firehose->toArray(),
                     'appendToExisting' => $withAppend,
                 ],
-
             ],
         ];
+
+        if( $taskId ) {
+            $expected['id'] = $taskId;
+        }
 
         if ($taskContext instanceof TaskContext) {
             $expected['context'] = $taskContext->toArray();
@@ -132,7 +137,13 @@ class IndexTaskTest extends TestCase
 
         $task->setParallel(true);
 
+        if ($tuningConfig instanceof TuningConfig) {
+            $expected['spec']['tuningConfig']['type'] = 'index_parallel';
+        }
+
+        $expected['spec']['ioConfig']['type'] = 'index_parallel';
         $expected['type'] = 'index_parallel';
-        $expected['ioConfig']['type'] = 'index_parallel';
+
+        $this->assertEquals($expected, $task->toArray());
     }
 }

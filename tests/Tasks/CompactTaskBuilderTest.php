@@ -48,12 +48,12 @@ class CompactTaskBuilderTest extends TestCase
         $tuningConfig->setMaxRetry(3);
 
         return [
-            [['priority' => 25], null, "year", $tuningConfig],
-            [['priority' => 25], "12-02-2019/13-02-2019", "day", null],
-            [['priority' => 25], "12-02-2019/13-02-2019", "day", $tuningConfig],
-            [['priority' => 25], "12-02-2019/13-02-2019", null, $tuningConfig],
-            [(new TaskContext())->setPriority(10), "yesterday/now", "hour", $tuningConfig],
-            [[], "12-02-2019/13-02-2019", "day", null],
+            [['priority' => 25], null, "year", $tuningConfig, 1024, "task-1337"],
+            [['priority' => 25], "12-02-2019/13-02-2019", "day", null, null, null],
+            [['priority' => 25], "12-02-2019/13-02-2019", "day", $tuningConfig, 1024, null],
+            [['priority' => 25], "12-02-2019/13-02-2019", null, $tuningConfig, 1024, null],
+            [(new TaskContext())->setPriority(10), "yesterday/now", "hour", $tuningConfig, null, null],
+            [[], "12-02-2019/13-02-2019", "day", null, 1024, "task-1337"],
         ];
     }
 
@@ -65,12 +65,20 @@ class CompactTaskBuilderTest extends TestCase
      * @param string|null       $interval
      * @param string|null       $segmentGranularity
      * @param TuningConfig|null $tuningConfig
+     * @param int|null          $targetCompactionSizeBytes
+     * @param string|null       $taskId
      *
      * @throws \Exception
      * @dataProvider        buildTaskDataProvider
      */
-    public function testBuildTask($context, $interval, $segmentGranularity, $tuningConfig)
-    {
+    public function testBuildTask(
+        $context,
+        $interval,
+        $segmentGranularity,
+        $tuningConfig,
+        int $targetCompactionSizeBytes = null,
+        string $taskId = null
+    ) {
         $dataSource = 'myThings';
         $client     = new DruidClient([]);
 
@@ -89,6 +97,10 @@ class CompactTaskBuilderTest extends TestCase
 
         if ($segmentGranularity) {
             $builder->segmentGranularity($segmentGranularity);
+        }
+
+        if ($targetCompactionSizeBytes) {
+            $builder->targetCompactionSize($targetCompactionSizeBytes);
         }
 
         if ($tuningConfig) {
@@ -111,6 +123,10 @@ class CompactTaskBuilderTest extends TestCase
                 $this->assertEquals($intervalObject->getInterval(), $givenInterval->getInterval());
             });
 
+        if ($taskId) {
+            $builder->taskId($taskId);
+        }
+
         $mock = new Mockery\Generator\MockConfigurationBuilder();
         $mock->setInstanceMock(true);
         $mock->setName(CompactTask::class);
@@ -124,7 +140,9 @@ class CompactTaskBuilderTest extends TestCase
                 new IsInstanceOf(Interval::class),
                 $segmentGranularity,
                 $tuningConfig,
-                new IsInstanceOf(TaskContext::class)
+                new IsInstanceOf(TaskContext::class),
+                $targetCompactionSizeBytes,
+                $taskId
             );
 
         /** @noinspection PhpUndefinedMethodInspection */

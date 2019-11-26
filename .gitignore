@@ -9,3 +9,4 @@ vendor/
 composer.lock
 build/.phpunit.result.cache
 infection.log
+/.phpunit.result.cache

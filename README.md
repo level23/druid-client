@@ -68,12 +68,12 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ```
 
 ## Todo's
-
- - Implement Kill Task
+ 
  - Support for building metricSpec and DimensionSpec in CompactTaskBuilder 
  - Implement support for Spatial filters
- - Implement support for multi-value dimensions
- - Update documentation for reindex / compact tasks 
+ - Implement support for multi-value dimensions 
+ - Implement append / merge / same_interval_merge tasks
+ - Implement support for indexing using other firehoses then the IngestSegmentFirehose
 
 ## Examples
 
@@ -171,7 +171,7 @@ See [this](examples/README.md) page for more information.
     - [intervals](#metadata-intervals)  
     - [interval](#metadata-interval)  
     - [structure](#metadata-structure)
-  - [Reindex/compact data](#reindex--compact-data)
+  - [Reindex/compact data/kill](#reindex--compact-data--kill)
     - [compact()](#compact)
     - [reindex()](#reindex)      
 
@@ -2744,7 +2744,7 @@ Level23\Druid\Metadata\Structure Object
 )
 ``` 
 
-## Reindex / compact data
+## Reindex / compact data / kill
 
 Druid stores data in segments. When you want to update some data, you have to rebuild the _whole_ segment.
 Therefore we use smaller segments when the data is still "fresh". The change of data needed to be rebuild is the biggest
@@ -2754,6 +2754,10 @@ We use for example hour segments for "today" and "yesterday", and we have some p
 bigger segments after that. 
 
 Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
+
+**Note**: when you re-index data, druid will collect the data and put it in a new segment. The old segments are not deleted,
+but marked as unused. This is the same principle as laravel's soft-deletes. To permanent delete the unused segments 
+you should use the `kill` task. See below for an example. 
 
 #### `compact()`
 
@@ -2842,4 +2846,37 @@ If you want you can change the data source where the data is read from using the
 
 **NOTE:** Currently we only support re-indexing, and thus the IngestSegment Firehose. 
 
- 
+
+#### `kill()`
+
+The `kill()` method will return a `KillTaskBuilder` object. This allows you to specify the interval and optionally
+the task Id for your task. You can then execute it.
+
+The kill task will delete all __unused__ segments which match with your given interval. If you often re-index your data
+you probably want to also use this task a lot, otherwise you will also store all old versions of your data. 
+
+Example:
+```php
+$client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
+
+// Build our kill task and execute it.
+$taskId = $client->kill('wikipedia')
+    ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+    ->execute();
+
+echo "Kill task inserted with id: " . $taskId . "\n";
+
+// Start polling task status.
+while (true) {
+    $status = $client->taskStatus($taskId);
+    echo $status->getId() . ': ' . $status->getStatus() . "\n";
+
+    if ($status->getStatus() != 'RUNNING') {
+        break;
+    }
+    sleep(2);
+}
+
+echo "Final status: \n";
+print_r($status->data());
+```

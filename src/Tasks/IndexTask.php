@@ -65,6 +65,11 @@ class IndexTask implements TaskInterface
     protected $parallel = false;
 
     /**
+     * @var string|null
+     */
+    protected $taskId;
+
+    /**
      * IndexTask constructor.
      *
      *
@@ -76,6 +81,7 @@ class IndexTask implements TaskInterface
      * @param \Level23\Druid\Context\TaskContext|null               $context
      * @param \Level23\Druid\Collections\AggregationCollection|null $aggregations
      * @param array                                                 $dimensions
+     * @param string|null                                           $taskId
      */
     public function __construct(
         string $dateSource,
@@ -85,7 +91,8 @@ class IndexTask implements TaskInterface
         TuningConfig $tuningConfig = null,
         TaskContext $context = null,
         AggregationCollection $aggregations = null,
-        array $dimensions = []
+        array $dimensions = [],
+        string $taskId = null
     ) {
         $this->tuningConfig  = $tuningConfig;
         $this->context       = $context;
@@ -95,6 +102,7 @@ class IndexTask implements TaskInterface
         $this->transformSpec = $transformSpec;
         $this->aggregations  = $aggregations;
         $this->dimensions    = $dimensions;
+        $this->taskId        = $taskId;
     }
 
     /**
@@ -145,6 +153,10 @@ class IndexTask implements TaskInterface
             $result['spec']['tuningConfig'] = $this->tuningConfig->toArray();
         }
 
+        if ($this->taskId) {
+            $result['id'] = $this->taskId;
+        }
+
         return $result;
     }
 
@@ -158,6 +170,7 @@ class IndexTask implements TaskInterface
 
     /**
      * Whether or not this task should be executed parallel.
+     *
      * @param bool $parallel
      */
     public function setParallel(bool $parallel): void

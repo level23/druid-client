@@ -71,15 +71,15 @@ class CompactTaskBuilder extends TaskBuilder
 
         // @todo: add support for building metricSpec and DimensionSpec.
 
-        $task = new CompactTask(
+        return new CompactTask(
             $this->dataSource,
             $this->interval,
             $this->segmentGranularity,
             $this->tuningConfig,
-            $context
+            $context,
+            $this->targetCompactionSizeBytes,
+            $this->taskId
         );
-
-        return $task;
     }
 
     /**
