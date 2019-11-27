@@ -23,14 +23,6 @@ use Illuminate\Foundation\Application as LaravelApplication;
 class DruidServiceProvider extends ServiceProvider
 {
     /**
-     * Bootstrap the application services.
-     */
-    public function boot()
-    {
-        $this->setupConfig();
-    }
-
-    /**
      * Register the application services.
      */
     public function register()
@@ -61,6 +53,8 @@ class DruidServiceProvider extends ServiceProvider
      */
     protected function registerDruidClient()
     {
+        $this->setupConfig();
+
         $this->app->singleton(DruidClient::class, function ($app) {
             $client = new DruidClient($this->app['config']['druid']);
             $client->setLogger($this->app['log']);
