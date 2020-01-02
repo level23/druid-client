@@ -56,7 +56,7 @@ class ContextTest extends TestCase
             $reflection = new ReflectionMethod($class, $method);
             $parameters = $reflection->getParameters();
 
-            switch ($parameters[0]->getType()) {
+            switch ($parameters[0]->getType()->getName()) {
                 case 'int':
                     $value = rand(1, 1000);
                     break;
