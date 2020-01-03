@@ -53,7 +53,7 @@ class ScanQuery implements QueryInterface
      * "none" is used. Currently, "ascending" and "descending" are only supported for queries where the __time column
      * is included in the columns field and the requirements outlined in the time ordering section are met.
      *
-     * @var string.
+     * @var string
      */
     protected $order;
 

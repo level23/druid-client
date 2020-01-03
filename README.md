@@ -3,6 +3,10 @@
 [![Build Status](https://travis-ci.org/level23/druid-client.svg?branch=master)](https://travis-ci.org/level23/druid-client)
 [![Coverage Status](https://coveralls.io/repos/github/level23/druid-client/badge.svg?branch=master)](https://coveralls.io/github/level23/druid-client?branch=master)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg?style=flat-square)](https://php.net/)
+[![Packagist Version](https://img.shields.io/packagist/v/level23/druid-client.svg?style=flat-square)](https://packagist.org/packages/level23/druid-client)
+[![Total Downloads](https://img.shields.io/packagist/dt/level23/druid-client.svg?style=flat-square)](https://packagist.org/packages/level23/druid-client)
+[![Quality Score](https://img.shields.io/scrutinizer/quality/g/level23/druid-client?style=flat-square)](https://scrutinizer-ci.com/g/level23/druid-client)
+[![Software License](https://img.shields.io/badge/license-Apache%202.0-brightgreen.svg?style=flat-square)](LICENSE)
 
 
 The goal of this project is to make it easy to select data from druid.

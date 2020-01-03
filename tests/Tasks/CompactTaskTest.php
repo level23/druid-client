@@ -68,7 +68,7 @@ class CompactTaskTest extends TestCase
             $expected['segmentGranularity'] = $segmentGranularity;
         }
 
-        if ($targetCompactionSizeBytes) {
+        if ($targetCompactionSizeBytes > 0) {
             $expected['targetCompactionSizeBytes'] = $targetCompactionSizeBytes;
         }
 

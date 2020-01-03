@@ -46,10 +46,7 @@ class Dimension implements DimensionInterface
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;
 
-        if (is_string($outputType)) {
-            $outputType = strtolower($outputType);
-        }
-        $outputType = $outputType ?: DataType::STRING;
+        $outputType = !empty($outputType) ? strtolower($outputType) : DataType::STRING;
 
         if (!in_array($outputType, ['string', 'long', 'float'])) {
             throw new InvalidArgumentException(
@@ -57,7 +54,7 @@ class Dimension implements DimensionInterface
             );
         }
 
-        $this->outputType         = $outputType;
+        $this->outputType         = DataType::validate($outputType);
         $this->extractionFunction = $extractionFunction;
     }
 
