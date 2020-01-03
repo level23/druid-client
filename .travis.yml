@@ -1,6 +1,6 @@
 language: php
 
-sudo: false
+sudo: required
 
 cache:
   directories:
@@ -9,13 +9,11 @@ cache:
 php:
   - '7.2'
   - '7.3'
+  - '7.4'
 
 before_install:
   - sudo apt-get update
   - sudo apt-get install -y ant
-
-install:
-  -
 
 before_script:
  - phpunit --version
