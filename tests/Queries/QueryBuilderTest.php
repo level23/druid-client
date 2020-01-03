@@ -1352,7 +1352,7 @@ class QueryBuilderTest extends TestCase
             ->once()
             ->with($resultFormat);
 
-        if ($rowBatchSize > 0) {
+        if ($rowBatchSize !== null && $rowBatchSize > 0) {
             $query->shouldReceive('setBatchSize')
                 ->once()
                 ->with($rowBatchSize);

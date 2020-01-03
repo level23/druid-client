@@ -598,7 +598,7 @@ class QueryBuilder
             $query->setResultFormat($resultFormat);
         }
 
-        if ($rowBatchSize > 0) {
+        if ($rowBatchSize !== null && $rowBatchSize > 0) {
             $query->setBatchSize($rowBatchSize);
         }
 
