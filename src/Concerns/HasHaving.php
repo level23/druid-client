@@ -100,9 +100,7 @@ trait HasHaving
             throw new InvalidArgumentException('The arguments which you have supplied cannot be parsed');
         }
 
-        strtolower($boolean) == 'and' ?
-            $this->addAndHaving($having) :
-            $this->addOrHaving($having);
+        strtolower($boolean) == 'and' ? $this->addAndHaving($having) : $this->addOrHaving($having);
 
         return $this;
     }

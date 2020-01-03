@@ -135,9 +135,7 @@ trait HasFilter
             throw new InvalidArgumentException('The arguments which you have supplied cannot be parsed.');
         }
 
-        strtolower($boolean) == 'and' ?
-            $this->addAndFilter($filter) :
-            $this->addOrFilter($filter);
+        strtolower($boolean) == 'and' ? $this->addAndFilter($filter) : $this->addOrFilter($filter);
 
         return $this;
     }
