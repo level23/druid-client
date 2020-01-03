@@ -47,6 +47,6 @@ class SegmentMetadataQuery implements QueryInterface
      */
     public function parseResponse(array $response): SegmentMetadataQueryResponse
     {
-        return new SegmentMetadataQueryResponse( $response);
+        return new SegmentMetadataQueryResponse($response);
     }
 }

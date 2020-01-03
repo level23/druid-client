@@ -5,7 +5,7 @@ namespace Level23\Druid\Responses;
 
 interface ResponseInterface
 {
-    public function raw() : array;
+    public function raw(): array;
 
-    public function data() : array;
+    public function data(): array;
 }
