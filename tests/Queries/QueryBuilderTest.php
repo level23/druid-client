@@ -1041,6 +1041,7 @@ class QueryBuilderTest extends TestCase
      * @param bool   $withFilter
      *
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function testBuildSearchQuery(
         array $context,
@@ -1351,7 +1352,7 @@ class QueryBuilderTest extends TestCase
             ->once()
             ->with($resultFormat);
 
-        if ($rowBatchSize) {
+        if ($rowBatchSize !== null && $rowBatchSize > 0) {
             $query->shouldReceive('setBatchSize')
                 ->once()
                 ->with($rowBatchSize);

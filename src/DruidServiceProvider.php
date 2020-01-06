@@ -55,7 +55,7 @@ class DruidServiceProvider extends ServiceProvider
     {
         $this->setupConfig();
 
-        $this->app->singleton(DruidClient::class, function ($app) {
+        $this->app->singleton(DruidClient::class, function () {
             $client = new DruidClient($this->app['config']['druid']);
             $client->setLogger($this->app['log']);
 

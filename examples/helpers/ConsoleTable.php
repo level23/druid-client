@@ -72,7 +72,7 @@ class ConsoleTable
         foreach ($data as $i => $row) {
             $table .= '| ';
 
-            foreach( $this->columns as $column => $length ) {
+            foreach ($this->columns as $column => $length) {
                 $table .= str_pad((string)($row[$column] ?? ''), $length) . ' | ';
             }
             $table .= PHP_EOL;

@@ -435,8 +435,8 @@ class QueryBuilder
     /**
      * Build a search query.
      *
-     * @param array|QueryContext  $context
-     * @param string $sortingOrder
+     * @param array|QueryContext $context
+     * @param string             $sortingOrder
      *
      * @return \Level23\Druid\Queries\SearchQuery
      */
@@ -598,7 +598,7 @@ class QueryBuilder
             $query->setResultFormat($resultFormat);
         }
 
-        if ($rowBatchSize) {
+        if ($rowBatchSize !== null && $rowBatchSize > 0) {
             $query->setBatchSize($rowBatchSize);
         }
 

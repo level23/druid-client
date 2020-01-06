@@ -91,7 +91,7 @@ class SearchQuery implements QueryInterface
             $result['filter'] = $this->filter->toArray();
         }
 
-        if ($this->limit) {
+        if ($this->limit > 0) {
             $result['limit'] = $this->limit;
         }
 

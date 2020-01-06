@@ -73,7 +73,9 @@ trait HasHaving
             } elseif (strtolower($operator) == 'like') {
                 $having = new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value));
             } elseif (strtolower($operator) == 'not like') {
-                $having = new NotHavingFilter(new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value)));
+                $having = new NotHavingFilter(
+                    new QueryHavingFilter(new LikeFilter($havingOrMetricOrClosure, (string)$value))
+                );
             }
         } elseif ($havingOrMetricOrClosure instanceof FilterInterface) {
             $having = new QueryHavingFilter($havingOrMetricOrClosure);
@@ -98,9 +100,7 @@ trait HasHaving
             throw new InvalidArgumentException('The arguments which you have supplied cannot be parsed');
         }
 
-        strtolower($boolean) == 'and' ?
-            $this->addAndHaving($having) :
-            $this->addOrHaving($having);
+        strtolower($boolean) == 'and' ? $this->addAndHaving($having) : $this->addOrHaving($having);
 
         return $this;
     }

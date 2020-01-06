@@ -135,9 +135,7 @@ trait HasFilter
             throw new InvalidArgumentException('The arguments which you have supplied cannot be parsed.');
         }
 
-        strtolower($boolean) == 'and' ?
-            $this->addAndFilter($filter) :
-            $this->addOrFilter($filter);
+        strtolower($boolean) == 'and' ? $this->addAndFilter($filter) : $this->addOrFilter($filter);
 
         return $this;
     }
@@ -430,6 +428,7 @@ trait HasFilter
 
             // If the value is an array and is not empty and has either one or 2 values its an interval array
             if (is_array($interval) && !empty(array_filter($interval)) && count($interval) < 3) {
+                /** @scrutinizer ignore-type */
                 return new Interval(...$interval);
             }
 
