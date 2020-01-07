@@ -107,7 +107,7 @@ class CompactTask implements TaskInterface
             $result['segmentGranularity'] = $this->segmentGranularity;
         }
 
-        if ($this->targetCompactionSizeBytes) {
+        if ($this->targetCompactionSizeBytes !== null && $this->targetCompactionSizeBytes > 0) {
             $result['targetCompactionSizeBytes'] = $this->targetCompactionSizeBytes;
         }
 
