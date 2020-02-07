@@ -11,7 +11,6 @@ use Hamcrest\Core\IsEqual;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
-use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\AndFilter;
@@ -409,6 +408,36 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the orWhereBetween method.
+     */
+    public function testOrWhereBetween()
+    {
+        $this->builder->shouldReceive('whereBetween')
+            ->with('age', 18, 22, null, 'numeric', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereBetween('age', 18, 22, null, 'numeric');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereNotBetween method.
+     */
+    public function testOrWhereNotBetween()
+    {
+        $this->builder->shouldReceive('whereNotBetween')
+            ->with('age', 18, 22, null, 'numeric', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereNotBetween('age', 18, 22, null, 'numeric');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the whereNotBetween
      *
      * @runInSeparateProcess
@@ -457,6 +486,51 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the orWhereColumn method.
+     */
+    public function testOrWhereColumn()
+    {
+        $this->builder->shouldReceive('whereColumn')
+            ->with('name', 'first_name', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereColumn('name', 'first_name');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereFlags method.
+     */
+    public function testOrWhereFlags()
+    {
+        $this->builder->shouldReceive('whereFlags')
+            ->with('flags', 32, 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereFlags('flags', 32);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereNotColumn method.
+     */
+    public function testOrWhereNotColumn()
+    {
+        $this->builder->shouldReceive('whereNotColumn')
+            ->with('name', 'first_name', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereNotColumn('name', 'first_name');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the whereNotColumn
      *
      * @runInSeparateProcess
@@ -483,6 +557,41 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the whereFlags filter
+     */
+    public function testWhereFlags()
+    {
+        $extractionBuilder = Mockery::mock(ExtractionBuilder::class);
+
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use ($extractionBuilder) {
+                $this->assertEquals($dimension, 'flags');
+                $this->assertEquals($operator, '=');
+                $this->assertEquals($flags, 33);
+                $this->assertInstanceOf(\Closure::class, $extractionClosure);
+                $this->assertEquals($boolean, 'and');
+
+                $extractionBuilder->shouldReceive('javascript')
+                    ->once()
+                    ->withArgs(function ($js) {
+                        $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
+
+                        return true;
+                    });
+
+                $extractionClosure($extractionBuilder);
+
+                return true;
+            })
+            ->andReturn($this->builder);
+
+        $response = $this->builder->whereFlags('flags', 33);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the whereIn
      *
      * @runInSeparateProcess
@@ -500,6 +609,36 @@ class HasFilterTest extends TestCase
             ->andReturn($this->builder);
 
         $response = $this->builder->whereIn('country_iso', ['nl', 'be']);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereIn method.
+     */
+    public function testOrWhereIn()
+    {
+        $this->builder->shouldReceive('whereIn')
+            ->with('country_iso', ['nl', 'be'], null, 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereIn('country_iso', ['nl', 'be']);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereNotIn method.
+     */
+    public function testOrWhereNotIn()
+    {
+        $this->builder->shouldReceive('whereNotIn')
+            ->with('country_iso', ['nl', 'be'], null, 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereNotIn('country_iso', ['nl', 'be']);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -529,6 +668,23 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the orWhereInterval method.
+     */
+    public function testOrWhereInterval()
+    {
+        $interval = new Interval('now', 'tomorrow');
+
+        $this->builder->shouldReceive('whereInterval')
+            ->with('__time', [$interval->getStart(), $interval->getStop()], null, 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * @throws \Exception
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -553,6 +709,23 @@ class HasFilterTest extends TestCase
             ->with(new IsInstanceOf(IntervalFilter::class));
 
         $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereNotInterval method.
+     */
+    public function testOrWhereNotInterval()
+    {
+        $interval = new Interval('now', 'tomorrow');
+
+        $this->builder->shouldReceive('whereNotInterval')
+            ->with('__time', [$interval->getStart(), $interval->getStop()], null, 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
 
         $this->assertEquals($this->builder, $response);
     }

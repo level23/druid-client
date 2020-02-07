@@ -120,13 +120,23 @@ See [this](examples/README.md) page for more information.
     - [where()](#where)
     - [orWhere()](#orwhere)
     - [whereIn()](#wherein)
+    - [orWhereIn()](#orwherein)
     - [whereNotIn()](#wherenotin)
+    - [orWhereNotIn()](#orwherenotin)
     - [whereBetween()](#wherebetween)
+    - [orWhereBetween()](#orwherebetween)
     - [whereNotBetween()](#wherenotbetween)
+    - [orWhereNotBetween()](#orwherenotbetween)
     - [whereColumn()](#wherecolumn)
+    - [orWhereColumn()](#orwherecolumn)
     - [whereNotColumn()](#wherenotcolumn)
+    - [orWhereNotColumn()](#orwherenotcolumn)
     - [whereInterval()](#whereinterval)
+    - [orWhereInterval()](#orwhereinterval)
     - [whereNotInterval()](#wherenotinterval)    
+    - [orWhereNotInterval()](#orwherenotinterval)
+    - [whereFlags()](#whereflags)
+    - [orWhereFlags()](#orwhereflags) 
   - [QueryBuilder: Extractions](#querybuilder-extractions)
     - [lookup()](#lookup-extraction)
     - [inlineLookup()](#inlinelookup-extraction)
@@ -589,8 +599,8 @@ The `metrics()` method has the following arguments:
 With the `dimensions()` method you can specify which dimensions should be used for a Search Query. 
 
 **NOTE:** This only applies to the search query type! See also the [Search](#search) query. This method should not
-be confused with selecting dimensions for your other query types. See [Dimension Selections](#dimension-selections) for
-more information about selecting dimensions for your query.
+be confused with selecting dimensions for your other query types. See 
+[Dimension Selections](#querybuilder-dimension-selections) for more information about selecting dimensions for your query.
 
 ```php
 // Build a Search Query
@@ -1159,11 +1169,20 @@ This method has the following arguments:
 | array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
 | Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
 
+#### `orWhereIn()`
+
+Same as `whereIn()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 
 #### `whereNotIn()`
 
 This works the same as `whereIn()`, only now we will check if the dimension is NOT in the given values. See `whereIn()` 
 for more details.  
+
+
+#### `orWhereNotIn()`
+
+Same as `whereNotIn()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereBetween()`
@@ -1185,10 +1204,20 @@ This method has the following arguments:
 | string      | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
 
 
+#### `orWhereBetween()`
+
+Same as `whereBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+
 #### `whereNotBetween()`
 
 This works the same as `whereBetween()`, only now we will check if the dimension is NOT in between the given values. 
 See `whereBetween()` for more details.  
+
+
+#### `orWhereNotBetween()`
+
+Same as `whereNotBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereColumn()`
@@ -1215,10 +1244,20 @@ The `whereColumn()` filter has the following arguments:
 | string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
 
 
+#### `orWhereColumn()`
+
+Same as `whereColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+
 #### `whereNotColumn()`
 
 The `whereNotColumn()` filter works exactly the same as the `whereColumn()` filter, only now it will only return rows
 where `$dimensionA` is different then `$dimensionB`.  
+
+
+#### `orWhereNotColumn()`
+
+Same as `whereNotColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereInterval()`
@@ -1253,11 +1292,54 @@ Example:
 $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-2019']);
 ```
 
+#### `orWhereInterval()`
+
+Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 
 #### `whereNotInterval()`
 
 This works the same as `whereInterval()`, only now we will check if the dimension is NOT matching the given intervals. 
 See `whereInterval()` for more details.  
+
+
+#### `orWhereNotInterval()`
+
+Same as `whereNotInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+#### `whereFlags`
+
+This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND 
+comparison. 
+
+Druid has by itself no support for bitwise comparisons. We have already created a feature request for support for this:
+https://github.com/apache/incubator-druid/issues/8560
+
+The only way of doing this now is by letting Javascript handling this. This means that javascript support is thus 
+required for this filter to work. 
+
+Example:
+
+```php
+// Select records where the first and third bit are enabled (1 and 4)
+$builder->whereFlags('flags', (1 | 4));
+```
+
+**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming 
+guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it: 
+https://druid.apache.org/docs/latest/development/javascript.html
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | "flags"     | The dimension where you want to filter on                                                                                                                    |
+| int      | Required              | `$flags`     | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
+| string   | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+#### `orWhereFlags`
+
+Same as `whereFlags()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 ## QueryBuilder: Extractions
@@ -2554,15 +2636,15 @@ The `$response->data()` method  returns the data as an array in a "normalized" w
 
 #### `search()`
 
-The `search()` method executes your query as a Search Query. A Search Query will return the unqiue values of a dimension 
+The `search()` method executes your query as a Search Query. A Search Query will return the unique values of a dimension 
 which matches a specific search selection. The response will be containing the dimension which matched your search 
 criteria, the value of your dimension and the number of occurrences.  
 
-**Note:** You should not mix up this method with the [searchQuery()](#searchquery) extraction filter.
+**Note:** You should not mix up this method with the [searchQuery()](#searchquery-extraction) extraction filter.
 
 For more information about the Search Query, see this page: https://druid.apache.org/docs/latest/querying/searchquery.html
 
-See the [Search Filters](#search-filters) for examples how to specify your search filter.
+See the [Search Filters](#querybuilder-search-filters) for examples how to specify your search filter.
 
 Example:
 
