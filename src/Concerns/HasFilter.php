@@ -150,6 +150,41 @@ trait HasFilter
     }
 
     /**
+     * Build a where selection which is inverted
+     *
+     * @param \Closure $filterBuilder A closure which will receive a FilterBuilder instance.
+     * @param string   $boolean       This influences how this filter will be joined with previous added filters.
+     *                                Should both filters apply ("and") or one or the other ("or") ? Default is "and".
+     *
+     * @return $this
+     */
+    public function whereNot(Closure $filterBuilder, $boolean = 'and')
+    {
+        // lets create a bew builder object where the user can mess around with
+        $builder = new FilterBuilder();
+
+        // call the user function
+        call_user_func($filterBuilder, $builder);
+
+        // Now retrieve the filter which was created and add it to our current filter set.
+        $filter = $builder->getFilter();
+
+        return $this->where(new NotFilter($filter), null, null, null, $boolean);
+    }
+
+    /**
+     * Build a where selection which is inverted
+     *
+     * @param \Closure $filterBuilder A closure which will receive a FilterBuilder instance.
+     *
+     * @return $this
+     */
+    public function orWhereNot(Closure $filterBuilder)
+    {
+        return $this->whereNot($filterBuilder, 'or');
+    }
+
+    /**
      * This applies a filter, only it will join previous added filters with an "or" instead of an "and".
      * See the documentation of the "where" method for more information
      *
@@ -359,6 +394,7 @@ trait HasFilter
      *                                   "and".
      *
      * @return $this
+     * @deprecated Use the whereNot() method combined with a whereColumn instead.
      */
     public function whereNotColumn($dimensionA, $dimensionB, string $boolean = 'and')
     {
@@ -494,6 +530,7 @@ trait HasFilter
      *                                   "and".
      *
      * @return $this
+     * @deprecated Use the whereNot() method combined with a whereBetween instead.
      */
     public function whereNotBetween(
         string $dimension,
@@ -529,6 +566,7 @@ trait HasFilter
      *                                   numeric, otherwise it will be "lexicographic"
      *
      * @return $this
+     * @deprecated Use the whereNot() method combined with a whereBetween instead.
      */
     public function orWhereNotBetween(
         string $dimension,
@@ -552,6 +590,7 @@ trait HasFilter
      *                                  "and".
      *
      * @return $this
+     * @deprecated Use the whereNot() method combined with a whereIn instead.
      */
     public function whereNotIn(string $dimension, array $items, Closure $extraction = null, string $boolean = 'and')
     {
@@ -569,6 +608,7 @@ trait HasFilter
      * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
      *
      * @return $this
+     * @deprecated Use the orWhereNot() method combined with a whereIn instead.
      */
     public function orWhereNotIn(string $dimension, array $items, Closure $extraction = null)
     {
@@ -598,6 +638,7 @@ trait HasFilter
      *                                  "and".
      *
      * @return $this
+     * @deprecated Use the whereNot() method combined with a whereInterval instead.
      */
     public function whereNotInterval(
         string $dimension,
@@ -634,6 +675,7 @@ trait HasFilter
      * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
      *
      * @return $this
+     * @deprecated Use the orWhereNot() method combined with a whereInterval instead.
      */
     public function orWhereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
     {

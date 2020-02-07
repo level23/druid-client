@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
+use Closure;
 use DateTime;
 use Exception;
 use tests\TestCase;
@@ -569,7 +570,7 @@ class HasFilterTest extends TestCase
                 $this->assertEquals($dimension, 'flags');
                 $this->assertEquals($operator, '=');
                 $this->assertEquals($flags, 33);
-                $this->assertInstanceOf(\Closure::class, $extractionClosure);
+                $this->assertInstanceOf(Closure::class, $extractionClosure);
                 $this->assertEquals($boolean, 'and');
 
                 $extractionBuilder->shouldReceive('javascript')
@@ -624,6 +625,51 @@ class HasFilterTest extends TestCase
             ->andReturn($this->builder);
 
         $response = $this->builder->orWhereIn('country_iso', ['nl', 'be']);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the whereNot method.
+     */
+    public function testWhereNot()
+    {
+        $this->builder->shouldReceive('where')
+            ->withArgs(function ($filter, $n1, $n2, $n3, $boolean) {
+
+                $this->assertInstanceOf(NotFilter::class, $filter);
+                $this->assertNull($n1);
+                $this->assertNull($n2);
+                $this->assertNull($n3);
+                $this->assertEquals('and', $boolean);
+
+                return true;
+            })
+            ->once()
+            ->andReturn($this->builder);
+
+        $closure = function (FilterBuilder $filterBuilder) {
+            $filterBuilder->whereIn('age', [18, 19]);
+        };
+
+        $response = $this->builder->whereNot($closure);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereNot method.
+     */
+    public function testOrWhereNot()
+    {
+        $this->builder->shouldReceive('whereNot')
+            ->with(new IsInstanceOf(Closure::class), 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereNot(function (FilterBuilder $filterBuilder) {
+            $filterBuilder->whereIn('age', [18, 19]);
+        });
 
         $this->assertEquals($this->builder, $response);
     }

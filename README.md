@@ -119,22 +119,16 @@ See [this](examples/README.md) page for more information.
   - [QueryBuilder: Filters](#querybuilder-filters)
     - [where()](#where)
     - [orWhere()](#orwhere)
+    - [whereNot()](#wherenot)
+    - [orWhereNot()](#orwherenot)
     - [whereIn()](#wherein)
-    - [orWhereIn()](#orwherein)
-    - [whereNotIn()](#wherenotin)
-    - [orWhereNotIn()](#orwherenotin)
+    - [orWhereIn()](#orwherein)    
     - [whereBetween()](#wherebetween)
-    - [orWhereBetween()](#orwherebetween)
-    - [whereNotBetween()](#wherenotbetween)
-    - [orWhereNotBetween()](#orwherenotbetween)
+    - [orWhereBetween()](#orwherebetween)    
     - [whereColumn()](#wherecolumn)
-    - [orWhereColumn()](#orwherecolumn)
-    - [whereNotColumn()](#wherenotcolumn)
-    - [orWhereNotColumn()](#orwherenotcolumn)
+    - [orWhereColumn()](#orwherecolumn)    
     - [whereInterval()](#whereinterval)
-    - [orWhereInterval()](#orwhereinterval)
-    - [whereNotInterval()](#wherenotinterval)    
-    - [orWhereNotInterval()](#orwherenotinterval)
+    - [orWhereInterval()](#orwhereinterval)    
     - [whereFlags()](#whereflags)
     - [orWhereFlags()](#orwhereflags) 
   - [QueryBuilder: Extractions](#querybuilder-extractions)
@@ -1157,6 +1151,32 @@ However, this is not recommended and should not be needed.
 Same as `where()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
+#### `whereNot()`
+
+With this filter you can build a filterset which should NOT match. It is thus inverted.
+
+Example:
+```php
+$builder->whereNot(function (FilterBuilder $filterBuilder) {
+    $filterBuilder->orWhere('namespace', 'Talk');
+    $filterBuilder->orWhere('namespace', 'Main');
+});
+```
+
+You can use this in combination with all the other filters!
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                              |
+|----------|-----------------------|------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Closure  | Required              | `$filterBuilder` | "flags"     | A closure function which will receive a `FilterBuilder` object. All applied filters will be inverted.                                                        |
+| string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+ 
+
+#### `orWhereNot()`
+
+Same as `whereNot()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 #### `whereIn()`
 
 With this method you can filter on records using multiple values. 
@@ -1172,18 +1192,6 @@ This method has the following arguments:
 #### `orWhereIn()`
 
 Same as `whereIn()`, but now we will join previous added filters with a `or` instead of an `and`.
-
-
-#### `whereNotIn()`
-
-This works the same as `whereIn()`, only now we will check if the dimension is NOT in the given values. See `whereIn()` 
-for more details.  
-
-
-#### `orWhereNotIn()`
-
-Same as `whereNotIn()`, but now we will join previous added filters with a `or` instead of an `and`.
-
 
 #### `whereBetween()`
 
@@ -1207,17 +1215,6 @@ This method has the following arguments:
 #### `orWhereBetween()`
 
 Same as `whereBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
-
-
-#### `whereNotBetween()`
-
-This works the same as `whereBetween()`, only now we will check if the dimension is NOT in between the given values. 
-See `whereBetween()` for more details.  
-
-
-#### `orWhereNotBetween()`
-
-Same as `whereNotBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereColumn()`
@@ -1247,17 +1244,6 @@ The `whereColumn()` filter has the following arguments:
 #### `orWhereColumn()`
 
 Same as `whereColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
-
-
-#### `whereNotColumn()`
-
-The `whereNotColumn()` filter works exactly the same as the `whereColumn()` filter, only now it will only return rows
-where `$dimensionA` is different then `$dimensionB`.  
-
-
-#### `orWhereNotColumn()`
-
-Same as `whereNotColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereInterval()`
@@ -1296,16 +1282,6 @@ $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-20
 
 Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
 
-
-#### `whereNotInterval()`
-
-This works the same as `whereInterval()`, only now we will check if the dimension is NOT matching the given intervals. 
-See `whereInterval()` for more details.  
-
-
-#### `orWhereNotInterval()`
-
-Same as `whereNotInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 #### `whereFlags`
 
