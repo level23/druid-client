@@ -1655,36 +1655,6 @@ $builder->select('__time', 'second', function(ExtractionBuilder $extraction) {
 });
 ```
 
-**Advanced example:**
-
-The javascript function is a good alternative to do bitwise operator expressions, as they are currently not yet 
-supported by druid. A feature request has been opened, see: https://github.com/apache/incubator-druid/issues/8560
-
-Until then, you can use something like this to extract a value using a "bitwise and":
-```php
-$binaryFlagToMatch = 16;
-
-// Select the fields where the 5th bit is enabled
-$builder->where('flags', '=', $binaryFlagToMatch, function(ExtractionBuilder $extraction) use( $binaryFlagToMatch ) {   
-    // Do a binary "AND" flag comparison on a 64 bit int. The result will either be the 
-    // $binaryFlagToMatch, or 0 when it's bit is not set. 
-    $extraction->javascript('
-        function(v1) { 
-            var v2 = '.$binaryFlagToMatch.'; 
-            var hi = 0x80000000; 
-            var low = 0x7fffffff; 
-            var hi1 = ~~(v1 / hi); 
-            var hi2 = ~~(v2 / hi); 
-            var low1 = v1 & low; 
-            var low2 = v2 & low; 
-            var h = hi1 & hi2; 
-            var l = low1 & low2; 
-            return (h*hi + l); 
-        }
-    ');
-});
-``` 
-
 **NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide 
 for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
 https://druid.apache.org/docs/latest/development/javascript.html
