@@ -120,13 +120,23 @@ See [this](examples/README.md) page for more information.
     - [where()](#where)
     - [orWhere()](#orwhere)
     - [whereIn()](#wherein)
+    - [orWhereIn()](#orwherein)
     - [whereNotIn()](#wherenotin)
+    - [orWhereNotIn()](#orwherenotin)
     - [whereBetween()](#wherebetween)
+    - [orWhereBetween()](#orwherebetween)
     - [whereNotBetween()](#wherenotbetween)
+    - [orWhereNotBetween()](#orwherenotbetween)
     - [whereColumn()](#wherecolumn)
+    - [orWhereColumn()](#orwherecolumn)
     - [whereNotColumn()](#wherenotcolumn)
+    - [orWhereNotColumn()](#orwherenotcolumn)
     - [whereInterval()](#whereinterval)
+    - [orWhereInterval()](#orwhereinterval)
     - [whereNotInterval()](#wherenotinterval)    
+    - [orWhereNotInterval()](#orwherenotinterval)
+    - [whereFlags()](#whereflags)
+    - [orWhereFlags()](#orwhereflags) 
   - [QueryBuilder: Extractions](#querybuilder-extractions)
     - [lookup()](#lookup-extraction)
     - [inlineLookup()](#inlinelookup-extraction)
@@ -589,8 +599,8 @@ The `metrics()` method has the following arguments:
 With the `dimensions()` method you can specify which dimensions should be used for a Search Query. 
 
 **NOTE:** This only applies to the search query type! See also the [Search](#search) query. This method should not
-be confused with selecting dimensions for your other query types. See [Dimension Selections](#dimension-selections) for
-more information about selecting dimensions for your query.
+be confused with selecting dimensions for your other query types. See 
+[Dimension Selections](#querybuilder-dimension-selections) for more information about selecting dimensions for your query.
 
 ```php
 // Build a Search Query
@@ -947,7 +957,7 @@ Please note: use `distinctCount()` when the Theta Sketch extension is available,
 See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
 
-This page also explains the usage of hyperUniqe very well:
+This page also explains the usage of hyperUnique very well:
 https://cleanprogrammer.net/getting-unique-counts-from-druid-using-hyperloglog/
 
 Example: 
@@ -962,7 +972,7 @@ The `hyperUnique()` aggregation method has the following parameters:
 | string   | Required              | `$metric`             | "dimension" |  The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                  |
 | string   | Required              | `$as`                 | "myField"   | The name which will be used in the output result                                                                                                                                                                     |
 | bool     | Optional              | `$round`              | true        | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
-| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll ise xpected).                                                        | 
+| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll is expected).                                                        | 
 
 
 #### `cardinality()`
@@ -1159,11 +1169,20 @@ This method has the following arguments:
 | array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
 | Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
 
+#### `orWhereIn()`
+
+Same as `whereIn()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 
 #### `whereNotIn()`
 
 This works the same as `whereIn()`, only now we will check if the dimension is NOT in the given values. See `whereIn()` 
 for more details.  
+
+
+#### `orWhereNotIn()`
+
+Same as `whereNotIn()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereBetween()`
@@ -1185,10 +1204,20 @@ This method has the following arguments:
 | string      | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
 
 
+#### `orWhereBetween()`
+
+Same as `whereBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+
 #### `whereNotBetween()`
 
 This works the same as `whereBetween()`, only now we will check if the dimension is NOT in between the given values. 
 See `whereBetween()` for more details.  
+
+
+#### `orWhereNotBetween()`
+
+Same as `whereNotBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereColumn()`
@@ -1215,10 +1244,20 @@ The `whereColumn()` filter has the following arguments:
 | string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
 
 
+#### `orWhereColumn()`
+
+Same as `whereColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+
 #### `whereNotColumn()`
 
 The `whereNotColumn()` filter works exactly the same as the `whereColumn()` filter, only now it will only return rows
 where `$dimensionA` is different then `$dimensionB`.  
+
+
+#### `orWhereNotColumn()`
+
+Same as `whereNotColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 #### `whereInterval()`
@@ -1253,11 +1292,54 @@ Example:
 $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-2019']);
 ```
 
+#### `orWhereInterval()`
+
+Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 
 #### `whereNotInterval()`
 
 This works the same as `whereInterval()`, only now we will check if the dimension is NOT matching the given intervals. 
 See `whereInterval()` for more details.  
+
+
+#### `orWhereNotInterval()`
+
+Same as `whereNotInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+#### `whereFlags`
+
+This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND 
+comparison. 
+
+Druid has by itself no support for bitwise comparisons. We have already created a feature request for support for this:
+https://github.com/apache/incubator-druid/issues/8560
+
+The only way of doing this now is by letting Javascript handling this. This means that javascript support is thus 
+required for this filter to work. 
+
+Example:
+
+```php
+// Select records where the first and third bit are enabled (1 and 4)
+$builder->whereFlags('flags', (1 | 4));
+```
+
+**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming 
+guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it: 
+https://druid.apache.org/docs/latest/development/javascript.html
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | "flags"     | The dimension where you want to filter on                                                                                                                    |
+| int      | Required              | `$flags`     | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
+| string   | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+#### `orWhereFlags`
+
+Same as `whereFlags()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 
 ## QueryBuilder: Extractions
@@ -1292,7 +1374,7 @@ Example:
 ```php
 // Match any country like %Nether%
 $builder->where('country_id', 'like', '%Nether%', function (ExtractionBuilder $extractionBuilder) {
-    // Extract the country name by it's id by usin this lookup function. 
+    // Extract the country name by it's id by using this lookup function. 
     $extractionBuilder->lookup('country_name_by_id');
 });
 ```
@@ -1573,36 +1655,6 @@ $builder->select('__time', 'second', function(ExtractionBuilder $extraction) {
 });
 ```
 
-**Advanced example:**
-
-The javascript function is a good alternative to do bitwise operator expressions, as they are currently not yet 
-supported by druid. A feature request has been opened, see: https://github.com/apache/incubator-druid/issues/8560
-
-Until then, you can use something like this to extract a value using a "bitwise and":
-```php
-$binaryFlagToMatch = 16;
-
-// Select the fields where the 5th bit is enabled
-$builder->where('flags', '=', $binaryFlagToMatch, function(ExtractionBuilder $extraction) use( $binaryFlagToMatch ) {   
-    // Do a binary "AND" flag comparison on a 64 bit int. The result will either be the 
-    // $binaryFlagToMatch, or 0 when it's bit is not set. 
-    $extraction->javascript('
-        function(v1) { 
-            var v2 = '.$binaryFlagToMatch.'; 
-            var hi = 0x80000000; 
-            var low = 0x7fffffff; 
-            var hi1 = ~~(v1 / hi); 
-            var hi2 = ~~(v2 / hi); 
-            var low1 = v1 & low; 
-            var low2 = v2 & low; 
-            var h = hi1 & hi2; 
-            var l = low1 & low2; 
-            return (h*hi + l); 
-        }
-    ');
-});
-``` 
-
 **NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide 
 for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
 https://druid.apache.org/docs/latest/development/javascript.html
@@ -1697,7 +1749,7 @@ This would be the same as an SQL equivalent:
 
 As last, you can also supply a raw filter or having-filter object. For example:
 ```php
-// exampe using a having filter
+// example using a having filter
 $builder->having( new GreaterThanHavingFilter('totalViews', 15) );
 
 // example using a "normal" filter.
@@ -2162,9 +2214,9 @@ $response = $client->query('wikipedia')
 
 The `searchRegex()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                |
-|----------|-----------------------|------------------|-------------|----------------------------------------------------------------|
-| string   | Required              | `$pattern`       | "^Wiki"     | A regular expression where the dimension should match agains.  |
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                 |
+|----------|-----------------------|------------------|-------------|-----------------------------------------------------------------|
+| string   | Required              | `$pattern`       | "^Wiki"     | A regular expression where the dimension should match against.  |
 
 
 ## QueryBuilder: Execute The Query
@@ -2357,7 +2409,7 @@ $builder = $client->query('wikipedia')
 // Execute the query.
 $response = $builder->selectQuery($context);
 
-// ... Use your respone (page 1) here! ...
+// ... Use your response (page 1) here! ...
 
 // echo "Identifier for page 2: " . var_export($response->pagingIdentifier(), true) . "\n\n";
 
@@ -2554,15 +2606,15 @@ The `$response->data()` method  returns the data as an array in a "normalized" w
 
 #### `search()`
 
-The `search()` method executes your query as a Search Query. A Search Query will return the unqiue values of a dimension 
+The `search()` method executes your query as a Search Query. A Search Query will return the unique values of a dimension 
 which matches a specific search selection. The response will be containing the dimension which matched your search 
 criteria, the value of your dimension and the number of occurrences.  
 
-**Note:** You should not mix up this method with the [searchQuery()](#searchquery) extraction filter.
+**Note:** You should not mix up this method with the [searchQuery()](#searchquery-extraction) extraction filter.
 
 For more information about the Search Query, see this page: https://druid.apache.org/docs/latest/querying/searchquery.html
 
-See the [Search Filters](#search-filters) for examples how to specify your search filter.
+See the [Search Filters](#querybuilder-search-filters) for examples how to specify your search filter.
 
 Example:
 

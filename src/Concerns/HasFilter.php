@@ -40,11 +40,20 @@ trait HasFilter
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=', 'like', 'not like', 'regex', 'not regex',
      * 'javascript', 'not javascript', 'search' and 'not search'
      *
-     * @param string|\Level23\Druid\Filters\FilterInterface|\Closure $filterOrDimensionOrClosure
-     * @param string|null                                            $operator
-     * @param mixed                                                  $value
-     * @param \Closure|null                                          $extraction
-     * @param string                                                 $boolean
+     * @param string|FilterInterface|\Closure $filterOrDimensionOrClosure The dimension which you want to filter.
+     * @param string|null                     $operator                   The operator which you want to use to filter.
+     *                                                                    See below for a complete list of supported
+     *                                                                    operators.
+     * @param mixed                           $value                      The value which you want to use in your
+     *                                                                    filter comparison
+     * @param \Closure|null                   $extraction                 A closure which builds one or more extraction
+     *                                                                    function. These are applied before the filter
+     *                                                                    will be applied. So the filter will use the
+     *                                                                    value returned by the extraction function(s).
+     * @param string                          $boolean                    This influences how this filter will be
+     *                                                                    joined with previous added filters. Should
+     *                                                                    both filters apply ("and") or one or the
+     *                                                                    other ("or") ? Default is "and".
      *
      * @return $this
      */
@@ -53,7 +62,7 @@ trait HasFilter
         $operator = null,
         $value = null,
         Closure $extraction = null,
-        $boolean = 'and'
+        string $boolean = 'and'
     ) {
         $filter = null;
         if (is_string($filterOrDimensionOrClosure)) {
@@ -141,12 +150,16 @@ trait HasFilter
     }
 
     /**
+     * This applies a filter, only it will join previous added filters with an "or" instead of an "and".
+     * See the documentation of the "where" method for more information
+     *
      * @param string|FilterInterface $filterOrDimension
      * @param string|null            $operator
      * @param mixed|null             $value
      * @param \Closure|null          $extraction
      *
      * @return $this
+     * @see \Level23\Druid\Concerns\HasFilter::where()
      */
     public function orWhere($filterOrDimension, $operator = null, $value = null, Closure $extraction = null)
     {
@@ -156,17 +169,36 @@ trait HasFilter
     /**
      * Filter records where the given dimension exists in the given list of items
      *
-     * @param string        $dimension
-     * @param array         $items
-     * @param \Closure|null $extraction
+     * @param string        $dimension  The dimension which you want to filte
+     * @param array         $items      A list of values. We will return records where the dimension is in this list.
+     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
+     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
+     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                  "and".
      *
      * @return $this
      */
-    public function whereIn(string $dimension, array $items, Closure $extraction = null)
+    public function whereIn(string $dimension, array $items, Closure $extraction = null, $boolean = 'and')
     {
         $filter = new InFilter($dimension, $items, $this->getExtraction($extraction));
 
-        return $this->where($filter);
+        return $this->where($filter, null, null, null, $boolean);
+    }
+
+    /**
+     * Filter records where the given dimension exists in the given list of items.
+     *
+     * If there are previously defined filters, this filter will be joined with an "or".
+     *
+     * @param string        $dimension  The dimension which you want to filte
+     * @param array         $items      A list of values. We will return records where the dimension is in this list.
+     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
+     *
+     * @return $this
+     */
+    public function orWhereIn(string $dimension, array $items, Closure $extraction = null)
+    {
+        return $this->whereIn($dimension, $items, $extraction, 'or');
     }
 
     /**
@@ -183,20 +215,125 @@ trait HasFilter
      * });
      * ```
      *
-     * @param string|Closure $dimensionA
-     * @param string|Closure $dimensionB
+     * @param string|Closure $dimensionA The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     * @param string|Closure $dimensionB The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     * @param string         $boolean    This influences how this filter will be joined with previous added filters.
+     *                                   Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                   "and".
      *
      * @return $this
-     * @throws InvalidArgumentException
      */
-    public function whereColumn($dimensionA, $dimensionB)
+    public function whereColumn($dimensionA, $dimensionB, string $boolean = 'and')
     {
         $filter = new ColumnComparisonFilter(
             $this->columnCompareDimension($dimensionA),
             $this->columnCompareDimension($dimensionB)
         );
 
-        return $this->where($filter);
+        return $this->where($filter, null, null, null, $boolean);
+    }
+
+    /**
+     * Filter records where dimensionA is equal to dimensionB.
+     * You can either supply a string or a Closure. The Closure will receive a DimensionBuilder object, which allows
+     * you to select a dimension and apply extraction functions if needed.
+     *
+     * Example:
+     * ```php
+     * $builder->orWhereColumn('initials', function(DimensionBuilder $dimensionBuilder) {
+     *   $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
+     *     $extractionBuilder->substring(0, 1);
+     *   });
+     * });
+     * ```
+     *
+     * @param string|Closure $dimensionA The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     * @param string|Closure $dimensionB The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     *
+     * @return $this
+     */
+    public function orWhereColumn($dimensionA, $dimensionB)
+    {
+        return $this->whereColumn($dimensionA, $dimensionB, 'or');
+    }
+
+    /**
+     * Filter on records which match using a bitwise AND comparison.
+     *
+     * Due to the lack of support of a bitwise comparison by Druid, we have build our own variant.
+     * A feature request has been opened already. See: https://github.com/apache/incubator-druid/issues/8560
+     *
+     * Only records will match where the dimension contains ALL bits which are also enabled in the given $flags
+     * argument.
+     *
+     * Support for 64 bit integers are supported.
+     *
+     * NOTE:
+     * Please note that javascript support is required for this method.
+     * JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
+     * for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+     * https://druid.apache.org/docs/latest/development/javascript.html
+     *
+     * @param string $dimension The dimension which contains int values where you want to do a bitwise AND check
+     *                          against.
+     * @param int    $flags     The bit's which you want to check if they are enabled in the given dimension.
+     * @param string $boolean   This influences how this filter will be joined with previous added filters. Should both
+     *                          filters apply ("and") or one or the other ("or") ? Default is "and".
+     *
+     * @return $this
+     */
+    public function whereFlags(string $dimension, int $flags, string $boolean = 'and')
+    {
+        return $this->where($dimension, '=', $flags, function (ExtractionBuilder $extraction) use ($flags) {
+            // Do a binary "AND" flag comparison on a 64 bit int. The result will either be the
+            // $flags, or 0 when it's bit is not set.
+            $extraction->javascript('
+                function(dimensionValue) { 
+                    var givenValue = ' . $flags . '; 
+                    var hi = 0x80000000; 
+                    var low = 0x7fffffff; 
+                    var hi1 = ~~(dimensionValue / hi); 
+                    var hi2 = ~~(givenValue / hi); 
+                    var low1 = dimensionValue & low; 
+                    var low2 = givenValue & low; 
+                    var h = hi1 & hi2; 
+                    var l = low1 & low2; 
+                    return (h*hi + l); 
+                }
+            ');
+        }, $boolean);
+    }
+
+    /**
+     * Filter on records which match using a bitwise AND comparison.
+     *
+     * Due to the lack of support of a bitwise comparison by Druid, we have build our own variant.
+     * A feature request has been opened already. See: https://github.com/apache/incubator-druid/issues/8560
+     *
+     * Only records will match where the dimension contains ALL bits which are also enabled in the given $flags
+     * argument.
+     *
+     * Support for 64 bit integers are supported.
+     *
+     * NOTE:
+     * Please note that javascript support is required for this method.
+     * JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
+     * for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+     * https://druid.apache.org/docs/latest/development/javascript.html
+     *
+     * @param string $dimension The dimension which contains int values where you want to do a bitwise AND check
+     *                          against.
+     * @param int    $flags     The bit's which you want to check if they are enabled in the given dimension.
+     *
+     * @return $this
+     */
+    public function orWhereFlags(string $dimension, int $flags)
+    {
+        return $this->whereFlags($dimension, $flags, 'or');
     }
 
     /**
@@ -213,20 +350,50 @@ trait HasFilter
      * });
      * ```
      *
-     * @param string|Closure $dimensionA
-     * @param string|Closure $dimensionB
+     * @param string|Closure $dimensionA The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     * @param string|Closure $dimensionB The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     * @param string         $boolean    This influences how this filter will be joined with previous added filters.
+     *                                   Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                   "and".
      *
      * @return $this
-     * @throws InvalidArgumentException
      */
-    public function whereNotColumn($dimensionA, $dimensionB)
+    public function whereNotColumn($dimensionA, $dimensionB, string $boolean = 'and')
     {
         $filter = new ColumnComparisonFilter(
             $this->columnCompareDimension($dimensionA),
             $this->columnCompareDimension($dimensionB)
         );
 
-        return $this->where(new NotFilter($filter));
+        return $this->where(new NotFilter($filter), null, null, null, $boolean);
+    }
+
+    /**
+     * Filter records where dimensionA is NOT equal to dimensionB.
+     * You can either supply a string or a Closure. The Closure will receive a DimensionBuilder object, which allows
+     * you to select a dimension and apply extraction functions if needed.
+     *
+     * Example:
+     * ```php
+     * $builder->orWhereNotColumn('initials', function(DimensionBuilder $dimensionBuilder) {
+     *   $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
+     *     $extractionBuilder->substring(0, 1);
+     *   });
+     * });
+     * ```
+     *
+     * @param string|Closure $dimensionA The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     * @param string|Closure $dimensionB The dimension which you want to compare, or a Closure which will receive a
+     *                                   DimensionBuilder which allows you to select a dimension in a more advance way.
+     *
+     * @return $this
+     */
+    public function orWhereNotColumn($dimensionA, $dimensionB)
+    {
+        return $this->whereNotColumn($dimensionA, $dimensionB, 'or');
     }
 
     /**
@@ -238,15 +405,20 @@ trait HasFilter
      * WHERE dimension => $minValue AND dimension <= $maxValue
      * ```
      *
-     * @param string        $dimension
-     * @param string|int    $minValue
-     * @param string|int    $maxValue
-     * @param \Closure|null $extraction
-     * @param null|string   $ordering            Specifies the sorting order to use when comparing values against the
-     *                                           between filter. Can be one of the following values: "lexicographic",
-     *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
-     *                                           more details. By default it will be "numeric" if the values are
-     *                                           numeric, otherwise it will be "lexicographic"
+     * @param string        $dimension   The dimension which you want to filter
+     * @param string|int    $minValue    The minimum value where the dimension should match. It should be equal or
+     *                                   greater than this value.
+     * @param string|int    $maxValue    The maximum value where the dimension should match. It should be less than
+     *                                   this value.
+     * @param \Closure|null $extraction  Extraction function to extract a different value from the dimension.
+     * @param null|string   $ordering    Specifies the sorting order to use when comparing values against the
+     *                                   between filter. Can be one of the following values: "lexicographic",
+     *                                   "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                   more details. By default it will be "numeric" if the values are
+     *                                   numeric, otherwise it will be "lexicographic"
+     * @param string        $boolean     This influences how this filter will be joined with previous added filters.
+     *                                   Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                   "and".
      *
      * @return $this
      */
@@ -255,11 +427,47 @@ trait HasFilter
         $minValue,
         $maxValue,
         Closure $extraction = null,
-        string $ordering = null
+        string $ordering = null,
+        string $boolean = 'and'
     ) {
         $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
-        return $this->where($filter);
+        return $this->where($filter, null, null, null, $boolean);
+    }
+
+    /**
+     * This filter will select records where the given dimension is greater than or equal to the given minValue, and
+     * less than or equal to the given $maxValue.
+     *
+     * This method will join previous added filters with an "or" instead of an "and".
+     *
+     * So in SQL syntax, this would be:
+     * ```
+     * WHERE (dimension => $minValue AND dimension <= $maxValue) or .... (other filters here)
+     * ```
+     *
+     * @param string        $dimension   The dimension which you want to filter
+     * @param string|int    $minValue    The minimum value where the dimension should match. It should be equal or
+     *                                   greater than this value.
+     * @param string|int    $maxValue    The maximum value where the dimension should match. It should be less than
+     *                                   this value.
+     * @param \Closure|null $extraction  Extraction function to extract a different value from the dimension.
+     * @param null|string   $ordering    Specifies the sorting order to use when comparing values against the
+     *                                   between filter. Can be one of the following values: "lexicographic",
+     *                                   "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                   more details. By default it will be "numeric" if the values are
+     *                                   numeric, otherwise it will be "lexicographic"
+     *
+     * @return $this
+     */
+    public function orWhereBetween(
+        string $dimension,
+        $minValue,
+        $maxValue,
+        Closure $extraction = null,
+        string $ordering = null
+    ) {
+        return $this->whereBetween($dimension, $minValue, $maxValue, $extraction, $ordering, 'or');
     }
 
     /**
@@ -270,15 +478,20 @@ trait HasFilter
      * WHERE dimension < $minValue AND dimension > $maxValue
      * ```
      *
-     * @param string        $dimension
-     * @param string|int    $minValue
-     * @param string|int    $maxValue
-     * @param \Closure|null $extraction
-     * @param null|string   $ordering            Specifies the sorting order to use when comparing values against the
-     *                                           between filter. Can be one of the following values: "lexicographic",
-     *                                           "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
-     *                                           more details. By default it will be "numeric" if the values are
-     *                                           numeric, otherwise it will be "lexicographic"
+     * @param string        $dimension   The dimension which you want to filter
+     * @param string|int    $minValue    The minimum value where the dimension should NOT match. It should be equal or
+     *                                   greater than this value.
+     * @param string|int    $maxValue    The maximum value where the dimension should NOT match. It should be less than
+     *                                   this value.
+     * @param \Closure|null $extraction  Extraction function to extract a different value from the dimension.
+     * @param null|string   $ordering    Specifies the sorting order to use when comparing values against the
+     *                                   between filter. Can be one of the following values: "lexicographic",
+     *                                   "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                   more details. By default it will be "numeric" if the values are
+     *                                   numeric, otherwise it will be "lexicographic"
+     * @param string        $boolean     This influences how this filter will be joined with previous added filters.
+     *                                   Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                   "and".
      *
      * @return $this
      */
@@ -287,31 +500,83 @@ trait HasFilter
         $minValue,
         $maxValue,
         Closure $extraction = null,
-        string $ordering = null
+        string $ordering = null,
+        string $boolean = 'and'
     ) {
         $filter = new BetweenFilter($dimension, $minValue, $maxValue, $ordering, $this->getExtraction($extraction));
 
-        return $this->where(new NotFilter($filter));
+        return $this->where(new NotFilter($filter), null, null, null, $boolean);
+    }
+
+    /**
+     * This filter will select records where the given dimension is NOT between the given min and max value.
+     *
+     * So in SQL syntax, this would be:
+     * ```
+     * WHERE (dimension < $minValue AND dimension > $maxValue) or  .... (other filters here)
+     * ```
+     *
+     * @param string        $dimension   The dimension which you want to filter
+     * @param string|int    $minValue    The minimum value where the dimension should NOT match. It should be equal or
+     *                                   greater than this value.
+     * @param string|int    $maxValue    The maximum value where the dimension should NOT match. It should be less than
+     *                                   this value.
+     * @param \Closure|null $extraction  Extraction function to extract a different value from the dimension.
+     * @param null|string   $ordering    Specifies the sorting order to use when comparing values against the
+     *                                   between filter. Can be one of the following values: "lexicographic",
+     *                                   "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
+     *                                   more details. By default it will be "numeric" if the values are
+     *                                   numeric, otherwise it will be "lexicographic"
+     *
+     * @return $this
+     */
+    public function orWhereNotBetween(
+        string $dimension,
+        $minValue,
+        $maxValue,
+        Closure $extraction = null,
+        string $ordering = null
+    ) {
+        return $this->whereNotBetween($dimension, $minValue, $maxValue, $extraction, $ordering, 'or');
     }
 
     /**
      * Filter records where the given dimension NOT exists in the given list of items
      *
-     * @param string        $dimension
-     * @param array         $items
-     * @param \Closure|null $extraction
+     * @param string        $dimension  The dimension which you want to filter
+     * @param array         $items      A list of values. We will return records where the dimension is NOT in this
+     *                                  list.
+     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
+     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
+     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                  "and".
      *
      * @return $this
      */
-    public function whereNotIn(string $dimension, array $items, Closure $extraction = null)
+    public function whereNotIn(string $dimension, array $items, Closure $extraction = null, string $boolean = 'and')
     {
         $filter = new NotFilter(new InFilter($dimension, $items, $this->getExtraction($extraction)));
 
-        return $this->where($filter);
+        return $this->where($filter, null, null, null, $boolean);
     }
 
     /**
-     * Filter on an dimension where the value exists in the given intervals array.
+     * Filter records where the given dimension NOT exists in the given list of items
+     *
+     * @param string        $dimension  The dimension which you want to filter
+     * @param array         $items      A list of values. We will return records where the dimension is NOT in this
+     *                                  list.
+     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
+     *
+     * @return $this
+     */
+    public function orWhereNotIn(string $dimension, array $items, Closure $extraction = null)
+    {
+        return $this->whereNotIn($dimension, $items, $extraction, 'or');
+    }
+
+    /**
+     * Filter on an dimension where the value does NOT exists in the given intervals array.
      *
      * The intervals array can contain the following:
      * - Only 2 elements, start and stop.
@@ -325,21 +590,54 @@ trait HasFilter
      * [['now', 'now + 1 hour'], ['tomorrow', 'tomorrow + 1 hour']]
      * ['2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z']
      *
-     * @param string        $dimension
-     * @param array         $intervals
-     * @param \Closure|null $extraction
+     * @param string        $dimension  The dimension which you want to filter
+     * @param array         $intervals  The interval which you do not want to match. See above for more info.
+     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
+     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
+     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                  "and".
      *
      * @return $this
      */
-    public function whereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
-    {
+    public function whereNotInterval(
+        string $dimension,
+        array $intervals,
+        Closure $extraction = null,
+        string $boolean = 'and'
+    ) {
         $filter = new IntervalFilter(
             $dimension,
             $this->normalizeIntervals($intervals),
             $this->getExtraction($extraction)
         );
 
-        return $this->where(new NotFilter($filter));
+        return $this->where(new NotFilter($filter), null, null, null, $boolean);
+    }
+
+    /**
+     * Filter on an dimension where the value does NOT exists in the given intervals array.
+     *
+     * The intervals array can contain the following:
+     * - Only 2 elements, start and stop.
+     * - an Interval object
+     * - an raw interval string as used in druid. For example: 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     * - an array which each contain 2 elements, a start and stop date. These can be an DateTime object, a unix
+     * timestamp or anything which can be parsed by DateTime::__construct
+     *
+     * So valid are:
+     * ['now', 'tomorrow']
+     * [['now', 'now + 1 hour'], ['tomorrow', 'tomorrow + 1 hour']]
+     * ['2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z']
+     *
+     * @param string        $dimension  The dimension which you want to filter
+     * @param array         $intervals  The interval which you do not want to match. See above for more info.
+     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
+     *
+     * @return $this
+     */
+    public function orWhereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
+    {
+        return $this->whereNotInterval($dimension, $intervals, $extraction, 'or');
     }
 
     /**
@@ -351,21 +649,48 @@ trait HasFilter
      * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
      *   or anything which can be parsed by DateTime::__construct
      *
-     * @param string        $dimension
-     * @param array         $intervals
-     * @param \Closure|null $extraction
+     * @param string        $dimension  The dimension which you want to filter
+     * @param array         $intervals  The interval which you want to match. See above for more info.
+     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
+     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
+     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                  "and".
      *
      * @return $this
      */
-    public function whereInterval(string $dimension, array $intervals, Closure $extraction = null)
-    {
+    public function whereInterval(
+        string $dimension,
+        array $intervals,
+        Closure $extraction = null,
+        string $boolean = 'and'
+    ) {
         $filter = new IntervalFilter(
             $dimension,
             $this->normalizeIntervals($intervals),
             $this->getExtraction($extraction)
         );
 
-        return $this->where($filter);
+        return $this->where($filter, null, null, null, $boolean);
+    }
+
+    /**
+     * Filter on an dimension where the value exists in the given intervals array.
+     *
+     * The intervals array can contain the following:
+     * - an Interval object
+     * - an raw interval string as used in druid. For example: 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
+     * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
+     *   or anything which can be parsed by DateTime::__construct
+     *
+     * @param string        $dimension  The dimension which you want to filter
+     * @param array         $intervals  The interval which you want to match. See above for more info.
+     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
+     *
+     * @return $this
+     */
+    public function orWhereInterval(string $dimension, array $intervals, Closure $extraction = null)
+    {
+        return $this->whereInterval($dimension, $intervals, $extraction, 'or');
     }
 
     /**
