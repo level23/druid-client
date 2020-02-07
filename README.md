@@ -957,7 +957,7 @@ Please note: use `distinctCount()` when the Theta Sketch extension is available,
 See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
 
-This page also explains the usage of hyperUniqe very well:
+This page also explains the usage of hyperUnique very well:
 https://cleanprogrammer.net/getting-unique-counts-from-druid-using-hyperloglog/
 
 Example: 
@@ -972,7 +972,7 @@ The `hyperUnique()` aggregation method has the following parameters:
 | string   | Required              | `$metric`             | "dimension" |  The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                  |
 | string   | Required              | `$as`                 | "myField"   | The name which will be used in the output result                                                                                                                                                                     |
 | bool     | Optional              | `$round`              | true        | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
-| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll ise xpected).                                                        | 
+| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll is expected).                                                        | 
 
 
 #### `cardinality()`
@@ -1374,7 +1374,7 @@ Example:
 ```php
 // Match any country like %Nether%
 $builder->where('country_id', 'like', '%Nether%', function (ExtractionBuilder $extractionBuilder) {
-    // Extract the country name by it's id by usin this lookup function. 
+    // Extract the country name by it's id by using this lookup function. 
     $extractionBuilder->lookup('country_name_by_id');
 });
 ```
@@ -1749,7 +1749,7 @@ This would be the same as an SQL equivalent:
 
 As last, you can also supply a raw filter or having-filter object. For example:
 ```php
-// exampe using a having filter
+// example using a having filter
 $builder->having( new GreaterThanHavingFilter('totalViews', 15) );
 
 // example using a "normal" filter.
@@ -2214,9 +2214,9 @@ $response = $client->query('wikipedia')
 
 The `searchRegex()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                |
-|----------|-----------------------|------------------|-------------|----------------------------------------------------------------|
-| string   | Required              | `$pattern`       | "^Wiki"     | A regular expression where the dimension should match agains.  |
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                 |
+|----------|-----------------------|------------------|-------------|-----------------------------------------------------------------|
+| string   | Required              | `$pattern`       | "^Wiki"     | A regular expression where the dimension should match against.  |
 
 
 ## QueryBuilder: Execute The Query
@@ -2409,7 +2409,7 @@ $builder = $client->query('wikipedia')
 // Execute the query.
 $response = $builder->selectQuery($context);
 
-// ... Use your respone (page 1) here! ...
+// ... Use your response (page 1) here! ...
 
 // echo "Identifier for page 2: " . var_export($response->pagingIdentifier(), true) . "\n\n";
 
