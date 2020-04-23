@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Collections;
 
 use Mockery;
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Transforms\TransformInterface;
 use Level23\Druid\Transforms\ExpressionTransform;
 use Level23\Druid\Collections\TransformCollection;

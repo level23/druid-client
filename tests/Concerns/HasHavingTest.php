@@ -5,9 +5,9 @@ namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
 use Exception;
-use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterInterface;
@@ -253,7 +253,7 @@ class HasHavingTest extends TestCase
         }
 
         if ($filter instanceof AndHavingFilter) {
-            $this->assertEquals(3, count($filter->toArray()['havingSpecs']));
+            $this->assertCount(3, $filter->toArray()['havingSpecs']);
         }
     }
 
@@ -268,7 +268,7 @@ class HasHavingTest extends TestCase
             $this->assertEquals(OrHavingFilter::class, get_class($filter));
         }
         if ($filter instanceof OrHavingFilter) {
-            $this->assertEquals(3, count($filter->toArray()['havingSpecs']));
+            $this->assertCount(3, $filter->toArray()['havingSpecs']);
         }
     }
 
@@ -312,7 +312,7 @@ class HasHavingTest extends TestCase
 
         $having = $this->builder->getHaving();
         if ($having instanceof AndHavingFilter) {
-            $this->assertEquals(3, count($having->getHavingFilters()));
+            $this->assertCount(3, $having->getHavingFilters());
         }
     }
 

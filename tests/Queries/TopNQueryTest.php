@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Queries;
 
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Dimensions\Dimension;

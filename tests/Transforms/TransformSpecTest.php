@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Transforms;
 
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Transforms\ExpressionTransform;

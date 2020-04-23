@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Filters;
 
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Extractions\LookupExtraction;

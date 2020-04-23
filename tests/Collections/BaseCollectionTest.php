@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Collections;
 
 use ArrayIterator;
-use tests\TestCase;
 use InvalidArgumentException;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Collections\AggregationCollection;
 

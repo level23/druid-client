@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Interval;
 
 use DateTime;
-use tests\TestCase;
 use InvalidArgumentException;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Interval\Interval;
 
 class IntervalTest extends TestCase

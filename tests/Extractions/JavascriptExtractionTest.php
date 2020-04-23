@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Extractions;
 
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Extractions\JavascriptExtraction;
 
 class JavascriptExtractionTest extends TestCase
@@ -11,6 +11,8 @@ class JavascriptExtractionTest extends TestCase
     /**
      * @testWith [true]
      *           [false]
+     *
+     * @param bool $injective
      */
     public function testExtractionFunction(bool $injective)
     {

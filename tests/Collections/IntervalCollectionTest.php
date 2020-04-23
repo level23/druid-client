@@ -6,7 +6,7 @@ namespace tests\Level23\Druid\Collections;
 
 use Mockery;
 use DateTime;
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Collections\IntervalCollection;

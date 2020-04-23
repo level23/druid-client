@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Limits;
 
-use tests\TestCase;
 use Level23\Druid\Limits\Limit;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\OrderByDirection;
@@ -49,7 +49,7 @@ class LimitTest extends TestCase
 
         $collection = $limit->getOrderByCollection();
         $this->assertInstanceOf(OrderByCollection::class, $collection);
-        $this->assertEquals(1, count($collection));
+        $this->assertCount(1, $collection);
 
         $this->assertEquals($obj, $collection[0]);
     }
@@ -59,7 +59,7 @@ class LimitTest extends TestCase
         $limit = new Limit(2829);
 
         $this->assertInstanceOf(OrderByCollection::class, $limit->getOrderByCollection());
-        $this->assertEquals(0, count($limit->getOrderByCollection()));
+        $this->assertCount(0, $limit->getOrderByCollection());
     }
 
     public function testLimitWithCollection()

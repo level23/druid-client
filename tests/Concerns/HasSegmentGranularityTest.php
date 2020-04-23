@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use tests\TestCase;
 use Level23\Druid\DruidClient;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 
 class HasSegmentGranularityTest extends TestCase

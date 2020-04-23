@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Concerns;
 
 use DateTime;
-use tests\TestCase;
 use Level23\Druid\DruidClient;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 

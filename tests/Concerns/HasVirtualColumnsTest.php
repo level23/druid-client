@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Concerns;
 
-use tests\TestCase;
 use Level23\Druid\DruidClient;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 

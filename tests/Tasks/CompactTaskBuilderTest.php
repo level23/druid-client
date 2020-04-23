@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Tasks;
 
 use Mockery;
-use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Context\TaskContext;
@@ -17,6 +17,9 @@ use Level23\Druid\TuningConfig\TuningConfig;
 
 class CompactTaskBuilderTest extends TestCase
 {
+    /**
+     * @throws \ReflectionException
+     */
     public function testBuilder()
     {
         $client  = new DruidClient([]);
@@ -132,7 +135,7 @@ class CompactTaskBuilderTest extends TestCase
         $mock->setName(CompactTask::class);
         $mock->addTarget(TaskInterface::class);
 
-        $task = Mockery::mock($mock)
+        Mockery::mock($mock)
             ->shouldReceive('__construct')
             ->once()
             ->with(

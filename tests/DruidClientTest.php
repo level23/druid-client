@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace tests\Level23\Druid;
 
 use Mockery;
-use tests\TestCase;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
@@ -308,7 +307,7 @@ class DruidClientTest extends TestCase
     public function testExecuteDruidQuery()
     {
         $client = $this->mockDruidClient();
-        $client->makePartial();;
+        $client->makePartial();
 
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);

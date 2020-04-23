@@ -3,18 +3,12 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\SearchFilters;
 
-use tests\TestCase;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\SearchFilters\RegexSearchFilter;
 
 class RegexSearchFilterTest extends TestCase
 {
-    /**
-     * @testWith [true]
-     *           [false]
-     *
-     * @param bool $caseSensitive
-     */
-    public function testSearchFilter(bool $caseSensitive)
+    public function testSearchFilter()
     {
         $filter = new RegexSearchFilter('^wiki');
 

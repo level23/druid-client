@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Context;
 
 use Exception;
-use tests\TestCase;
 use ReflectionMethod;
 use InvalidArgumentException;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\TopNQueryContext;

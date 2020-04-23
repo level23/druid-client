@@ -4,11 +4,11 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Concerns;
 
 use Mockery;
-use tests\TestCase;
 use Hamcrest\Core\IsEqual;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
@@ -48,7 +48,7 @@ class HasAggregationsTest extends TestCase
 
         $aggregations = $this->builder->getAggregations();
 
-        $this->assertEquals(2, count($aggregations));
+        $this->assertCount(2, $aggregations);
 
         $this->assertInstanceOf(SumAggregator::class, $aggregations[0]);
         $this->assertInstanceOf(FirstAggregator::class, $aggregations[1]);

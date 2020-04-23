@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Queries;
 
-use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\Limits\Limit;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Dimensions\Dimension;

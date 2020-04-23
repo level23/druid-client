@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Context;
+namespace tests\Level23\Druid\TuningConfig;
 
 use Exception;
-use tests\TestCase;
 use ReflectionMethod;
 use InvalidArgumentException;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\TuningConfig\TuningConfig;
 
 class TuningConfigTest extends TestCase

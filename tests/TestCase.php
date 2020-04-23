@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace tests;
+namespace tests\Level23\Druid;
 
 use Mockery;
 use ReflectionClass;

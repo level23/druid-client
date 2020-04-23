@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace tests\Level23\Druid\Tasks;
 
-use tests\TestCase;
 use InvalidArgumentException;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Context\TaskContext;

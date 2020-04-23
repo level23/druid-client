@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace tests\Level23\Druid\Tasks;
 
 use Mockery;
-use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use tests\Level23\Druid\TestCase;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
 use GuzzleHttp\Client as GuzzleClient;
@@ -34,13 +34,16 @@ class TaskBuilderTest extends TestCase
      */
     public function testTaskId()
     {
-        $builder = new CompactTaskBuilder($this->client, 'wikipedia');
+        $builder  = new CompactTaskBuilder($this->client, 'wikipedia');
         $response = $builder->taskId('myTaskId');
 
         $this->assertEquals('myTaskId', $this->getProperty($builder, 'taskId'));
         $this->assertEquals($builder, $response);
     }
 
+    /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
     public function testExecute()
     {
         $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
