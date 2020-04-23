@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Concerns;
+namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
 use ArrayObject;
-use tests\TestCase;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\QueryBuilder;
@@ -100,7 +100,7 @@ class HasDimensionsTest extends TestCase
         $collection = $this->builder->getDimensions();
 
         $this->assertIsArray($collection);
-        $this->assertEquals(1, count($collection));
+        $this->assertCount(1, $collection);
 
         /** @var \Level23\Druid\Dimensions\Dimension $dimension */
         $dimension = $collection[0];

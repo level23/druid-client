@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\HavingFilters;
+namespace Level23\Druid\Tests\HavingFilters;
 
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\HavingFilters\EqualToHavingFilter;
 
 class EqualToHavingFilterTest extends TestCase

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Tasks;
+namespace Level23\Druid\Tests\Tasks;
 
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Tasks\KillTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Context\TaskContext;
@@ -22,7 +22,6 @@ class KillTaskTest extends TestCase
     public function testTask(bool $withContext, string $taskId = null)
     {
         $dataSource = 'myPets';
-        $taskId     = 'task-1337';
         $interval   = new Interval('12-02-2019', '13-02-2019');
 
         $context = $withContext ? new TaskContext(['priority' => 75]) : null;

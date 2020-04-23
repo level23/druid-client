@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Concerns;
+namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
 use Closure;
 use DateTime;
 use Exception;
-use tests\TestCase;
 use Hamcrest\Core\IsEqual;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\AndFilter;
@@ -286,7 +286,7 @@ class HasFilterTest extends TestCase
         $filter = $this->builder->getFilter();
         if ($filter instanceof LogicalExpressionFilterInterface) {
             $this->assertEquals(AndFilter::class, get_class($filter));
-            $this->assertEquals(3, count($filter->toArray()['fields']));
+            $this->assertCount(3, $filter->toArray()['fields']);
         }
     }
 
@@ -299,7 +299,7 @@ class HasFilterTest extends TestCase
         $filter = $this->builder->getFilter();
         if ($filter instanceof LogicalExpressionFilterInterface) {
             $this->assertEquals(OrFilter::class, get_class($filter));
-            $this->assertEquals(3, count($filter->toArray()['fields']));
+            $this->assertCount(3, $filter->toArray()['fields']);
         }
     }
 
@@ -364,7 +364,7 @@ class HasFilterTest extends TestCase
 
             $filters = $filter->toArray();
 
-            $this->assertEquals(3, count($filters['fields']));
+            $this->assertCount(3, $filters['fields']);
         }
 
         $this->assertEquals($this->builder, $response);
@@ -433,6 +433,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->orWhereNotBetween('age', 18, 22, null, 'numeric');
 
         $this->assertEquals($this->builder, $response);
@@ -460,6 +461,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->whereNotBetween('age', 16, 18);
 
         $this->assertEquals($this->builder, $response);
@@ -552,6 +554,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->with(new IsInstanceOf(ColumnComparisonFilter::class));
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->whereNotColumn('dimensionA', 'dimensionB');
 
         $this->assertEquals($this->builder, $response);
@@ -567,11 +570,11 @@ class HasFilterTest extends TestCase
         $this->builder->shouldReceive('where')
             ->once()
             ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use ($extractionBuilder) {
-                $this->assertEquals($dimension, 'flags');
-                $this->assertEquals($operator, '=');
-                $this->assertEquals($flags, 33);
+                $this->assertEquals('flags', $dimension);
+                $this->assertEquals('=', $operator);
+                $this->assertEquals(33, $flags);
                 $this->assertInstanceOf(Closure::class, $extractionClosure);
-                $this->assertEquals($boolean, 'and');
+                $this->assertEquals('and', $boolean);
 
                 $extractionBuilder->shouldReceive('javascript')
                     ->once()
@@ -684,6 +687,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->orWhereNotIn('country_iso', ['nl', 'be']);
 
         $this->assertEquals($this->builder, $response);
@@ -754,6 +758,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->with(new IsInstanceOf(IntervalFilter::class));
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
 
         $this->assertEquals($this->builder, $response);
@@ -771,6 +776,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
 
         $this->assertEquals($this->builder, $response);
@@ -813,6 +819,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
+        /** @noinspection PhpDeprecationInspection */
         $response = $this->builder->whereNotIn('age', [16, 17, 18]);
 
         $this->assertEquals($this->builder, $response);

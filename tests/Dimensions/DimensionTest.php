@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Dimensions;
+namespace Level23\Druid\Tests\Dimensions;
 
-use tests\TestCase;
 use InvalidArgumentException;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Extractions\RegexExtraction;
 use Level23\Druid\Extractions\ExtractionInterface;

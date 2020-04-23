@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Collections;
+namespace Level23\Druid\Tests\Collections;
 
 use Mockery;
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\VirtualColumns\VirtualColumnInterface;

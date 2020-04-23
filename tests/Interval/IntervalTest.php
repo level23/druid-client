@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Interval;
+namespace Level23\Druid\Tests\Interval;
 
 use DateTime;
-use tests\TestCase;
 use InvalidArgumentException;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
 
 class IntervalTest extends TestCase

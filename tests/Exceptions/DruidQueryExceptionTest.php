@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Exceptions;
+namespace Level23\Druid\Tests\Exceptions;
 
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Exceptions\QueryResponseException;

@@ -1,9 +1,9 @@
 <?php
 
-namespace tests\Filters;
+namespace Level23\Druid\Tests\Filters;
 
-use tests\TestCase;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\FilterBuilder;
 
 class CombinationsTest extends TestCase

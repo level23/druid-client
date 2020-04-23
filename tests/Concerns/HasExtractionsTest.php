@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Concerns;
+namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\RegexExtraction;
 use Level23\Druid\Extractions\UpperExtraction;
@@ -269,7 +269,7 @@ class HasExtractionsTest extends TestCase
 
         if ($extraction instanceof CascadeExtraction) {
             $array = $extraction->toArray();
-            $this->assertEquals(2, count($array['extractionFns']));
+            $this->assertCount(2, $array['extractionFns']);
         }
 
         $builder->timeFormat();
@@ -279,7 +279,7 @@ class HasExtractionsTest extends TestCase
 
         if ($extraction instanceof CascadeExtraction) {
             $array = $extraction->toArray();
-            $this->assertEquals(3, count($array['extractionFns']));
+            $this->assertCount(3, $array['extractionFns']);
         }
     }
 

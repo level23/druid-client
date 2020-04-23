@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Transforms;
+namespace Level23\Druid\Tests\Transforms;
 
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Transforms\ExpressionTransform;

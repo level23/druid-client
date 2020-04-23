@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\PostAggregations;
+namespace Level23\Druid\Tests\PostAggregations;
 
-use tests\TestCase;
 use InvalidArgumentException;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
@@ -74,7 +74,7 @@ class ArithmeticPostAggregatorTest extends TestCase
 
         new ArithmeticPostAggregator(
             'average',
-            'devide',
+            'divide',
             $collections
         );
     }

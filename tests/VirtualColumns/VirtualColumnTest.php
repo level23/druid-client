@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\VirtualColumns;
+namespace Level23\Druid\Tests\VirtualColumns;
 
-use tests\TestCase;
 use InvalidArgumentException;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 
 class VirtualColumnTest extends TestCase

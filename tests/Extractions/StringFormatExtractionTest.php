@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Extractions;
+namespace Level23\Druid\Tests\Extractions;
 
-use tests\TestCase;
 use InvalidArgumentException;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\StringFormatExtraction;
 

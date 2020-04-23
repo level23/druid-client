@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Tasks;
+namespace Level23\Druid\Tests\Tasks;
 
 use Mockery;
-use tests\TestCase;
 use Hamcrest\Type\IsArray;
 use InvalidArgumentException;
 use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Tasks\TaskInterface;
@@ -106,6 +106,7 @@ class IndexTaskBuilderTest extends TestCase
 
         $this->assertEquals('humans', $this->getProperty($builder, 'fromDataSource'));
 
+        /** @noinspection PhpDeprecationInspection */
         $builder->setFromDataSource('wikipedia');
 
         $this->assertEquals('wikipedia', $this->getProperty($builder, 'fromDataSource'));

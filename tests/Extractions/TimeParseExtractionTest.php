@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Extractions;
+namespace Level23\Druid\Tests\Extractions;
 
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Extractions\TimeParseExtraction;
 
 class TimeParseExtractionTest extends TestCase

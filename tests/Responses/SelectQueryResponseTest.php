@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Responses;
+namespace Level23\Druid\Tests\Responses;
 
-use tests\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Responses\SelectQueryResponse;
 
 class SelectQueryResponseTest extends TestCase
@@ -72,6 +72,7 @@ class SelectQueryResponseTest extends TestCase
         $this->assertEquals($rawResponse, $response->raw());
 
         $this->assertEquals($response->pagingIdentifier(), $rawResponse[0]['result']['pagingIdentifiers']);
+        /** @noinspection PhpDeprecationInspection */
         $this->assertEquals($response->getPagingIdentifier(), $rawResponse[0]['result']['pagingIdentifiers']);
 
         $this->assertEquals([

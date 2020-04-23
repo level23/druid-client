@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Queries;
+namespace Level23\Druid\Tests\Queries;
 
 use Mockery;
-use tests\TestCase;
 use Hamcrest\Core\IsEqual;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Queries\ScanQuery;
 use Level23\Druid\Interval\Interval;
