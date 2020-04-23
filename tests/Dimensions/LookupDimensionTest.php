@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Dimensions;
+namespace Level23\Druid\Tests\Dimensions;
 
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Dimensions\LookupDimension;
 
 class LookupDimensionTest extends TestCase

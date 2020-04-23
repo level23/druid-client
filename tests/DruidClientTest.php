@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid;
+namespace Level23\Druid\Tests;
 
 use Mockery;
 use Psr\Log\LoggerInterface;

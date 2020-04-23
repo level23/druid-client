@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Tasks;
+namespace Level23\Druid\Tests\Tasks;
 
 use Mockery;
 use Hamcrest\Type\IsArray;
@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Tasks\TaskInterface;

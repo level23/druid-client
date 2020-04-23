@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\PostAggregations;
+namespace Level23\Druid\Tests\PostAggregations;
 
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 
 class FieldAccessPostAggregatorTest extends TestCase

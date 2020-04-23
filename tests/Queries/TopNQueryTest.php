@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Queries;
+namespace Level23\Druid\Tests\Queries;
 
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Dimensions\Dimension;

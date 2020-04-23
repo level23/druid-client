@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Concerns;
+namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\Limit;
 use Hamcrest\Core\IsInstanceOf;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Queries\QueryBuilder;

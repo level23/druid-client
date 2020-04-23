@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Collections;
+namespace Level23\Druid\Tests\Collections;
 
 use Mockery;
 use DateTime;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Collections\IntervalCollection;

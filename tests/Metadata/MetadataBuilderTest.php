@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Metadata;
+namespace Level23\Druid\Tests\Metadata;
 
 use Mockery;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Metadata\Structure;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Queries\QueryBuilder;

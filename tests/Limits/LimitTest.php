@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Limits;
+namespace Level23\Druid\Tests\Limits;
 
 use Level23\Druid\Limits\Limit;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\OrderByDirection;

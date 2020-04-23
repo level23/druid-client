@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\SearchFilters;
+namespace Level23\Druid\Tests\SearchFilters;
 
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\SearchFilters\FragmentSearchFilter;
 
 class FragmentSearchFilterTest extends TestCase

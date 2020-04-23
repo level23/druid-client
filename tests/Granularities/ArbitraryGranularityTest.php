@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Granularities;
+namespace Level23\Druid\Tests\Granularities;
 
 use InvalidArgumentException;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Granularities\ArbitraryGranularity;

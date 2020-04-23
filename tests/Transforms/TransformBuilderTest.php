@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Transforms;
+namespace Level23\Druid\Tests\Transforms;
 
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Transforms\TransformBuilder;
 use Level23\Druid\Transforms\ExpressionTransform;
 

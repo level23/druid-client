@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Filters;
+namespace Level23\Druid\Tests\Filters;
 
 use InvalidArgumentException;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Extractions\LookupExtraction;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Responses;
+namespace Level23\Druid\Tests\Responses;
 
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Responses\SelectQueryResponse;
 
 class SelectQueryResponseTest extends TestCase

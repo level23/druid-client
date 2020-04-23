@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Concerns;
+namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
 use ArrayObject;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\QueryBuilder;

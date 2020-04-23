@@ -43,7 +43,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "tests\\Level23\\Druid\\": "tests/"
+      "Level23\\Druid\\Tests\\": "tests/"
     }
   },
   "config": {

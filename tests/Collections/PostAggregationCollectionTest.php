@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Collections;
+namespace Level23\Druid\Tests\Collections;
 
 use Mockery;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\PostAggregatorInterface;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;

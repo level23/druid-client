@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace tests\Level23\Druid\Concerns;
+namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
 use Hamcrest\Core\IsEqual;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
-use tests\Level23\Druid\TestCase;
+use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
