@@ -31,7 +31,7 @@
     "php-coveralls/php-coveralls": "^2.1",
     "phpstan/phpstan": "^0.12",
     "phpstan/phpstan-mockery": "^0.12",
-    "phpunit/phpunit": "^9"
+    "phpunit/phpunit": "^8"
   },
   "suggest": {
     "psr/log": "Required for using the log handler"
