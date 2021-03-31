@@ -409,8 +409,7 @@ The start date should be before the end date. If not, an `InvalidArgumentExcepti
 
 The `interval()` method has the following parameters:
 
-| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **
-Description**                                                                                                                                                                    |
+| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                    |
 |---------------------------|-----------------------|--------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
 | /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
@@ -461,13 +460,11 @@ $builder
 
 The `orderBy()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**              | **
-Description**                                                                                                        | |
-|----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|---|
-| string | Required | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order
-by | | | string | Optional | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use
-an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" | | | string | Optional | `$sortingOrder`
-| `SortingOrder::STRLEN`   | This defines how the sorting is executed. | |
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                                        |   |   |
+|----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|---|---|
+| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                                     |   |   |
+| string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |   |   |
+| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                              |   |   |
 
 See for more information about SortingOrders this
 page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
