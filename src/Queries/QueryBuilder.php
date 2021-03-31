@@ -230,7 +230,7 @@ class QueryBuilder
         /**
          * If our version supports this, let's use the new and improved bitwiseAnd function!
          */
-        $version = $this->client->config('version');
+        $version = (string)$this->client->config('version');
         if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
 
             $placeholder          = 'v' . count($this->placeholders);
