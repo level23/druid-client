@@ -199,8 +199,8 @@ class DruidClient
             return $this->parseResponse($response, $data);
         } catch (ServerException $exception) {
 
-            $configRetries = $this->config('retries', 2);
-            $configDelay   = $this->config('retry_delay_ms', 500);
+            $configRetries = intval($this->config('retries', 2));
+            $configDelay   = intval($this->config('retry_delay_ms', 500));
             // Should we attempt a retry?
             if ($retries++ < $configRetries) {
                 $this->log(
@@ -216,10 +216,6 @@ class DruidClient
             }
 
             $response = $exception->getResponse();
-
-            if (!$response instanceof ResponseInterface) {
-                throw $exception;
-            }
 
             // Bad gateway, this happens for instance when all brokers are unavailable.
             if ($response->getStatusCode() == 502) {
