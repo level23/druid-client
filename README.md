@@ -63,6 +63,7 @@ DRUID_RETRIES=2
 DRUID_RETRY_DELAY_MS=500
 DRUID_TIMEOUT=60
 DRUID_CONNECT_TIMEOUT=10
+DRUID_VERSION=0.20.2
 ```
 
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
@@ -264,15 +265,23 @@ configuration of your instance.
 
 The `DruidClient` constructor has the following arguments:
 
-| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **Description**                                                                                                                         |
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **
+Description**                                                                                                                         |
 |---------------------|-----------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
 | `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
 
-By default we will use a guzzle client for handing the connection between your application and the druid server. 
-If you want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
+For a complete list of configuration settings take a look at the default values which are defined in the
+`$config` property in the DruidClient class.
+
+This class supports some newer functions of Druid. To make sure your server supports these functions, it is recommended
+to supply the `version` config setting.
+
+By default, we will use a guzzle client for handing the connection between your application and the druid server. If you
+want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
 
 Example of using a custom guzzle client:
+
 ```php
 
 // Create a custom guzzle client which uses an http proxy.
@@ -1282,17 +1291,19 @@ $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-20
 
 Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
 
-
 #### `whereFlags`
 
-This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND 
-comparison. 
+This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND
+comparison.
 
-Druid has by itself no support for bitwise comparisons. We have already created a feature request for support for this:
-https://github.com/apache/incubator-druid/issues/8560
+Support for 64 bit integers are supported.
 
-The only way of doing this now is by letting Javascript handling this. This means that javascript support is thus 
-required for this filter to work. 
+Druid has support for bitwise flags since version 0.20.2. Before that, we have build our own variant, but then
+javascript support is required.
+
+JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide for
+guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+https://druid.apache.org/docs/latest/development/javascript.html
 
 Example:
 
@@ -1300,10 +1311,6 @@ Example:
 // Select records where the first and third bit are enabled (1 and 4)
 $builder->whereFlags('flags', (1 | 4));
 ```
-
-**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming 
-guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it: 
-https://druid.apache.org/docs/latest/development/javascript.html
 
 This method has the following arguments:
 

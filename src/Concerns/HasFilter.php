@@ -168,8 +168,12 @@ trait HasFilter
 
         // Now retrieve the filter which was created and add it to our current filter set.
         $filter = $builder->getFilter();
+        if ($filter) {
+            return $this->where(new NotFilter($filter), null, null, null, $boolean);
+        }
 
-        return $this->where(new NotFilter($filter), null, null, null, $boolean);
+        // Whe no filter was given, just return.
+        return $this;
     }
 
     /**
@@ -296,80 +300,7 @@ trait HasFilter
         return $this->whereColumn($dimensionA, $dimensionB, 'or');
     }
 
-    /**
-     * Filter on records which match using a bitwise AND comparison.
-     *
-     * Due to the lack of support of a bitwise comparison by Druid, we have build our own variant.
-     * A feature request has been opened already. See: https://github.com/apache/incubator-druid/issues/8560
-     *
-     * Only records will match where the dimension contains ALL bits which are also enabled in the given $flags
-     * argument.
-     *
-     * Support for 64 bit integers are supported.
-     *
-     * NOTE:
-     * Please note that javascript support is required for this method.
-     * JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
-     * for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
-     * https://druid.apache.org/docs/latest/development/javascript.html
-     *
-     * @param string $dimension The dimension which contains int values where you want to do a bitwise AND check
-     *                          against.
-     * @param int    $flags     The bit's which you want to check if they are enabled in the given dimension.
-     * @param string $boolean   This influences how this filter will be joined with previous added filters. Should both
-     *                          filters apply ("and") or one or the other ("or") ? Default is "and".
-     *
-     * @return $this
-     */
-    public function whereFlags(string $dimension, int $flags, string $boolean = 'and')
-    {
-        return $this->where($dimension, '=', $flags, function (ExtractionBuilder $extraction) use ($flags) {
-            // Do a binary "AND" flag comparison on a 64 bit int. The result will either be the
-            // $flags, or 0 when it's bit is not set.
-            $extraction->javascript('
-                function(dimensionValue) { 
-                    var givenValue = ' . $flags . '; 
-                    var hi = 0x80000000; 
-                    var low = 0x7fffffff; 
-                    var hi1 = ~~(dimensionValue / hi); 
-                    var hi2 = ~~(givenValue / hi); 
-                    var low1 = dimensionValue & low; 
-                    var low2 = givenValue & low; 
-                    var h = hi1 & hi2; 
-                    var l = low1 & low2; 
-                    return (h*hi + l); 
-                }
-            ');
-        }, $boolean);
-    }
 
-    /**
-     * Filter on records which match using a bitwise AND comparison.
-     *
-     * Due to the lack of support of a bitwise comparison by Druid, we have build our own variant.
-     * A feature request has been opened already. See: https://github.com/apache/incubator-druid/issues/8560
-     *
-     * Only records will match where the dimension contains ALL bits which are also enabled in the given $flags
-     * argument.
-     *
-     * Support for 64 bit integers are supported.
-     *
-     * NOTE:
-     * Please note that javascript support is required for this method.
-     * JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
-     * for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
-     * https://druid.apache.org/docs/latest/development/javascript.html
-     *
-     * @param string $dimension The dimension which contains int values where you want to do a bitwise AND check
-     *                          against.
-     * @param int    $flags     The bit's which you want to check if they are enabled in the given dimension.
-     *
-     * @return $this
-     */
-    public function orWhereFlags(string $dimension, int $flags)
-    {
-        return $this->whereFlags($dimension, $flags, 'or');
-    }
 
     /**
      * Filter records where dimensionA is NOT equal to dimensionB.
@@ -745,9 +676,6 @@ trait HasFilter
      */
     protected function columnCompareDimension($dimension): DimensionInterface
     {
-        if (is_string($dimension)) {
-            return new Dimension($dimension);
-        }
         if ($dimension instanceof Closure) {
             $builder = new DimensionBuilder();
             call_user_func($dimension, $builder);
@@ -757,13 +685,10 @@ trait HasFilter
                 throw new InvalidArgumentException('Your dimension builder should select 1 dimension');
             }
 
-            /** @var \Level23\Druid\Dimensions\DimensionInterface $dimensionA */
             return $dimensions[0];
         }
 
-        throw new InvalidArgumentException(
-            'You need to supply either a string (the dimension) or a Closure which will receive a DimensionBuilder.'
-        );
+        return new Dimension($dimension);
     }
 
     /**
@@ -869,7 +794,7 @@ trait HasFilter
     /**
      * @return \Level23\Druid\Filters\FilterInterface|null
      */
-    public function getFilter()
+    public function getFilter(): ?FilterInterface
     {
         return $this->filter;
     }

@@ -8,6 +8,9 @@ use ReflectionException;
 
 abstract class Enum
 {
+    /**
+     * @var null|array
+     */
     protected static $constCacheArray = null;
 
     /**

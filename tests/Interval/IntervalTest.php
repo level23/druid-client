@@ -56,8 +56,8 @@ class IntervalTest extends TestCase
             [$start, $stop] = explode('/', $start);
         }
 
-        $startObj = new DateTime($start);
-        $stopObj  = new DateTime($stop);
+        $startObj = new DateTime((string)$start);
+        $stopObj  = new DateTime((string)$stop);
 
         $this->assertEquals($interval->getStart()->format($format), $startObj->format($format));
         $this->assertEquals($interval->getStop()->format($format), $stopObj->format($format));

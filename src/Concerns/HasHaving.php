@@ -90,9 +90,6 @@ trait HasHaving
             call_user_func($havingOrMetricOrClosure, $obj);
 
             // Now retrieve the having filter which was created and add it to our current filter set.
-            /**
-             * @var HavingFilterInterface $filter
-             */
             $having = $obj->getHaving();
         }
 

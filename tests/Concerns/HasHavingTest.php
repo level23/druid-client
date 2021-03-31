@@ -220,7 +220,6 @@ class HasHavingTest extends TestCase
 
             default:
                 throw new Exception('Unknown operator ' . $testingOperator);
-                break;
         }
 
         $response = $this->builder->having($field, $operator, $value, $boolean);

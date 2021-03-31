@@ -186,7 +186,6 @@ class IndexTaskBuilder extends TaskBuilder
             );
         }
 
-        $firehose = null;
         switch ($this->firehoseType) {
             case IngestSegmentFirehose::class:
                 $fromDataSource = $this->fromDataSource ?? $this->dataSource;

@@ -33,7 +33,7 @@ class DruidClient
     protected $logger = null;
 
     /**
-     * @var array
+     * @var array<string, int|string|null>
      */
     protected $config = [
 
@@ -85,6 +85,13 @@ class DruidClient
          * Set to 0 to disable they delay between retries.
          */
         'retry_delay_ms'  => 500,
+
+        /**
+         * Supply the druid version which you are sending your queries to.
+         * Based on this druid version, we can enable / disable certain new features if your
+         * server supports this.
+         */
+        'version'         => null,
     ];
 
     /**
@@ -319,7 +326,7 @@ class DruidClient
     {
         $contents = $response->getBody()->getContents();
         try {
-            $response = \GuzzleHttp\json_decode($contents, true) ?: [];
+            $row = \GuzzleHttp\json_decode($contents, true) ?: [];
         } catch (InvalidArgumentException $exception) {
             $this->log('We failed to decode druid response. ');
             $this->log('Status code: ' . $response->getStatusCode());
@@ -333,7 +340,7 @@ class DruidClient
             );
         }
 
-        return $response;
+        return (array)$row;
     }
 
     /**

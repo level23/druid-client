@@ -417,7 +417,9 @@ class DruidClientTest extends TestCase
                     throw new ServerException(
                         'Unknown exception',
                         new GuzzleRequest('GET', '/druid/v1', [], ''),
-                        null
+                        new GuzzleResponse(500, [], (string)json_encode([
+                            'blaat' => 'woei',
+                        ]))
                     );
                 },
                 ServerException::class,
@@ -457,7 +459,8 @@ class DruidClientTest extends TestCase
                 function () {
                     throw new BadResponseException(
                         'Bad response',
-                        new GuzzleRequest('GET', '/druid/v1', [], '')
+                        new GuzzleRequest('GET', '/druid/v1', [], ''),
+                        new GuzzleResponse(500)
                     );
                 },
                 BadResponseException::class,

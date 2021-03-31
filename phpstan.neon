@@ -1,12 +1,15 @@
 parameters:
     level: max
-    includes:
-      - vendor/timeweb/phpstan-enum/extension.neon
-      - vendor/phpstan/phpstan-mockery/extension.neon
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
     ignoreErrors:
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
       - '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
-      - '#Cannot call method getName() on ReflectionType|null.#'
+      - '#Cannot call method getName\(\) on ReflectionType\|null.#'
+      - '#has no return typehint specified#'
+      - '#expects class-string<Throwable>, string given.#'
+      - '#expects Level23\\Druid\\Interval\\Interval(Interface)?, Level23\\Druid\\Interval\\Interval\|null given.#'
+      - '#Property Level23\\Druid\\DruidClient::\$config has no typehint specified.#'
     excludes_analyse:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php

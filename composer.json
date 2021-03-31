@@ -23,15 +23,15 @@
   "require": {
     "php": ">=7.2",
     "ext-json": "*",
-    "guzzlehttp/guzzle": "^6.2"
+    "guzzlehttp/guzzle": "6|7"
   },
   "require-dev": {
     "illuminate/support": "~5.0",
     "mockery/mockery": "^1.2",
     "php-coveralls/php-coveralls": "^2.1",
-    "phpstan/phpstan": "^0.11.9",
-    "phpstan/phpstan-mockery": "^0.11.2",
-    "phpunit/phpunit": "^8.2"
+    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan-mockery": "^0.12",
+    "phpunit/phpunit": "^9"
   },
   "suggest": {
     "psr/log": "Required for using the log handler"

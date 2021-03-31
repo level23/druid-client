@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\InFilter;
 use Level23\Druid\Filters\OrFilter;
 use Level23\Druid\Filters\AndFilter;
@@ -562,33 +563,55 @@ class HasFilterTest extends TestCase
 
     /**
      * Test the whereFlags filter
+     * @testWith ["0.18.0"]
+     *           ["0.21.1"]
+     *           [null]
      */
-    public function testWhereFlags()
+    public function testWhereFlags(string $version = null)
     {
         $extractionBuilder = Mockery::mock(ExtractionBuilder::class);
 
-        $this->builder->shouldReceive('where')
-            ->once()
-            ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use ($extractionBuilder) {
-                $this->assertEquals('flags', $dimension);
-                $this->assertEquals('=', $operator);
-                $this->assertEquals(33, $flags);
-                $this->assertInstanceOf(Closure::class, $extractionClosure);
-                $this->assertEquals('and', $boolean);
+        $this->client = new DruidClient(['version' => $version]);
 
-                $extractionBuilder->shouldReceive('javascript')
-                    ->once()
-                    ->withArgs(function ($js) {
-                        $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder->makePartial();
 
-                        return true;
-                    });
+        if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
+            $this->builder->shouldReceive('virtualColumn')
+                ->once()
+                ->with('bitwiseAnd("flags", 33)', 'v0', DataType::LONG)
+                ->andReturn($this->builder);
 
-                $extractionClosure($extractionBuilder);
+            $this->builder->shouldReceive('where')
+                ->once()
+                ->with('v0', '=', 33, null, 'and')
+                ->andReturn($this->builder);
+        } else {
+            $this->builder->shouldReceive('where')
+                ->once()
+                ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use (
+                    $extractionBuilder
+                ) {
+                    $this->assertEquals('flags', $dimension);
+                    $this->assertEquals('=', $operator);
+                    $this->assertEquals(33, $flags);
+                    $this->assertInstanceOf(Closure::class, $extractionClosure);
+                    $this->assertEquals('and', $boolean);
 
-                return true;
-            })
-            ->andReturn($this->builder);
+                    $extractionBuilder->shouldReceive('javascript')
+                        ->once()
+                        ->withArgs(function ($js) {
+                            $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
+
+                            return true;
+                        });
+
+                    $extractionClosure($extractionBuilder);
+
+                    return true;
+                })
+                ->andReturn($this->builder);
+        }
 
         $response = $this->builder->whereFlags('flags', 33);
 
@@ -881,17 +904,5 @@ class HasFilterTest extends TestCase
         $response = $this->builder->shouldAllowMockingProtectedMethods()->columnCompareDimension('hi');
 
         $this->assertEquals(new Dimension('hi'), $response);
-    }
-
-    /**
-     * Test that columnCompareDimension() will return an exception when an incorrect value is given.
-     */
-    public function testColumnCompareDimensionWithIncorrectValue()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectDeprecationMessage('You need to supply either a string (the dimension) or a Closure which will receive a DimensionBuilder.');
-
-        /** @noinspection PhpUndefinedMethodInspection */
-        $this->builder->shouldAllowMockingProtectedMethods()->columnCompareDimension(['hi']);
     }
 }
