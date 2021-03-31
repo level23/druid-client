@@ -68,33 +68,49 @@ DRUID_VERSION=0.20.2
 
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
 overlord and the coordinator:
+
 ```
 DRUID_ROUTER_URL=http://druid-router.url:8080
 ```
 
 ## Todo's
- 
- - Support for building metricSpec and DimensionSpec in CompactTaskBuilder 
- - Implement support for Spatial filters
- - Implement support for multi-value dimensions 
- - Implement append / merge / same_interval_merge tasks
- - Implement support for indexing using other firehoses then the IngestSegmentFirehose
+
+- Support for building metricSpec and DimensionSpec in CompactTaskBuilder
+- Implement support for Spatial filters
+- Implement support for multi-value dimensions
+- Implement append / merge / same_interval_merge tasks
+- Implement support for indexing using other firehoses then the IngestSegmentFirehose
+
+## Changelog
+
+**v1.0.8**
+
+- OrderBy now defaults to `asc` direction
+- `limit()` now supports an offset. See [limit()](#limit)
+- Added `version` configuration option, which lets the query builder know which version of druid you are running.
+- `whereFlags()` now uses native bitwise and operator if it is supported by your used version.
+- Added more query context and TuningConfig properties. We now also allow unknown properties to be set, in case of a new
+  value has been added.
+- Updated CompactTask to use the ioConfig syntax as described in the manual.
+- Removed deprecated IngestSegmentFirehose, now use DruidInputSource.
+- Updated IndexTask (Native batch ingestion) to correct syntax as described in the manual.
 
 ## Examples
 
-There are several examples which are written on the single-server tutorial of druid. 
-See [this](examples/README.md) page for more information.
+There are several examples which are written on the single-server tutorial of druid. See [this](examples/README.md) page
+for more information.
 
 # Table of Contents
 
-  - [DruidClient](#druidclient)
-    - [DruidClient::query()](#druidclientquery)
-    - [DruidClient::compact()](#druidclientcompact)
-    - [DruidClient::reindex()](#druidclientreindex)
-    - [DruidClient::taskStatus()](#druidclienttaskstatus)
-    - [DruidClient::metadata()](#druidclientmetadata)    
+- [DruidClient](#druidclient)
+  - [DruidClient::query()](#druidclientquery)
+  - [DruidClient::compact()](#druidclientcompact)
+  - [DruidClient::reindex()](#druidclientreindex)
+  - [DruidClient::taskStatus()](#druidclienttaskstatus)
+  - [DruidClient::metadata()](#druidclientmetadata)
   - [QueryBuilder: Generic Query Methods](#querybuilder-generic-query-methods)
     - [interval()](#interval)
+    - [limit()](#limit)
     - [orderBy()](#orderby)
     - [orderByDirection()](#orderbydirection)
     - [pagingIdentifier()](#pagingidentifier)
@@ -393,26 +409,32 @@ The start date should be before the end date. If not, an `InvalidArgumentExcepti
 
 The `interval()` method has the following parameters:
 
-| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                    |
+| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **
+Description**                                                                                                                                                                    |
 |---------------------------|-----------------------|--------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
 | /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
 
-
 #### `limit()`
 
-The `limit()` method allows you to limit the result set of the query. 
+The `limit()` method allows you to limit the result set of the query.
 
 The Limit can be used for all query types. However, its mandatory for the TopN Query and the Select Query.
-  
-**NOTE:** It is not possible to limit with an offset, like you can do with an SQL query. If you want to use pagination, 
-you can use a Select query. However, the select query does not allow you to aggregate metrics and group by dimensions. 
-See the Select Query for more information. 
+
+The `$offset` parameter only applies to `GroupBy` and `Scan` queries and is only supported since druid version 0.20.0.
+
+Skip this many rows when returning results. Skipped rows will still need to be generated internally and then discarded,
+meaning that raising offsets to high values can cause queries to use additional resources.
+
+Together, `$limit` and `$offset` can be used to implement pagination. However, note that if the underlying datasource is
+modified in between page fetches in ways that affect overall query results, then the different pages will not
+necessarily align with each other.
 
 Example:
+
 ```
-// Limit the result to 50 rows.
-$builder->limit(50);
+// Limit the result to 50 rows, but skipping the first 20 rows.
+$builder->limit(50, 20);
 ```
 
 The `limit()` method has the following arguments:
@@ -420,6 +442,7 @@ The `limit()` method has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                   |
 |----------|-----------------------|--------------|-------------|---------------------------------------------------|
 | int      | Required              | `$limit`     | 50          | Limit the result to this given number of records. | 
+| int      | Optional              | `$offset`    | 10          | Skip this many rows when returning results.       | 
 
 
 #### `orderBy()`
@@ -438,13 +461,16 @@ $builder
 
 The `orderBy()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                           |
-|----------|-----------------------|----------------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                        |
-| string   | Required              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
-| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                 |
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **
+Description**                                                                                                         |
+|----------|-----------------------|----------------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| string | Required | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order
+by | | string | Optional | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an
+OrderByDirection constant, or a string like "asc" or "desc". Default "asc"  | | string | Optional | `$sortingOrder`
+| `SortingOrder::STRLEN`   | This defines how the sorting is executed. |
 
-See for more information about SortingOrders this page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
+See for more information about SortingOrders this
+page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
 
 Please note: this method differs per query type. Please read below how this method workers per Query Type.
 

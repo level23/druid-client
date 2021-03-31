@@ -395,7 +395,6 @@ class QueryBuilderTest extends TestCase
      * @testWith [{"__time":"hour"}, 5, "hour", true]
      *           [{"__time":"hour", "name":"name"}, 5, "hour", false]
      *           [{"__time":"hour"}, null, "hour", false]
-     *           [{"__time":"hour"}, 999999, "hour", false]
      *           [{"__time":"hour"}, 5, null, false]
      *
      * @param array       $dimensions
@@ -1256,12 +1255,12 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [true, true, {}, true, 10, null, false, "list", "", true, true]
-     *           [false, false, {}, false, 50, 10, true, "compactedList", "channel", false, true]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 0, 200, false, "list", "__time", true, true]
-     *           [false, true, {}, false, 999999, 0, true, "compactedList", "__time", false, true]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, false, 0, 200, false, "list", "__time", true, false]
-     *           [false, true, {}, false, 999999, 0, true, "compactedList", "__time", false, false]
+     * @testWith [true, true, {}, true, 10, 20, null, false, "list", "", true, true]
+     *           [false, false, {}, false, 50, null, 10, true, "compactedList", "channel", false, true]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 1, 1, 200, false, "list", "__time", true, true]
+     *           [false, true, {}, false, 12, 12, 0, true, "compactedList", "__time", false, true]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, false, 0, 0, 200, false, "list", "__time", true, false]
+     *           [false, true, {}, false, 12, null, 0, true, "compactedList", "__time", false, false]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -1270,7 +1269,8 @@ class QueryBuilderTest extends TestCase
      * @param bool     $withFilter
      * @param array    $context
      * @param bool     $contextAsObj
-     * @param int      $limit
+     * @param int|null $limit
+     * @param int|null $offset
      * @param int|null $rowBatchSize
      * @param bool     $legacy
      * @param string   $resultFormat
@@ -1285,7 +1285,8 @@ class QueryBuilderTest extends TestCase
         bool $withFilter,
         array $context,
         bool $contextAsObj,
-        int $limit,
+        ?int $limit,
+        ?int $offset,
         ?int $rowBatchSize,
         bool $legacy,
         string $resultFormat,
@@ -1306,8 +1307,8 @@ class QueryBuilderTest extends TestCase
             $this->builder->where($filter);
         }
 
-        if ($limit > 0) {
-            $this->builder->limit($limit);
+        if ($limit > 0 || $offset > 0) {
+            $this->builder->limit($limit, $offset);
         }
 
         if (!empty($orderByField) && $useLegacyOrderBy) {
@@ -1342,10 +1343,16 @@ class QueryBuilderTest extends TestCase
                 ->with(new IsInstanceOf(ScanQueryContext::class));
         }
 
-        if ($limit > 0 && $limit != QueryBuilder::$DEFAULT_MAX_LIMIT) {
+        if ($limit > 0) {
             $query->shouldReceive('setLimit')
                 ->once()
                 ->with($limit);
+        }
+
+        if ($offset > 0) {
+            $query->shouldReceive('setOffset')
+                ->once()
+                ->with($offset);
         }
 
         $query->shouldReceive('setResultFormat')

@@ -53,6 +53,10 @@ class ScanQueryTest extends TestCase
         $expected['batchSize'] = 100;
         $this->assertEquals($expected, $query->toArray());
 
+        $query->setOffset(20);
+        $expected['offset'] = 20;
+        $this->assertEquals($expected, $query->toArray());
+
         $query->setLimit(500);
         $expected['limit'] = 500;
         $this->assertEquals($expected, $query->toArray());

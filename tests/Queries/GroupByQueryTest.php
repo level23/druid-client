@@ -68,7 +68,7 @@ class GroupByQueryTest extends TestCase
 
         $filter = new SelectorFilter('name', 'John');
 
-        $limit = new Limit(15);
+        $limit = new Limit(15, null, 20);
 
         $fieldAccess = new FieldAccessPostAggregator('field', 'anotherField');
 
@@ -104,8 +104,9 @@ class GroupByQueryTest extends TestCase
         $this->assertEquals([['event' => ['name' => 'John']]], $response->raw());
 
         $query->setLimit(15);
+        $query->setOffset(20);
 
         $response = $query->toArray();
-        $this->assertEquals((new Limit(15))->toArray(), $response['limitSpec']);
+        $this->assertEquals((new Limit(15, null, 20))->toArray(), $response['limitSpec']);
     }
 }

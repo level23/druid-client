@@ -17,9 +17,8 @@ use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Transforms\TransformBuilder;
-use Level23\Druid\Firehoses\FirehoseInterface;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Granularities\ArbitraryGranularity;
@@ -28,17 +27,17 @@ use Level23\Druid\Granularities\GranularityInterface;
 class IndexTaskBuilderTest extends TestCase
 {
     /**
-     * @testWith ["Level23\\Druid\\Firehoses\\IngestSegmentFirehose"]
+     * @testWith ["Level23\\Druid\\InputSources\\DruidInputSource"]
      *           []
-     * @param string|null $firehoseType
+     * @param string|null $inputSourceType
      *
      * @throws \ReflectionException
      */
-    public function testConstructor($firehoseType = null)
+    public function testConstructor($inputSourceType = null)
     {
         $client     = new DruidClient([]);
         $dataSource = 'people';
-        $builder    = new IndexTaskBuilder($client, $dataSource, $firehoseType);
+        $builder    = new IndexTaskBuilder($client, $dataSource, $inputSourceType);
 
         $this->assertEquals(
             false,
@@ -72,8 +71,8 @@ class IndexTaskBuilderTest extends TestCase
         );
 
         $this->assertEquals(
-            $firehoseType,
-            $this->getProperty($builder, 'firehoseType')
+            $inputSourceType,
+            $this->getProperty($builder, 'inputSourceType')
         );
 
         $this->assertEquals(
@@ -199,8 +198,8 @@ class IndexTaskBuilderTest extends TestCase
     public function buildTaskDataProvider(): array
     {
         return [
-            ["day", "week", new Interval("12-02-2019/13-02-2019"), IngestSegmentFirehose::class],
-            ["day", "hour", new Interval("12-02-2019/13-02-2019"), IngestSegmentFirehose::class],
+            ["day", "week", new Interval("12-02-2019/13-02-2019"), DruidInputSource::class],
+            ["day", "hour", new Interval("12-02-2019/13-02-2019"), DruidInputSource::class],
             ["day", "day", new Interval("12-02-2019/13-02-2019"), null],
 
         ];
@@ -210,7 +209,7 @@ class IndexTaskBuilderTest extends TestCase
      * @param string                           $queryGranularity
      * @param string                           $segmentGranularity
      * @param \Level23\Druid\Interval\Interval $interval
-     * @param string|null                      $firehoseType
+     * @param string|null                      $inputSourceType
      *
      * @throws \ReflectionException
      * @throws \Exception
@@ -224,21 +223,21 @@ class IndexTaskBuilderTest extends TestCase
         string $queryGranularity,
         string $segmentGranularity,
         Interval $interval,
-        ?string $firehoseType
+        ?string $inputSourceType
     ) {
         $context    = [];
         $client     = new DruidClient([]);
         $dataSource = 'farmers';
-        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource, $firehoseType]);
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource, $inputSourceType]);
         $builder->makePartial();
 
         $this->assertEquals(
-            $firehoseType,
-            $this->getProperty($builder, 'firehoseType')
+            $inputSourceType,
+            $this->getProperty($builder, 'inputSourceType')
         );
 
-        switch ($firehoseType) {
-            case IngestSegmentFirehose::class:
+        switch ($inputSourceType) {
+            case DruidInputSource::class:
 
                 $builder->shouldAllowMockingProtectedMethods()
                     ->shouldReceive('validateInterval')
@@ -249,7 +248,7 @@ class IndexTaskBuilderTest extends TestCase
 
             default:
                 $this->expectException(InvalidArgumentException::class);
-                $this->expectExceptionMessage('No firehose known.');
+                $this->expectExceptionMessage('No InputSource known.');
                 break;
         }
 
@@ -258,7 +257,7 @@ class IndexTaskBuilderTest extends TestCase
         $builder->interval($interval->getStart(), $interval->getStop());
         $builder->parallel();
 
-        if ($firehoseType) {
+        if ($inputSourceType) {
             $mock = new Mockery\Generator\MockConfigurationBuilder();
             $mock->setInstanceMock(true);
             $mock->setName(IndexTask::class);
@@ -271,7 +270,7 @@ class IndexTaskBuilderTest extends TestCase
                 ->once()
                 ->with(
                     $dataSource,
-                    new IsInstanceOf(FirehoseInterface::class),
+                    new IsInstanceOf(DruidInputSource::class),
                     new IsInstanceOf(GranularityInterface::class),
                     null,
                     null,
@@ -386,7 +385,7 @@ class IndexTaskBuilderTest extends TestCase
         }
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('firehose');
+        $this->expectExceptionMessage('No InputSource known.');
 
         /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);

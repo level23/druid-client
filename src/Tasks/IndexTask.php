@@ -6,8 +6,8 @@ namespace Level23\Druid\Tasks;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
-use Level23\Druid\Firehoses\FirehoseInterface;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\InputSources\InputSourceInterface;
 use Level23\Druid\Granularities\GranularityInterface;
 
 class IndexTask implements TaskInterface
@@ -28,9 +28,9 @@ class IndexTask implements TaskInterface
     protected $appendToExisting = false;
 
     /**
-     * @var \Level23\Druid\Firehoses\FirehoseInterface
+     * @var \Level23\Druid\InputSources\InputSourceInterface
      */
-    protected $firehose;
+    protected $inputSource;
 
     /**
      * @var string
@@ -74,7 +74,7 @@ class IndexTask implements TaskInterface
      *
      *
      * @param string                                                $dateSource
-     * @param \Level23\Druid\Firehoses\FirehoseInterface            $firehose
+     * @param \Level23\Druid\InputSources\InputSourceInterface      $inputSource
      * @param \Level23\Druid\Granularities\GranularityInterface     $granularity
      * @param \Level23\Druid\Transforms\TransformSpec|null          $transformSpec
      * @param \Level23\Druid\TuningConfig\TuningConfig|null         $tuningConfig
@@ -85,7 +85,7 @@ class IndexTask implements TaskInterface
      */
     public function __construct(
         string $dateSource,
-        FirehoseInterface $firehose,
+        InputSourceInterface $inputSource,
         GranularityInterface $granularity,
         TransformSpec $transformSpec = null,
         TuningConfig $tuningConfig = null,
@@ -96,7 +96,7 @@ class IndexTask implements TaskInterface
     ) {
         $this->tuningConfig  = $tuningConfig;
         $this->context       = $context;
-        $this->firehose      = $firehose;
+        $this->inputSource   = $inputSource;
         $this->dateSource    = $dateSource;
         $this->granularity   = $granularity;
         $this->transformSpec = $transformSpec;
@@ -117,18 +117,12 @@ class IndexTask implements TaskInterface
             'spec' => [
                 'dataSchema' => [
                     'dataSource'      => $this->dateSource,
-                    'parser'          => [
-                        'type'      => 'string',
-                        'parseSpec' => [
-                            'format'         => 'json',
-                            'timestampSpec'  => [
-                                'column' => '__time',
-                                'format' => 'auto',
-                            ],
-                            'dimensionsSpec' => [
-                                'dimensions' => $this->dimensions,
-                            ],
-                        ],
+                    'timestampSpec'   => [
+                        'column' => '__time',
+                        'format' => 'auto',
+                    ],
+                    'dimensionsSpec'  => [
+                        'dimensions' => $this->dimensions,
                     ],
                     'metricsSpec'     => ($this->aggregations ? $this->aggregations->toArray() : null),
                     'granularitySpec' => $this->granularity->toArray(),
@@ -136,10 +130,12 @@ class IndexTask implements TaskInterface
                 ],
                 'ioConfig'   => [
                     'type'             => $this->parallel ? 'index_parallel' : 'index',
-                    'firehose'         => $this->firehose->toArray(),
+                    'inputSource'      => $this->inputSource->toArray(),
+                    'inputFormat'      => [
+                        'type' => 'json',
+                    ],
                     'appendToExisting' => $this->appendToExisting,
                 ],
-
             ],
         ];
 

@@ -104,10 +104,12 @@ class ContextTest extends TestCase
 
     public function testNonExistingProperty()
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('was not found in ');
+        $context = new GroupByV2QueryContext(['something' => 1]);
 
-        new GroupByV2QueryContext(['something' => 1]);
+        $properties = $context->toArray();
+
+        $this->assertArrayHasKey('something', $properties);
+        $this->assertEquals(1, $properties['something']);
     }
 
     public function testNonScalarValue()

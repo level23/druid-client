@@ -5,7 +5,6 @@ namespace Level23\Druid\Tests\TuningConfig;
 
 use Exception;
 use ReflectionMethod;
-use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\TuningConfig\TuningConfig;
 
@@ -76,10 +75,11 @@ class TuningConfigTest extends TestCase
 
     public function testNonExistingProperty()
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('was not found in ');
+        $tuningConfig = new TuningConfig(['something' => 1]);
+        $data         = $tuningConfig->toArray();
 
-        new TuningConfig(['something' => 1]);
+        $this->assertArrayHasKey('something', $data);
+        $this->assertEquals(1, $data['something']);
     }
 
     protected function getRandomWord()

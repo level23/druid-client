@@ -25,7 +25,7 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use GuzzleHttp\Exception\BadResponseException;
 use Level23\Druid\Queries\SegmentMetadataQuery;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
@@ -179,7 +179,7 @@ class DruidClientTest extends TestCase
         $indexTaskBuilder = Mockery::mock('overload:' . IndexTaskBuilder::class);
         $indexTaskBuilder->shouldReceive('__construct')
             ->once()
-            ->with($client, $dataSource, IngestSegmentFirehose::class);
+            ->with($client, $dataSource, DruidInputSource::class);
 
         $indexTaskBuilder->shouldReceive('fromDataSource')
             ->with($dataSource)

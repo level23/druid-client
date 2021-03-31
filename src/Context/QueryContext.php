@@ -233,4 +233,108 @@ class QueryContext extends Context implements ContextInterface
 
         return $this;
     }
+
+    /**
+     * Enable parallel result merging on the Broker.
+     * Note that druid.processing.merge.useParallelMergePool must be enabled for this setting to be
+     * set to true. See Broker configuration for more details.
+     *
+     * @param bool $enableParallelMerge
+     *
+     * @return $this
+     */
+    public function setEnableParallelMerge(bool $enableParallelMerge)
+    {
+        $this->properties['enableParallelMerge'] = $enableParallelMerge;
+
+        return $this;
+    }
+
+    /**
+     * Maximum number of parallel threads to use for parallel result merging on the Broker.
+     * See Broker configuration for more details.
+     *
+     * @param int $parallelMergeParallelism
+     *
+     * @return $this
+     */
+    public function setParallelMergeParallelism(int $parallelMergeParallelism)
+    {
+        $this->properties['parallelMergeParallelism'] = $parallelMergeParallelism;
+
+        return $this;
+    }
+
+    /**
+     * Number of rows to yield per ForkJoinPool merge task for parallel result merging on the Broker,
+     * before forking off a new task to continue merging sequences.
+     * See Broker configuration for more details.
+     *
+     * @param int $parallelMergeInitialYieldRows
+     *
+     * @return $this
+     */
+    public function setParallelMergeInitialYieldRows(int $parallelMergeInitialYieldRows)
+    {
+        $this->properties['parallelMergeInitialYieldRows'] = $parallelMergeInitialYieldRows;
+
+        return $this;
+    }
+
+    /**
+     * Size of result batches to operate on in ForkJoinPool merge tasks for parallel result
+     * merging on the Broker. See Broker configuration for more details.
+     *
+     * @param int $parallelMergeSmallBatchRows
+     *
+     * @return $this
+     */
+    public function setParallelMergeSmallBatchRows(int $parallelMergeSmallBatchRows)
+    {
+        $this->properties['parallelMergeSmallBatchRows'] = $parallelMergeSmallBatchRows;
+
+        return $this;
+    }
+
+    /**
+     * If true, Druid will attempt to convert the query filter to Conjunctive Normal Form (CNF).
+     * During query processing, columns can be pre-filtered by intersecting the bitmap indexes of
+     * all values that match the eligible filters, often greatly reducing the raw number of rows
+     * which need to be scanned. But this effect only happens for the top level filter,
+     * or individual clauses of a top level 'and' filter. As such, filters in CNF potentially have
+     * a higher chance to utilize a large amount of bitmap indexes on string columns during
+     * pre-filtering. However, this setting should be used with great caution, as it can sometimes
+     * have a negative effect on performance, and in some cases, the act of computing CNF of a
+     * filter can be expensive. We recommend hand tuning your filters to produce an optimal form
+     * if possible, or at least verifying through experimentation that using this parameter actually
+     * improves your query performance with no ill-effects.
+     *
+     * @param bool $useFilterCNF
+     *
+     * @return $this
+     */
+    public function setUseFilterCNF(bool $useFilterCNF)
+    {
+        $this->properties['useFilterCNF'] = $useFilterCNF;
+
+        return $this;
+    }
+
+    /**
+     * Enable secondary partition pruning on the Broker. The Broker will always prune
+     * unnecessary segments from the input scan based on a filter on time intervals,
+     * but if the data is further partitioned with hash or range partitioning,
+     * this option will enable additional pruning based on a filter on secondary
+     * partition dimensions.
+     *
+     * @param bool $secondaryPartitionPruning
+     *
+     * @return $this
+     */
+    public function setSecondaryPartitionPruning(bool $secondaryPartitionPruning)
+    {
+        $this->properties['secondaryPartitionPruning'] = $secondaryPartitionPruning;
+
+        return $this;
+    }
 }

@@ -15,9 +15,9 @@ class CompactTaskTest extends TestCase
     /**
      * @testWith ["day", null, null, null, false, "task-1337"]
      *           ["week", {"maxRowsPerSegment": "1"}, null, null, false, null]
-     *           ["week", {"wrong": "index"}, null, null, true, "task-1337"]
+     *           ["week", {"wrong": "index"}, null, null, false, "task-1337"]
      *           ["week", {"type": "index"}, {"priority": 10}]
-     *           ["week", {"type": "index"}, {"wrong": 10}, null, true, null]
+     *           ["week", {"type": "index"}, {"wrong": 10}, null, false, null]
      *           ["week", {"type": "index"}, null, 1024, false, "task-1337"]
      *
      *
@@ -57,7 +57,13 @@ class CompactTaskTest extends TestCase
         $expected = [
             'type'       => 'compact',
             'dataSource' => 'mySource',
-            'interval'   => $interval->getInterval(),
+            'ioConfig'   => [
+                'type'      => 'compact',
+                'inputSpec' => [
+                    'type'     => 'interval',
+                    'interval' => $interval->getInterval(),
+                ],
+            ],
         ];
 
         if ($taskId) {

@@ -27,6 +27,8 @@ class LimitTest extends TestCase
         $limit->setLimit(9372);
         $this->assertEquals(9372, $limit->getLimit());
 
+        $limit->setOffset(20);
+
         $obj = new OrderBy(
             'name',
             OrderByDirection::DESC,
@@ -38,6 +40,7 @@ class LimitTest extends TestCase
         $this->assertEquals([
             'type'    => 'default',
             'limit'   => 9372,
+            'offset'  => 20,
             'columns' => [
                 [
                     'dimension'      => 'name',
@@ -64,7 +67,6 @@ class LimitTest extends TestCase
 
     public function testLimitWithCollection()
     {
-
         $collection = new OrderByCollection();
         $collection->add(new OrderBy('name'));
 

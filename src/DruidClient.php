@@ -17,7 +17,7 @@ use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Responses\TaskResponse;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClient
@@ -126,7 +126,7 @@ class DruidClient
      * @param \Level23\Druid\Queries\QueryInterface $druidQuery
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function executeQuery(QueryInterface $druidQuery): array
     {
@@ -147,7 +147,7 @@ class DruidClient
      * @param \Level23\Druid\Tasks\TaskInterface $task
      *
      * @return string The task identifier
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function executeTask(TaskInterface $task): string
     {
@@ -174,7 +174,7 @@ class DruidClient
      * @param array  $data   The data to POST or GET.
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function executeRawRequest(string $method, string $url, array $data = []): array
     {
@@ -289,9 +289,9 @@ class DruidClient
      *
      * @return mixed|null
      */
-    public function config($key, $default = null)
+    public function config(string $key, $default = null)
     {
-        // when the broker, coordinator or overlord url's are empty, then use the router url.
+        // when the broker, coordinator or overlord url is empty, then use the router url.
         $routerFallback = in_array($key, ['broker_url', 'coordinator_url', 'overlord_url']);
 
         if ($routerFallback) {
@@ -370,7 +370,7 @@ class DruidClient
      * @param string $taskId
      *
      * @return \Level23\Druid\Responses\TaskResponse
-     * @throws \Exception
+     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
     public function taskStatus(string $taskId): TaskResponse
     {
@@ -424,7 +424,7 @@ class DruidClient
     {
         $structure = $this->metadata()->structure($dataSource);
 
-        $builder = new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
+        $builder = new IndexTaskBuilder($this, $dataSource, DruidInputSource::class);
         $builder->fromDataSource($dataSource);
 
         foreach ($structure->dimensions as $dimension => $type) {

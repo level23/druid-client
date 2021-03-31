@@ -100,7 +100,7 @@ class HasLimitTest extends TestCase
         $limitMock = Mockery::mock('overload:' . Limit::class);
 
         $limitMock->shouldReceive('__construct')
-            ->with(QueryBuilder::$DEFAULT_MAX_LIMIT)
+            ->withNoArgs()
             ->once();
 
         $limitMock->shouldReceive('addOrderBy')
