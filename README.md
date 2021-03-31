@@ -462,12 +462,12 @@ $builder
 The `orderBy()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument**         | **Example**              | **
-Description**                                                                                                         |
-|----------|-----------------------|----------------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
+Description**                                                                                                        | |
+|----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|---|
 | string | Required | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order
-by | | string | Optional | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an
-OrderByDirection constant, or a string like "asc" or "desc". Default "asc"  | | string | Optional | `$sortingOrder`
-| `SortingOrder::STRLEN`   | This defines how the sorting is executed. |
+by | | | string | Optional | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use
+an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" | | | string | Optional | `$sortingOrder`
+| `SortingOrder::STRLEN`   | This defines how the sorting is executed. | |
 
 See for more information about SortingOrders this
 page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
