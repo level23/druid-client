@@ -215,6 +215,7 @@ class DruidClient
                 goto begin;
             }
 
+            /** @var ResponseInterface $response */
             $response = $exception->getResponse();
 
             // Bad gateway, this happens for instance when all brokers are unavailable.
