@@ -300,8 +300,6 @@ trait HasFilter
         return $this->whereColumn($dimensionA, $dimensionB, 'or');
     }
 
-
-
     /**
      * Filter records where dimensionA is NOT equal to dimensionB.
      * You can either supply a string or a Closure. The Closure will receive a DimensionBuilder object, which allows
@@ -360,7 +358,9 @@ trait HasFilter
      */
     public function orWhereNotColumn($dimensionA, $dimensionB)
     {
-        return $this->whereNotColumn($dimensionA, $dimensionB, 'or');
+        return $this->whereNot(function (FilterBuilder $builder) use ($dimensionA, $dimensionB) {
+            $builder->whereColumn($dimensionA, $dimensionB, 'or');
+        });
     }
 
     /**
@@ -506,7 +506,15 @@ trait HasFilter
         Closure $extraction = null,
         string $ordering = null
     ) {
-        return $this->whereNotBetween($dimension, $minValue, $maxValue, $extraction, $ordering, 'or');
+        return $this->whereNot(function (FilterBuilder $builder) use (
+            $ordering,
+            $extraction,
+            $maxValue,
+            $minValue,
+            $dimension
+        ) {
+            $builder->whereBetween($dimension, $minValue, $maxValue, $extraction, $ordering, 'or');
+        });
     }
 
     /**
@@ -543,7 +551,9 @@ trait HasFilter
      */
     public function orWhereNotIn(string $dimension, array $items, Closure $extraction = null)
     {
-        return $this->whereNotIn($dimension, $items, $extraction, 'or');
+        return $this->whereNot(function (FilterBuilder $filterBuilder) use ($extraction, $items, $dimension) {
+            $filterBuilder->whereIn($dimension, $items, $extraction, 'or');
+        });
     }
 
     /**
@@ -610,7 +620,9 @@ trait HasFilter
      */
     public function orWhereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
     {
-        return $this->whereNotInterval($dimension, $intervals, $extraction, 'or');
+        return $this->whereNot(function (FilterBuilder $filterBuilder) use ($extraction, $intervals, $dimension) {
+            $filterBuilder->whereInterval($dimension, $intervals, $extraction, 'or');
+        });
     }
 
     /**

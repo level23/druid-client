@@ -90,9 +90,14 @@ abstract class TaskBuilder
     {
         $task = $this->buildTask($context);
 
-        $json = \GuzzleHttp\json_encode($task->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $json = \json_encode($task->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if (\JSON_ERROR_NONE !== \json_last_error()) {
+            throw new InvalidArgumentException(
+                'json_encode error: ' . \json_last_error_msg()
+            );
+        }
 
-        return $json;
+        return (string)$json;
     }
 
     /**

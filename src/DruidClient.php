@@ -323,7 +323,12 @@ class DruidClient
     {
         $contents = $response->getBody()->getContents();
         try {
-            $row = \GuzzleHttp\json_decode($contents, true) ?: [];
+            $row = \json_decode($contents, true) ?: [];
+            if (\JSON_ERROR_NONE !== \json_last_error()) {
+                throw new InvalidArgumentException(
+                    'json_decode error: ' . \json_last_error_msg()
+                );
+            }
         } catch (InvalidArgumentException $exception) {
             $this->log('We failed to decode druid response. ');
             $this->log('Status code: ' . $response->getStatusCode());
