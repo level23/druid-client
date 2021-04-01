@@ -151,7 +151,7 @@ trait HasFilter
         } elseif ($filterOrDimensionOrClosure instanceof Closure) {
 
             // lets create a bew builder object where the user can mess around with
-            $builder = new FilterBuilder();
+            $builder = new FilterBuilder($this->client);
 
             // call the user function
             call_user_func($filterOrDimensionOrClosure, $builder);
@@ -181,7 +181,7 @@ trait HasFilter
     public function whereNot(Closure $filterBuilder, $boolean = 'and')
     {
         // lets create a bew builder object where the user can mess around with
-        $builder = new FilterBuilder();
+        $builder = new FilterBuilder($this->client);
 
         // call the user function
         call_user_func($filterBuilder, $builder);
