@@ -14,7 +14,7 @@ class TuningConfigTest extends TestCase
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function testContext()
+    public function testContext(): void
     {
         $methods = get_class_methods(TuningConfig::class);
 
@@ -65,7 +65,7 @@ class TuningConfigTest extends TestCase
         $this->assertEquals($properties, $tuningConfig->toArray());
     }
 
-    public function testSettingValueUsingConstructor()
+    public function testSettingValueUsingConstructor(): void
     {
         $context = new TuningConfig(['maxrowspersegment' => '1']);
 
@@ -73,7 +73,7 @@ class TuningConfigTest extends TestCase
         $this->assertEquals('1', $response['maxRowsPerSegment']);
     }
 
-    public function testNonExistingProperty()
+    public function testNonExistingProperty(): void
     {
         $tuningConfig = new TuningConfig(['something' => 1]);
         $data         = $tuningConfig->toArray();

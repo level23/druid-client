@@ -12,7 +12,7 @@ use Level23\Druid\Collections\AggregationCollection;
 
 class BaseCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new AggregationCollection();
         $iterator   = $collection->getIterator();
@@ -30,7 +30,7 @@ class BaseCollectionTest extends TestCase
         $this->assertEquals([$item], $iterator->getArrayCopy());
     }
 
-    public function testAdd()
+    public function testAdd(): void
     {
         $collection = new AggregationCollection();
 
@@ -44,7 +44,7 @@ class BaseCollectionTest extends TestCase
         $collection->add('hallo');
     }
 
-    public function testOffsetExists()
+    public function testOffsetExists(): void
     {
         $collection = new AggregationCollection();
 
@@ -56,7 +56,7 @@ class BaseCollectionTest extends TestCase
         $this->assertTrue($collection->offsetExists(0));
     }
 
-    public function testOffsetGet()
+    public function testOffsetGet(): void
     {
         $collection = new AggregationCollection();
 
@@ -68,7 +68,7 @@ class BaseCollectionTest extends TestCase
         $this->assertEquals($item, $collection->offsetGet(0));
     }
 
-    public function testOffsetSet()
+    public function testOffsetSet(): void
     {
         $collection = new AggregationCollection();
 
@@ -81,7 +81,7 @@ class BaseCollectionTest extends TestCase
         $this->assertEquals($item, $collection->offsetGet(13));
     }
 
-    public function testOffsetSetIncorrectType()
+    public function testOffsetSetIncorrectType(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('We only accept');
@@ -90,7 +90,7 @@ class BaseCollectionTest extends TestCase
         $collection->offsetSet(1, 'hallo');
     }
 
-    public function testOffsetUnset()
+    public function testOffsetUnset(): void
     {
         $collection = new AggregationCollection();
 
@@ -104,7 +104,7 @@ class BaseCollectionTest extends TestCase
         $this->assertNull($collection->offsetGet(12));
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $collection = new AggregationCollection();
 

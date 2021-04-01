@@ -9,7 +9,7 @@ use Level23\Druid\VirtualColumns\VirtualColumn;
 
 class VirtualColumnTest extends TestCase
 {
-    public function testVirtualColumn()
+    public function testVirtualColumn(): void
     {
         $column = new VirtualColumn('if(mccmnc > 0, country_iso, "")', 'country_iso', 'string');
 
@@ -22,7 +22,7 @@ class VirtualColumnTest extends TestCase
         );
     }
 
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $column = new VirtualColumn('if(mccmnc > 0, country_iso, "")', 'country_iso');
 
@@ -35,7 +35,7 @@ class VirtualColumnTest extends TestCase
         );
     }
 
-    public function testIncorrectType()
+    public function testIncorrectType(): void
     {
         $this->expectException(InvalidArgumentException::class);
 

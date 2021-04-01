@@ -9,7 +9,7 @@ use Level23\Druid\InputSources\DruidInputSource;
 
 class DruidInputSourceTest extends TestCase
 {
-    public function testDruidInputSource()
+    public function testDruidInputSource(): void
     {
         $interval    = new Interval('12-04-2019', '15-04-2019');
         $inputSource = new DruidInputSource('test', $interval);

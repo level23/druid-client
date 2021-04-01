@@ -8,7 +8,7 @@ use Level23\Druid\Extractions\BucketExtraction;
 
 class BucketExtractionTest extends TestCase
 {
-    public function testBucket()
+    public function testBucket(): void
     {
         $extraction = new BucketExtraction(5, 2);
 
@@ -19,7 +19,7 @@ class BucketExtractionTest extends TestCase
         ], $extraction->toArray());
     }
 
-    public function testBucketDefaults()
+    public function testBucketDefaults(): void
     {
         $extraction = new BucketExtraction();
 

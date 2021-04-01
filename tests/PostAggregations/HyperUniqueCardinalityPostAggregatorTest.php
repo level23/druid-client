@@ -8,7 +8,7 @@ use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
 
 class HyperUniqueCardinalityPostAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function testAggregator(): void
     {
         $aggregator = new HyperUniqueCardinalityPostAggregator(
             'myHyperUniqueField',
@@ -22,7 +22,7 @@ class HyperUniqueCardinalityPostAggregatorTest extends TestCase
         ], $aggregator->toArray());
     }
 
-    public function testAggregatorWithoutName()
+    public function testAggregatorWithoutName(): void
     {
         $aggregator = new HyperUniqueCardinalityPostAggregator('myHyperUniqueField');
 

@@ -32,7 +32,7 @@ class TaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testTaskId()
+    public function testTaskId(): void
     {
         $builder  = new CompactTaskBuilder($this->client, 'wikipedia');
         $response = $builder->taskId('myTaskId');
@@ -44,7 +44,7 @@ class TaskBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testExecute()
+    public function testExecute(): void
     {
         $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
         $builder->makePartial();
@@ -71,7 +71,7 @@ class TaskBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testToJson()
+    public function testToJson(): void
     {
         $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
         $builder->makePartial();
@@ -96,7 +96,7 @@ class TaskBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testToArray()
+    public function testToArray(): void
     {
         $builder = Mockery::mock(CompactTaskBuilder::class, [$this->client, 'animals']);
         $builder->makePartial();
@@ -178,7 +178,7 @@ class TaskBuilderTest extends TestCase
      * @throws \Exception
      * @dataProvider validateIntervalDataProvider
      */
-    public function testValidateInterval(string $givenInterval, array $allIntervals, bool $expectsValid)
+    public function testValidateInterval(string $givenInterval, array $allIntervals, bool $expectsValid): void
     {
         $dataSource = 'animals';
 

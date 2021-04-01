@@ -33,7 +33,7 @@ class IndexTaskBuilderTest extends TestCase
      *
      * @throws \ReflectionException
      */
-    public function testConstructor($inputSourceType = null)
+    public function testConstructor($inputSourceType = null): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'people';
@@ -95,7 +95,7 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testFromDataSource()
+    public function testFromDataSource(): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'aliens';
@@ -114,7 +114,7 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testParallel()
+    public function testParallel(): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'wikipedia';
@@ -135,7 +135,7 @@ class IndexTaskBuilderTest extends TestCase
      *
      * @throws \ReflectionException
      */
-    public function testTransformBuilder(bool $withTransform)
+    public function testTransformBuilder(bool $withTransform): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'animals';
@@ -180,7 +180,7 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testDimension()
+    public function testDimension(): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'aliens';
@@ -288,7 +288,7 @@ class IndexTaskBuilderTest extends TestCase
         $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
     }
 
-    public function testBuildTaskWithoutQueryGranularity()
+    public function testBuildTaskWithoutQueryGranularity(): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'farmers';
@@ -302,7 +302,7 @@ class IndexTaskBuilderTest extends TestCase
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
-    public function testBuildTaskWithoutInterval()
+    public function testBuildTaskWithoutInterval(): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'farmers';
@@ -321,7 +321,7 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testBuildTaskWithoutSegmentGranularity()
+    public function testBuildTaskWithoutSegmentGranularity(): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'farmers';
@@ -350,7 +350,7 @@ class IndexTaskBuilderTest extends TestCase
      * @preserveGlobalState disabled
      *
      */
-    public function testBuildTaskGranularityObject(string $granularityType)
+    public function testBuildTaskGranularityObject(string $granularityType): void
     {
         $client     = new DruidClient([]);
         $dataSource = 'farmers';

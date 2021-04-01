@@ -14,7 +14,7 @@ class FieldAccessPostAggregatorTest extends TestCase
      *
      * @param bool $finalizing
      */
-    public function testAggregator(bool $finalizing)
+    public function testAggregator(bool $finalizing): void
     {
         $aggregator = new FieldAccessPostAggregator('foo', 'bar', $finalizing);
 

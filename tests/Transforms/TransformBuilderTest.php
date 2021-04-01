@@ -9,7 +9,7 @@ use Level23\Druid\Transforms\ExpressionTransform;
 
 class TransformBuilderTest extends TestCase
 {
-    public function testTransformBuilder()
+    public function testTransformBuilder(): void
     {
         $transform = new ExpressionTransform('concat(foo, bar)', 'fooBar');
         $builder   = new TransformBuilder();

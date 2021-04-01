@@ -8,7 +8,7 @@ use Level23\Druid\Filters\TrueFilter;
 
 class TrueFilterTest extends TestCase
 {
-    public function testFilter()
+    public function testFilter(): void
     {
         $filter = new TrueFilter();
 

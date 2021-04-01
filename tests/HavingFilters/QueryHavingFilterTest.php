@@ -9,7 +9,7 @@ use Level23\Druid\HavingFilters\QueryHavingFilter;
 
 class QueryHavingFilterTest extends TestCase
 {
-    public function testHavingFilter()
+    public function testHavingFilter(): void
     {
         $inFilter = new InFilter('age', [16, 17, 18]);
         $filter   = new QueryHavingFilter($inFilter);

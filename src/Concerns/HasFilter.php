@@ -359,8 +359,8 @@ trait HasFilter
     public function orWhereNotColumn($dimensionA, $dimensionB)
     {
         return $this->whereNot(function (FilterBuilder $builder) use ($dimensionA, $dimensionB) {
-            $builder->whereColumn($dimensionA, $dimensionB, 'or');
-        });
+            $builder->whereColumn($dimensionA, $dimensionB);
+        }, 'or');
     }
 
     /**
@@ -513,8 +513,8 @@ trait HasFilter
             $minValue,
             $dimension
         ) {
-            $builder->whereBetween($dimension, $minValue, $maxValue, $extraction, $ordering, 'or');
-        });
+            $builder->whereBetween($dimension, $minValue, $maxValue, $extraction, $ordering);
+        }, 'or');
     }
 
     /**
@@ -552,8 +552,8 @@ trait HasFilter
     public function orWhereNotIn(string $dimension, array $items, Closure $extraction = null)
     {
         return $this->whereNot(function (FilterBuilder $filterBuilder) use ($extraction, $items, $dimension) {
-            $filterBuilder->whereIn($dimension, $items, $extraction, 'or');
-        });
+            $filterBuilder->whereIn($dimension, $items, $extraction);
+        }, 'or');
     }
 
     /**
@@ -621,8 +621,8 @@ trait HasFilter
     public function orWhereNotInterval(string $dimension, array $intervals, Closure $extraction = null)
     {
         return $this->whereNot(function (FilterBuilder $filterBuilder) use ($extraction, $intervals, $dimension) {
-            $filterBuilder->whereInterval($dimension, $intervals, $extraction, 'or');
-        });
+            $filterBuilder->whereInterval($dimension, $intervals, $extraction);
+        }, 'or');
     }
 
     /**

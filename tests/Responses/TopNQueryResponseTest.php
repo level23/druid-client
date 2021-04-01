@@ -8,7 +8,7 @@ use Level23\Druid\Responses\TopNQueryResponse;
 
 class TopNQueryResponseTest extends TestCase
 {
-    public function testResponse()
+    public function testResponse(): void
     {
         $rawResponse = [
             0 =>
@@ -46,7 +46,7 @@ class TopNQueryResponseTest extends TestCase
         ], $response->data());
     }
 
-    public function testEmptyResponse()
+    public function testEmptyResponse(): void
     {
         $rawResponse = [];
 

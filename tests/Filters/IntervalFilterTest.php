@@ -10,7 +10,7 @@ use Level23\Druid\Extractions\LookupExtraction;
 
 class IntervalFilterTest extends TestCase
 {
-    public function testFilter()
+    public function testFilter(): void
     {
         $intervals = [
             new Interval("2014-10-01T00:00:00.000Z", "2014-10-07T00:00:00.000Z"),
@@ -28,7 +28,7 @@ class IntervalFilterTest extends TestCase
         ], $filter->toArray());
     }
 
-    public function testExtractionFunction()
+    public function testExtractionFunction(): void
     {
         $extractionFunction = new LookupExtraction(
             'singup_by_member', false

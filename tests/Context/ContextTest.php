@@ -38,7 +38,7 @@ class ContextTest extends TestCase
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function testContext(string $class, array $extra = [])
+    public function testContext(string $class, array $extra = []): void
     {
         $methods = get_class_methods($class);
 
@@ -94,7 +94,7 @@ class ContextTest extends TestCase
         }
     }
 
-    public function testSettingValueUsingConstructor()
+    public function testSettingValueUsingConstructor(): void
     {
         $context = new GroupByV2QueryContext(['timeout' => 6271]);
 
@@ -102,7 +102,7 @@ class ContextTest extends TestCase
         $this->assertEquals(6271, $response['timeout']);
     }
 
-    public function testNonExistingProperty()
+    public function testNonExistingProperty(): void
     {
         $context = new GroupByV2QueryContext(['something' => 1]);
 
@@ -112,7 +112,7 @@ class ContextTest extends TestCase
         $this->assertEquals(1, $properties['something']);
     }
 
-    public function testNonScalarValue()
+    public function testNonScalarValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid value');

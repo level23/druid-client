@@ -14,7 +14,7 @@ class LikeFilterTest extends TestCase
      * @testWith [true]
      *           [false]
      */
-    public function testFilter(bool $useExtractionFunction)
+    public function testFilter(bool $useExtractionFunction): void
     {
         $extractionFunction = new LookupExtraction(
             'full_username', false
@@ -37,7 +37,7 @@ class LikeFilterTest extends TestCase
         $this->assertEquals($expected, $filter->toArray());
     }
 
-    public function testEscapeDefaultCharacter()
+    public function testEscapeDefaultCharacter(): void
     {
         $filter = new LikeFilter('name', 'D%');
 

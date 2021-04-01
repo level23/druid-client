@@ -46,7 +46,7 @@ class HasSearchFiltersTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchContainsWithDefaults()
+    public function testSearchContainsWithDefaults(): void
     {
         $filter = $this->getSearchFilterMock(ContainsSearchFilter::class);
         $filter->shouldReceive('__construct')
@@ -68,7 +68,7 @@ class HasSearchFiltersTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchContains(string $value, bool $caseSensitive)
+    public function testSearchContains(string $value, bool $caseSensitive): void
     {
         $filter = $this->getSearchFilterMock(ContainsSearchFilter::class);
         $filter->shouldReceive('__construct')
@@ -85,7 +85,7 @@ class HasSearchFiltersTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchFragmentWithDefaults()
+    public function testSearchFragmentWithDefaults(): void
     {
         $fragment = ['John', 'Doe'];
 
@@ -109,7 +109,7 @@ class HasSearchFiltersTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchFragment(array $values, bool $caseSensitive)
+    public function testSearchFragment(array $values, bool $caseSensitive): void
     {
         $filter = $this->getSearchFilterMock(FragmentSearchFilter::class);
         $filter->shouldReceive('__construct')
@@ -125,7 +125,7 @@ class HasSearchFiltersTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchRegex()
+    public function testSearchRegex(): void
     {
         $regex  = "^Wiki";
         $filter = $this->getSearchFilterMock(RegexSearchFilter::class);

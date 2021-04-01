@@ -23,7 +23,7 @@ class ScanQueryTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testQuery(bool $legacy)
+    public function testQuery(bool $legacy): void
     {
         $intervals = new IntervalCollection(
             new Interval('12-02-2018', '13-02-2018')

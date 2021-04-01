@@ -9,7 +9,7 @@ use Level23\Druid\Filters\ColumnComparisonFilter;
 
 class ColumnComparisonFilterTest extends TestCase
 {
-    public function testFilter()
+    public function testFilter(): void
     {
         $dimensionA = new Dimension('name');
         $dimensionB = new Dimension('first_name');

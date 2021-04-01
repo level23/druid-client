@@ -20,7 +20,7 @@ class CompactTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testBuilder()
+    public function testBuilder(): void
     {
         $client  = new DruidClient([]);
         $builder = new CompactTaskBuilder($client, 'dataSource');

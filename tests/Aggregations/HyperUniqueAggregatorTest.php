@@ -16,7 +16,7 @@ class HyperUniqueAggregatorTest extends TestCase
      * @param bool $isInputHyperUnique
      * @param bool $round
      */
-    public function testAggregation(bool $isInputHyperUnique, bool $round)
+    public function testAggregation(bool $isInputHyperUnique, bool $round): void
     {
         $aggregator = new HyperUniqueAggregator(
             'hyperHyper',
@@ -33,7 +33,7 @@ class HyperUniqueAggregatorTest extends TestCase
         ], $aggregator->toArray());
     }
 
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $aggregator = new HyperUniqueAggregator(
             'hyperHyper',

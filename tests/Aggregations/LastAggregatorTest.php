@@ -26,7 +26,7 @@ class LastAggregatorTest extends TestCase
      * @param string $type
      * @param bool   $expectException
      */
-    public function testAggregator(string $type, bool $expectException = false)
+    public function testAggregator(string $type, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);

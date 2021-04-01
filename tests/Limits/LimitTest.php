@@ -12,7 +12,7 @@ use Level23\Druid\Collections\OrderByCollection;
 
 class LimitTest extends TestCase
 {
-    public function testLimit()
+    public function testLimit(): void
     {
         $limit = new Limit(2715);
 
@@ -57,7 +57,7 @@ class LimitTest extends TestCase
         $this->assertEquals($obj, $collection[0]);
     }
 
-    public function testLimitWithoutCollection()
+    public function testLimitWithoutCollection(): void
     {
         $limit = new Limit(2829);
 
@@ -65,7 +65,7 @@ class LimitTest extends TestCase
         $this->assertCount(0, $limit->getOrderByCollection());
     }
 
-    public function testLimitWithCollection()
+    public function testLimitWithCollection(): void
     {
         $collection = new OrderByCollection();
         $collection->add(new OrderBy('name'));

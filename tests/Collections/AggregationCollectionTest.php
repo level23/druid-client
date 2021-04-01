@@ -12,13 +12,13 @@ use Level23\Druid\Collections\AggregationCollection;
 
 class AggregationCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new AggregationCollection();
         $this->assertEquals(AggregatorInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = [
             'type'      => 'longSum',

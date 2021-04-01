@@ -12,7 +12,7 @@ class HasQueryGranularityTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testQueryGranularity()
+    public function testQueryGranularity(): void
     {
         $builder = new IndexTaskBuilder(new DruidClient([]), 'dataSource');
 

@@ -11,7 +11,7 @@ use Level23\Druid\Aggregations\FilteredAggregator;
 
 class FilteredAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function testAggregator(): void
     {
         $aggregator = new FilteredAggregator(
             new InFilter('member_id', [1, 2, 6, 112]),

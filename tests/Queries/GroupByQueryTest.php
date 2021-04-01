@@ -31,7 +31,7 @@ class GroupByQueryTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testQuery(string $granularity, bool $expectException = false)
+    public function testQuery(string $granularity, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);

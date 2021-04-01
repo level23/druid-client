@@ -8,7 +8,7 @@ use Level23\Druid\Extractions\PartialExtraction;
 
 class PartialExtractionTest extends TestCase
 {
-    public function testExtractionFunction()
+    public function testExtractionFunction(): void
     {
         $regex              = '^[a-z]*$';
         $extractionFunction = new PartialExtraction($regex);

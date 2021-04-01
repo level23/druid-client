@@ -26,7 +26,7 @@ class InlineLookupExtractionTest extends TestCase
      * @param bool        $optimize
      * @param bool        $injective
      */
-    public function testExtractionFunction($replaceMissingWith, bool $optimize, bool $injective)
+    public function testExtractionFunction($replaceMissingWith, bool $optimize, bool $injective): void
     {
         $extraction = new InlineLookupExtraction(
             ['m' => 'Male', 'f' => 'Female'],
@@ -60,7 +60,7 @@ class InlineLookupExtractionTest extends TestCase
         $this->assertEquals($expected, $extraction->toArray());
     }
 
-    public function testExtractionFunctionDefaults()
+    public function testExtractionFunctionDefaults(): void
     {
         $extraction = new InlineLookupExtraction(['y' => 'Yes', 'n' => 'No']);
         $expected   = [

@@ -9,7 +9,7 @@ use Level23\Druid\Filters\SelectorFilter;
 
 class NotFilterTest extends TestCase
 {
-    public function testFilter()
+    public function testFilter(): void
     {
         $filterName = new SelectorFilter('name', 'John');
 

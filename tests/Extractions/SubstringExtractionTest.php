@@ -8,7 +8,7 @@ use Level23\Druid\Extractions\SubstringExtraction;
 
 class SubstringExtractionTest extends TestCase
 {
-    public function testExtraction()
+    public function testExtraction(): void
     {
         $extraction = new SubstringExtraction(4);
 

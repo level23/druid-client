@@ -8,7 +8,7 @@ use Level23\Druid\HavingFilters\EqualToHavingFilter;
 
 class EqualToHavingFilterTest extends TestCase
 {
-    public function testHavingFilter()
+    public function testHavingFilter(): void
     {
         $filter = new EqualToHavingFilter('age', 16);
 

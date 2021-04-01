@@ -68,7 +68,7 @@ class LookupExtractionTest extends TestCase
         $this->assertEquals($expected, $extraction->toArray());
     }
 
-    public function testExtractionFunctionDefaults()
+    public function testExtractionFunctionDefaults(): void
     {
         $extraction = new LookupExtraction('user');
         $expected   = [

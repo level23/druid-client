@@ -42,7 +42,7 @@ class BoundFilterTest extends TestCase
      * @param string      $value
      * @param string|null $ordering
      */
-    public function testFilter(string $dimension, string $operator, string $value, string $ordering = null)
+    public function testFilter(string $dimension, string $operator, string $value, string $ordering = null): void
     {
         $filter = new BoundFilter($dimension, $operator, $value, $ordering);
 
@@ -74,7 +74,7 @@ class BoundFilterTest extends TestCase
         $this->assertEquals($expected, $filter->toArray());
     }
 
-    public function testInvalidOperator()
+    public function testInvalidOperator(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid operator given');
@@ -82,7 +82,7 @@ class BoundFilterTest extends TestCase
         new BoundFilter('age', 'is', '18');
     }
 
-    public function testExtractionFunction()
+    public function testExtractionFunction(): void
     {
         $extractionFunction = new LookupExtraction(
             'age_by_member', false

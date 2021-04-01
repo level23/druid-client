@@ -11,7 +11,7 @@ use Level23\Druid\Extractions\SearchQueryExtraction;
 
 class CascadeExtractionTest extends TestCase
 {
-    public function testCascade()
+    public function testCascade(): void
     {
         $substr = new SubstringExtraction(12, 2);
         $regex  = new RegexExtraction('aa');

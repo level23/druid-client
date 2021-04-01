@@ -9,7 +9,7 @@ use Level23\Druid\Responses\SelectQueryResponse;
 
 class SelectQueryResponseTest extends TestCase
 {
-    public function testResponse()
+    public function testResponse(): void
     {
         $rawResponse = [
             0 =>
@@ -95,7 +95,7 @@ class SelectQueryResponseTest extends TestCase
         ], $response->data());
     }
 
-    public function testEmptyResponse()
+    public function testEmptyResponse(): void
     {
         $response = new SelectQueryResponse([]);
 

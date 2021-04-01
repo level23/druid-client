@@ -12,7 +12,7 @@ class HasSegmentGranularityTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testSegmentGranularity()
+    public function testSegmentGranularity(): void
     {
         $builder = new IndexTaskBuilder(new DruidClient([]), 'dataSource');
 

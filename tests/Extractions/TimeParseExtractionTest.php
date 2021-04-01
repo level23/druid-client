@@ -9,7 +9,7 @@ use Level23\Druid\Extractions\TimeParseExtraction;
 
 class TimeParseExtractionTest extends TestCase
 {
-    public function testExtraction()
+    public function testExtraction(): void
     {
         $extraction = new TimeParseExtraction(
             "yyyy.MM.dd G 'at' hh:mm:ss a zzz",
@@ -24,7 +24,7 @@ class TimeParseExtractionTest extends TestCase
         ], $extraction->toArray());
     }
 
-    public function testExtractionDefaults()
+    public function testExtractionDefaults(): void
     {
         $extraction = new TimeParseExtraction(
             "yyyy.MM.dd G 'at' hh:mm:ss a zzz",

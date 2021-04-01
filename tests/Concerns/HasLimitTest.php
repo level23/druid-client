@@ -54,7 +54,7 @@ class HasLimitTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLimit()
+    public function testLimit(): void
     {
         $this->assertEquals(null, $this->builder->getLimit());
 
@@ -69,7 +69,7 @@ class HasLimitTest extends TestCase
         $this->assertInstanceOf(Limit::class, $this->builder->getLimit());
     }
 
-    public function testLimitUpdate()
+    public function testLimitUpdate(): void
     {
         $response = $this->builder->limit(15);
 
@@ -90,7 +90,7 @@ class HasLimitTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testOrderBy()
+    public function testOrderBy(): void
     {
         Mockery::mock('overload:' . OrderBy::class)
             ->shouldReceive('__construct')
@@ -112,7 +112,7 @@ class HasLimitTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    public function testIncorrectOrderByDirect()
+    public function testIncorrectOrderByDirect(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid order by direction given:');
@@ -120,7 +120,7 @@ class HasLimitTest extends TestCase
         $this->builder->orderBy('name', 'd');
     }
 
-    public function testSetOrderByWithLimit()
+    public function testSetOrderByWithLimit(): void
     {
         $result = $this->builder->limit(15);
         $this->assertEquals($this->builder, $result);

@@ -11,7 +11,7 @@ class CombinationsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testAndAndOrFilterCombination()
+    public function testAndAndOrFilterCombination(): void
     {
         $client = new DruidClient([]);
         $query  = $client->query('source');

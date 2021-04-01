@@ -22,7 +22,7 @@ class TimeSeriesQueryTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testQuery()
+    public function testQuery(): void
     {
         $dataSource  = 'buildings';
         $intervals   = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));

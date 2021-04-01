@@ -83,7 +83,7 @@ class HasDimensionsTest extends TestCase
      * @param array $expectedResult
      * @param bool  $expectException
      */
-    public function testSelect(array $parameters, $expectedResult, bool $expectException = false)
+    public function testSelect(array $parameters, $expectedResult, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -114,7 +114,7 @@ class HasDimensionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLookup()
+    public function testLookup(): void
     {
         Mockery::mock('overload:' . LookupDimension::class)
             ->shouldReceive('__construct')
@@ -140,7 +140,7 @@ class HasDimensionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLookupDefaults()
+    public function testLookupDefaults(): void
     {
         Mockery::mock('overload:' . LookupDimension::class)
             ->shouldReceive('__construct')
@@ -160,7 +160,7 @@ class HasDimensionsTest extends TestCase
         $this->builder->lookup('full_name', 'name');
     }
 
-    public function testSelectWithExtraction()
+    public function testSelectWithExtraction(): void
     {
         $counter = 0;
         $this->builder->select('user_id', 'username', function (ExtractionBuilder $builder) use (&$counter) {

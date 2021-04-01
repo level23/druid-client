@@ -12,13 +12,13 @@ use Level23\Druid\VirtualColumns\VirtualColumnInterface;
 
 class VirtualColumnCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new VirtualColumnCollection();
         $this->assertEquals(VirtualColumnInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = [
             'type'       => 'expression',
