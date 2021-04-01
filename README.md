@@ -82,7 +82,7 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 
 ## Changelog
 
-**v1.0.8**
+**v1.1.0**
 
 - OrderBy now defaults to `asc` direction
 - `limit()` now supports an offset. See [limit()](#limit)
