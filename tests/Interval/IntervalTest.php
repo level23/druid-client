@@ -13,7 +13,7 @@ class IntervalTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testInterval()
+    public function testInterval(): void
     {
         $format   = 'Y-m-d\TH:i:s.000\Z';
         $start    = new DateTime('yesterday');
@@ -42,7 +42,7 @@ class IntervalTest extends TestCase
      *           ["2019-04-15", "2019-04-15"]
      *           ["2019-04-15", null, true]
      */
-    public function testIntervalWithStrings($start, $stop = null, $expectException = false)
+    public function testIntervalWithStrings($start, $stop = null, $expectException = false): void
     {
         $format = 'Y-m-d\TH:i:s.000\Z';
 
@@ -56,14 +56,14 @@ class IntervalTest extends TestCase
             [$start, $stop] = explode('/', $start);
         }
 
-        $startObj = new DateTime($start);
-        $stopObj  = new DateTime($stop);
+        $startObj = new DateTime((string)$start);
+        $stopObj  = new DateTime((string)$stop);
 
         $this->assertEquals($interval->getStart()->format($format), $startObj->format($format));
         $this->assertEquals($interval->getStop()->format($format), $stopObj->format($format));
     }
 
-    public function testWithEndBeforeStart()
+    public function testWithEndBeforeStart(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The end date must be greater than the start date');
@@ -74,7 +74,7 @@ class IntervalTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testWithoutEndDate()
+    public function testWithoutEndDate(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid parameters given for the interval() method.');

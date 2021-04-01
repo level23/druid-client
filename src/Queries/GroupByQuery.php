@@ -5,6 +5,7 @@ namespace Level23\Druid\Queries;
 
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\Types\Granularity;
+use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
@@ -206,11 +207,29 @@ class GroupByQuery implements QueryInterface
      */
     public function setLimit($limit)
     {
-        if (is_numeric($limit)) {
-            $limit = new Limit($limit);
-        }
+        if ($limit instanceof LimitInterface) {
+            $this->limit = $limit;
+        } else {
 
-        $this->limit = $limit;
+            if (!$this->limit) {
+                $this->limit = new Limit();
+            }
+
+            $this->limit->setLimit($limit);
+        }
+    }
+
+    /**
+     * The "offset" parameter tells Druid to skip this many rows when returning results.
+     *
+     * @param int $offset
+     */
+    public function setOffset(int $offset)
+    {
+        if (!$this->limit) {
+            $this->limit = new Limit();
+        }
+        $this->limit->setOffset($offset);
     }
 
     /**

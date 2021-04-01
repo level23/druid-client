@@ -5,6 +5,12 @@ namespace Level23\Druid\Firehoses;
 
 use Level23\Druid\Interval\Interval;
 
+/**
+ * Class IngestSegmentFirehose
+ *
+ * @package Level23\Druid\Firehoses
+ * @deprecated
+ */
 class IngestSegmentFirehose implements FirehoseInterface
 {
     /**

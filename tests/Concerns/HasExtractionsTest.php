@@ -44,7 +44,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLookup()
+    public function testLookup(): void
     {
         $this->getExtractionMock(LookupExtraction::class)
             ->shouldReceive('__construct')
@@ -62,7 +62,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLookupDefaults()
+    public function testLookupDefaults(): void
     {
         $this->getExtractionMock(LookupExtraction::class)
             ->shouldReceive('__construct')
@@ -78,7 +78,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testBucket()
+    public function testBucket(): void
     {
         $this->getExtractionMock(BucketExtraction::class)
             ->shouldReceive('__construct')
@@ -96,7 +96,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testBucketDefault()
+    public function testBucketDefault(): void
     {
         $this->getExtractionMock(BucketExtraction::class)
             ->shouldReceive('__construct')
@@ -114,7 +114,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testPartial()
+    public function testPartial(): void
     {
         $this->getExtractionMock(PartialExtraction::class)
             ->shouldReceive('__construct')
@@ -130,7 +130,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRegex()
+    public function testRegex(): void
     {
         $this->getExtractionMock(RegexExtraction::class)
             ->shouldReceive('__construct')
@@ -146,7 +146,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testRegexDefaults()
+    public function testRegexDefaults(): void
     {
         $this->getExtractionMock(RegexExtraction::class)
             ->shouldReceive('__construct')
@@ -162,7 +162,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchQuery()
+    public function testSearchQuery(): void
     {
         $this->getExtractionMock(SearchQueryExtraction::class)
             ->shouldReceive('__construct')
@@ -178,7 +178,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSearchQueryDefaults()
+    public function testSearchQueryDefaults(): void
     {
         $this->getExtractionMock(SearchQueryExtraction::class)
             ->shouldReceive('__construct')
@@ -194,7 +194,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSubstring()
+    public function testSubstring(): void
     {
         $this->getExtractionMock(SubstringExtraction::class)
             ->shouldReceive('__construct')
@@ -210,7 +210,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSubstringDefaults()
+    public function testSubstringDefaults(): void
     {
         $this->getExtractionMock(SubstringExtraction::class)
             ->shouldReceive('__construct')
@@ -226,7 +226,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testTimeFormat()
+    public function testTimeFormat(): void
     {
         $this->getExtractionMock(TimeFormatExtraction::class)
             ->shouldReceive('__construct')
@@ -242,7 +242,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testTimeFormatWithDefaults()
+    public function testTimeFormatWithDefaults(): void
     {
         $this->getExtractionMock(TimeFormatExtraction::class)
             ->shouldReceive('__construct')
@@ -258,7 +258,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMultiple()
+    public function testMultiple(): void
     {
         $builder = new ExtractionBuilder();
         $builder->timeFormat();
@@ -287,7 +287,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testInlineLookup()
+    public function testInlineLookup(): void
     {
         $this->getExtractionMock(InlineLookupExtraction::class)
             ->shouldReceive('__construct')
@@ -313,7 +313,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testInlineLookupWithDefaults()
+    public function testInlineLookupWithDefaults(): void
     {
         $this->getExtractionMock(InlineLookupExtraction::class)
             ->shouldReceive('__construct')
@@ -329,7 +329,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testFormat()
+    public function testFormat(): void
     {
         $this->getExtractionMock(StringFormatExtraction::class)
             ->shouldReceive('__construct')
@@ -346,7 +346,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testFormatDefaults()
+    public function testFormatDefaults(): void
     {
         $this->getExtractionMock(StringFormatExtraction::class)
             ->shouldReceive('__construct')
@@ -363,7 +363,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testUpper()
+    public function testUpper(): void
     {
         $this->getExtractionMock(UpperExtraction::class)
             ->shouldReceive('__construct')
@@ -379,7 +379,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLower()
+    public function testLower(): void
     {
         $this->getExtractionMock(LowerExtraction::class)
             ->shouldReceive('__construct')
@@ -395,7 +395,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testTimeParse()
+    public function testTimeParse(): void
     {
         $this->getExtractionMock(TimeParseExtraction::class)
             ->shouldReceive('__construct')
@@ -411,7 +411,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testTimeParseWithDefaults()
+    public function testTimeParseWithDefaults(): void
     {
         $this->getExtractionMock(TimeParseExtraction::class)
             ->shouldReceive('__construct')
@@ -427,7 +427,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testJavascript()
+    public function testJavascript(): void
     {
         $this->getExtractionMock(JavascriptExtraction::class)
             ->shouldReceive('__construct')
@@ -443,7 +443,7 @@ class HasExtractionsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testJavascriptWithDefaults()
+    public function testJavascriptWithDefaults(): void
     {
         $this->getExtractionMock(JavascriptExtraction::class)
             ->shouldReceive('__construct')

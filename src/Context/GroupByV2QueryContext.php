@@ -179,4 +179,18 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
 
         return $this;
     }
+
+    /**
+     * If Broker pushes limit down to queryable nodes (historicals, peons) then limit results
+     * during segment scan. This context value can be used to override
+     * druid.query.groupBy.applyLimitPushDownToSegment.
+     *
+     * @param bool $applyLimitPushDownToSegment
+     */
+    public function setApplyLimitPushDownToSegment(bool $applyLimitPushDownToSegment)
+    {
+        $this->properties['applyLimitPushDownToSegment'] = $applyLimitPushDownToSegment;
+
+        return $this;
+    }
 }

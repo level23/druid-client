@@ -8,7 +8,7 @@ use Level23\Druid\Dimensions\LookupDimension;
 
 class LookupDimensionTest extends TestCase
 {
-    public function testDimension()
+    public function testDimension(): void
     {
         $lookupDimension = new LookupDimension(
             'number_id',
@@ -27,7 +27,7 @@ class LookupDimensionTest extends TestCase
         ], $lookupDimension->toArray());
     }
 
-    public function testDimensionWithRetainMissingValue()
+    public function testDimensionWithRetainMissingValue(): void
     {
         $lookupDimension = new LookupDimension(
             'number_id',
@@ -45,7 +45,7 @@ class LookupDimensionTest extends TestCase
         ], $lookupDimension->toArray());
     }
 
-    public function testDimensionReplaceMissingWith()
+    public function testDimensionReplaceMissingWith(): void
     {
         $lookupDimension = new LookupDimension(
             'number_id',

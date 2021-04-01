@@ -14,7 +14,7 @@ class HasIntervalTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testInterval()
+    public function testInterval(): void
     {
         $builder = new IndexTaskBuilder(new DruidClient([]), 'dataSource');
 

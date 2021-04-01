@@ -10,6 +10,11 @@ class CascadeExtraction implements ExtractionInterface
      */
     protected $extractions = [];
 
+    /**
+     * CascadeExtraction constructor.
+     *
+     * @param \Level23\Druid\Extractions\ExtractionInterface ...$extractions
+     */
     public function __construct(...$extractions)
     {
         $this->extractions = $extractions;

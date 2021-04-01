@@ -8,7 +8,7 @@ use Level23\Druid\HavingFilters\GreaterThanHavingFilter;
 
 class GreaterThanHavingFilterTest extends TestCase
 {
-    public function testHavingFilter()
+    public function testHavingFilter(): void
     {
         $filter = new GreaterThanHavingFilter('age', 16);
 

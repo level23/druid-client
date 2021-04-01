@@ -32,17 +32,23 @@ trait HasLimit
 
     /**
      * Limit out result by N records.
+     * The "offset" parameter tells Druid to skip this many rows when returning results.
      *
-     * @param int $limit
+     * @param int      $limit
+     * @param int|null $offset
      *
      * @return $this
      */
-    public function limit(int $limit)
+    public function limit(int $limit, int $offset = null)
     {
         if ($this->limit instanceof LimitInterface) {
             $this->limit->setLimit($limit);
         } else {
             $this->limit = new Limit($limit);
+        }
+
+        if ($offset !== null) {
+            $this->limit->setOffset($offset);
         }
 
         return $this;
@@ -53,20 +59,20 @@ trait HasLimit
      * You should use `orderByDirection()` for TimeSeries, Select and Scan Queries.
      *
      * @param string $dimensionOrMetric The dimension or metric where you want to order by.
-     * @param string $direction         The direction of your order.
+     * @param string $direction         The direction of your order. Default is "asc".
      * @param string $sortingOrder      The algorithm used to order the result.
      *
      * @return $this
      */
     public function orderBy(
         string $dimensionOrMetric,
-        string $direction,
+        string $direction = OrderByDirection::ASC,
         string $sortingOrder = SortingOrder::LEXICOGRAPHIC
     ) {
         $order = new OrderBy($dimensionOrMetric, $direction, $sortingOrder);
 
         if (!$this->limit) {
-            $this->limit = new Limit(self::$DEFAULT_MAX_LIMIT);
+            $this->limit = new Limit();
         }
 
         $this->limit->addOrderBy($order);

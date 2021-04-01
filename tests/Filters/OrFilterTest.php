@@ -9,7 +9,7 @@ use Level23\Druid\Filters\SelectorFilter;
 
 class OrFilterTest extends TestCase
 {
-    public function testFilter()
+    public function testFilter(): void
     {
         $filter1 = new SelectorFilter('name', 'John');
         $filter2 = new SelectorFilter('age', '11');

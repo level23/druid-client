@@ -9,7 +9,7 @@ use Level23\Druid\HavingFilters\LessThanHavingFilter;
 
 class NotHavingFilterTest extends TestCase
 {
-    public function testHavingFilter()
+    public function testHavingFilter(): void
     {
         $lessFilter = new LessThanHavingFilter('age', 16);
 

@@ -10,7 +10,7 @@ use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 
 class JavaScriptPostAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function testAggregator(): void
     {
         $collections = new PostAggregationCollection(
             new FieldAccessPostAggregator('delta', 'delta'),

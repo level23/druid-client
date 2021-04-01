@@ -9,7 +9,7 @@ use Level23\Druid\HavingFilters\EqualToHavingFilter;
 
 class AndHavingFilterTest extends TestCase
 {
-    public function testHavingFilter()
+    public function testHavingFilter(): void
     {
         $filter1 = new EqualToHavingFilter('age', 16);
         $filter2 = new EqualToHavingFilter('cars', 0);

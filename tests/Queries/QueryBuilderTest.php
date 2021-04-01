@@ -77,7 +77,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testExecute()
+    public function testExecute(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getTimeseriesQueryMock();
@@ -111,7 +111,7 @@ class QueryBuilderTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSelectVirtual()
+    public function testSelectVirtual(): void
     {
         Mockery::mock('overload:' . VirtualColumn::class)
             ->shouldReceive('__construct')
@@ -132,7 +132,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testGranularity()
+    public function testGranularity(): void
     {
         $response = $this->builder->granularity('year');
         $this->assertEquals($this->builder, $response);
@@ -140,7 +140,30 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals('year', $this->getProperty($this->builder, 'granularity'));
     }
 
-    public function testToJson()
+    public function testToJsonWithFailure(): void
+    {
+        $context = ['foo' => 'bar'];
+        $query   = $this->getTimeseriesQueryMock();
+
+        $result = [INF => INF];
+
+        $this->builder
+            ->shouldReceive('buildQuery')
+            ->with($context)
+            ->once()
+            ->andReturn($query);
+
+        $query->shouldReceive('toArray')
+            ->once()
+            ->andReturn($result);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('json_encode error:');
+
+        $this->builder->toJson($context);
+    }
+
+    public function testToJson(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getTimeseriesQueryMock();
@@ -162,7 +185,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(json_encode($result, JSON_PRETTY_PRINT), $response);
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getTimeseriesQueryMock();
@@ -189,7 +212,7 @@ class QueryBuilderTest extends TestCase
      *
      * @throws \ReflectionException
      */
-    public function testSubtotals()
+    public function testSubtotals(): void
     {
         $subtotals = [['country', 'city'], ['country'], []];
         $this->builder->subtotals($subtotals);
@@ -200,7 +223,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testTimeseries()
+    public function testTimeseries(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getTimeseriesQueryMock();
@@ -234,7 +257,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testTopN()
+    public function testTopN(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getTopNQueryMock();
@@ -273,7 +296,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testScan(?int $rowBatchSize, bool $legacy, string $resultFormat)
+    public function testScan(?int $rowBatchSize, bool $legacy, string $resultFormat): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getScanQueryMock();
@@ -304,7 +327,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testMetrics()
+    public function testMetrics(): void
     {
         $metrics = ['added', 'deleted'];
 
@@ -319,7 +342,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testSelect()
+    public function testSelect(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getSelectQueryMock();
@@ -352,7 +375,7 @@ class QueryBuilderTest extends TestCase
      * @preserveGlobalState disabled
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testSegmentMetadata()
+    public function testSegmentMetadata(): void
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -383,7 +406,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testDatasource()
+    public function testDatasource(): void
     {
         $response = $this->builder->dataSource('myFavorite');
         $this->assertEquals($this->builder, $response);
@@ -395,7 +418,6 @@ class QueryBuilderTest extends TestCase
      * @testWith [{"__time":"hour"}, 5, "hour", true]
      *           [{"__time":"hour", "name":"name"}, 5, "hour", false]
      *           [{"__time":"hour"}, null, "hour", false]
-     *           [{"__time":"hour"}, 999999, "hour", false]
      *           [{"__time":"hour"}, 5, null, false]
      *
      * @param array       $dimensions
@@ -403,7 +425,7 @@ class QueryBuilderTest extends TestCase
      * @param string|null $orderBy
      * @param bool        $expected
      */
-    public function testIsTopNQuery(array $dimensions, ?int $limit, ?string $orderBy, bool $expected)
+    public function testIsTopNQuery(array $dimensions, ?int $limit, ?string $orderBy, bool $expected): void
     {
         $this->builder->select($dimensions);
 
@@ -435,7 +457,7 @@ class QueryBuilderTest extends TestCase
      * @param mixed $dimension
      * @param bool  $expected
      */
-    public function testIsTimeSeriesQuery($dimension, bool $expected)
+    public function testIsTimeSeriesQuery($dimension, bool $expected): void
     {
         $this->builder->select($dimension);
 
@@ -452,7 +474,7 @@ class QueryBuilderTest extends TestCase
      * @param bool $withIdentifier
      * @param bool $withAggregations
      */
-    public function testIsSelectQuery(bool $withIdentifier, bool $withAggregations)
+    public function testIsSelectQuery(bool $withIdentifier, bool $withAggregations): void
     {
         $expected = ($withIdentifier && !$withAggregations);
 
@@ -476,7 +498,7 @@ class QueryBuilderTest extends TestCase
      *
      * @param bool $withSearchFilter
      */
-    public function testIsSearchQuery(bool $withSearchFilter)
+    public function testIsSearchQuery(bool $withSearchFilter): void
     {
         if ($withSearchFilter) {
             $this->builder->searchContains('wikipedia');
@@ -495,7 +517,7 @@ class QueryBuilderTest extends TestCase
      * @param bool $withCorrectDimensions
      * @param bool $withAggregations
      */
-    public function testIsScanQuery(bool $withCorrectDimensions, bool $withAggregations)
+    public function testIsScanQuery(bool $withCorrectDimensions, bool $withAggregations): void
     {
         $expected = ($withCorrectDimensions && !$withAggregations);
 
@@ -528,7 +550,7 @@ class QueryBuilderTest extends TestCase
      * @param bool $alias
      * @param bool $extractions
      */
-    public function testIsDimensionsListScanCompliant(bool $onlyDimensions, bool $alias, bool $extractions)
+    public function testIsDimensionsListScanCompliant(bool $onlyDimensions, bool $alias, bool $extractions): void
     {
         $expected = true;
         if (!$onlyDimensions) {
@@ -589,7 +611,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testGroupBy()
+    public function testGroupBy(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getGroupByQueryMock();
@@ -621,7 +643,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testSearch()
+    public function testSearch(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getSearchQueryMock();
@@ -652,7 +674,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testPagingIdentifier()
+    public function testPagingIdentifier(): void
     {
         $identifier = [
             'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-12T14:15:44.694Z' => 9,
@@ -800,7 +822,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($groupBy, $response);
     }
 
-    public function testBuildTimeSeriesQueryWithoutIntervals()
+    public function testBuildTimeSeriesQueryWithoutIntervals(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
@@ -955,7 +977,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildTopNQueryWithoutLimit()
+    public function testBuildTopNQueryWithoutLimit(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You should specify a limit to make use of a top query');
@@ -967,7 +989,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testBuildTopNQueryWithoutInterval()
+    public function testBuildTopNQueryWithoutInterval(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
@@ -978,7 +1000,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testBuildSelectQueryWithoutInterval()
+    public function testBuildSelectQueryWithoutInterval(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
@@ -990,7 +1012,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildSelectQueryWithoutLimit()
+    public function testBuildSelectQueryWithoutLimit(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to supply a limit');
@@ -1003,7 +1025,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testBuildSearchQueryWithoutInterval()
+    public function testBuildSearchQueryWithoutInterval(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
@@ -1015,7 +1037,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildSearchQueryWithoutSearchFilter()
+    public function testBuildSearchQueryWithoutSearchFilter(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify a search filter!');
@@ -1220,7 +1242,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testBuildScanQueryWithoutInterval()
+    public function testBuildScanQueryWithoutInterval(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
@@ -1232,7 +1254,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildScanQueryWithIncorrectResultFormatType()
+    public function testBuildScanQueryWithIncorrectResultFormatType(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid scanQuery resultFormat given');
@@ -1245,7 +1267,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildScanQueryWithoutCorrectDimensions()
+    public function testBuildScanQueryWithoutCorrectDimensions(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Only simple dimension or metric selects are available in a scan query.');
@@ -1256,12 +1278,12 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [true, true, {}, true, 10, null, false, "list", "", true, true]
-     *           [false, false, {}, false, 50, 10, true, "compactedList", "channel", false, true]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 0, 200, false, "list", "__time", true, true]
-     *           [false, true, {}, false, 999999, 0, true, "compactedList", "__time", false, true]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, false, 0, 200, false, "list", "__time", true, false]
-     *           [false, true, {}, false, 999999, 0, true, "compactedList", "__time", false, false]
+     * @testWith [true, true, {}, true, 10, 20, null, false, "list", "", true, true]
+     *           [false, false, {}, false, 50, null, 10, true, "compactedList", "channel", false, true]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 1, 1, 200, false, "list", "__time", true, true]
+     *           [false, true, {}, false, 12, 12, 0, true, "compactedList", "__time", false, true]
+     *           [true, false, {"maxRowsQueuedForOrdering":5}, false, 0, 0, 200, false, "list", "__time", true, false]
+     *           [false, true, {}, false, 12, null, 0, true, "compactedList", "__time", false, false]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -1270,7 +1292,8 @@ class QueryBuilderTest extends TestCase
      * @param bool     $withFilter
      * @param array    $context
      * @param bool     $contextAsObj
-     * @param int      $limit
+     * @param int|null $limit
+     * @param int|null $offset
      * @param int|null $rowBatchSize
      * @param bool     $legacy
      * @param string   $resultFormat
@@ -1285,7 +1308,8 @@ class QueryBuilderTest extends TestCase
         bool $withFilter,
         array $context,
         bool $contextAsObj,
-        int $limit,
+        ?int $limit,
+        ?int $offset,
         ?int $rowBatchSize,
         bool $legacy,
         string $resultFormat,
@@ -1306,8 +1330,8 @@ class QueryBuilderTest extends TestCase
             $this->builder->where($filter);
         }
 
-        if ($limit > 0) {
-            $this->builder->limit($limit);
+        if ($limit > 0 || $offset > 0) {
+            $this->builder->limit($limit, $offset);
         }
 
         if (!empty($orderByField) && $useLegacyOrderBy) {
@@ -1342,10 +1366,16 @@ class QueryBuilderTest extends TestCase
                 ->with(new IsInstanceOf(ScanQueryContext::class));
         }
 
-        if ($limit > 0 && $limit != QueryBuilder::$DEFAULT_MAX_LIMIT) {
+        if ($limit > 0) {
             $query->shouldReceive('setLimit')
                 ->once()
                 ->with($limit);
+        }
+
+        if ($offset > 0) {
+            $query->shouldReceive('setOffset')
+                ->once()
+                ->with($offset);
         }
 
         $query->shouldReceive('setResultFormat')
@@ -1381,7 +1411,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildTopNQueryWithoutOrderBy()
+    public function testBuildTopNQueryWithoutOrderBy(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You should specify a an order by direction to make use of a top query');
@@ -1503,7 +1533,7 @@ class QueryBuilderTest extends TestCase
         $this->builder->shouldAllowMockingProtectedMethods()->buildTopNQuery($context);
     }
 
-    public function testBuildGroupByQueryWithoutInterval()
+    public function testBuildGroupByQueryWithoutInterval(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');

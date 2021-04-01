@@ -19,7 +19,7 @@ class KillTaskTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testTask(bool $withContext, string $taskId = null)
+    public function testTask(bool $withContext, string $taskId = null): void
     {
         $dataSource = 'myPets';
         $interval   = new Interval('12-02-2019', '13-02-2019');

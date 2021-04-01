@@ -22,7 +22,7 @@ class BetweenFilterTest extends TestCase
      *           ["john", "doe", "alphanumeric"]
      *           ["john", "doe", "something", true]
      */
-    public function testFilter($minValue, $maxValue, $ordering = null, bool $expectException = false)
+    public function testFilter($minValue, $maxValue, $ordering = null, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -48,7 +48,7 @@ class BetweenFilterTest extends TestCase
         $this->assertEquals($expected, $filter->toArray());
     }
 
-    public function testExtractionFunction()
+    public function testExtractionFunction(): void
     {
         $extractionFunction = new LookupExtraction(
             'real_age', false
@@ -79,7 +79,7 @@ class BetweenFilterTest extends TestCase
      * @param string $minValue
      * @param string $maxValue
      */
-    public function testDefaultOrdering(string $minValue, string $maxValue)
+    public function testDefaultOrdering(string $minValue, string $maxValue): void
     {
         $filter = new BetweenFilter('age', $minValue, $maxValue);
 

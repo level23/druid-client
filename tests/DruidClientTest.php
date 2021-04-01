@@ -25,7 +25,7 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use GuzzleHttp\Exception\BadResponseException;
 use Level23\Druid\Queries\SegmentMetadataQuery;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
@@ -43,7 +43,7 @@ class DruidClientTest extends TestCase
         return Mockery::mock(DruidClient::class, [['retries' => 0], $guzzle]);
     }
 
-    public function testInvalidGranularity()
+    public function testInvalidGranularity(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The given granularity is invalid');
@@ -56,7 +56,7 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMakeGuzzleClient()
+    public function testMakeGuzzleClient(): void
     {
         Mockery::mock('overload:' . GuzzleClient::class)
             ->shouldReceive('__construct')
@@ -75,7 +75,7 @@ class DruidClientTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testSetGuzzleClient()
+    public function testSetGuzzleClient(): void
     {
         $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
 
@@ -91,7 +91,7 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testQuery()
+    public function testQuery(): void
     {
         $client = new DruidClient([]);
 
@@ -107,7 +107,7 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMetaBuilder()
+    public function testMetaBuilder(): void
     {
         $client = new DruidClient([]);
 
@@ -123,7 +123,7 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testCompact()
+    public function testCompact(): void
     {
         $client = new DruidClient([]);
 
@@ -139,7 +139,7 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testKill()
+    public function testKill(): void
     {
         $client = new DruidClient([]);
 
@@ -156,7 +156,7 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testReindex()
+    public function testReindex(): void
     {
         $dataSource = 'somethingElse';
 
@@ -179,7 +179,7 @@ class DruidClientTest extends TestCase
         $indexTaskBuilder = Mockery::mock('overload:' . IndexTaskBuilder::class);
         $indexTaskBuilder->shouldReceive('__construct')
             ->once()
-            ->with($client, $dataSource, IngestSegmentFirehose::class);
+            ->with($client, $dataSource, DruidInputSource::class);
 
         $indexTaskBuilder->shouldReceive('fromDataSource')
             ->with($dataSource)
@@ -209,7 +209,7 @@ class DruidClientTest extends TestCase
      * @preserveGlobalState disabled
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testExecuteTask()
+    public function testExecuteTask(): void
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -261,7 +261,7 @@ class DruidClientTest extends TestCase
      * @return void
      * @throws \Exception
      */
-    public function testTaskStatus(array $executeRequestResponse, array $expectedResponse)
+    public function testTaskStatus(array $executeRequestResponse, array $expectedResponse): void
     {
         $client = $this->mockDruidClient();
         $client->makePartial();
@@ -285,7 +285,7 @@ class DruidClientTest extends TestCase
         $this->assertEquals($expectedResponse['id'] ?? '', $response->getId());
     }
 
-    public function testLogHandler()
+    public function testLogHandler(): void
     {
         $client = $this->mockDruidClient();
         $client->makePartial();
@@ -304,7 +304,7 @@ class DruidClientTest extends TestCase
      * @preserveGlobalState disabled
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testExecuteDruidQuery()
+    public function testExecuteDruidQuery(): void
     {
         $client = $this->mockDruidClient();
         $client->makePartial();
@@ -341,7 +341,7 @@ class DruidClientTest extends TestCase
         $this->assertEquals(['result' => 'yes'], $client->executeQuery($query));
     }
 
-    public function testParseResponse()
+    public function testParseResponse(): void
     {
         $client = $this->mockDruidClient();
         $client->makePartial();
@@ -359,7 +359,7 @@ class DruidClientTest extends TestCase
             ->parseResponse(new GuzzleResponse(200, [], 'something'));
     }
 
-    public function testConfig()
+    public function testConfig(): void
     {
         $routerUrl = 'http://router.url.here';
         $client    = new DruidClient(['pieter' => 'okay', 'router_url' => $routerUrl]);
@@ -417,7 +417,9 @@ class DruidClientTest extends TestCase
                     throw new ServerException(
                         'Unknown exception',
                         new GuzzleRequest('GET', '/druid/v1', [], ''),
-                        null
+                        new GuzzleResponse(500, [], (string)json_encode([
+                            'blaat' => 'woei',
+                        ]))
                     );
                 },
                 ServerException::class,
@@ -457,7 +459,8 @@ class DruidClientTest extends TestCase
                 function () {
                     throw new BadResponseException(
                         'Bad response',
-                        new GuzzleRequest('GET', '/druid/v1', [], '')
+                        new GuzzleRequest('GET', '/druid/v1', [], ''),
+                        new GuzzleResponse(500)
                     );
                 },
                 BadResponseException::class,
@@ -534,7 +537,7 @@ class DruidClientTest extends TestCase
                 ->shouldReceive('parseResponse')
                 ->once()
                 ->andReturnUsing(function (ResponseInterface $input) use (&$expectedResponse) {
-                    $response         = \GuzzleHttp\json_decode($input->getBody()->getContents(), true) ?: [];
+                    $response         = json_decode($input->getBody()->getContents(), true) ?: [];
                     $expectedResponse = $response;
 
                     return $expectedResponse;
@@ -558,7 +561,7 @@ class DruidClientTest extends TestCase
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testExecuteRawRequestWithRetries(int $retries, int $delay)
+    public function testExecuteRawRequestWithRetries(int $retries, int $delay): void
     {
         $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
 

@@ -8,7 +8,7 @@ use Level23\Druid\Responses\TimeSeriesQueryResponse;
 
 class TimeSeriesQueryResponseTest extends TestCase
 {
-    public function testResponse()
+    public function testResponse(): void
     {
         $rawResponse = [
             0 =>
@@ -52,7 +52,7 @@ class TimeSeriesQueryResponseTest extends TestCase
         ], $response->data());
     }
 
-    public function testEmptyResponse()
+    public function testEmptyResponse(): void
     {
         $response = new TimeSeriesQueryResponse([], 'time');
 

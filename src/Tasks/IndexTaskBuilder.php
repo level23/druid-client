@@ -14,9 +14,9 @@ use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Transforms\TransformBuilder;
 use Level23\Druid\Concerns\HasQueryGranularity;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Concerns\HasSegmentGranularity;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Collections\TransformCollection;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
@@ -46,7 +46,7 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * @var string|null
      */
-    protected $firehoseType;
+    protected $inputSourceType;
 
     /**
      * @var bool
@@ -85,14 +85,15 @@ class IndexTaskBuilder extends TaskBuilder
      * IndexTaskBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
-     * @param string                     $toDataSource Data source where the data will be imported in.
-     * @param string|null                $firehoseType The type of FireHose to use (where to retrieve the data from).
+     * @param string                     $toDataSource    Data source where the data will be imported in.
+     * @param string|null                $inputSourceType The type of InputSource to use (where to retrieve the data
+     *                                                    from).
      */
-    public function __construct(DruidClient $client, string $toDataSource, string $firehoseType = null)
+    public function __construct(DruidClient $client, string $toDataSource, string $inputSourceType = null)
     {
-        $this->client       = $client;
-        $this->dataSource   = $toDataSource;
-        $this->firehoseType = $firehoseType;
+        $this->client          = $client;
+        $this->dataSource      = $toDataSource;
+        $this->inputSourceType = $inputSourceType;
     }
 
     /**
@@ -186,21 +187,20 @@ class IndexTaskBuilder extends TaskBuilder
             );
         }
 
-        $firehose = null;
-        switch ($this->firehoseType) {
-            case IngestSegmentFirehose::class:
+        switch ($this->inputSourceType) {
+            case DruidInputSource::class:
                 $fromDataSource = $this->fromDataSource ?? $this->dataSource;
 
                 // First, validate the given from and to. Make sure that these
                 // match the beginning and end of an interval.
                 $this->validateInterval($fromDataSource, $this->interval);
 
-                $firehose = new IngestSegmentFirehose($fromDataSource, $this->interval);
+                $inputSource = new DruidInputSource($fromDataSource, $this->interval);
                 break;
 
             default:
                 throw new InvalidArgumentException(
-                    'No firehose known. Currently we only support re-indexing (IngestSegmentFirehose).'
+                    'No InputSource known. Currently we only support re-indexing (DruidInputSource).'
                 );
         }
 
@@ -210,7 +210,7 @@ class IndexTaskBuilder extends TaskBuilder
 
         $task = new IndexTask(
             $this->dataSource,
-            $firehose,
+            $inputSource,
             $granularity,
             $this->transformSpec,
             $this->tuningConfig,

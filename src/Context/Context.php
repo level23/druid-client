@@ -23,18 +23,20 @@ abstract class Context
 
             $method = 'set' . $key;
 
-            $callable = [$this, $method];
-            if (!is_callable($callable)) {
-                throw new InvalidArgumentException(
-                    'Setting ' . $key . ' was not found in ' . __CLASS__
-                );
-            }
-
             if (!is_scalar($value)) {
                 throw new InvalidArgumentException(
                     'Invalid value ' . var_export($value, true) .
                     ' for ' . $key . ' in ' . __CLASS__
                 );
+            }
+
+            $callable = [$this, $method];
+            if (!is_callable($callable)) {
+                // From now on, we support setting properties where no setters are defined for.
+                // This is because the context settings can vary per version. In this way we can support new
+                // non-existing properties.
+                $this->properties[$key] = $value;
+                continue;
             }
 
             call_user_func($callable, $value);

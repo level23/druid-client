@@ -12,13 +12,13 @@ use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 
 class PostAggregationCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new PostAggregationCollection();
         $this->assertEquals(PostAggregatorInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = [
             'type'      => 'fieldAccess',

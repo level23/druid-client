@@ -16,7 +16,7 @@ class LeastPostAggregatorTest extends TestCase
      *
      * @param string $type
      */
-    public function testAggregator(string $type)
+    public function testAggregator(string $type): void
     {
         $collections = new PostAggregationCollection(
             new FieldAccessPostAggregator('field1', 'field1'),

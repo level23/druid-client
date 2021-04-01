@@ -10,7 +10,7 @@ use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidQueryExceptionTest extends TestCase
 {
-    public function testException()
+    public function testException(): void
     {
         $query = new TimeSeriesQuery('something', new IntervalCollection(), 'all');
 

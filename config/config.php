@@ -50,4 +50,11 @@ return [
      * Set to 0 to disable they delay between retries.
      */
     'retry_delay_ms'  => env('DRUID_RETRY_DELAY_MS', 500),
+
+    /**
+     * Supply the druid version which you are sending your queries to.
+     * Based on this druid version, we can enable / disable certain new features if your
+     * server supports this.
+     */
+    'version'         => env('DRUID_VERSION'),
 ];

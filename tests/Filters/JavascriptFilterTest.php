@@ -14,7 +14,7 @@ class JavascriptFilterTest extends TestCase
      * @testWith [true]
      *           [false]
      */
-    public function testFilter(bool $useExtractionFunction)
+    public function testFilter(bool $useExtractionFunction): void
     {
         $extractionFunction = new LookupExtraction(
             'singup_by_member', false

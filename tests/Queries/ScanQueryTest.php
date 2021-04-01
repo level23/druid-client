@@ -23,7 +23,7 @@ class ScanQueryTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testQuery(bool $legacy)
+    public function testQuery(bool $legacy): void
     {
         $intervals = new IntervalCollection(
             new Interval('12-02-2018', '13-02-2018')
@@ -51,6 +51,10 @@ class ScanQueryTest extends TestCase
 
         $query->setBatchSize(100);
         $expected['batchSize'] = 100;
+        $this->assertEquals($expected, $query->toArray());
+
+        $query->setOffset(20);
+        $expected['offset'] = 20;
         $this->assertEquals($expected, $query->toArray());
 
         $query->setLimit(500);

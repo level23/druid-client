@@ -20,7 +20,7 @@ use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 
 class TopNQueryTest extends TestCase
 {
-    public function testQuery()
+    public function testQuery(): void
     {
         $dataSource  = 'animals';
         $intervals   = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));

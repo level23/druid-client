@@ -12,13 +12,13 @@ use Level23\Druid\Collections\TransformCollection;
 
 class TransformCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new TransformCollection();
         $this->assertEquals(TransformInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = [
             'type'       => 'expression',

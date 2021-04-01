@@ -14,7 +14,7 @@ class JavascriptExtractionTest extends TestCase
      *
      * @param bool $injective
      */
-    public function testExtractionFunction(bool $injective)
+    public function testExtractionFunction(bool $injective): void
     {
         $str        = 'function(x) { return "y"; }';
         $extraction = new JavascriptExtraction($str, $injective);
@@ -28,7 +28,7 @@ class JavascriptExtractionTest extends TestCase
         $this->assertEquals($expected, $extraction->toArray());
     }
 
-    public function testExtractionFunctionDefaults()
+    public function testExtractionFunctionDefaults(): void
     {
         $str        = 'function(x) { return "y"; }';
         $extraction = new JavascriptExtraction($str);

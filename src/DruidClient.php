@@ -17,7 +17,7 @@ use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Responses\TaskResponse;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClient
@@ -33,7 +33,7 @@ class DruidClient
     protected $logger = null;
 
     /**
-     * @var array
+     * @var array<string, int|string|null>
      */
     protected $config = [
 
@@ -85,6 +85,13 @@ class DruidClient
          * Set to 0 to disable they delay between retries.
          */
         'retry_delay_ms'  => 500,
+
+        /**
+         * Supply the druid version which you are sending your queries to.
+         * Based on this druid version, we can enable / disable certain new features if your
+         * server supports this.
+         */
+        'version'         => null,
     ];
 
     /**
@@ -119,7 +126,7 @@ class DruidClient
      * @param \Level23\Druid\Queries\QueryInterface $druidQuery
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function executeQuery(QueryInterface $druidQuery): array
     {
@@ -140,7 +147,7 @@ class DruidClient
      * @param \Level23\Druid\Tasks\TaskInterface $task
      *
      * @return string The task identifier
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function executeTask(TaskInterface $task): string
     {
@@ -167,7 +174,7 @@ class DruidClient
      * @param array  $data   The data to POST or GET.
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function executeRawRequest(string $method, string $url, array $data = []): array
     {
@@ -192,8 +199,8 @@ class DruidClient
             return $this->parseResponse($response, $data);
         } catch (ServerException $exception) {
 
-            $configRetries = $this->config('retries', 2);
-            $configDelay   = $this->config('retry_delay_ms', 500);
+            $configRetries = intval($this->config('retries', 2));
+            $configDelay   = intval($this->config('retry_delay_ms', 500));
             // Should we attempt a retry?
             if ($retries++ < $configRetries) {
                 $this->log(
@@ -208,11 +215,8 @@ class DruidClient
                 goto begin;
             }
 
+            /** @var ResponseInterface $response */
             $response = $exception->getResponse();
-
-            if (!$response instanceof ResponseInterface) {
-                throw $exception;
-            }
 
             // Bad gateway, this happens for instance when all brokers are unavailable.
             if ($response->getStatusCode() == 502) {
@@ -282,9 +286,9 @@ class DruidClient
      *
      * @return mixed|null
      */
-    public function config($key, $default = null)
+    public function config(string $key, $default = null)
     {
-        // when the broker, coordinator or overlord url's are empty, then use the router url.
+        // when the broker, coordinator or overlord url is empty, then use the router url.
         $routerFallback = in_array($key, ['broker_url', 'coordinator_url', 'overlord_url']);
 
         if ($routerFallback) {
@@ -319,7 +323,12 @@ class DruidClient
     {
         $contents = $response->getBody()->getContents();
         try {
-            $response = \GuzzleHttp\json_decode($contents, true) ?: [];
+            $row = \json_decode($contents, true) ?: [];
+            if (\JSON_ERROR_NONE !== \json_last_error()) {
+                throw new InvalidArgumentException(
+                    'json_decode error: ' . \json_last_error_msg()
+                );
+            }
         } catch (InvalidArgumentException $exception) {
             $this->log('We failed to decode druid response. ');
             $this->log('Status code: ' . $response->getStatusCode());
@@ -333,7 +342,7 @@ class DruidClient
             );
         }
 
-        return $response;
+        return (array)$row;
     }
 
     /**
@@ -363,7 +372,7 @@ class DruidClient
      * @param string $taskId
      *
      * @return \Level23\Druid\Responses\TaskResponse
-     * @throws \Exception
+     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
     public function taskStatus(string $taskId): TaskResponse
     {
@@ -417,7 +426,7 @@ class DruidClient
     {
         $structure = $this->metadata()->structure($dataSource);
 
-        $builder = new IndexTaskBuilder($this, $dataSource, IngestSegmentFirehose::class);
+        $builder = new IndexTaskBuilder($this, $dataSource, DruidInputSource::class);
         $builder->fromDataSource($dataSource);
 
         foreach ($structure->dimensions as $dimension => $type) {

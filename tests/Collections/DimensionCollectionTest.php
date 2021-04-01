@@ -12,13 +12,13 @@ use Level23\Druid\Collections\DimensionCollection;
 
 class DimensionCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new DimensionCollection();
         $this->assertEquals(DimensionInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = [
             'type'       => 'default',

@@ -17,10 +17,9 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 ## Requirements
 
-This package only requires Guzzle from version 6.2 or higher. 
+This package only requires Guzzle from version 6.2 or higher.
 
-It requires PHP version 7.2 or higher. 
-
+It requires PHP version 7.2 or higher. It is also compatible with PHP 8.
 
 ## Installation
 
@@ -63,37 +62,55 @@ DRUID_RETRIES=2
 DRUID_RETRY_DELAY_MS=500
 DRUID_TIMEOUT=60
 DRUID_CONNECT_TIMEOUT=10
+DRUID_VERSION=0.20.2
 ```
 
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
 overlord and the coordinator:
+
 ```
 DRUID_ROUTER_URL=http://druid-router.url:8080
 ```
 
 ## Todo's
- 
- - Support for building metricSpec and DimensionSpec in CompactTaskBuilder 
- - Implement support for Spatial filters
- - Implement support for multi-value dimensions 
- - Implement append / merge / same_interval_merge tasks
- - Implement support for indexing using other firehoses then the IngestSegmentFirehose
+
+- Support for building metricSpec and DimensionSpec in CompactTaskBuilder
+- Implement support for Spatial filters
+- Implement support for multi-value dimensions
+- Implement append / merge / same_interval_merge tasks
+- Implement support for indexing using other firehoses then the IngestSegmentFirehose
+
+## Changelog
+
+**v1.1.0**
+
+- OrderBy now defaults to `asc` direction
+- `limit()` now supports an offset. See [limit()](#limit)
+- Added `version` configuration option, which lets the query builder know which version of druid you are running.
+- `whereFlags()` now uses native bitwise and operator if it is supported by your used version.
+- Added more query context and TuningConfig properties. We now also allow unknown properties to be set, in case of a new
+  value has been added.
+- Updated CompactTask to use the ioConfig syntax as described in the manual.
+- Removed deprecated IngestSegmentFirehose, now use DruidInputSource.
+- Updated IndexTask (Native batch ingestion) to correct syntax as described in the manual.
+- Added support for PHP 8.
 
 ## Examples
 
-There are several examples which are written on the single-server tutorial of druid. 
-See [this](examples/README.md) page for more information.
+There are several examples which are written on the single-server tutorial of druid. See [this](examples/README.md) page
+for more information.
 
 # Table of Contents
 
-  - [DruidClient](#druidclient)
-    - [DruidClient::query()](#druidclientquery)
-    - [DruidClient::compact()](#druidclientcompact)
-    - [DruidClient::reindex()](#druidclientreindex)
-    - [DruidClient::taskStatus()](#druidclienttaskstatus)
-    - [DruidClient::metadata()](#druidclientmetadata)    
+- [DruidClient](#druidclient)
+  - [DruidClient::query()](#druidclientquery)
+  - [DruidClient::compact()](#druidclientcompact)
+  - [DruidClient::reindex()](#druidclientreindex)
+  - [DruidClient::taskStatus()](#druidclienttaskstatus)
+  - [DruidClient::metadata()](#druidclientmetadata)
   - [QueryBuilder: Generic Query Methods](#querybuilder-generic-query-methods)
     - [interval()](#interval)
+    - [limit()](#limit)
     - [orderBy()](#orderby)
     - [orderByDirection()](#orderbydirection)
     - [pagingIdentifier()](#pagingidentifier)
@@ -264,15 +281,23 @@ configuration of your instance.
 
 The `DruidClient` constructor has the following arguments:
 
-| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **Description**                                                                                                                         |
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **
+Description**                                                                                                                         |
 |---------------------|-----------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
 | `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
 
-By default we will use a guzzle client for handing the connection between your application and the druid server. 
-If you want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
+For a complete list of configuration settings take a look at the default values which are defined in the
+`$config` property in the DruidClient class.
+
+This class supports some newer functions of Druid. To make sure your server supports these functions, it is recommended
+to supply the `version` config setting.
+
+By default, we will use a guzzle client for handing the connection between your application and the druid server. If you
+want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
 
 Example of using a custom guzzle client:
+
 ```php
 
 // Create a custom guzzle client which uses an http proxy.
@@ -389,21 +414,26 @@ The `interval()` method has the following parameters:
 | string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
 | /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
 
-
 #### `limit()`
 
-The `limit()` method allows you to limit the result set of the query. 
+The `limit()` method allows you to limit the result set of the query.
 
 The Limit can be used for all query types. However, its mandatory for the TopN Query and the Select Query.
-  
-**NOTE:** It is not possible to limit with an offset, like you can do with an SQL query. If you want to use pagination, 
-you can use a Select query. However, the select query does not allow you to aggregate metrics and group by dimensions. 
-See the Select Query for more information. 
+
+The `$offset` parameter only applies to `GroupBy` and `Scan` queries and is only supported since druid version 0.20.0.
+
+Skip this many rows when returning results. Skipped rows will still need to be generated internally and then discarded,
+meaning that raising offsets to high values can cause queries to use additional resources.
+
+Together, `$limit` and `$offset` can be used to implement pagination. However, note that if the underlying datasource is
+modified in between page fetches in ways that affect overall query results, then the different pages will not
+necessarily align with each other.
 
 Example:
+
 ```
-// Limit the result to 50 rows.
-$builder->limit(50);
+// Limit the result to 50 rows, but skipping the first 20 rows.
+$builder->limit(50, 20);
 ```
 
 The `limit()` method has the following arguments:
@@ -411,6 +441,7 @@ The `limit()` method has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                   |
 |----------|-----------------------|--------------|-------------|---------------------------------------------------|
 | int      | Required              | `$limit`     | 50          | Limit the result to this given number of records. | 
+| int      | Optional              | `$offset`    | 10          | Skip this many rows when returning results.       | 
 
 
 #### `orderBy()`
@@ -429,13 +460,14 @@ $builder
 
 The `orderBy()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                           |
-|----------|-----------------------|----------------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                        |
-| string   | Required              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
-| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                 |
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                                        |   |   |
+|----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|---|---|
+| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                                     |   |   |
+| string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |   |   |
+| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                              |   |   |
 
-See for more information about SortingOrders this page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
+See for more information about SortingOrders this
+page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
 
 Please note: this method differs per query type. Please read below how this method workers per Query Type.
 
@@ -1282,17 +1314,19 @@ $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-20
 
 Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
 
-
 #### `whereFlags`
 
-This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND 
-comparison. 
+This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND
+comparison.
 
-Druid has by itself no support for bitwise comparisons. We have already created a feature request for support for this:
-https://github.com/apache/incubator-druid/issues/8560
+Support for 64 bit integers are supported.
 
-The only way of doing this now is by letting Javascript handling this. This means that javascript support is thus 
-required for this filter to work. 
+Druid has support for bitwise flags since version 0.20.2. Before that, we have build our own variant, but then
+javascript support is required.
+
+JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide for
+guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
+https://druid.apache.org/docs/latest/development/javascript.html
 
 Example:
 
@@ -1300,10 +1334,6 @@ Example:
 // Select records where the first and third bit are enabled (1 and 4)
 $builder->whereFlags('flags', (1 | 4));
 ```
-
-**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming 
-guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it: 
-https://druid.apache.org/docs/latest/development/javascript.html
 
 This method has the following arguments:
 

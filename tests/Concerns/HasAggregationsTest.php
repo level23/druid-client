@@ -41,7 +41,7 @@ class HasAggregationsTest extends TestCase
      */
     protected $builder;
 
-    public function testGetAggregations()
+    public function testGetAggregations(): void
     {
         $this->builder->sum('messages');
         $this->builder->first('age');
@@ -61,7 +61,7 @@ class HasAggregationsTest extends TestCase
         $this->builder->makePartial();
     }
 
-    protected function filteredAggregatorTest($givenClosureOrNull)
+    protected function filteredAggregatorTest(?\Closure $givenClosureOrNull)
     {
         $this->builder->shouldAllowMockingProtectedMethods()
             ->shouldReceive('buildFilteredAggregation')
@@ -85,7 +85,7 @@ class HasAggregationsTest extends TestCase
      * @param bool $round
      * @param bool $isInputHyperUnique
      */
-    public function testHyperUnique(bool $round, bool $isInputHyperUnique)
+    public function testHyperUnique(bool $round, bool $isInputHyperUnique): void
     {
         $this->getAggregationMock(HyperUniqueAggregator::class)
             ->shouldReceive('__construct')
@@ -101,7 +101,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testHyperUniqueDefaults()
+    public function testHyperUniqueDefaults(): void
     {
         $this->getAggregationMock(HyperUniqueAggregator::class)
             ->shouldReceive('__construct')
@@ -125,7 +125,7 @@ class HasAggregationsTest extends TestCase
      * @param bool $byRow
      * @param bool $round
      */
-    public function testCardinality(bool $byRow, bool $round)
+    public function testCardinality(bool $byRow, bool $round): void
     {
         $this->getAggregationMock(CardinalityAggregator::class)
             ->shouldReceive('__construct')
@@ -150,7 +150,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals(1, $counter);
     }
 
-    public function testCardinalityWithInvalidValue()
+    public function testCardinalityWithInvalidValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You should supply a Closure function or an array.');
@@ -162,7 +162,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testCardinalityWithArray()
+    public function testCardinalityWithArray(): void
     {
         $dimensions = [new Dimension('last_name')];
         $this->getAggregationMock(CardinalityAggregator::class)
@@ -185,7 +185,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testCardinalityDefaults()
+    public function testCardinalityDefaults(): void
     {
         $this->getAggregationMock(CardinalityAggregator::class)
             ->shouldReceive('__construct')
@@ -210,7 +210,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals(1, $counter);
     }
 
-    public function testBuildFilteredAggregation()
+    public function testBuildFilteredAggregation(): void
     {
         $aggregation = new SumAggregator('age');
 
@@ -243,7 +243,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals(1, $counter);
     }
 
-    public function testBuildFilteredAggregationWithoutFilter()
+    public function testBuildFilteredAggregationWithoutFilter(): void
     {
         $aggregation = new SumAggregator('age');
 
@@ -283,7 +283,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testJavascript()
+    public function testJavascript(): void
     {
         $this->getAggregationMock(JavascriptAggregator::class)
             ->shouldReceive('__construct')
@@ -300,7 +300,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSum()
+    public function testSum(): void
     {
         $this->getAggregationMock(SumAggregator::class)
             ->shouldReceive('__construct')
@@ -320,7 +320,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSumDefaults()
+    public function testSumDefaults(): void
     {
         $this->getAggregationMock(SumAggregator::class)
             ->shouldReceive('__construct')
@@ -331,7 +331,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testLongSum()
+    public function testLongSum(): void
     {
         $this->builder->shouldReceive('sum')
             ->with('messages', '', 'long', null)
@@ -342,7 +342,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testDoubleSum()
+    public function testDoubleSum(): void
     {
         $this->builder->shouldReceive('sum')
             ->with('messages', '', 'double', null)
@@ -353,7 +353,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testFloatSum()
+    public function testFloatSum(): void
     {
         $this->builder->shouldReceive('sum')
             ->with('messages', '', 'float', null)
@@ -368,7 +368,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testCount()
+    public function testCount(): void
     {
         $this->getAggregationMock(CountAggregator::class)
             ->shouldReceive('__construct')
@@ -385,7 +385,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testDistinctCount()
+    public function testDistinctCount(): void
     {
         $this->getAggregationMock(DistinctCountAggregator::class)
             ->shouldReceive('__construct')
@@ -405,7 +405,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testDistinctCountDefaults()
+    public function testDistinctCountDefaults(): void
     {
         $this->getAggregationMock(DistinctCountAggregator::class)
             ->shouldReceive('__construct')
@@ -422,7 +422,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMin()
+    public function testMin(): void
     {
         $this->getAggregationMock(MinAggregator::class)
             ->shouldReceive('__construct')
@@ -442,7 +442,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMinDefaults()
+    public function testMinDefaults(): void
     {
         $this->getAggregationMock(MinAggregator::class)
             ->shouldReceive('__construct')
@@ -455,7 +455,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testLongMin()
+    public function testLongMin(): void
     {
         $this->builder->shouldReceive('min')
             ->with('age', '', 'long', null)
@@ -466,7 +466,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testDoubleMin()
+    public function testDoubleMin(): void
     {
         $this->builder->shouldReceive('min')
             ->with('age', '', 'double', null)
@@ -477,7 +477,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testFloatMin()
+    public function testFloatMin(): void
     {
         $this->builder->shouldReceive('min')
             ->with('age', '', 'float', null)
@@ -492,7 +492,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMax()
+    public function testMax(): void
     {
         $this->getAggregationMock(MaxAggregator::class)
             ->shouldReceive('__construct')
@@ -512,7 +512,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMaxDefaults()
+    public function testMaxDefaults(): void
     {
         $this->getAggregationMock(MaxAggregator::class)
             ->shouldReceive('__construct')
@@ -525,7 +525,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testLongMax()
+    public function testLongMax(): void
     {
         $this->builder->shouldReceive('max')
             ->with('age', '', 'long', null)
@@ -536,7 +536,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testDoubleMax()
+    public function testDoubleMax(): void
     {
         $this->builder->shouldReceive('max')
             ->with('age', '', 'double', null)
@@ -547,7 +547,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testFloatMax()
+    public function testFloatMax(): void
     {
         $this->builder->shouldReceive('max')
             ->with('age', '', 'float', null)
@@ -562,7 +562,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testFirst()
+    public function testFirst(): void
     {
         $this->getAggregationMock(FirstAggregator::class)
             ->shouldReceive('__construct')
@@ -582,7 +582,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testFirstDefaults()
+    public function testFirstDefaults(): void
     {
         $this->getAggregationMock(FirstAggregator::class)
             ->shouldReceive('__construct')
@@ -595,7 +595,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testLongFirst()
+    public function testLongFirst(): void
     {
         $this->builder->shouldReceive('first')
             ->with('age', '', 'long', null)
@@ -606,7 +606,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testFloatFirst()
+    public function testFloatFirst(): void
     {
         $this->builder->shouldReceive('first')
             ->with('age', '', 'float', null)
@@ -617,7 +617,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testDoubleFirst()
+    public function testDoubleFirst(): void
     {
         $this->builder->shouldReceive('first')
             ->with('age', '', 'double', null)
@@ -628,7 +628,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testStringFirst()
+    public function testStringFirst(): void
     {
         $this->builder->shouldReceive('first')
             ->with('age', '', 'string', null)
@@ -643,7 +643,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLast()
+    public function testLast(): void
     {
         $this->getAggregationMock(LastAggregator::class)
             ->shouldReceive('__construct')
@@ -663,7 +663,7 @@ class HasAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLastDefaults()
+    public function testLastDefaults(): void
     {
         $this->getAggregationMock(LastAggregator::class)
             ->shouldReceive('__construct')
@@ -676,7 +676,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testLongLast()
+    public function testLongLast(): void
     {
         $this->builder->shouldReceive('last')
             ->with('age', '', 'long', null)
@@ -687,7 +687,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testFloatLast()
+    public function testFloatLast(): void
     {
         $this->builder->shouldReceive('last')
             ->with('age', '', 'float', null)
@@ -698,7 +698,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testDoubleLast()
+    public function testDoubleLast(): void
     {
         $this->builder->shouldReceive('last')
             ->with('age', '', 'double', null)
@@ -709,7 +709,7 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    public function testStringLast()
+    public function testStringLast(): void
     {
         $this->builder->shouldReceive('last')
             ->with('age', '', 'string', null)

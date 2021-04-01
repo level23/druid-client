@@ -96,8 +96,18 @@ class CompactTask implements TaskInterface
         $result = [
             'type'       => 'compact',
             'dataSource' => $this->dataSource,
-            'interval'   => $this->interval->getInterval(),
+            'ioConfig'   => [
+                'type'      => 'compact',
+                'inputSpec' => [
+                    'type'     => 'interval',
+                    'interval' => $this->interval->getInterval(),
+                ],
+            ],
         ];
+
+        if ($this->targetCompactionSizeBytes !== null && $this->targetCompactionSizeBytes > 0) {
+            $result['targetCompactionSizeBytes'] = $this->targetCompactionSizeBytes;
+        }
 
         if ($this->taskId) {
             $result['id'] = $this->taskId;
@@ -105,10 +115,6 @@ class CompactTask implements TaskInterface
 
         if ($this->segmentGranularity) {
             $result['segmentGranularity'] = $this->segmentGranularity;
-        }
-
-        if ($this->targetCompactionSizeBytes !== null && $this->targetCompactionSizeBytes > 0) {
-            $result['targetCompactionSizeBytes'] = $this->targetCompactionSizeBytes;
         }
 
         if ($this->tuningConfig instanceof TuningConfig) {

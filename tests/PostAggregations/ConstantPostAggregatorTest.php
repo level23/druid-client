@@ -8,7 +8,7 @@ use Level23\Druid\PostAggregations\ConstantPostAggregator;
 
 class ConstantPostAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function testAggregator(): void
     {
         $aggregator = new ConstantPostAggregator('pi', 3.14);
 
