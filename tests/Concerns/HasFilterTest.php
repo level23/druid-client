@@ -31,6 +31,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Dimensions\DimensionBuilder;
+use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Filters\ColumnComparisonFilter;
 use Level23\Druid\Extractions\SubstringExtraction;
@@ -1015,5 +1016,20 @@ class HasFilterTest extends TestCase
         $response = $this->builder->shouldAllowMockingProtectedMethods()->columnCompareDimension('hi');
 
         $this->assertEquals(new Dimension('hi'), $response);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testVirtualColumns(): void
+    {
+        $builder  = new QueryBuilder(new DruidClient([]), 'dataSource');
+        $response = $builder->virtualColumn('concat(foo, bar)', 'fooBar');
+
+        $this->assertEquals($builder, $response);
+
+        $this->assertEquals([
+            new VirtualColumn('concat(foo, bar)', 'fooBar', 'string'),
+        ], $this->getProperty($builder, 'virtualColumns'));
     }
 }

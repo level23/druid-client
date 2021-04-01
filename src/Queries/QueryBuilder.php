@@ -22,7 +22,6 @@ use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Concerns\HasSearchFilters;
-use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Responses\TopNQueryResponse;
@@ -32,7 +31,6 @@ use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Responses\SelectQueryResponse;
 use Level23\Druid\Responses\SearchQueryResponse;
-use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 use Level23\Druid\Responses\GroupByQueryResponse;
@@ -45,7 +43,7 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilder
 {
-    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations, HasSearchFilters;
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasPostAggregations, HasSearchFilters;
 
     /**
      * @var \Level23\Druid\DruidClient
@@ -88,14 +86,6 @@ class QueryBuilder
      * @var array
      */
     protected $metrics = [];
-
-    /**
-     * This contains a list of "temporary" field names which we will use to store our result of
-     * a virtual column when the whereFlag() method is used.
-     *
-     * @var array
-     */
-    protected $placeholders = [];
 
     /**
      * QueryBuilder constructor.
@@ -178,87 +168,6 @@ class QueryBuilder
         $this->granularity = Granularity::validate($granularity);
 
         return $this;
-    }
-
-    /**
-     * Filter on records which match using a bitwise AND comparison.
-     *
-     * Only records will match where the dimension contains ALL bits which are also enabled in the given $flags
-     * argument. Support for 64 bit integers are supported.
-     *
-     * Druid has support for bitwise flags since version 0.20.2.
-     * Before that, we have build our own variant, but then javascript support is required.
-     *
-     * JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
-     * for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
-     * https://druid.apache.org/docs/latest/development/javascript.html
-     *
-     * @param string $dimension The dimension which contains int values where you want to do a bitwise AND check
-     *                          against.
-     * @param int    $flags     The bit's which you want to check if they are enabled in the given dimension.
-     *
-     * @return $this
-     */
-    public function orWhereFlags(string $dimension, int $flags)
-    {
-        return $this->whereFlags($dimension, $flags, 'or');
-    }
-
-    /**
-     * Filter on records which match using a bitwise AND comparison.
-     *
-     * Only records will match where the dimension contains ALL bits which are also enabled in the given $flags
-     * argument. Support for 64 bit integers are supported.
-     *
-     * Druid has support for bitwise flags since version 0.20.2.
-     * Before that, we have build our own variant, but then javascript support is required.
-     *
-     * JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
-     * for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
-     * https://druid.apache.org/docs/latest/development/javascript.html
-     *
-     * @param string $dimension The dimension which contains int values where you want to do a bitwise AND check
-     *                          against.
-     * @param int    $flags     The bit's which you want to check if they are enabled in the given dimension.
-     * @param string $boolean   This influences how this filter will be joined with previous added filters. Should both
-     *                          filters apply ("and") or one or the other ("or") ? Default is "and".
-     *
-     * @return $this
-     */
-    public function whereFlags(string $dimension, int $flags, string $boolean = 'and')
-    {
-        /**
-         * If our version supports this, let's use the new and improved bitwiseAnd function!
-         */
-        $version = (string)$this->client->config('version');
-        if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
-
-            $placeholder          = 'v' . count($this->placeholders);
-            $this->placeholders[] = $placeholder;
-
-            $this->virtualColumn('bitwiseAnd("' . $dimension . '", ' . $flags . ')', $placeholder, DataType::LONG);
-
-            return $this->where($placeholder, '=', $flags, null, $boolean);
-        }
-
-        return $this->where($dimension, '=', $flags, function (ExtractionBuilder $extraction) use ($flags) {
-            // Do a binary "AND" flag comparison on a 64 bit int. The result will either be the
-            // $flags, or 0 when it's bit is not set.
-            $extraction->javascript('
-                function(dimensionValue) { 
-                    var givenValue = ' . $flags . '; 
-                    var hi = 0x80000000; 
-                    var low = 0x7fffffff; 
-                    var hi1 = ~~(dimensionValue / hi); 
-                    var hi2 = ~~(givenValue / hi); 
-                    var low1 = dimensionValue & low; 
-                    var low2 = givenValue & low; 
-                    var h = hi1 & hi2; 
-                    var l = low1 & low2; 
-                    return (h*hi + l); 
-                }
-            ');
-        }, $boolean);
     }
 
     /**
