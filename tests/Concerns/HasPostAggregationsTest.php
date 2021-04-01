@@ -35,7 +35,7 @@ class HasPostAggregationsTest extends TestCase
         $this->builder->makePartial();
     }
 
-    public function testBuildFields()
+    public function testBuildFields(): void
     {
         $fields = [
             'field',
@@ -76,7 +76,7 @@ class HasPostAggregationsTest extends TestCase
         }
     }
 
-    public function testBuildFieldsWithIncorrectType()
+    public function testBuildFieldsWithIncorrectType(): void
     {
         $fields = [
             new Dimension('field'),
@@ -108,7 +108,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testDivide()
+    public function testDivide(): void
     {
         $fields = ['field1', 'field2'];
 
@@ -126,7 +126,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testMultiply()
+    public function testMultiply(): void
     {
         $fields = ['field1', 'field2'];
 
@@ -144,7 +144,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testSubtract()
+    public function testSubtract(): void
     {
         $fields = ['field1', 'field2'];
 
@@ -162,7 +162,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testAdd()
+    public function testAdd(): void
     {
         $fields = ['field1', 'field2'];
 
@@ -180,7 +180,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testQuotient()
+    public function testQuotient(): void
     {
         $fields = ['field1', 'field2'];
 
@@ -203,7 +203,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testFieldAccess(bool $finalizing)
+    public function testFieldAccess(bool $finalizing): void
     {
         $this->getPostAggregationMock(FieldAccessPostAggregator::class)
             ->shouldReceive('__construct')
@@ -219,7 +219,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testFieldAccessDefaults()
+    public function testFieldAccessDefaults(): void
     {
         $this->getPostAggregationMock(FieldAccessPostAggregator::class)
             ->shouldReceive('__construct')
@@ -235,7 +235,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testConstant()
+    public function testConstant(): void
     {
         $this->getPostAggregationMock(ConstantPostAggregator::class)
             ->shouldReceive('__construct')
@@ -251,7 +251,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLongGreatest()
+    public function testLongGreatest(): void
     {
         $this->getPostAggregationMock(GreatestPostAggregator::class)
             ->shouldReceive('__construct')
@@ -267,7 +267,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testDoubleGreatest()
+    public function testDoubleGreatest(): void
     {
         $this->getPostAggregationMock(GreatestPostAggregator::class)
             ->shouldReceive('__construct')
@@ -283,7 +283,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testLongLeast()
+    public function testLongLeast(): void
     {
         $this->getPostAggregationMock(LeastPostAggregator::class)
             ->shouldReceive('__construct')
@@ -299,7 +299,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testDoubleLeast()
+    public function testDoubleLeast(): void
     {
         $this->getPostAggregationMock(LeastPostAggregator::class)
             ->shouldReceive('__construct')
@@ -315,7 +315,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testPostJavascript()
+    public function testPostJavascript(): void
     {
         $jsFunction = 'function(a,b) { return a*b; }';
 
@@ -333,19 +333,19 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function testHyperUniqueCardinality()
+    public function testHyperUniqueCardinality(): void
     {
         $this->getPostAggregationMock(HyperUniqueCardinalityPostAggregator::class)
             ->shouldReceive('__construct')
             ->once()
             ->with('myHyperUniqueField', 'myOutputName');
 
-        $result = $this->builder->hyperUniqueCardinality( 'myHyperUniqueField', 'myOutputName');
+        $result = $this->builder->hyperUniqueCardinality('myHyperUniqueField', 'myOutputName');
 
         $this->assertEquals($this->builder, $result);
     }
 
-    public function testGetPostAggregations()
+    public function testGetPostAggregations(): void
     {
         $this->builder->constant(3.14, 'pi');
 

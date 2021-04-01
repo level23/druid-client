@@ -10,9 +10,9 @@ use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Transforms\ExpressionTransform;
-use Level23\Druid\Firehoses\IngestSegmentFirehose;
 use Level23\Druid\Collections\TransformCollection;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
@@ -23,11 +23,11 @@ class IndexTaskTest extends TestCase
      * @testWith [true, true, true, true, true, null]
      *           [false, false, false, false, false, "task-1337"]
      *
-     * @param bool $withAggregations
-     * @param bool $withTransformSpec
-     * @param bool $withAppend
-     * @param bool $withTuning
-     * @param bool $withContext
+     * @param bool        $withAggregations
+     * @param bool        $withTransformSpec
+     * @param bool        $withAppend
+     * @param bool        $withTuning
+     * @param bool        $withContext
      * @param string|null $taskId
      *
      * @throws \ReflectionException
@@ -43,7 +43,7 @@ class IndexTaskTest extends TestCase
         $dataSource = 'people';
         $interval   = new Interval('12-02-2019', '13-02-2019');
 
-        $firehose = new IngestSegmentFirehose($dataSource, $interval);
+        $inputSource = new DruidInputSource($dataSource, $interval);
 
         $granularity = new UniformGranularity(
             'week',
@@ -72,7 +72,7 @@ class IndexTaskTest extends TestCase
 
         $task = new IndexTask(
             $dataSource,
-            $firehose,
+            $inputSource,
             $granularity,
             $transformSpec,
             $tuningConfig,
@@ -90,33 +90,31 @@ class IndexTaskTest extends TestCase
             'type' => 'index',
             'spec' => [
                 'dataSchema' => [
-                    'dataSource'      => $dataSource,
-                    'parser'          => [
-                        'type'      => 'string',
-                        'parseSpec' => [
-                            'format'         => 'json',
-                            'timestampSpec'  => [
-                                'column' => '__time',
-                                'format' => 'auto',
-                            ],
-                            'dimensionsSpec' => [
-                                'dimensions' => $dimensions,
-                            ],
-                        ],
+                    'dataSource'     => $dataSource,
+                    'timestampSpec'  => [
+                        'column' => '__time',
+                        'format' => 'auto',
                     ],
+                    'dimensionsSpec' => [
+                        'dimensions' => $dimensions,
+                    ],
+
                     'metricsSpec'     => ($aggregations ? $aggregations->toArray() : null),
                     'granularitySpec' => $granularity->toArray(),
                     'transformSpec'   => ($transformSpec ? $transformSpec->toArray() : null),
                 ],
                 'ioConfig'   => [
                     'type'             => 'index',
-                    'firehose'         => $firehose->toArray(),
+                    'inputSource'      => $inputSource->toArray(),
+                    'inputFormat'      => [
+                        'type' => 'json',
+                    ],
                     'appendToExisting' => $withAppend,
                 ],
             ],
         ];
 
-        if( $taskId ) {
+        if ($taskId) {
             $expected['id'] = $taskId;
         }
 
@@ -142,7 +140,7 @@ class IndexTaskTest extends TestCase
         }
 
         $expected['spec']['ioConfig']['type'] = 'index_parallel';
-        $expected['type'] = 'index_parallel';
+        $expected['type']                     = 'index_parallel';
 
         $this->assertEquals($expected, $task->toArray());
     }

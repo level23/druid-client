@@ -8,7 +8,7 @@ use Level23\Druid\Extractions\RegexExtraction;
 
 class RegexExtractionTest extends TestCase
 {
-    public function testExtractionWithDefaults()
+    public function testExtractionWithDefaults(): void
     {
         $extraction = new RegexExtraction('^[0-9]*$');
 
@@ -21,7 +21,7 @@ class RegexExtractionTest extends TestCase
         ], $extraction->toArray());
     }
 
-    public function testExtractionWithReplacement()
+    public function testExtractionWithReplacement(): void
     {
         $extraction = new RegexExtraction('^[0-9]*$', 3, 'Unknown');
 

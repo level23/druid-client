@@ -33,7 +33,7 @@ class MetadataBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testIntervals()
+    public function testIntervals(): void
     {
         $intervals = [
             "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" => ["size" => 75208, "count" => 4],
@@ -67,7 +67,7 @@ class MetadataBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testInterval()
+    public function testInterval(): void
     {
         $builder = new MetadataBuilder($this->client);
 
@@ -201,7 +201,7 @@ class MetadataBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testStructureWithEmptyInterval()
+    public function testStructureWithEmptyInterval(): void
     {
         $druidClient = new DruidClient([]);
 
@@ -276,7 +276,7 @@ class MetadataBuilderTest extends TestCase
      *
      * @param array $segmentMetadataResponse
      */
-    public function testGetColumnsForInterval(array $segmentMetadataResponse)
+    public function testGetColumnsForInterval(array $segmentMetadataResponse): void
     {
         $dataSource      = 'myDataSource';
         $interval        = '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z';
@@ -319,7 +319,7 @@ class MetadataBuilderTest extends TestCase
      * @param string $dataSource
      * @param string $shortHand
      */
-    public function testGetIntervalByShorthand(string $dataSource, string $shortHand)
+    public function testGetIntervalByShorthand(string $dataSource, string $shortHand): void
     {
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
         $metadataBuilder->makePartial();

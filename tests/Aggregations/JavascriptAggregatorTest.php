@@ -8,7 +8,7 @@ use Level23\Druid\Aggregations\JavascriptAggregator;
 
 class JavascriptAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function testAggregator(): void
     {
         $fnAggregate = "function(current, a, b)      { return current + (Math.log(a) * b); }";
         $fnCombine   = "function(partialA, partialB) { return partialA + partialB; }";

@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\TuningConfig;
 
-use InvalidArgumentException;
-
 class TuningConfig implements TuningConfigInterface
 {
     /**
@@ -25,9 +23,8 @@ class TuningConfig implements TuningConfigInterface
 
             $callable = [$this, $method];
             if (!is_callable($callable)) {
-                throw new InvalidArgumentException(
-                    'Setting ' . $key . ' was not found in ' . __CLASS__
-                );
+                $this->properties[$key] = $value;
+                continue;
             }
 
             call_user_func($callable, $value);
@@ -141,6 +138,40 @@ class TuningConfig implements TuningConfigInterface
     }
 
     /**
+     * Used to give a hint to control the amount of data that each first phase task reads.
+     * This hint could be ignored depending on the implementation of the input source. See Split hint spec for more
+     * details.
+     *
+     * @see https://druid.apache.org/docs/0.20.2/ingestion/native-batch.html#split-hint-spec
+     *
+     * @param array $splitHintSpec
+     *
+     * @return \Level23\Druid\TuningConfig\TuningConfig
+     */
+    public function setSplitHintSpec(array $splitHintSpec)
+    {
+        $this->properties['splitHintSpec'] = $splitHintSpec;
+
+        return $this;
+    }
+
+    /**
+     * Defines how to partition data in each timeChunk, see PartitionsSpec
+     *
+     * @see https://druid.apache.org/docs/0.20.2/ingestion/native-batch.html#partitionsspec
+     *
+     * @param array $partitionsSpec
+     *
+     * @return $this
+     */
+    public function setPartitionsSpec(array $partitionsSpec)
+    {
+        $this->properties['partitionsSpec'] = $partitionsSpec;
+
+        return $this;
+    }
+
+    /**
      * Defines segment storage format options to be used at indexing time
      *
      * @see https://druid.apache.org/docs/latest/ingestion/native_tasks.html#indexspec
@@ -151,6 +182,25 @@ class TuningConfig implements TuningConfigInterface
     public function setIndexSpec(array $indexSpec)
     {
         $this->properties['indexSpec'] = $indexSpec;
+
+        return $this;
+    }
+
+    /**
+     * Defines segment storage format options to be used at indexing time for intermediate persisted temporary segments.
+     * This can be used to disable dimension/metric compression on intermediate segments to reduce memory required for
+     * final merging. however, disabling compression on intermediate segments might increase page cache use while they
+     * are used before getting merged into final segment published, see IndexSpec for possible values.
+     *
+     * @see https://druid.apache.org/docs/0.20.2/ingestion/index.html#indexspec
+     *
+     * @param array $indexSpecForIntermediatePersists
+     *
+     * @return $this
+     */
+    public function setIndexSpecForIntermediatePersists(array $indexSpecForIntermediatePersists)
+    {
+        $this->properties['indexSpecForIntermediatePersists'] = $indexSpecForIntermediatePersists;
 
         return $this;
     }
@@ -189,6 +239,23 @@ class TuningConfig implements TuningConfigInterface
     }
 
     /**
+     * Forces guaranteeing the perfect rollup. The perfect rollup optimizes the total size of generated segments and
+     * querying time while indexing time will be increased. If this is set to true, intervals in granularitySpec must
+     * be set and hashed or single_dim must be used for partitionsSpec. This flag cannot be used with appendToExisting
+     * of IOConfig.
+     *
+     * @param bool $forceGuaranteedRollup
+     *
+     * @return $this
+     */
+    public function setForceGuaranteedRollup(bool $forceGuaranteedRollup)
+    {
+        $this->properties['forceGuaranteedRollup'] = $forceGuaranteedRollup;
+
+        return $this;
+    }
+
+    /**
      * Milliseconds to wait for pushing segments. It must be >= 0, where 0 means to wait forever.
      *
      * Default: 0
@@ -214,6 +281,24 @@ class TuningConfig implements TuningConfigInterface
     public function setSegmentWriteOutMediumFactory(string $segmentWriteOutMediumFactory)
     {
         $this->properties['segmentWriteOutMediumFactory'] = $segmentWriteOutMediumFactory;
+
+        return $this;
+    }
+
+    /**
+     * Maximum number of worker tasks which can be run in parallel at the same time. The supervisor task would spawn
+     * worker tasks up to maxNumConcurrentSubTasks regardless of the current available task slots.
+     * If this value is set to 1, the supervisor task processes data ingestion on its own instead of
+     * spawning worker tasks. If this value is set to too large, too many worker tasks can be created which might
+     * block other ingestion. Check Capacity Planning for more details.
+     *
+     * @param int $maxNumConcurrentSubTasks
+     *
+     * @return $this
+     */
+    public function setMaxNumConcurrentSubTasks(int $maxNumConcurrentSubTasks)
+    {
+        $this->properties['maxNumConcurrentSubTasks'] = $maxNumConcurrentSubTasks;
 
         return $this;
     }
@@ -247,6 +332,35 @@ class TuningConfig implements TuningConfigInterface
     public function setMaxRetry(int $maxRetry)
     {
         $this->properties['maxRetry'] = $maxRetry;
+
+        return $this;
+    }
+
+    /**
+     * Max limit for the number of segments that a single task can merge at the same time in the second phase.
+     * Used only forceGuaranteedRollup is set.
+     *
+     * @param int $maxNumSegmentsToMerge
+     *
+     * @return $this
+     */
+    public function setMaxNumSegmentsToMerge(int $maxNumSegmentsToMerge)
+    {
+        $this->properties['maxNumSegmentsToMerge'] = $maxNumSegmentsToMerge;
+
+        return $this;
+    }
+
+    /**
+     * Total number of tasks to merge segments in the merge phase when partitionsSpec is set to hashed or single_dim.
+     *
+     * @param int $totalNumMergeTasks
+     *
+     * @return $this
+     */
+    public function setTotalNumMergeTasks(int $totalNumMergeTasks)
+    {
+        $this->properties['totalNumMergeTasks'] = $totalNumMergeTasks;
 
         return $this;
     }

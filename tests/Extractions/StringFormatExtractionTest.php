@@ -20,7 +20,7 @@ class StringFormatExtractionTest extends TestCase
      * @param string $nullHandling
      * @param bool   $expectException
      */
-    public function testExtraction(string $sprintf, string $nullHandling, bool $expectException)
+    public function testExtraction(string $sprintf, string $nullHandling, bool $expectException): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -36,7 +36,7 @@ class StringFormatExtractionTest extends TestCase
         ], $extraction->toArray());
     }
 
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $extraction = new StringFormatExtraction('[%s]');
 

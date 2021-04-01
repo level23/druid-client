@@ -13,7 +13,7 @@ class HasVirtualColumnsTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testVirtualColumns()
+    public function testVirtualColumns(): void
     {
         $builder  = new QueryBuilder(new DruidClient([]), 'dataSource');
         $response = $builder->virtualColumn('concat(foo, bar)', 'fooBar');

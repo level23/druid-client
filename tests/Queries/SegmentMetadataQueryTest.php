@@ -11,7 +11,7 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class SegmentMetadataQueryTest extends TestCase
 {
-    public function testQuery()
+    public function testQuery(): void
     {
         $dataSource = 'hardware';
         $intervals  = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));

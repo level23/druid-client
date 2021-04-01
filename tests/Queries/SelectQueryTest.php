@@ -24,7 +24,7 @@ class SelectQueryTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testQuery(array $metrics, bool $descending)
+    public function testQuery(array $metrics, bool $descending): void
     {
         $dimensions = new DimensionCollection(
             new Dimension('age'),

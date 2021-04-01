@@ -8,7 +8,7 @@ use Level23\Druid\Transforms\ExpressionTransform;
 
 class ExpressionTransformTest extends TestCase
 {
-    public function testTransform()
+    public function testTransform(): void
     {
         $transform = new ExpressionTransform("concat('John', 'Doe')", "name");
 

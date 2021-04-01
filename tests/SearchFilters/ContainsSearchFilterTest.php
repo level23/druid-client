@@ -14,7 +14,7 @@ class ContainsSearchFilterTest extends TestCase
      *
      * @param bool $caseSensitive
      */
-    public function testSearchFilter(bool $caseSensitive)
+    public function testSearchFilter(bool $caseSensitive): void
     {
         $filter = new ContainsSearchFilter('wikipedia', $caseSensitive);
 

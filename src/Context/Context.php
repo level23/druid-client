@@ -36,6 +36,7 @@ abstract class Context
                 // This is because the context settings can vary per version. In this way we can support new
                 // non-existing properties.
                 $this->properties[$key] = $value;
+                continue;
             }
 
             call_user_func($callable, $value);

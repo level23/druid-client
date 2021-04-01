@@ -3,6 +3,12 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Firehoses;
 
+/**
+ * Interface FirehoseInterface
+ *
+ * @package Level23\Druid\Firehoses
+ * @deprecated
+ */
 interface FirehoseInterface
 {
     /**

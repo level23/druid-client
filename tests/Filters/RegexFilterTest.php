@@ -14,7 +14,7 @@ class RegexFilterTest extends TestCase
      * @testWith [true]
      *           [false]
      */
-    public function testFilter(bool $useExtractionFunction)
+    public function testFilter(bool $useExtractionFunction): void
     {
         $extractionFunction = new LookupExtraction(
             'full_username', false

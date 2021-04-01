@@ -27,7 +27,7 @@ class SearchFilterTest extends TestCase
      * @param string|array $valueOrValues
      * @param bool         $caseSensitive
      */
-    public function testFilter(string $dimension, $valueOrValues, ?bool $caseSensitive)
+    public function testFilter(string $dimension, $valueOrValues, ?bool $caseSensitive): void
     {
         if ($caseSensitive !== null) {
             $filter = new SearchFilter($dimension, $valueOrValues, $caseSensitive);
@@ -56,7 +56,7 @@ class SearchFilterTest extends TestCase
         ], $filter->toArray());
     }
 
-    public function testExtractionFunction()
+    public function testExtractionFunction(): void
     {
         $extractionFunction = new LookupExtraction(
             'full_username', false

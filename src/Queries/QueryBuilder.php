@@ -230,7 +230,7 @@ class QueryBuilder
         /**
          * If our version supports this, let's use the new and improved bitwiseAnd function!
          */
-        $version = $this->client->config('version');
+        $version = (string)$this->client->config('version');
         if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
 
             $placeholder          = 'v' . count($this->placeholders);
@@ -348,9 +348,14 @@ class QueryBuilder
     {
         $query = $this->buildQuery($context);
 
-        $json = \GuzzleHttp\json_encode($query->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $json = \json_encode($query->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if (\JSON_ERROR_NONE !== \json_last_error()) {
+            throw new InvalidArgumentException(
+                'json_encode error: ' . \json_last_error_msg()
+            );
+        }
 
-        return $json;
+        return (string)$json;
     }
 
     /**
@@ -565,7 +570,7 @@ class QueryBuilder
             $query->setSort($sortingOrder);
         }
 
-        if ($this->limit) {
+        if ($this->limit && $this->limit->getLimit() !== null) {
             $query->setLimit($this->limit->getLimit());
         }
 
@@ -585,7 +590,7 @@ class QueryBuilder
             throw new InvalidArgumentException('You have to specify at least one interval');
         }
 
-        if (!$this->limit || $this->limit->getLimit() == self::$DEFAULT_MAX_LIMIT) {
+        if (!$this->limit || $this->limit->getLimit() === null) {
             throw new InvalidArgumentException('You have to supply a limit');
         }
 
@@ -674,8 +679,12 @@ class QueryBuilder
             $query->setFilter($this->filter);
         }
 
-        if ($this->limit && $this->limit->getLimit() && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+        if ($this->limit && $this->limit->getLimit() !== null) {
             $query->setLimit($this->limit->getLimit());
+        }
+
+        if ($this->limit && $this->limit->getOffset() !== null) {
+            $query->setOffset($this->limit->getOffset());
         }
 
         if (is_array($context) && count($context) > 0) {
@@ -749,7 +758,7 @@ class QueryBuilder
         }
 
         // If there is a limit set, then apply this on the time series query.
-        if ($this->limit && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT) {
+        if ($this->limit && $this->limit->getLimit() !== null) {
             $query->setLimit($this->limit->getLimit());
         }
 
@@ -780,7 +789,7 @@ class QueryBuilder
             throw new InvalidArgumentException('You have to specify at least one interval');
         }
 
-        if (!$this->limit instanceof LimitInterface) {
+        if (!$this->limit instanceof LimitInterface || $this->limit->getLimit() === null) {
             throw new InvalidArgumentException(
                 'You should specify a limit to make use of a top query'
             );
@@ -970,7 +979,8 @@ class QueryBuilder
         }
 
         return $this->limit
-            && $this->limit->getLimit() != self::$DEFAULT_MAX_LIMIT
+            && $this->limit->getLimit() !== null
+            && $this->limit->getOffset() === null
             && count($this->limit->getOrderByCollection()) == 1;
     }
 

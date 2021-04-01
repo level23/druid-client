@@ -96,7 +96,7 @@ class HasHavingTest extends TestCase
      * @preserveGlobalState disabled
      * @throws \Exception
      */
-    public function testHaving($field, $operator, $value, $boolean)
+    public function testHaving($field, $operator, $value, $boolean): void
     {
         if ($value === null && $operator !== null) {
             $testingValue    = $operator;
@@ -240,7 +240,7 @@ class HasHavingTest extends TestCase
         }
     }
 
-    public function testHavingMultipleAnd()
+    public function testHavingMultipleAnd(): void
     {
         $this->builder->having('name', '!=', 'John', 'AnD');
         $this->builder->having('name', '!=', 'Doe', 'AnD');
@@ -256,7 +256,7 @@ class HasHavingTest extends TestCase
         }
     }
 
-    public function testHavingMultipleOr()
+    public function testHavingMultipleOr(): void
     {
         $this->builder->having('name', '!=', 'John', 'Or');
         $this->builder->having('name', '!=', 'Doe', 'OR');
@@ -281,14 +281,14 @@ class HasHavingTest extends TestCase
      * @param string|null $operator
      * @param string|null $value
      */
-    public function testInvalidArguments(?string $field, ?string $operator, ?string $value)
+    public function testInvalidArguments(?string $field, ?string $operator, ?string $value): void
     {
         $this->expectException(InvalidArgumentException::class);
 
         $this->builder->having($field, $operator, $value);
     }
 
-    public function testHavingWithQueryFilter()
+    public function testHavingWithQueryFilter(): void
     {
         $like = new LikeFilter('name', 'aap%');
 
@@ -296,7 +296,7 @@ class HasHavingTest extends TestCase
         $this->assertInstanceOf(QueryHavingFilter::class, $this->builder->getHaving());
     }
 
-    public function testWithHavingFilterObject()
+    public function testWithHavingFilterObject(): void
     {
         $having = new DimensionSelectorHavingFilter('name', 'John');
 
@@ -315,7 +315,7 @@ class HasHavingTest extends TestCase
         }
     }
 
-    public function testWHavingClosure()
+    public function testWHavingClosure(): void
     {
         $filter = new DimensionSelectorHavingFilter('name', 'John');
 
@@ -334,7 +334,7 @@ class HasHavingTest extends TestCase
     /**
      * Test the orWhere method.
      */
-    public function testOrHaving()
+    public function testOrHaving(): void
     {
         $this->builder->shouldReceive('having')
             ->with('name', '=', 'John', 'or')

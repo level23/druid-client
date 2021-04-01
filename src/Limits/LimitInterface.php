@@ -21,11 +21,23 @@ interface LimitInterface
     public function setLimit(int $limit);
 
     /**
+     * @param int $offset
+     */
+    public function setOffset(int $offset);
+
+    /**
      * Get the limit which is currently configured.
      *
-     * @return int
+     * @return int|null
      */
-    public function getLimit(): int;
+    public function getLimit(): ?int;
+
+    /**
+     * Skip this many rows when returning results.
+     *
+     * @return int|null
+     */
+    public function getOffset(): ?int;
 
     /**
      * Return the fields which are used to sort the result by.

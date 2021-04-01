@@ -23,7 +23,7 @@ class HasTuningConfigTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testTuningConfig()
+    public function testTuningConfig(): void
     {
         $tuning = new TuningConfig();
         $tuning->setMaxNumSubTasks(5);
@@ -41,7 +41,7 @@ class HasTuningConfigTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testTuningConfigAsArray()
+    public function testTuningConfigAsArray(): void
     {
         $tuning = new TuningConfig();
         $tuning->setMaxNumSubTasks(5);

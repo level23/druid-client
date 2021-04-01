@@ -11,7 +11,7 @@ use Level23\Druid\Collections\TransformCollection;
 
 class TransformSpecTest extends TestCase
 {
-    public function testTransformSpec()
+    public function testTransformSpec(): void
     {
         $transforms = new TransformCollection(
             new ExpressionTransform('concat(foo, bar)', 'fooBar')
@@ -27,7 +27,7 @@ class TransformSpecTest extends TestCase
         ], $spec->toArray());
     }
 
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $spec = new TransformSpec(new TransformCollection(), null);
 

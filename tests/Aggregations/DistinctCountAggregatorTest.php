@@ -23,7 +23,7 @@ class DistinctCountAggregatorTest extends TestCase
      *
      * @dataProvider dataProvider
      */
-    public function testAggregator(string $dimension, string $outputName, int $size = null)
+    public function testAggregator(string $dimension, string $outputName, int $size = null): void
     {
         if ($size) {
             $aggregator = new DistinctCountAggregator($dimension, $outputName, $size);

@@ -8,7 +8,7 @@ use Level23\Druid\SearchFilters\RegexSearchFilter;
 
 class RegexSearchFilterTest extends TestCase
 {
-    public function testSearchFilter()
+    public function testSearchFilter(): void
     {
         $filter = new RegexSearchFilter('^wiki');
 

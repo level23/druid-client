@@ -9,7 +9,7 @@ use Level23\Druid\Collections\OrderByCollection;
 class Limit implements LimitInterface
 {
     /**
-     * @var int
+     * @var int|null
      */
     protected $limit;
 
@@ -18,10 +18,16 @@ class Limit implements LimitInterface
      */
     protected $orderBy;
 
-    public function __construct(int $limit, OrderByCollection $orderBy = null)
+    /**
+     * @var int|null
+     */
+    protected $offset;
+
+    public function __construct(int $limit = null, OrderByCollection $orderBy = null, int $offset = null)
     {
         $this->limit   = $limit;
         $this->orderBy = $orderBy;
+        $this->offset  = $offset;
     }
 
     /**
@@ -33,9 +39,14 @@ class Limit implements LimitInterface
     {
         $result = [
             'type'    => 'default',
-            'limit'   => $this->limit,
             'columns' => ($this->orderBy ? $this->orderBy->toArray() : []),
         ];
+        if ($this->limit !== null) {
+            $result['limit'] = $this->limit;
+        }
+        if ($this->offset !== null) {
+            $result['offset'] = $this->offset;
+        }
 
         return $result;
     }
@@ -43,7 +54,7 @@ class Limit implements LimitInterface
     /**
      * @param int $limit
      */
-    public function setLimit(int $limit)
+    public function setLimit(int $limit): void
     {
         $this->limit = $limit;
     }
@@ -64,9 +75,9 @@ class Limit implements LimitInterface
     /**
      * Get the limit which is currently configured.
      *
-     * @return int
+     * @return int|null
      */
-    public function getLimit(): int
+    public function getLimit(): ?int
     {
         return $this->limit;
     }
@@ -83,5 +94,21 @@ class Limit implements LimitInterface
         }
 
         return $this->orderBy;
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function setOffset(int $offset): void
+    {
+        $this->offset = $offset;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getOffset(): ?int
+    {
+        return $this->offset;
     }
 }

@@ -18,7 +18,7 @@ class CardinalityAggregatorTest extends TestCase
      * @param bool $byRow
      * @param bool $round
      */
-    public function testAggregation(bool $byRow, bool $round)
+    public function testAggregation(bool $byRow, bool $round): void
     {
         $dimensions = new DimensionCollection(
             new Dimension('dim1'),
@@ -40,7 +40,7 @@ class CardinalityAggregatorTest extends TestCase
         ], $aggregator->toArray());
     }
 
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $dimensions = new DimensionCollection(
             new Dimension('dim1'),

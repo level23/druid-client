@@ -31,8 +31,12 @@ class OrderByTest extends TestCase
      * @param string $sorting
      * @param bool   $expectException
      */
-    public function testOrderBy(string $dimension, string $direction, string $sorting, bool $expectException = false)
-    {
+    public function testOrderBy(
+        string $dimension,
+        string $direction,
+        string $sorting,
+        bool $expectException = false
+    ): void {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
         }
@@ -53,13 +57,13 @@ class OrderByTest extends TestCase
         ], $orderBy->toArray());
     }
 
-    public function testDefaults()
+    public function testDefaults(): void
     {
         $orderBy = new OrderBy('name');
 
         $this->assertEquals([
-            'dimension'      => 'name',
-            'direction'      => 'ascending',
+            'dimension' => 'name',
+            'direction' => 'ascending',
             'dimensionOrder' => 'lexicographic',
         ], $orderBy->toArray());
     }

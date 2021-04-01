@@ -7,8 +7,10 @@ use InvalidArgumentException;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\VirtualColumns\VirtualColumn;
@@ -31,7 +33,7 @@ class GroupByQueryTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testQuery(string $granularity, bool $expectException = false)
+    public function testQuery(string $granularity, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -68,7 +70,7 @@ class GroupByQueryTest extends TestCase
 
         $filter = new SelectorFilter('name', 'John');
 
-        $limit = new Limit(15);
+        $limit = new Limit(15, null, 20);
 
         $fieldAccess = new FieldAccessPostAggregator('field', 'anotherField');
 
@@ -104,8 +106,48 @@ class GroupByQueryTest extends TestCase
         $this->assertEquals([['event' => ['name' => 'John']]], $response->raw());
 
         $query->setLimit(15);
+        $query->setOffset(20);
 
         $response = $query->toArray();
-        $this->assertEquals((new Limit(15))->toArray(), $response['limitSpec']);
+        $this->assertEquals((new Limit(15, null, 20))->toArray(), $response['limitSpec']);
+    }
+
+    public function testSetLimitAsInt(): void
+    {
+        $query = new GroupByQuery(
+            'tableName',
+            new DimensionCollection(),
+            new IntervalCollection(),
+            [new SumAggregator('salary', 'myMoney')],
+            Granularity::DAY
+        );
+
+        $query->setLimit(10);
+
+        /** @var LimitInterface $limit */
+        $limit = $this->getProperty($query, 'limit');
+        $this->assertInstanceOf(LimitInterface::class, $limit);
+
+        $this->assertEquals(10, $limit->getLimit());
+    }
+
+    public function testSetOffset(): void
+    {
+        $query = new GroupByQuery(
+            'tableName',
+            new DimensionCollection(),
+            new IntervalCollection(),
+            [new SumAggregator('salary', 'myMoney')],
+            Granularity::DAY
+        );
+
+        $query->setOffset(20);
+
+        /** @var LimitInterface $limit */
+        $limit = $this->getProperty($query, 'limit');
+        $this->assertInstanceOf(LimitInterface::class, $limit);
+
+        $this->assertEquals(null, $limit->getLimit());
+        $this->assertEquals(20, $limit->getOffset());
     }
 }

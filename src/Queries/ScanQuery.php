@@ -65,6 +65,13 @@ class ScanQuery implements QueryInterface
     protected $limit;
 
     /**
+     * Skip this many rows when returning results.
+     *
+     * @var int
+     */
+    protected $offset;
+
+    /**
      * @var \Level23\Druid\Context\QueryContext|null
      */
     protected $context;
@@ -112,6 +119,10 @@ class ScanQuery implements QueryInterface
 
         if ($this->limit !== null) {
             $result['limit'] = $this->limit;
+        }
+
+        if ($this->offset !== null) {
+            $result['offset'] = $this->offset;
         }
 
         if ($this->legacy !== null) {
@@ -169,6 +180,21 @@ class ScanQuery implements QueryInterface
     public function setLimit(int $limit): void
     {
         $this->limit = $limit;
+    }
+
+    /**
+     * Skip this many rows when returning results. Skipped rows will still need to be generated internally and then
+     * discarded, meaning that raising offsets to high values can cause queries to use additional resources.
+     *
+     * Together, "limit" and "offset" can be used to implement pagination. However, note that if the underlying
+     * datasource is modified in between page fetches in ways that affect overall query results, then the
+     * different pages will not necessarily align with each other.
+     *
+     * @param int $offset
+     */
+    public function setOffset(int $offset): void
+    {
+        $this->offset = $offset;
     }
 
     /**

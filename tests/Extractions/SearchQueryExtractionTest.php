@@ -8,7 +8,7 @@ use Level23\Druid\Extractions\SearchQueryExtraction;
 
 class SearchQueryExtractionTest extends TestCase
 {
-    public function testExtraction()
+    public function testExtraction(): void
     {
         $extraction = new SearchQueryExtraction('john', true);
         $this->assertEquals([

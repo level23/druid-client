@@ -17,7 +17,7 @@ class ArithmeticPostAggregatorTest extends TestCase
      *
      * @param bool $floatingPointOrdering
      */
-    public function testAggregator(bool $floatingPointOrdering)
+    public function testAggregator(bool $floatingPointOrdering): void
     {
         $collections = new PostAggregationCollection(
             new FieldAccessPostAggregator('totals', 'totals'),
@@ -40,7 +40,7 @@ class ArithmeticPostAggregatorTest extends TestCase
         );
     }
 
-    public function testAggregatorDefaults()
+    public function testAggregatorDefaults(): void
     {
         $collections = new PostAggregationCollection(
             new FieldAccessPostAggregator('totals', 'totals'),
@@ -62,7 +62,7 @@ class ArithmeticPostAggregatorTest extends TestCase
         );
     }
 
-    public function testInvalidArithmeticFunction()
+    public function testInvalidArithmeticFunction(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid arithmetic function given');

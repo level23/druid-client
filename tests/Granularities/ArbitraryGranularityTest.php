@@ -22,7 +22,7 @@ class ArbitraryGranularityTest extends TestCase
      *
      * @throws \Exception
      */
-    public function testGranularity(string $queryGranularity, bool $rollup, bool $expectException = false)
+    public function testGranularity(string $queryGranularity, bool $rollup, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);

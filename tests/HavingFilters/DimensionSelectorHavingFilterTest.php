@@ -8,7 +8,7 @@ use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 
 class DimensionSelectorHavingFilterTest extends TestCase
 {
-    public function testHavingFilter()
+    public function testHavingFilter(): void
     {
         $filter = new DimensionSelectorHavingFilter('name', 'John');
 

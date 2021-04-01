@@ -13,13 +13,13 @@ use Level23\Druid\Collections\IntervalCollection;
 
 class IntervalCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new IntervalCollection();
         $this->assertEquals(IntervalInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = '2012-01-01T00:00:00.000/2012-01-03T00:00:00.000';
         $item     = Mockery::mock(Interval::class, [new DateTime('now - 1  hour'), new DateTime()]);

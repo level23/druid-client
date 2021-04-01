@@ -9,7 +9,7 @@ use Level23\Druid\Extractions\SubstringExtraction;
 
 class InFilterTest extends TestCase
 {
-    public function testFilter()
+    public function testFilter(): void
     {
         $filter = new InFilter('name', ['John', 'Jan', 'Jack']);
 
@@ -20,7 +20,7 @@ class InFilterTest extends TestCase
         ], $filter->toArray());
     }
 
-    public function testFilterWithExtraction()
+    public function testFilterWithExtraction(): void
     {
         $substring = new SubstringExtraction(1, 2);
         $filter    = new InFilter('name', ['John', 'Jan', 'Jack'], $substring);
@@ -33,7 +33,7 @@ class InFilterTest extends TestCase
         ], $filter->toArray());
     }
 
-    public function testFilterWithAssociativeArray()
+    public function testFilterWithAssociativeArray(): void
     {
         $substring = new SubstringExtraction(1, 2);
         $filter    = new InFilter('name', ['name1' => 'John', 'name2' => 'Jan', 'name3' => 'Jack'], $substring);

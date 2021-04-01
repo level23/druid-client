@@ -8,7 +8,7 @@ use Level23\Druid\Aggregations\CountAggregator;
 
 class CountAggregatorTest extends TestCase
 {
-    public function testAggregator()
+    public function testAggregator(): void
     {
         $name = 'numberOfThings';
 

@@ -12,13 +12,13 @@ use Level23\Druid\Collections\OrderByCollection;
 
 class OrderByCollectionTest extends TestCase
 {
-    public function testGetType()
+    public function testGetType(): void
     {
         $collection = new OrderByCollection();
         $this->assertEquals(OrderByInterface::class, $collection->getType());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $response = [
             'dimension'      => 'age',

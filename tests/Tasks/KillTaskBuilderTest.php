@@ -13,7 +13,7 @@ class KillTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testKillTaskBuilder()
+    public function testKillTaskBuilder(): void
     {
         $client  = new DruidClient([]);
         $builder = new KillTaskBuilder($client, "wikipedia");
@@ -29,7 +29,7 @@ class KillTaskBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      */
-    public function testBuildTask(string $taskId = null)
+    public function testBuildTask(string $taskId = null): void
     {
         $client  = new DruidClient([]);
         $builder = new KillTaskBuilder($client, "wikipedia");
@@ -51,7 +51,7 @@ class KillTaskBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testBuildTaskWithoutInterval()
+    public function testBuildTaskWithoutInterval(): void
     {
         $client  = new DruidClient([]);
         $builder = new KillTaskBuilder($client, "wikipedia");

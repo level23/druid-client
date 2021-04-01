@@ -8,7 +8,7 @@ use Level23\Druid\Responses\TaskResponse;
 
 class TaskResponseTest extends TestCase
 {
-    public function testEmptyResponse()
+    public function testEmptyResponse(): void
     {
         $response = new TaskResponse([]);
 
@@ -19,7 +19,7 @@ class TaskResponseTest extends TestCase
         $this->assertEquals('', $response->getErrorMsg());
     }
 
-    public function testResponse()
+    public function testResponse(): void
     {
         $rawResponse = [
             'task'   => 'compact_wikipedia_2019-09-26T18:30:14.334Z',

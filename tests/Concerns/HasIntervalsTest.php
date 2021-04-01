@@ -30,7 +30,7 @@ class HasIntervalsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testIntervals()
+    public function testIntervals(): void
     {
         $start  = new DateTime('2019-01-01 00:00:00');
         $stop   = new DateTime('2019-01-31 23:59:59');
@@ -47,7 +47,7 @@ class HasIntervalsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testTimestamps()
+    public function testTimestamps(): void
     {
         $start = new DateTime('2019-01-01 00:00:00');
         $stop  = new DateTime('2019-01-31 23:59:59');
@@ -62,7 +62,7 @@ class HasIntervalsTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testExceptionInCaseOfInvalidDate()
+    public function testExceptionInCaseOfInvalidDate(): void
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage(
