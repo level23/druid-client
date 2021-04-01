@@ -537,7 +537,7 @@ class DruidClientTest extends TestCase
                 ->shouldReceive('parseResponse')
                 ->once()
                 ->andReturnUsing(function (ResponseInterface $input) use (&$expectedResponse) {
-                    $response         = \GuzzleHttp\json_decode($input->getBody()->getContents(), true) ?: [];
+                    $response         = json_decode($input->getBody()->getContents(), true) ?: [];
                     $expectedResponse = $response;
 
                     return $expectedResponse;
