@@ -738,6 +738,20 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the whereNot method without a filter given
+     */
+    public function testWhereNotWithoutFilter(): void
+    {
+        $closure = function (FilterBuilder $filterBuilder) {
+            // Nothing happens here.
+        };
+
+        $response = $this->builder->whereNot($closure);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the orWhereNot method.
      */
     public function testOrWhereNot(): void
