@@ -27,6 +27,11 @@ use Level23\Druid\Aggregations\DistinctCountAggregator;
 trait HasAggregations
 {
     /**
+     * @var \Level23\Druid\DruidClient
+     */
+    protected $client;
+
+    /**
      * @var array|\Level23\Druid\Aggregations\AggregatorInterface[]
      */
     protected $aggregations = [];
@@ -226,7 +231,7 @@ trait HasAggregations
             return $aggregator;
         }
 
-        $builder = new FilterBuilder();
+        $builder = new FilterBuilder($this->client);
         call_user_func($filterBuilder, $builder);
         $filter = $builder->getFilter();
 

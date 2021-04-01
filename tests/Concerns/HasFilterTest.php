@@ -673,6 +673,30 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
+    public function testFlagsInFilterBuilder()
+    {
+        $this->client = new DruidClient(['version' => '0.20.2']);
+
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder->makePartial();
+
+        $response = $this->builder->where(function (FilterBuilder $filterBuilder) {
+            $filterBuilder->whereFlags('flags', 32);
+        });
+
+        $filter = $this->builder->getFilter();
+
+        $this->assertInstanceOf(FilterInterface::class, $filter);
+
+        $this->assertEquals([
+            'type'      => 'selector',
+            'dimension' => 'v0',
+            'value'     => 32,
+        ], $filter ? $filter->toArray() : []);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
     /**
      * Test the whereIn
      *
