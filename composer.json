@@ -30,7 +30,7 @@
     "mockery/mockery": "^1.2",
     "php-coveralls/php-coveralls": "^2.1",
     "phpstan/phpstan": "^0.12",
-    "phpunit/phpunit": "^8"
+    "phpunit/phpunit": "^8|^9"
   },
   "suggest": {
     "psr/log": "Required for using the log handler"
