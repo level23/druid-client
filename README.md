@@ -17,10 +17,9 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 ## Requirements
 
-This package only requires Guzzle from version 6.2 or higher. 
+This package only requires Guzzle from version 6.2 or higher.
 
-It requires PHP version 7.2 or higher. 
-
+It requires PHP version 7.2 or higher. It is also compatible with PHP 8.
 
 ## Installation
 
@@ -94,6 +93,7 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Updated CompactTask to use the ioConfig syntax as described in the manual.
 - Removed deprecated IngestSegmentFirehose, now use DruidInputSource.
 - Updated IndexTask (Native batch ingestion) to correct syntax as described in the manual.
+- Added support for PHP 8.
 
 ## Examples
 

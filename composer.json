@@ -23,7 +23,7 @@
   "require": {
     "php": ">=7.2",
     "ext-json": "*",
-    "guzzlehttp/guzzle": "6|7"
+    "guzzlehttp/guzzle": ">=6.2"
   },
   "require-dev": {
     "illuminate/support": "~5.0",
