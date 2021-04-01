@@ -551,41 +551,39 @@ class HasFilterTest extends TestCase
         $this->builder->where('type', '=', 'foobar');
         $response = $this->builder->orWhereNotColumn('name', 'first_name');
 
-        $hasFilter = $response->getFilter() instanceof FilterInterface;
-        $this->assertTrue($hasFilter);
+        $filter = $response->getFilter();
+        $this->assertInstanceOf(FilterInterface::class, $filter);
 
-        if ($hasFilter) {
-            $this->assertEquals([
-                'type'   => 'or',
-                'fields' => [
-                    [
-                        'type'      => 'selector',
-                        'dimension' => 'type',
-                        'value'     => 'foobar',
-                    ],
-                    [
-                        'type'  => 'not',
-                        'field' => [
-                            'type'       => 'columnComparison',
-                            'dimensions' => [
-                                [
-                                    'type'       => 'default',
-                                    'dimension'  => 'name',
-                                    'outputType' => 'string',
-                                    'outputName' => 'name',
-                                ],
-                                [
-                                    'type'       => 'default',
-                                    'dimension'  => 'first_name',
-                                    'outputType' => 'string',
-                                    'outputName' => 'first_name',
-                                ],
+        $this->assertEquals([
+            'type'   => 'or',
+            'fields' => [
+                [
+                    'type'      => 'selector',
+                    'dimension' => 'type',
+                    'value'     => 'foobar',
+                ],
+                [
+                    'type'  => 'not',
+                    'field' => [
+                        'type'       => 'columnComparison',
+                        'dimensions' => [
+                            [
+                                'type'       => 'default',
+                                'dimension'  => 'name',
+                                'outputType' => 'string',
+                                'outputName' => 'name',
+                            ],
+                            [
+                                'type'       => 'default',
+                                'dimension'  => 'first_name',
+                                'outputType' => 'string',
+                                'outputName' => 'first_name',
                             ],
                         ],
                     ],
                 ],
-            ], $response->getFilter()->toArray());
-        }
+            ],
+        ], $filter ? $filter->toArray() : []);
 
         $this->assertEquals($this->builder, $response);
     }
