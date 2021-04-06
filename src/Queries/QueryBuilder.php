@@ -93,6 +93,14 @@ class QueryBuilder
     protected $metrics = [];
 
     /**
+     * This contains a list of "temporary" field names which we will use to store our result of
+     * a virtual column when the whereFlag() method is used.
+     *
+     * @var array
+     */
+    public $placeholders = [];
+
+    /**
      * QueryBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
