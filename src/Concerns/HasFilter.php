@@ -152,7 +152,7 @@ trait HasFilter
 
             // lets create a bew builder object where the user can mess around with
             $builder = new FilterBuilder($this->client, $this->query);
-
+          
             // call the user function
             call_user_func($filterOrDimensionOrClosure, $builder);
 
