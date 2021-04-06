@@ -694,6 +694,21 @@ class HasFilterTest extends TestCase
             'value'     => 32,
         ], $filter ? $filter->toArray() : []);
 
+        $virtualColumns = $this->getProperty($this->builder, 'virtualColumns');
+        $this->assertIsArray($virtualColumns);
+        $this->assertTrue(sizeof($virtualColumns) == 1);
+
+        $this->assertInstanceOf(VirtualColumn::class, $virtualColumns[0]);
+        /** @var VirtualColumn $virtualColumn */
+        $virtualColumn = $virtualColumns[0];
+
+        $this->assertEquals([
+            'type'       => 'expression',
+            'name'       => 'v0',
+            'expression' => 'bitwiseAnd("flags", 32)',
+            'outputType' => 'long',
+        ], $virtualColumn->toArray());
+
         $this->assertEquals($this->builder, $response);
     }
 

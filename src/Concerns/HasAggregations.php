@@ -32,6 +32,11 @@ trait HasAggregations
     protected $client;
 
     /**
+     * @var null|\Level23\Druid\Queries\QueryBuilder
+     */
+    protected $query;
+
+    /**
      * @var array|\Level23\Druid\Aggregations\AggregatorInterface[]
      */
     protected $aggregations = [];
@@ -231,7 +236,7 @@ trait HasAggregations
             return $aggregator;
         }
 
-        $builder = new FilterBuilder($this->client);
+        $builder = new FilterBuilder($this->client, $this->query);
         call_user_func($filterBuilder, $builder);
         $filter = $builder->getFilter();
 
