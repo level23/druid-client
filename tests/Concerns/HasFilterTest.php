@@ -19,6 +19,7 @@ use Level23\Druid\Filters\AndFilter;
 use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
+use Level23\Druid\Metadata\Structure;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
@@ -30,6 +31,7 @@ use Level23\Druid\Filters\IntervalFilter;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
+use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Extractions\ExtractionBuilder;
@@ -732,6 +734,34 @@ class HasFilterTest extends TestCase
         $response = $this->builder->whereIn('country_iso', ['nl', 'be']);
 
         $this->assertEquals($this->builder, $response);
+    }
+
+    public function testWhereFlagsInTaskBuilder()
+    {
+        $this->expectException(\BadFunctionCallException::class);
+        $this->expectExceptionMessage('The whereFlags() method is only available in queries!');
+
+        $client = Mockery::mock(DruidClient::class);
+        $client->makePartial();
+
+        $client->shouldReceive('config')
+            ->once()
+            ->with('version')
+            ->andReturn('0.21.0');
+
+        $metaDataBuilder = Mockery::mock(MetadataBuilder::class);
+        $metaDataBuilder->shouldReceive('structure')
+            ->once()
+            ->andReturn(new Structure('something', [], []));
+
+        $client->shouldReceive('metadata')
+            ->once()
+            ->andReturn($metaDataBuilder);
+
+        $client->reindex('something')
+            ->sum('foo', 'bar', DataType::LONG, function (FilterBuilder $builder) {
+                $builder->whereFlags('flags', 128);
+            });
     }
 
     /**
