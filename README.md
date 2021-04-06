@@ -1322,7 +1322,8 @@ comparison.
 Support for 64 bit integers are supported.
 
 Druid has support for bitwise flags since version 0.20.2. Before that, we have build our own variant, but then
-javascript support is required.
+javascript support is required. To make sure that you use the native bitwise logic, please specify your druid version in
+the [DruidClient](#druidclient) constructor.
 
 JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide for
 guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
@@ -1331,8 +1332,18 @@ https://druid.apache.org/docs/latest/development/javascript.html
 Example:
 
 ```php
-// Select records where the first and third bit are enabled (1 and 4)
-$builder->whereFlags('flags', (1 | 4));
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+    
+    // Specify the version you are running here. You should run versio 0.20.2 or higher
+    // to use the non-javascript variant which is way faster.
+    'version'    => '0.21.0' 
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    // Select records where the first and third bit are enabled (1 and 4)
+    ->whereFlags('flags', (1 | 4));
 ```
 
 This method has the following arguments:
