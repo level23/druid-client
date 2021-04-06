@@ -16,6 +16,7 @@ use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
 use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\BetweenFilter;
 use Level23\Druid\Filters\IntervalFilter;
@@ -24,7 +25,6 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Dimensions\DimensionBuilder;
-use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Filters\ColumnComparisonFilter;
@@ -33,14 +33,19 @@ use Level23\Druid\Extractions\ExtractionInterface;
 trait HasFilter
 {
     /**
+     * @var \Level23\Druid\DruidClient
+     */
+    protected $client;
+
+    /**
+     * @var null|\Level23\Druid\Queries\QueryBuilder
+     */
+    protected $query;
+
+    /**
      * @var \Level23\Druid\Filters\FilterInterface|null
      */
     protected $filter;
-
-    /**
-     * @var array|\Level23\Druid\VirtualColumns\VirtualColumnInterface[]
-     */
-    protected $virtualColumns = [];
 
     /**
      * This contains a list of "temporary" field names which we will use to store our result of
@@ -49,11 +54,6 @@ trait HasFilter
      * @var array
      */
     protected $placeholders = [];
-
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
 
     /**
      * Filter our results where the given dimension matches the value based on the operator.
@@ -151,8 +151,8 @@ trait HasFilter
         } elseif ($filterOrDimensionOrClosure instanceof Closure) {
 
             // lets create a bew builder object where the user can mess around with
-            $builder = new FilterBuilder($this->client);
-
+            $builder = new FilterBuilder($this->client, $this->query);
+          
             // call the user function
             call_user_func($filterOrDimensionOrClosure, $builder);
 
@@ -181,7 +181,7 @@ trait HasFilter
     public function whereNot(Closure $filterBuilder, $boolean = 'and')
     {
         // lets create a bew builder object where the user can mess around with
-        $builder = new FilterBuilder($this->client);
+        $builder = new FilterBuilder($this->client, $this->query);
 
         // call the user function
         call_user_func($filterBuilder, $builder);
@@ -689,6 +689,8 @@ trait HasFilter
      *                          filters apply ("and") or one or the other ("or") ? Default is "and".
      *
      * @return $this
+     * @throws \BadFunctionCallException
+     *
      */
     public function whereFlags(string $dimension, int $flags, string $boolean = 'and')
     {
@@ -698,10 +700,21 @@ trait HasFilter
         $version = (string)$this->client->config('version');
         if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
 
+            // If we do not have access to a query builder object, we cannot select our
+            // flags value as a virtual column. This situation can happen for example when
+            // we are in a task-builder. In that case, the whereFlags method is unsupported.
+            if (!$this->query instanceof QueryBuilder) {
+                throw new \BadFunctionCallException('The whereFlags() method is only available in queries!');
+            }
+
             $placeholder          = 'v' . count($this->placeholders);
             $this->placeholders[] = $placeholder;
 
-            $this->virtualColumn('bitwiseAnd("' . $dimension . '", ' . $flags . ')', $placeholder, DataType::LONG);
+            $this->query->virtualColumn(
+                'bitwiseAnd("' . $dimension . '", ' . $flags . ')',
+                $placeholder,
+                DataType::LONG
+            );
 
             return $this->where($placeholder, '=', $flags, null, $boolean);
         }
@@ -927,32 +940,5 @@ trait HasFilter
         call_user_func($extraction, $builder);
 
         return $builder->getExtraction();
-    }
-
-    /**
-     * Create a virtual column.
-     *
-     * Virtual columns are queryable column "views" created from a set of columns during a query.
-     *
-     * A virtual column can potentially draw from multiple underlying columns, although a virtual column always
-     * presents itself as a single column.
-     *
-     * Virtual columns can be used as dimensions or as inputs to aggregators.
-     *
-     * NOTE: virtual columns are NOT automatically added to your output. You should select it separately if you want to
-     * add it also to your output. Use selectVirtual to do both at once.
-     *
-     * @param string $expression
-     * @param string $as
-     * @param string $outputType
-     *
-     * @return $this
-     * @see https://druid.apache.org/docs/latest/misc/math-expr.html
-     */
-    public function virtualColumn(string $expression, string $as, $outputType = DataType::STRING)
-    {
-        $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
-
-        return $this;
     }
 }

@@ -22,10 +22,10 @@ use Level23\Druid\Concerns\HasAggregations;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Concerns\HasSearchFilters;
+use Level23\Druid\Concerns\HasVirtualColumns;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Responses\TopNQueryResponse;
-use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Concerns\HasPostAggregations;
 use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Context\GroupByV2QueryContext;
@@ -43,12 +43,17 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilder
 {
-    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasPostAggregations, HasSearchFilters;
+    use HasFilter, HasHaving, HasDimensions, HasAggregations, HasIntervals, HasLimit, HasVirtualColumns, HasPostAggregations, HasSearchFilters;
 
     /**
      * @var \Level23\Druid\DruidClient
      */
     protected $client;
+
+    /**
+     * @var null|\Level23\Druid\Queries\QueryBuilder
+     */
+    protected $query;
 
     /**
      * @var string
@@ -97,6 +102,7 @@ class QueryBuilder
     public function __construct(DruidClient $client, string $dataSource, string $granularity = Granularity::ALL)
     {
         $this->client      = $client;
+        $this->query       = $this;
         $this->dataSource  = $dataSource;
         $this->granularity = Granularity::validate($granularity);
     }
@@ -118,8 +124,7 @@ class QueryBuilder
      */
     public function selectVirtual(string $expression, string $as, $outputType = DataType::STRING)
     {
-        $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
-
+        $this->virtualColumn($expression, $as, $outputType);
         $this->select($as);
 
         return $this;
