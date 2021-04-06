@@ -48,14 +48,6 @@ trait HasFilter
     protected $filter;
 
     /**
-     * This contains a list of "temporary" field names which we will use to store our result of
-     * a virtual column when the whereFlag() method is used.
-     *
-     * @var array
-     */
-    protected $placeholders = [];
-
-    /**
      * Filter our results where the given dimension matches the value based on the operator.
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=', 'like', 'not like', 'regex', 'not regex',
      * 'javascript', 'not javascript', 'search' and 'not search'
@@ -707,8 +699,8 @@ trait HasFilter
                 throw new \BadFunctionCallException('The whereFlags() method is only available in queries!');
             }
 
-            $placeholder          = 'v' . count($this->placeholders);
-            $this->placeholders[] = $placeholder;
+            $placeholder                 = 'v' . count($this->query->placeholders);
+            $this->query->placeholders[] = $placeholder;
 
             $this->query->virtualColumn(
                 'bitwiseAnd("' . $dimension . '", ' . $flags . ')',

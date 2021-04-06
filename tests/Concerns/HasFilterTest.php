@@ -675,6 +675,9 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testFlagsInFilterBuilder()
     {
         $this->client = new DruidClient(['version' => '0.20.2']);
@@ -686,19 +689,31 @@ class HasFilterTest extends TestCase
             $filterBuilder->whereFlags('flags', 32);
         });
 
+        $this->builder->whereFlags('flags2', 64);
+
         $filter = $this->builder->getFilter();
 
         $this->assertInstanceOf(FilterInterface::class, $filter);
 
         $this->assertEquals([
-            'type'      => 'selector',
-            'dimension' => 'v0',
-            'value'     => 32,
+            'type'   => 'and',
+            'fields' => [
+                [
+                    'type'      => 'selector',
+                    'dimension' => 'v0',
+                    'value'     => '32',
+                ],
+                [
+                    'type'      => 'selector',
+                    'dimension' => 'v1',
+                    'value'     => '64',
+                ],
+            ],
         ], $filter ? $filter->toArray() : []);
 
         $virtualColumns = $this->getProperty($this->builder, 'virtualColumns');
         $this->assertIsArray($virtualColumns);
-        $this->assertTrue(sizeof($virtualColumns) == 1);
+        $this->assertTrue(sizeof($virtualColumns) == 2);
 
         $this->assertInstanceOf(VirtualColumn::class, $virtualColumns[0]);
         /** @var VirtualColumn $virtualColumn */
@@ -708,6 +723,16 @@ class HasFilterTest extends TestCase
             'type'       => 'expression',
             'name'       => 'v0',
             'expression' => 'bitwiseAnd("flags", 32)',
+            'outputType' => 'long',
+        ], $virtualColumn->toArray());
+
+        /** @var VirtualColumn $virtualColumn */
+        $virtualColumn = $virtualColumns[1];
+
+        $this->assertEquals([
+            'type'       => 'expression',
+            'name'       => 'v1',
+            'expression' => 'bitwiseAnd("flags2", 64)',
             'outputType' => 'long',
         ], $virtualColumn->toArray());
 
