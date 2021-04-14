@@ -115,16 +115,24 @@ class QueryBuilderTest extends TestCase
     {
         Mockery::mock('overload:' . VirtualColumn::class)
             ->shouldReceive('__construct')
-            ->with('concat(foo, bar)', 'fooBar', 'string');
+            ->with('foo + bar', 'fooBar', 'float');
 
-        $response = $this->builder->selectVirtual('concat(foo, bar)', 'fooBar');
+        $response = $this->builder->selectVirtual('foo + bar', 'fooBar', 'float');
 
-        $this->assertEquals([
+        $this->assertNotEquals([
             'type'       => 'default',
             'dimension'  => 'fooBar',
             'outputType' => 'string',
             'outputName' => 'fooBar',
         ], $this->builder->getDimensions()[0]->toArray());
+
+        $this->assertEquals([
+            'type'       => 'default',
+            'dimension'  => 'fooBar',
+            'outputType' => 'float',
+            'outputName' => 'fooBar',
+        ], $this->builder->getDimensions()[0]->toArray());
+
 
         $this->assertEquals($this->builder, $response);
     }
