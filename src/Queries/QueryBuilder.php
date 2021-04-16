@@ -133,7 +133,7 @@ class QueryBuilder
     public function selectVirtual(string $expression, string $as, $outputType = DataType::STRING)
     {
         $this->virtualColumn($expression, $as, $outputType);
-        $this->select($as);
+        $this->select($as, $as, null, $outputType);
 
         return $this;
     }
