@@ -281,8 +281,7 @@ configuration of your instance.
 
 The `DruidClient` constructor has the following arguments:
 
-| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **
-Description**                                                                                                                         |
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | ** Description**                                                                                                                        |
 |---------------------|-----------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
 | `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
@@ -460,11 +459,11 @@ $builder
 
 The `orderBy()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                                        |   |   |
-|----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|---|---|
-| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                                     |   |   |
-| string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |   |   |
-| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                              |   |   |
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                                        |
+|----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                                     |
+| string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |
+| string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                              |
 
 See for more information about SortingOrders this
 page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
@@ -2913,11 +2912,11 @@ echo "Final status: \n";
 print_r($status->data());
 ```
 The `reindex` method will return a `IndexTaskBuilder` object which allows you to specify the rest of the 
-required data. By default we will use a `IngestSegmentFirehose` to ingest data from an existing data source. 
+required data. By default we will use a `DruidInputSource` to ingest data from an existing data source. 
 
 If you want you can change the data source where the data is read from using the `fromDataSource()` method. 
 
-**NOTE:** Currently we only support re-indexing, and thus the IngestSegment Firehose. 
+**NOTE:** Currently we only support re-indexing, and thus the DruidInputSource. 
 
 
 #### `kill()`
