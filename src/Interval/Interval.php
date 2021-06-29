@@ -4,27 +4,28 @@ declare(strict_types=1);
 namespace Level23\Druid\Interval;
 
 use DateTime;
+use DateTimeInterface;
 use InvalidArgumentException;
 
 class Interval implements IntervalInterface
 {
     /**
-     * @var DateTime
+     * @var \DateTimeInterface
      */
     protected $start;
 
     /**
-     * @var DateTime
+     * @var \DateTimeInterface
      */
     protected $stop;
 
     /**
      * Interval constructor.
      *
-     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct
-     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct
+     * @param \DateTimeInterface|string|int      $start DateTime object, unix timestamp or string accepted by
+     *                                                  DateTime::__construct
+     * @param \DateTimeInterface|string|int|null $stop  DateTime object, unix timestamp or string accepted by
+     *                                                  DateTime::__construct
      *
      * @throws \Exception
      */
@@ -51,11 +52,11 @@ class Interval implements IntervalInterface
             );
         }
 
-        if (!$start instanceof DateTime) {
+        if (!$start instanceof DateTimeInterface) {
             $start = new DateTime(is_numeric($start) ? "@$start" : $start);
         }
 
-        if (!$stop instanceof DateTime) {
+        if (!$stop instanceof DateTimeInterface) {
             $stop = new DateTime(is_numeric($stop) ? "@$stop" : $stop);
         }
 
@@ -79,17 +80,17 @@ class Interval implements IntervalInterface
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTimeInterface
      */
-    public function getStart(): DateTime
+    public function getStart(): DateTimeInterface
     {
         return $this->start;
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTimeInterface
      */
-    public function getStop(): DateTime
+    public function getStop(): DateTimeInterface
     {
         return $this->stop;
     }
