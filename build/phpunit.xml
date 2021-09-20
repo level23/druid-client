@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
-         bootstrap="../tests/bootstrap.php"
-         colors="true"
+<phpunit bootstrap="../tests/bootstrap.php"
+         colors="false"
+         backupGlobals="false"
+         backupStaticAttributes="false"
          verbose="true">
-  <coverage>
-    <include>
-      <directory suffix=".php">../src</directory>
-    </include>
-  </coverage>
   <testsuites>
     <testsuite name="phpunit">
       <directory>../tests/</directory>
     </testsuite>
   </testsuites>
+  <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">../src</directory>
+      <exclude>
+        <file>src/autoload.php</file>
+      </exclude>
+    </whitelist>
+  </filter>
 </phpunit>

@@ -104,6 +104,7 @@ for more information.
 
 - [DruidClient](#druidclient)
   - [DruidClient::query()](#druidclientquery)
+  - [DruidClient::cancelQuery()](#druidclientcancelquery)
   - [DruidClient::compact()](#druidclientcompact)
   - [DruidClient::reindex()](#druidclientreindex)
   - [DruidClient::taskStatus()](#druidclienttaskstatus)
@@ -343,8 +344,46 @@ The query method has 2 parameters:
 
 The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
 
-See the following chapters for more information about the query builder.  
+See the following chapters for more information about the query builder.
 
+#### `DruidClient::cancelQuery()`
+
+The `cancelQuery()` method gives you the ability to cancel a query. To cancel a query, you must know it's unique identifier.
+When you execute a query, you can specify the unique identifier yourself in the query context.
+
+Example:
+```php
+$client = new DruidClient(['router_url' => 'https://router.url:8080']);
+
+// For example, this returns my-query6148716d3772c
+$queryId = uniqid('my-query');
+
+// Please note: this will be blocking until we have got result from druid.
+// So cancellation has to be done within another php process. 
+$result = $client
+    ->query('wikipedia', Granularity::DAY) 
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['namespace', 'page'])
+    ->execute(['queryId' => $queryId]);
+```
+
+You can now cancel this query within another process. If you for example store the running queries somewhere,
+you can "kill" the running queries by executing this:
+
+```php
+$client->cancelQuery('my-query6148716d3772c')
+```
+
+The query method has 1 parameter:
+
+| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
+|----------|-----------------------|----------------|-------------|-------------------------------------------------------------------|
+| string   | Required              | `$identifier`  | "myqueryid" | The unique query identifier which was given in the query context. |
+
+If the cancellation fails, the method will throw an exception. Otherwise it will not return any result. 
+
+See also:
+https://druid.apache.org/docs/latest/querying/querying.html#query-cancellation
 
 #### `DruidClient::compact()`
 
