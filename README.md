@@ -358,7 +358,8 @@ $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 // For example, this returns my-query6148716d3772c
 $queryId = uniqid('my-query');
 
-// Please note: this will be blocking untill we have got result from druid.
+// Please note: this will be blocking until we have got result from druid.
+// So cancellation has to be done within another php process. 
 $result = $client
     ->query('wikipedia', Granularity::DAY) 
     ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
