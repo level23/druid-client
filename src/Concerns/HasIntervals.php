@@ -41,10 +41,10 @@ trait HasIntervals
      * interval(1570643085, 1570729485);
      * ```
      *
-     * @param \DateTime|string|int      $start DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct
-     * @param \DateTime|string|int|null $stop  DateTime object, unix timestamp or string accepted by
-     *                                         DateTime::__construct
+     * @param \DateTimeInterface|string|int      $start DateTime object, unix timestamp or string accepted by
+     *                                                  DateTime::__construct
+     * @param \DateTimeInterface|string|int|null $stop  DateTime object, unix timestamp or string accepted by
+     *                                                  DateTime::__construct
      *
      * @return $this
      * @throws \Exception

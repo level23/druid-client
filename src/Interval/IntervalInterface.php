@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Interval;
 
-use DateTime;
+use DateTimeInterface;
 
 interface IntervalInterface
 {
@@ -18,14 +18,14 @@ interface IntervalInterface
     /**
      * Return the start date of the interval.
      *
-     * @return \DateTime
+     * @return \DateTimeInterface
      */
-    public function getStart(): DateTime;
+    public function getStart(): DateTimeInterface;
 
     /**
      * Return the stop date of the interval.
      *
-     * @return \DateTime
+     * @return \DateTimeInterface
      */
-    public function getStop(): DateTime;
+    public function getStop(): DateTimeInterface;
 }
