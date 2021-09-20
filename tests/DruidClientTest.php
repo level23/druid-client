@@ -550,6 +550,33 @@ class DruidClientTest extends TestCase
     }
 
     /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function testCancelQuery()
+    {
+        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+
+        $client = Mockery::mock(DruidClient::class, [
+            [],
+            $guzzle,
+        ]);
+        $client->makePartial();
+
+        $guzzle = Mockery::mock(GuzzleClient::class);
+        $guzzle->shouldReceive('delete')
+            ->once()
+            ->with('/druid/v2/my-long-query-id')
+            ->times(1)
+            ->andReturnUsing(function () {
+                return new GuzzleResponse(202, [], '');
+            });
+
+        $client->setGuzzleClient($guzzle);
+        $client->cancelQuery('my-long-query-id');
+    }
+
+    /**
      * @testWith [2, 10]
      *           [0, 200]
      *           [1, 1000]

@@ -115,9 +115,25 @@ class DruidClient
      *
      * @return \Level23\Druid\Queries\QueryBuilder
      */
-    public function query(string $dataSource, $granularity = Granularity::ALL): QueryBuilder
+    public function query(string $dataSource, string $granularity = Granularity::ALL): QueryBuilder
     {
         return new QueryBuilder($this, $dataSource, $granularity);
+    }
+
+    /**
+     * Cancel the execution of a query with the given query identifier.
+     *
+     * @param string $identifier
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function cancelQuery(string $identifier): void
+    {
+        $this->executeRawRequest(
+            'DELETE',
+            $this->config('broker_url') . '/druid/v2/' . $identifier
+        );
     }
 
     /**
@@ -186,13 +202,15 @@ class DruidClient
                 $response = $this->client->post($url, [
                     'json' => $data,
                 ]);
+            } elseif (strtolower($method) == 'delete') {
+                $response = $this->client->delete($url);
             } else {
                 $response = $this->client->get($url, [
                     'query' => $data,
                 ]);
             }
 
-            if ($response->getStatusCode() == 204) {
+            if ($response->getStatusCode() == 204 || $response->getStatusCode() == 202) {
                 return [];
             }
 
