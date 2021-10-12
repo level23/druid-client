@@ -67,7 +67,10 @@ class CompactTaskBuilder extends TaskBuilder
 
         // First, validate the given from and to. Make sure that these
         // match the beginning and end of an interval.
-        $this->validateInterval($this->dataSource, $this->interval);
+        $properties = $context->toArray();
+        if (empty($properties['skipIntervalValidation'])) {
+            $this->validateInterval($this->dataSource, $this->interval);
+        }
 
         // @todo: add support for building metricSpec and DimensionSpec.
 

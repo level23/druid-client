@@ -2858,7 +2858,7 @@ Level23\Druid\Metadata\Structure Object
 ## Reindex / compact data / kill
 
 Druid stores data in segments. When you want to update some data, you have to rebuild the _whole_ segment.
-Therefore we use smaller segments when the data is still "fresh". The change of data needed to be rebuild is the biggest
+Therefore, we use smaller segments when the data is still "fresh". The chance of data needed to be rebuild is the biggest
 when it is fresh. In this way, we only need to rebuild 1 hour of data, instead for a whole month or such. 
 
 We use for example hour segments for "today" and "yesterday", and we have some processes which will change this data into
@@ -2867,8 +2867,21 @@ bigger segments after that.
 Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
 
 **Note**: when you re-index data, druid will collect the data and put it in a new segment. The old segments are not deleted,
-but marked as unused. This is the same principle as laravel's soft-deletes. To permanent delete the unused segments 
+but marked as unused. This is the same principle as laravel's soft-deletes. To permanently delete the unused segments 
 you should use the `kill` task. See below for an example. 
+
+By default, we have added a check to make sure that you have selected a complete interval. This prevents a lot of 
+issues. If you do _not_ want this, we have added a special context setting named `skipIntervalValidation`. When you set 
+this to `true`, we will not validate the given intervals for the `compact()` or `reindex()` methods.
+
+Example: 
+```php
+// Build our compact task.
+$taskId = $client->compact('wikipedia')
+    ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+    ->segmentGranularity(Granularity::DAY) 
+    ->execute([ 'skipIntervalValidation' => true ]); // Ignore interval validation. 
+```
 
 #### `compact()`
 

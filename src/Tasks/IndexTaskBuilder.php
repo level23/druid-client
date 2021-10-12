@@ -160,6 +160,10 @@ class IndexTaskBuilder extends TaskBuilder
      */
     protected function buildTask($context): TaskInterface
     {
+        if (is_array($context)) {
+            $context = new TaskContext($context);
+        }
+
         if ($this->queryGranularity === null) {
             throw new InvalidArgumentException('You have to specify a queryGranularity value!');
         }
@@ -193,7 +197,10 @@ class IndexTaskBuilder extends TaskBuilder
 
                 // First, validate the given from and to. Make sure that these
                 // match the beginning and end of an interval.
-                $this->validateInterval($fromDataSource, $this->interval);
+                $properties = $context->toArray();
+                if (empty($properties['skipIntervalValidation'])) {
+                    $this->validateInterval($fromDataSource, $this->interval);
+                }
 
                 $inputSource = new DruidInputSource($fromDataSource, $this->interval);
                 break;
@@ -202,10 +209,6 @@ class IndexTaskBuilder extends TaskBuilder
                 throw new InvalidArgumentException(
                     'No InputSource known. Currently we only support re-indexing (DruidInputSource).'
                 );
-        }
-
-        if (!$context instanceof TaskContext) {
-            $context = new TaskContext($context);
         }
 
         $task = new IndexTask(
