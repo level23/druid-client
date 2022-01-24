@@ -31,7 +31,7 @@ class RegexExtraction implements ExtractionInterface
      * @param string      $regexp
      * @param int         $groupToExtract      If "$groupToExtract" is set, it will control which group from the match
      *                                         to extract. Index zero extracts the string matching the entire pattern.
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
+     * @param bool|string $keepMissingValue    When true, we will keep values which are not matched by the regexp. The
      *                                         value will be null. If false, the missing items will not be kept in the
      *                                         result set. If this is a string, we will keep the missing values and
      *                                         replace them with the string value.
@@ -39,12 +39,12 @@ class RegexExtraction implements ExtractionInterface
     public function __construct(
         string $regexp,
         int $groupToExtract = 1,
-        $replaceMissingValue = false
+        $keepMissingValue = false
     ) {
         $this->regexp                  = $regexp;
         $this->groupToExtract          = $groupToExtract;
-        $this->replaceMissingValue     = is_string($replaceMissingValue) ? true : $replaceMissingValue;
-        $this->replaceMissingValueWith = is_string($replaceMissingValue) ? $replaceMissingValue : null;
+        $this->replaceMissingValue     = is_string($keepMissingValue) ? true : $keepMissingValue;
+        $this->replaceMissingValueWith = is_string($keepMissingValue) ? $keepMissingValue : null;
     }
 
     /**
