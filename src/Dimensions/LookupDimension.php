@@ -23,7 +23,7 @@ class LookupDimension implements DimensionInterface
     /**
      * @var bool|string
      */
-    protected $replaceMissingValue;
+    protected $keepMissingValue;
 
     /**
      * DefaultDimension constructor.
@@ -38,18 +38,18 @@ class LookupDimension implements DimensionInterface
      * @param string      $dimension
      * @param string      $registeredLookupFunction
      * @param string      $outputName
-     * @param bool|string $replaceMissingValue
+     * @param bool|string $keepMissingValue
      */
     public function __construct(
         string $dimension,
         string $registeredLookupFunction,
         string $outputName = '',
-        $replaceMissingValue = false
+        $keepMissingValue = false
     ) {
         $this->dimension                = $dimension;
         $this->outputName               = $outputName ?: $dimension;
         $this->registeredLookupFunction = $registeredLookupFunction;
-        $this->replaceMissingValue      = $replaceMissingValue;
+        $this->keepMissingValue         = $keepMissingValue;
     }
 
     /**
@@ -66,10 +66,10 @@ class LookupDimension implements DimensionInterface
             'name'       => $this->registeredLookupFunction,
         ];
 
-        if ($this->replaceMissingValue === true) {
+        if ($this->keepMissingValue === true) {
             $result['retainMissingValue'] = true;
-        } elseif (is_string($this->replaceMissingValue)) {
-            $result['replaceMissingValueWith'] = $this->replaceMissingValue;
+        } elseif (is_string($this->keepMissingValue)) {
+            $result['replaceMissingValueWith'] = $this->keepMissingValue;
         }
 
         return $result;

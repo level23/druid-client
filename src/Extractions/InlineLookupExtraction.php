@@ -35,7 +35,7 @@ class InlineLookupExtraction implements ExtractionInterface
      *
      * @param array       $map                 A map with items. The key is the value of the given dimension. It will
      *                                         be replaced by the value.
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     * @param bool|string $keepMissingValue    When true, we will keep values which are not known in the lookup
      *                                         function. The original value will be kept. If false, the missing items
      *                                         will not be kept in the result set. If this is a string, we will keep
      *                                         the missing values and replace them with the string value.
@@ -45,21 +45,21 @@ class InlineLookupExtraction implements ExtractionInterface
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
      */
-    public function __construct(array $map, $replaceMissingValue = false, bool $optimize = true, bool $injective = null)
+    public function __construct(array $map, $keepMissingValue = false, bool $optimize = true, bool $injective = null)
     {
         $this->map       = $map;
         $this->optimize  = $optimize;
         $this->injective = $injective;
 
-        if (is_string($replaceMissingValue)) {
-            $this->replaceMissingValueWith = $replaceMissingValue;
+        if (is_string($keepMissingValue)) {
+            $this->replaceMissingValueWith = $keepMissingValue;
         } else {
-            $this->retainMissingValue = (bool)$replaceMissingValue;
+            $this->retainMissingValue = (bool)$keepMissingValue;
         }
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

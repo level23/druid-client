@@ -29,7 +29,7 @@ trait HasExtractions
 
     /**
      * @param string      $lookupName
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     * @param bool|string $keepMissingValue    When true, we will keep values which are not known in the lookup
      *                                         function. The original value will be kept. If false, the missing items
      *                                         will not be kept in the result set. If this is a string, we will keep
      *                                         the missing values and replace them with the string value.
@@ -43,11 +43,11 @@ trait HasExtractions
      */
     public function lookup(
         string $lookupName,
-        $replaceMissingValue = false,
+        $keepMissingValue = false,
         bool $optimize = true,
         bool $injective = null
     ) {
-        $this->addExtraction(new LookupExtraction($lookupName, $replaceMissingValue, $optimize, $injective));
+        $this->addExtraction(new LookupExtraction($lookupName, $keepMissingValue, $optimize, $injective));
 
         return $this;
     }
@@ -55,7 +55,7 @@ trait HasExtractions
     /**
      * @param array       $map                 A map with items. The key is the value of the given dimension. It will
      *                                         be replaced by the value.
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not known in the lookup
+     * @param bool|string $keepMissingValue    When true, we will keep values which are not known in the lookup
      *                                         function. The original value will be kept. If false, the missing items
      *                                         will not be kept in the result set. If this is a string, we will keep
      *                                         the missing values and replace them with the string value.
@@ -72,11 +72,11 @@ trait HasExtractions
      */
     public function inlineLookup(
         array $map,
-        $replaceMissingValue = false,
+        $keepMissingValue = false,
         bool $optimize = true,
         bool $injective = null
     ) {
-        $this->addExtraction(new InlineLookupExtraction($map, $replaceMissingValue, $optimize, $injective));
+        $this->addExtraction(new InlineLookupExtraction($map, $keepMissingValue, $optimize, $injective));
 
         return $this;
     }
@@ -178,16 +178,16 @@ trait HasExtractions
      * @param string      $regexp
      * @param int         $groupToExtract      If "$groupToExtract" is set, it will control which group from the match
      *                                         to extract. Index zero extracts the string matching the entire pattern.
-     * @param bool|string $replaceMissingValue When true, we will keep values which are not matched by the regexp. The
+     * @param bool|string $keepMissingValue    When true, we will keep values which are not matched by the regexp. The
      *                                         value will be null. If false, the missing items will not be kept in the
      *                                         result set. If this is a string, we will keep the missing values and
      *                                         replace them with the string value.
      *
      * @return $this
      */
-    public function regex(string $regexp, int $groupToExtract = 1, $replaceMissingValue = true)
+    public function regex(string $regexp, int $groupToExtract = 1, $keepMissingValue = true)
     {
-        $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $replaceMissingValue));
+        $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $keepMissingValue));
 
         return $this;
     }
