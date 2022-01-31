@@ -12,6 +12,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\Aggregations\AnyAggregator;
 use Level23\Druid\Aggregations\LastAggregator;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Aggregations\CountAggregator;
@@ -426,10 +427,113 @@ trait HasAggregations
     }
 
     /**
+     * Get the any metric found based on the applied group-by filters.
+     * Returns any value including null. This aggregator can simplify and
+     * optimize the performance by returning the first encountered value (including null)
+     *
+     * ANY aggregator cannot be used in ingestion spec, and should only be specified as part of queries.
+     *
+     * @param string        $metric
+     * @param string        $as
+     * @param string        $type
+     * @param int|null      $maxStringBytes For string types only. Optional, defaults to 1024.
+     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                     "any" function to the records which match with the given filter.
+     *
+     * @return $this
+     */
+    public function any(string $metric, string $as = '', $type = DataType::LONG, int $maxStringBytes = null, Closure $filterBuilder = null)
+    {
+        $this->aggregations[] = $this->buildFilteredAggregation(
+            new AnyAggregator($metric, $as, $type, $maxStringBytes),
+            $filterBuilder
+        );
+
+        return $this;
+    }
+
+    /**
+     * Get the any metric found based on the applied group-by filters.
+     * Returns any value including null. This aggregator can simplify and
+     * optimize the performance by returning the first encountered value (including null)
+     *
+     * ANY aggregator cannot be used in ingestion spec, and should only be specified as part of queries.
+     *
+     * @param string        $metric
+     * @param string        $as
+     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                     "any" function to the records which match with the given filter.
+     *
+     * @return $this
+     */
+    public function doubleAny(string $metric, string $as = '', Closure $filterBuilder = null)
+    {
+        return $this->any($metric, $as, DataType::DOUBLE, null, $filterBuilder);
+    }
+
+    /**
+     * Get the any metric found based on the applied group-by filters.
+     * Returns any value including null. This aggregator can simplify and
+     * optimize the performance by returning the first encountered value (including null)
+     *
+     * ANY aggregator cannot be used in ingestion spec, and should only be specified as part of queries.
+     *
+     * @param string        $metric
+     * @param string        $as
+     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                     "any" function to the records which match with the given filter.
+     *
+     * @return $this
+     */
+    public function floatAny(string $metric, string $as = '', Closure $filterBuilder = null)
+    {
+        return $this->any($metric, $as, DataType::FLOAT, null, $filterBuilder);
+    }
+
+    /**
+     * Get the any metric found based on the applied group-by filters.
+     * Returns any value including null. This aggregator can simplify and
+     * optimize the performance by returning the first encountered value (including null)
+     *
+     * ANY aggregator cannot be used in ingestion spec, and should only be specified as part of queries.
+     *
+     * @param string        $metric
+     * @param string        $as
+     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                     "any" function to the records which match with the given filter.
+     *
+     * @return $this
+     */
+    public function longAny(string $metric, string $as = '', Closure $filterBuilder = null)
+    {
+        return $this->any($metric, $as, DataType::LONG, null, $filterBuilder);
+    }
+
+    /**
+     * Get the any metric found based on the applied group-by filters.
+     * Returns any value including null. This aggregator can simplify and
+     * optimize the performance by returning the first encountered value (including null)
+     *
+     * ANY aggregator cannot be used in ingestion spec, and should only be specified as part of queries.
+     *
+     * @param string        $metric
+     * @param string        $as
+     * @param int|null      $maxStringBytes Optional, defaults to 1024
+     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                     "any" function to the records which match with the given filter.
+     *
+     * @return $this
+     */
+    public function stringAny(string $metric, string $as = '', int $maxStringBytes = null, Closure $filterBuilder = null)
+    {
+        return $this->any($metric, $as, DataType::STRING, $maxStringBytes, $filterBuilder);
+    }
+
+    /**
      * Get the first metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the first "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT first() method!
+     * NOTE: This is different from the Laravel ELOQUENT first() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -453,7 +557,7 @@ trait HasAggregations
      * Get the first metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the first "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT first() method!
+     * NOTE: This is different from the Laravel ELOQUENT first() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -471,7 +575,7 @@ trait HasAggregations
      * Get the first metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the first "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT first() method!
+     * NOTE: This is different from the Laravel ELOQUENT first() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -489,7 +593,7 @@ trait HasAggregations
      * Get the first metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the first "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT first() method!
+     * NOTE: This is different from the Laravel ELOQUENT first() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -507,7 +611,7 @@ trait HasAggregations
      * Get the first metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the first "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT first() method!
+     * NOTE: This is different from the Laravel ELOQUENT first() method!
      *
      * @param string        $metric
      * @param string        $as

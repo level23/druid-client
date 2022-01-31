@@ -16,6 +16,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Aggregations\MaxAggregator;
 use Level23\Druid\Aggregations\MinAggregator;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\Aggregations\AnyAggregator;
 use Level23\Druid\Aggregations\LastAggregator;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Aggregations\CountAggregator;
@@ -592,6 +593,89 @@ class HasAggregationsTest extends TestCase
         $this->filteredAggregatorTest(null);
 
         $response = $this->builder->first('age');
+        $this->assertEquals($this->builder, $response);
+    }
+
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testAny(): void
+    {
+        $this->getAggregationMock(AnyAggregator::class)
+            ->shouldReceive('__construct')
+            ->with('age', 'anyAge', 'string', 2048)
+            ->once();
+
+        $closure = function (FilterBuilder $builder) {
+        };
+
+        $this->filteredAggregatorTest($closure);
+
+        $response = $this->builder->any('age', 'anyAge', 'string', 2048, $closure);
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testAnyDefaults(): void
+    {
+        $this->getAggregationMock(AnyAggregator::class)
+            ->shouldReceive('__construct')
+            ->with('age', '', 'long', null)
+            ->once();
+
+        $this->filteredAggregatorTest(null);
+
+        $response = $this->builder->any('age');
+        $this->assertEquals($this->builder, $response);
+    }
+
+
+    public function testLongAny(): void
+    {
+        $this->builder->shouldReceive('any')
+            ->with('age', '', 'long', null, null)
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->longAny('age');
+        $this->assertEquals($this->builder, $response);
+    }
+
+    public function testDoubleAny(): void
+    {
+        $this->builder->shouldReceive('any')
+            ->with('age', '', 'double', null, null)
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->doubleAny('age');
+        $this->assertEquals($this->builder, $response);
+    }
+
+    public function testStringAny(): void
+    {
+        $this->builder->shouldReceive('any')
+            ->with('age', '', 'string', null, null)
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->stringAny('age');
+        $this->assertEquals($this->builder, $response);
+    }
+
+    public function testFloatAny(): void
+    {
+        $this->builder->shouldReceive('any')
+            ->with('age', '', 'float', null, null)
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->floatAny('age');
         $this->assertEquals($this->builder, $response);
     }
 
