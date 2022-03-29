@@ -130,6 +130,7 @@ for more information.
     - [max()](#max)
     - [first()](#first)
     - [last()](#last)
+    - [any()](#any)
     - [javascript()](#javascript)
     - [hyperUnique()](#hyperunique)
     - [cardinality()](#cardinality)
@@ -976,7 +977,31 @@ The `last()` aggregation method has the following parameters:
 | string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                            |
 | string   | Optional              | `$type`          | "long"                                       | The output type. This can either be string, long, float or double.                                                                          |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
- 
+
+
+#### `any()`
+
+The `any()` aggregation will fetch any metric value. This can also be null. 
+
+
+**Note:** Alternatives are: `longAny()`, `doubleAny()`, `floatAny()` and `stringAny()`, which allow you to
+directly specify the output type by using the appropriate method name. These methods do not have the `$type` parameter.
+
+Example:
+```php
+$builder->any('price');
+```
+
+The `any()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**      | **Example**                                  | **Description**                                                                                                                             |
+|----------|-----------------------|-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`         | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
+| string   | Optional              | `$as`             | "anyDevice"                                  | The name which will be used in the output result                                                                                            |
+| string   | Optional              | `$type`           | "string"                                     | The output type. This can either be string, long, float or double.                                                                          |
+| int      | Optional              | `$maxStringBytes` | 2048                                         | Then the type is string, you can specify here the max bytes of the string. Defaults to 1024.                                                |
+| Closure  | Optional              | `$filterBuilder`  | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
+
 
 #### `javascript()`
 
