@@ -7,6 +7,7 @@ use Closure;
 use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
+use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Aggregations\MaxAggregator;
@@ -27,20 +28,12 @@ use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 trait HasAggregations
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
-
-    /**
-     * @var null|\Level23\Druid\Queries\QueryBuilder
-     */
-    protected $query;
+    protected ?QueryBuilder $query = null;
 
     /**
      * @var array|\Level23\Druid\Aggregations\AggregatorInterface[]
      */
-    protected $aggregations = [];
+    protected array $aggregations = [];
 
     /**
      * @return array|\Level23\Druid\Aggregations\AggregatorInterface[]
@@ -61,8 +54,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function sum(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null)
-    {
+    public function sum(
+        string $metric,
+        string $as = '',
+        string $type = DataType::LONG,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new SumAggregator($metric, $as, $type),
             $filterBuilder
@@ -81,7 +78,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function longSum(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function longSum(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->sum($metric, $as, DataType::LONG, $filterBuilder);
     }
@@ -96,7 +93,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function doubleSum(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function doubleSum(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->sum($metric, $as, DataType::DOUBLE, $filterBuilder);
     }
@@ -111,7 +108,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function floatSum(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function floatSum(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->sum($metric, $as, DataType::FLOAT, $filterBuilder);
     }
@@ -134,7 +131,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function hyperUnique(string $metric, string $as, bool $round = false, bool $isInputHyperUnique = false)
+    public function hyperUnique(string $metric, string $as, bool $round = false, bool $isInputHyperUnique = false): self
     {
         $this->aggregations[] = new HyperUniqueAggregator(
             $as, $metric, $isInputHyperUnique, $round
@@ -194,8 +191,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function cardinality(string $as, $dimensionsOrDimensionBuilder, bool $byRow = false, bool $round = false)
-    {
+    public function cardinality(
+        string $as,
+        $dimensionsOrDimensionBuilder,
+        bool $byRow = false,
+        bool $round = false
+    ): self {
         if ($dimensionsOrDimensionBuilder instanceof Closure) {
             $builder = new DimensionBuilder();
             call_user_func($dimensionsOrDimensionBuilder, $builder);
@@ -237,7 +238,7 @@ trait HasAggregations
             return $aggregator;
         }
 
-        $builder = new FilterBuilder($this->client, $this->query);
+        $builder = new FilterBuilder($this->query);
         call_user_func($filterBuilder, $builder);
         $filter = $builder->getFilter();
 
@@ -257,7 +258,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function count(string $as, Closure $filterBuilder = null)
+    public function count(string $as, Closure $filterBuilder = null): self
     {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new CountAggregator($as),
@@ -276,7 +277,7 @@ trait HasAggregations
      * @param int           $size          Must be a power of 2. Internally, size refers to the maximum number of
      *                                     entries sketch object will retain. Higher size means higher accuracy but
      *                                     more space to store sketches. Note that after you index with a particular
-     *                                     size, druid will persist sketch in segments and you will use size greater or
+     *                                     size, druid will persist sketch in segments, and you will use size greater or
      *                                     equal to that at query time. See the DataSketches site for details. In
      *                                     general, We recommend just sticking to default size.
      * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only count the
@@ -284,8 +285,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function distinctCount(string $dimension, string $as = '', $size = 16384, Closure $filterBuilder = null)
-    {
+    public function distinctCount(
+        string $dimension,
+        string $as = '',
+        int $size = 16384,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new DistinctCountAggregator($dimension, ($as ?: $dimension), $size),
             $filterBuilder
@@ -305,7 +310,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function min(string $metric, string $as = '', $type = DataType::LONG, Closure $filterBuilder = null)
+    public function min(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null): self
     {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new MinAggregator($metric, $as, $type),
@@ -325,7 +330,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function longMin(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function longMin(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->min($metric, $as, DataType::LONG, $filterBuilder);
     }
@@ -340,7 +345,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function doubleMin(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function doubleMin(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->min($metric, $as, DataType::DOUBLE, $filterBuilder);
     }
@@ -355,7 +360,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function floatMin(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function floatMin(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->min($metric, $as, DataType::FLOAT, $filterBuilder);
     }
@@ -371,7 +376,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function max(string $metric, string $as = '', $type = DataType::LONG, Closure $filterBuilder = null)
+    public function max(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null): self
     {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new MaxAggregator($metric, $as, $type),
@@ -391,7 +396,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function longMax(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function longMax(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->max($metric, $as, DataType::LONG, $filterBuilder);
     }
@@ -406,7 +411,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function floatMax(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function floatMax(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->max($metric, $as, DataType::FLOAT, $filterBuilder);
     }
@@ -421,7 +426,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function doubleMax(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function doubleMax(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->max($metric, $as, DataType::DOUBLE, $filterBuilder);
     }
@@ -437,13 +442,18 @@ trait HasAggregations
      * @param string        $as
      * @param string        $type
      * @param int|null      $maxStringBytes For string types only. Optional, defaults to 1024.
-     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
-     *                                     "any" function to the records which match with the given filter.
+     * @param \Closure|null $filterBuilder  A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                      "any" function to the records which match with the given filter.
      *
      * @return $this
      */
-    public function any(string $metric, string $as = '', $type = DataType::LONG, int $maxStringBytes = null, Closure $filterBuilder = null)
-    {
+    public function any(
+        string $metric,
+        string $as = '',
+        string $type = DataType::LONG,
+        int $maxStringBytes = null,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new AnyAggregator($metric, $as, $type, $maxStringBytes),
             $filterBuilder
@@ -466,7 +476,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function doubleAny(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function doubleAny(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->any($metric, $as, DataType::DOUBLE, null, $filterBuilder);
     }
@@ -485,7 +495,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function floatAny(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function floatAny(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->any($metric, $as, DataType::FLOAT, null, $filterBuilder);
     }
@@ -504,7 +514,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function longAny(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function longAny(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->any($metric, $as, DataType::LONG, null, $filterBuilder);
     }
@@ -519,13 +529,17 @@ trait HasAggregations
      * @param string        $metric
      * @param string        $as
      * @param int|null      $maxStringBytes Optional, defaults to 1024
-     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
-     *                                     "any" function to the records which match with the given filter.
+     * @param \Closure|null $filterBuilder  A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                      "any" function to the records which match with the given filter.
      *
      * @return $this
      */
-    public function stringAny(string $metric, string $as = '', int $maxStringBytes = null, Closure $filterBuilder = null)
-    {
+    public function stringAny(
+        string $metric,
+        string $as = '',
+        int $maxStringBytes = null,
+        Closure $filterBuilder = null
+    ): self {
         return $this->any($metric, $as, DataType::STRING, $maxStringBytes, $filterBuilder);
     }
 
@@ -543,8 +557,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function first(string $metric, string $as = '', $type = DataType::LONG, Closure $filterBuilder = null)
-    {
+    public function first(
+        string $metric,
+        string $as = '',
+        string $type = DataType::LONG,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new FirstAggregator($metric, $as, $type),
             $filterBuilder
@@ -566,7 +584,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function longFirst(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function longFirst(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->first($metric, $as, DataType::LONG, $filterBuilder);
     }
@@ -584,7 +602,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function floatFirst(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function floatFirst(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->first($metric, $as, DataType::FLOAT, $filterBuilder);
     }
@@ -602,7 +620,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function doubleFirst(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function doubleFirst(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->first($metric, $as, DataType::DOUBLE, $filterBuilder);
     }
@@ -620,7 +638,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function stringFirst(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function stringFirst(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->first($metric, $as, DataType::STRING, $filterBuilder);
     }
@@ -636,7 +654,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function last(string $metric, string $as = '', $type = DataType::LONG, Closure $filterBuilder = null)
+    public function last(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null): self
     {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new LastAggregator($metric, $as, $type),
@@ -650,7 +668,7 @@ trait HasAggregations
      * Get the last metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the last "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT last() method!
+     * NOTE: This is different from the ELOQUENT last() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -659,7 +677,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function longLast(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function longLast(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->last($metric, $as, DataType::LONG, $filterBuilder);
     }
@@ -668,7 +686,7 @@ trait HasAggregations
      * Get the last metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the last "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT last() method!
+     * NOTE: This is different from the ELOQUENT last() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -677,7 +695,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function floatLast(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function floatLast(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->last($metric, $as, DataType::FLOAT, $filterBuilder);
     }
@@ -686,7 +704,7 @@ trait HasAggregations
      * Get the last metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the last "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT last() method!
+     * NOTE: This is different from the ELOQUENT last() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -695,7 +713,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function doubleLast(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function doubleLast(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->last($metric, $as, DataType::DOUBLE, $filterBuilder);
     }
@@ -704,7 +722,7 @@ trait HasAggregations
      * Get the last metric found based on the applied group-by filters.
      * So if you group by the dimension "countries", you can get the last "metric" per country.
      *
-     * NOTE: This is different then the ELOQUENT last() method!
+     * NOTE: This is different from the ELOQUENT last() method!
      *
      * @param string        $metric
      * @param string        $as
@@ -713,7 +731,7 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function stringLast(string $metric, string $as = '', Closure $filterBuilder = null)
+    public function stringLast(string $metric, string $as = '', Closure $filterBuilder = null): self
     {
         return $this->last($metric, $as, DataType::STRING, $filterBuilder);
     }
@@ -745,7 +763,7 @@ trait HasAggregations
         string $fnCombine,
         string $fnReset,
         Closure $filterBuilder = null
-    ) {
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new JavascriptAggregator($fieldNames, $as, $fnAggregate, $fnCombine, $fnReset),
             $filterBuilder

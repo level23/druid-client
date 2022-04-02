@@ -16,7 +16,7 @@ trait HasDimensions
     /**
      * @var array|DimensionInterface[]
      */
-    protected $dimensions = [];
+    protected array $dimensions = [];
 
     /**
      * @return array|DimensionInterface[]
@@ -42,8 +42,8 @@ trait HasDimensions
         $dimension,
         string $as = '',
         Closure $extraction = null,
-        $outputType = DataType::STRING
-    ) {
+        string $outputType = DataType::STRING
+    ): self {
         if (is_string($dimension)) {
             if (!empty($extraction)) {
                 $builder = new ExtractionBuilder();
@@ -83,7 +83,7 @@ trait HasDimensions
         string $dimension,
         string $as = '',
         $keepMissingValue = false
-    ) {
+    ): self {
         $this->dimensions[] = new LookupDimension(
             $dimension,
             $lookupFunction,
@@ -99,7 +99,7 @@ trait HasDimensions
      *
      * @param DimensionInterface|string|array|ArrayObject $dimension
      */
-    protected function addDimension($dimension)
+    protected function addDimension($dimension): void
     {
         if ($dimension instanceof DimensionInterface) {
             $this->dimensions[] = $dimension;

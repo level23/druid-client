@@ -8,7 +8,7 @@ class CascadeExtraction implements ExtractionInterface
     /**
      * @var array|\Level23\Druid\Extractions\ExtractionInterface[]
      */
-    protected $extractions = [];
+    protected array $extractions = [];
 
     /**
      * CascadeExtraction constructor.
@@ -31,7 +31,7 @@ class CascadeExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */
@@ -39,9 +39,7 @@ class CascadeExtraction implements ExtractionInterface
     {
         return [
             'type'          => 'cascade',
-            'extractionFns' => array_map(function (ExtractionInterface $extraction) {
-                return $extraction->toArray();
-            }, $this->extractions),
+            'extractionFns' => array_map(fn(ExtractionInterface $extraction) => $extraction->toArray(), $this->extractions),
         ];
     }
 }

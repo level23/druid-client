@@ -5,15 +5,9 @@ namespace Level23\Druid\PostAggregations;
 
 class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string|null
-     */
-    protected $outputName;
+    protected ?string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $fieldName;
+    protected string $fieldName;
 
     /**
      * HyperUniqueCardinalityPostAggregator constructor.

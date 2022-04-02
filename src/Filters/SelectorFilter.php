@@ -7,20 +7,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
 
 class SelectorFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * InFilter constructor.

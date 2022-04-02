@@ -8,10 +8,7 @@ use Throwable;
 
 class QueryResponseException extends Exception
 {
-    /**
-     * @var array
-     */
-    protected $query;
+    protected array $query;
 
     /**
      * DruidQueryException constructor.

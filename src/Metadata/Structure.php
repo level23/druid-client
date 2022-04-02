@@ -5,24 +5,21 @@ namespace Level23\Druid\Metadata;
 
 class Structure
 {
-    /**
-     * @var string
-     */
-    public $dataSource;
+    public string $dataSource;
 
     /**
      * A list of the dimensions and their associated type.
      *
      * @var array
      */
-    public $dimensions = [];
+    public array $dimensions = [];
 
     /**
      * A list of the metrics and their associated type.
      *
      * @var array
      */
-    public $metrics = [];
+    public array $metrics = [];
 
     public function __construct(string $dataSource, array $dimensions, array $metrics)
     {

@@ -8,25 +8,13 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 class ArithmeticPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $function;
+    protected string $function;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection
-     */
-    protected $fields;
+    protected PostAggregationCollection $fields;
 
-    /**
-     * @var bool
-     */
-    protected $floatingPointOrdering;
+    protected bool $floatingPointOrdering;
 
     /**
      * ArithmeticPostAggregator constructor.
@@ -43,7 +31,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
      * @param PostAggregationCollection $fields                List with field names which are used for this function.
      *
      *
-     * @param bool                      $floatingPointOrdering By default floating point ordering is used. When set to
+     * @param bool                      $floatingPointOrdering By default, floating point ordering is used. When set to
      *                                                         false we will use numericFirst ordering. It returns
      *                                                         finite values first,followed by NaN, and infinite values
      *                                                         last.
@@ -58,7 +46,6 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
         $this->function              = ArithmeticFunction::validate($function);
         $this->fields                = $fields;
         $this->floatingPointOrdering = $floatingPointOrdering;
-        $this->function              = $function;
     }
 
     /**

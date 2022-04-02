@@ -17,20 +17,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class JavascriptFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $javascriptFunction;
+    protected string $javascriptFunction;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * JavascriptFilter constructor.

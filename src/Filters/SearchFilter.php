@@ -14,31 +14,22 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class SearchFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * @var string|array
      */
     protected $value;
 
-    /**
-     * @var bool
-     */
-    protected $caseSensitive;
+    protected bool $caseSensitive;
 
     /**
      * SearchFilter constructor.
      *
-     * When an array of values are given, we expect the dimension value contains all
-     * of the values specified in this search query spec.
+     * When an array of values is given, we expect the dimension value contains all
+     * the values specified in this search query spec.
      *
      * @param string                   $dimension
      * @param string|string[]|array    $valueOrValues

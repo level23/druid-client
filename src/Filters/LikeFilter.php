@@ -15,25 +15,13 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class LikeFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $pattern;
+    protected string $pattern;
 
-    /**
-     * @var string
-     */
-    protected $escapeCharacter;
+    protected string $escapeCharacter;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * LikeFilter constructor.

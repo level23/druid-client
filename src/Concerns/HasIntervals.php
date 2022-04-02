@@ -10,10 +10,10 @@ trait HasIntervals
     /**
      * @var array|\Level23\Druid\Interval\IntervalInterface[]
      */
-    protected $intervals = [];
+    protected array $intervals = [];
 
     /**
-     * Set the interval, eg the date where we want to select data from.
+     * Set the interval, e.g. the date where we want to select data from.
      *
      * You should specify the interval in string form like "$start/$stop" format, or give two parameters
      * where each parameter should be a DateTime object, unix timestamp or string accepted by DateTime::__construct.
@@ -49,7 +49,7 @@ trait HasIntervals
      * @return $this
      * @throws \Exception
      */
-    public function interval($start, $stop = null)
+    public function interval($start, $stop = null): self
     {
         $this->intervals[] = new Interval($start, $stop);
 

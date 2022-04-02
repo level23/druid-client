@@ -9,15 +9,9 @@ use InvalidArgumentException;
 
 class Interval implements IntervalInterface
 {
-    /**
-     * @var \DateTimeInterface
-     */
-    protected $start;
+    protected DateTimeInterface $start;
 
-    /**
-     * @var \DateTimeInterface
-     */
-    protected $stop;
+    protected DateTimeInterface $stop;
 
     /**
      * Interval constructor.

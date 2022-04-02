@@ -5,20 +5,11 @@ namespace Level23\Druid\PostAggregations;
 
 class FieldAccessPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $fieldName;
+    protected string $fieldName;
 
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var bool
-     */
-    protected $finalizing;
+    protected bool $finalizing;
 
     public function __construct(string $fieldName, string $outputName, bool $finalizing = false)
     {

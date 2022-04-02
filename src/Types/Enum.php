@@ -11,7 +11,7 @@ abstract class Enum
     /**
      * @var null|array
      */
-    protected static $constCacheArray = null;
+    protected static ?array $constCacheArray = null;
 
     /**
      * @return array

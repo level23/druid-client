@@ -14,7 +14,7 @@ class TopNQueryContext extends QueryContext implements ContextInterface
      *
      * @return $this;
      */
-    public function setMinTopNThreshold(int $minTopNThreshold)
+    public function setMinTopNThreshold(int $minTopNThreshold): self
     {
         $this->properties['minTopNThreshold'] = $minTopNThreshold;
 

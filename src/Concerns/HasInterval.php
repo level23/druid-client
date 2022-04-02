@@ -4,16 +4,17 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Level23\Druid\Interval\Interval;
+use Level23\Druid\Interval\IntervalInterface;
 
 trait HasInterval
 {
     /**
      * @var \Level23\Druid\Interval\Interval|null
      */
-    protected $interval;
+    protected ?IntervalInterface $interval = null;
 
     /**
-     * Set the interval, eg the date where we want to select data from.
+     * Set the interval, e.g. the date where we want to select data from.
      *
      * You should specify the interval in string form like "$start/$stop" format, or give two parameters
      * where each parameter should be a DateTime object, unix timestamp or string accepted by DateTime::__construct.
@@ -49,7 +50,7 @@ trait HasInterval
      * @return $this
      * @throws \Exception
      */
-    public function interval($start, $stop = null)
+    public function interval($start, $stop = null): self
     {
         $this->interval = new Interval($start, $stop);
 

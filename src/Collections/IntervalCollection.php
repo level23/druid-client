@@ -24,9 +24,7 @@ class IntervalCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        return array_map(function (IntervalInterface $item) {
-            return $item->getInterval();
-        }, $this->items);
+        return array_map(fn(IntervalInterface $item) => $item->getInterval(), $this->items);
     }
 
     /**

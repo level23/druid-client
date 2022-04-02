@@ -18,65 +18,29 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 class GroupByQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected string $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\DimensionCollection
-     */
-    protected $dimensions;
+    protected DimensionCollection $dimensions;
 
-    /**
-     * @var string
-     */
-    protected $granularity;
+    protected string $granularity;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter;
 
-    /**
-     * @var \Level23\Druid\Collections\AggregationCollection|null
-     */
-    protected $aggregations;
+    protected ?AggregationCollection $aggregations;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    protected $postAggregations;
+    protected ?PostAggregationCollection $postAggregations;
 
-    /**
-     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
-     */
-    protected $virtualColumns;
+    protected ?VirtualColumnCollection $virtualColumns;
 
-    /**
-     * @var \Level23\Druid\HavingFilters\HavingFilterInterface|null
-     */
-    protected $having;
+    protected ?HavingFilterInterface $having;
 
-    /**
-     * @var \Level23\Druid\Context\ContextInterface|null
-     */
-    protected $context;
+    protected ?ContextInterface $context;
 
-    /**
-     * @var \Level23\Druid\Limits\LimitInterface|null
-     */
-    protected $limit;
+    protected ?Limit $limit = null;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var array
-     */
-    protected $subtotals = [];
+    protected array $subtotals = [];
 
     /**
      * GroupByQuery constructor.
@@ -92,7 +56,7 @@ class GroupByQuery implements QueryInterface
         DimensionCollection $dimensions,
         IntervalCollection $intervals,
         $aggregations = null,
-        $granularity = 'all'
+        string $granularity = 'all'
     ) {
         $this->dataSource  = $dataSource;
         $this->dimensions  = $dimensions;
@@ -105,7 +69,7 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
      * @return array
      */
@@ -177,7 +141,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Collections\PostAggregationCollection|array $postAggregations
      */
-    public function setPostAggregations($postAggregations)
+    public function setPostAggregations($postAggregations): void
     {
         if (is_array($postAggregations)) {
             $postAggregations = new PostAggregationCollection(...$postAggregations);
@@ -189,7 +153,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
      */
-    public function setHaving(HavingFilterInterface $having)
+    public function setHaving(HavingFilterInterface $having): void
     {
         $this->having = $having;
     }
@@ -197,15 +161,15 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Context\ContextInterface $context
      */
-    public function setContext(ContextInterface $context)
+    public function setContext(ContextInterface $context): void
     {
         $this->context = $context;
     }
 
     /**
-     * @param \Level23\Druid\Limits\LimitInterface|int $limit
+     * @param \Level23\Druid\Limits\Limit|int $limit
      */
-    public function setLimit($limit)
+    public function setLimit($limit): void
     {
         if ($limit instanceof LimitInterface) {
             $this->limit = $limit;
@@ -224,7 +188,7 @@ class GroupByQuery implements QueryInterface
      *
      * @param int $offset
      */
-    public function setOffset(int $offset)
+    public function setOffset(int $offset): void
     {
         if (!$this->limit) {
             $this->limit = new Limit();

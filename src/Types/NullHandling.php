@@ -22,7 +22,7 @@ class NullHandling extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($nullHandling)
+    public static function validate(string $nullHandling): string
     {
         if (!NullHandling::isValidValue($nullHandling)) {
             throw new InvalidArgumentException(

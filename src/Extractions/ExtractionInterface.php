@@ -6,7 +6,7 @@ namespace Level23\Druid\Extractions;
 interface ExtractionInterface
 {
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

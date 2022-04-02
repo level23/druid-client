@@ -11,25 +11,13 @@ namespace Level23\Druid\Aggregations;
  */
 class HyperUniqueAggregator implements AggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $metricName;
+    protected string $metricName;
 
-    /**
-     * @var bool
-     */
-    protected $isInputHyperUnique;
+    protected bool $isInputHyperUnique;
 
-    /**
-     * @var bool
-     */
-    protected $round;
+    protected bool $round;
 
     /**
      * HyperUniqueAggregator constructor.

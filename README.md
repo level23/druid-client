@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/level23/druid-client.svg?branch=master)](https://travis-ci.org/level23/druid-client)
 [![Coverage Status](https://coveralls.io/repos/github/level23/druid-client/badge.svg?branch=master)](https://coveralls.io/github/level23/druid-client?branch=master)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.2-8892BF.svg)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg)](https://php.net/)
 [![Packagist Version](https://img.shields.io/packagist/v/level23/druid-client.svg)](https://packagist.org/packages/level23/druid-client)
 [![Total Downloads](https://img.shields.io/packagist/dt/level23/druid-client.svg)](https://packagist.org/packages/level23/druid-client)
 [![Quality Score](https://img.shields.io/scrutinizer/quality/g/level23/druid-client)](https://scrutinizer-ci.com/g/level23/druid-client)
@@ -19,7 +19,10 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 This package only requires Guzzle from version 6.2 or higher.
 
-It requires PHP version 7.2 or higher. It is also compatible with PHP 8.
+Since version 2.0, this package requires PHP 7.4 or higher.
+Version 1.* requires PHP version 7.2 or higher.
+
+Both versions are compatible with PHP 8.
 
 ## Installation
 
@@ -62,7 +65,7 @@ DRUID_RETRIES=2
 DRUID_RETRY_DELAY_MS=500
 DRUID_TIMEOUT=60
 DRUID_CONNECT_TIMEOUT=10
-DRUID_VERSION=0.20.2
+DRUID_POLLING_SLEEP_SECONDS=2
 ```
 
 If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
@@ -77,8 +80,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement support for Spatial filters
 - Implement support for multi-value dimensions
-- Implement append / merge / same_interval_merge tasks
-- Implement support for indexing using other firehoses then the IngestSegmentFirehose
 
 ## Changelog
 
@@ -94,6 +95,51 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Removed deprecated IngestSegmentFirehose, now use DruidInputSource.
 - Updated IndexTask (Native batch ingestion) to correct syntax as described in the manual.
 - Added support for PHP 8.
+
+**v2.0**
+
+- Updated minimal supported PHP version to 7.4, which allows us to use property type hinting, short function syntax and more.
+- Removed DRUID_VERSION hinting. This was only used for `whereFlags()` and made our code ugly.
+- Added `markAsUnused` option to kill task and the KillTaskBuilder.
+- Refactored the IndexTask. It now allows an InputSource. Also added option to specify timestamp column. Added support
+  to be able to ingest spatial dimensions using the `spatialDimension()` method in the IndexTaskBuilder.
+- Added spatial filter methods:
+  - `whereSpatialRectangular()`
+  - `whereSpatialRadius()`
+  - `whereSpatialPolygon()`
+  - `orWhereSpatialRectangular()`
+  - `orWhereSpatialRadius()`
+  - `orWhereSpatialPolygon()`
+- Added ExpressionFilter and the `whereExpression()` and `orWhereExpression()` methods.
+- Removed IngestSegmentFirehose and FirehoseInterface. These are now replaced by InputSources.
+- Added _a lot_ of input sources (used for index tasks):
+  - Azure
+  - Google Cloud
+  - S3
+  - HDFS
+  - Http
+  - Local
+  - Inline
+  - SQL
+  - Combine
+- Updated DruidInputSource so that you now can also specify a filter on it. 
+- Added `pollTaskStatus` in the client, which will poll until the status of a task is other than `RUNNING`.
+  The time between each check can be influenced by the `'polling_sleep_seconds'` config setting or 
+  the `DRUID_POLLING_SLEEP_SECONDS` .env setting for Laravel/Lumen applications.
+
+## Migrating to v2
+
+If you are currently using druid-client version 1.*, you should check for these code changes:
+
+1. The `IndexTaskBuilder` constructor now only accepts an InputSourceInterface as second parameter.
+2. The `IndexTaskBuilder` has no `fromDataSource()` and `setFromDataSource()` methods anymore. These where related to the
+   IngestSegmentFirehose. 
+3. IngestSegmentFirehose and FirehoseInterface are gone. You should now use the InputSource variant instead.
+4. We removed DRUID_VERSION and 'version' from the config. This was only used for the `whereFlags()` methods. If you want
+   to fall back to the old javascript behaviour, you can now use the 4th parameter `$useJavascript`. If you do not use
+   the javascript variant, no changes are required.
+5. You can remove the `'version'` settings from your config, as the `DRUID_VERSION` from your .env if you are using this.
+   However, if you do not remove them it will not break. 
 
 ## Examples
 
@@ -150,6 +196,8 @@ for more information.
     - [orWhereInterval()](#orwhereinterval)    
     - [whereFlags()](#whereflags)
     - [orWhereFlags()](#orwhereflags) 
+    - [whereExpression()](#whereexpression)
+    - [orWhereExpression()](#orwehereexpression)
   - [QueryBuilder: Extractions](#querybuilder-extractions)
     - [lookup()](#lookup-extraction)
     - [inlineLookup()](#inlinelookup-extraction)
@@ -200,7 +248,14 @@ for more information.
     - [structure](#metadata-structure)
   - [Reindex/compact data/kill](#reindex--compact-data--kill)
     - [compact()](#compact)
-    - [reindex()](#reindex)      
+    - [reindex()](#reindex)
+  - [Importing data using a batch index job](#importing-data-using-a-batch-index-job)    
+  - [Input Sources](#input-sources) 
+    - [AzureInputSource](#azureinputsource)
+    - [GoogleCloudInputSource](#googlecloudinputsource)
+    - [S3InputSource](#s3inputsource)
+    - [HdfsInputSource](#hdfsinputsource)
+    - [HttpInputSource](#httpinputsource)
 
 # Documentation
 
@@ -239,7 +294,7 @@ $response = $client->query('traffic-hits', Granularity::ALL)
     ->lookup('carrier_title', 'mccmnc', 'carrierName', 'Unknown')
     // Select a dimension, but change it's value by using an extraction function. Multiple functions are available,
     // like timeFormat, upper, lower, substring, lookup, regexp, etc.
-    ->select('__time', 'dateTime', function( ExtractionBuilder $builder) {
+    ->select('__time', 'dateTime', function(ExtractionBuilder $builder) {
         $builder->timeFormat('yyyy-MM-dd HH:00:00');
     })    
     // Summing a metric.
@@ -369,7 +424,7 @@ $result = $client
 ```
 
 You can now cancel this query within another process. If you for example store the running queries somewhere,
-you can "kill" the running queries by executing this:
+you can "stop" the running queries by executing this:
 
 ```php
 $client->cancelQuery('my-query6148716d3772c')
@@ -377,9 +432,9 @@ $client->cancelQuery('my-query6148716d3772c')
 
 The query method has 1 parameter:
 
-| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
-|----------|-----------------------|----------------|-------------|-------------------------------------------------------------------|
-| string   | Required              | `$identifier`  | "myqueryid" | The unique query identifier which was given in the query context. |
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
+|----------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
+| string   | Required              | `$identifier` | "myqueryid" | The unique query identifier which was given in the query context. |
 
 If the cancellation fails, the method will throw an exception. Otherwise it will not return any result. 
 
@@ -403,6 +458,12 @@ For more information, see [reindex()](#reindex).
 The `taskStatus()` method allows you to fetch the status of a task identifier.
 
 For more information and an example, see [reindex()](#reindex) or [compact()](#compact).  
+
+#### `DruidClient::pollTaskStatus()`
+
+The `pollTaskStatus()` method allows you to wait until the status of a task is other than `RUNNING`. 
+
+For more information and an example, see [reindex()](#reindex) or [compact()](#compact).
 
 #### `DruidClient::metadata()`
 
@@ -1298,13 +1359,13 @@ The SQL equivalent would be:
 
 This method has the following arguments:
 
-| **Type**    | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                                                                                                                                                                                                                      |
-|-------------|-----------------------|---------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string      | Required              | `$dimension`  | year            | The dimension which you want to filter                                                                                                                                                                                                                                               |
-| int/string  | Required              | `$minValue`   | 1990            | The minimum value where the dimension should match. It should be equal or greater than this value.                                                                                                                                                                                   |
-| int/string  | Required              | `$maxValue`   | 2000            | The maximum value where the dimension should match. It should be less than this value.                                                                                                                                                                                 |
-| Closure     | Optional              | `$extraction` | See Extractions | Extraction function to extract a different value from the dimension.                                                                                                                                                                                                                 |
-| string      | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
+| **Type**   | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                                                                                                                                                                                                                      |
+|------------|-----------------------|---------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string     | Required              | `$dimension`  | year            | The dimension which you want to filter                                                                                                                                                                                                                                               |
+| int/string | Required              | `$minValue`   | 1990            | The minimum value where the dimension should match. It should be equal or greater than this value.                                                                                                                                                                                   |
+| int/string | Required              | `$maxValue`   | 2000            | The maximum value where the dimension should match. It should be less than this value.                                                                                                                                                                                               |
+| Closure    | Optional              | `$extraction` | See Extractions | Extraction function to extract a different value from the dimension.                                                                                                                                                                                                                 |
+| string     | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
 
 
 #### `orWhereBetween()`
@@ -1377,7 +1438,7 @@ $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-20
 
 Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
 
-#### `whereFlags`
+#### `whereFlags()`
 
 This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND
 comparison.
@@ -1385,8 +1446,8 @@ comparison.
 Support for 64 bit integers are supported.
 
 Druid has support for bitwise flags since version 0.20.2. Before that, we have build our own variant, but then
-javascript support is required. To make sure that you use the native bitwise logic, please specify your druid version in
-the [DruidClient](#druidclient) constructor.
+javascript support is required. To make use of the javascript variant, you should pass `true` as the 4th parameter 
+of this method.
 
 JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide for
 guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
@@ -1397,10 +1458,6 @@ Example:
 ```php
 $client = new \Level23\Druid\DruidClient([
     'router_url' => 'https://router.url:8080',
-    
-    // Specify the version you are running here. You should run versio 0.20.2 or higher
-    // to use the non-javascript variant which is way faster.
-    'version'    => '0.21.0' 
 ]);
 
 $client->query('myDataSource')
@@ -1411,16 +1468,46 @@ $client->query('myDataSource')
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                              |
-|----------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimension` | "flags"     | The dimension where you want to filter on                                                                                                                    |
-| int      | Required              | `$flags`     | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
-| string   | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                              |
+|----------|-----------------------|------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`     | "flags"     | The dimension where you want to filter on                                                                                                                    |
+| int      | Required              | `$flags`         | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
+| string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| boolean  | Optional              | `$useJavascript` | true        | Older versions do not yet support the bitwiseAnd expression. Set this parameter to `true` to use an javacript alternative instead.                           |
 
-#### `orWhereFlags`
+#### `orWhereFlags()`
 
 Same as `whereFlags()`, but now we will join previous added filters with a `or` instead of an `and`.
 
+#### `whereExpression()`
+
+This filter allows you to filter on a druid expression. See also: https://druid.apache.org/docs/latest/misc/math-expr.html
+
+This filter allows for more flexibility, but it might be less performant than a combination of the other filters on this 
+page due to the fact that not all filter optimizations are in place yet.
+
+Example:
+
+```php
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    ->whereExpression('((product_type == 42) && (!is_deleted))');
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                 | **Description**                                                                                                                                              |
+|----------|-----------------------|---------------|---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | `"((product_type == 42) && (!is_deleted))"` | The expression to use for your filter.                                                                                                                       |
+| string   | Optional              | `$boolean`    | `"and"`                                     | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+#### `orWhereExpression()`
+
+Same as `whereExpression()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 ## QueryBuilder: Extractions
 
@@ -1690,7 +1777,7 @@ The `searchQuery()` extraction function has the following arguments:
 | **Type**     | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                                                                            |
 |--------------|-----------------------|------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/array | Required              | `$valueOrValues` | "Talk"      | The word (string) or words (array) where the dimension should match with. If this word is in the dimension, it matches. When multiple words are given, all of then should match with the dimensions value. |
-| bool         | Optional              | `$caseSensitive` | true        | Set to true to do a case sensitive match, false for an case insensitive match.       |
+| bool         | Optional              | `$caseSensitive` | true        | Set to true to do a case sensitive match, false for an case insensitive match.                                                                                                                             |
 
 
 #### `substring()` extraction
@@ -2760,9 +2847,9 @@ $intervals = $client->metadata()->intervals('wikipedia');
 
 The `intervals()` method has 1 parameters: 
 
-| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                      |
-|----------|-----------------------|----------------|-------------|-----------------------------------------------------------------------------------|
-| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to retrieve the intervals from. |
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                   |
+|----------|-----------------------|---------------|-------------|-----------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource` | "wikipedia" | The name of the dataSource (table) which you want to retrieve the intervals from. |
 
 
 It will return the response like this:
@@ -2883,8 +2970,9 @@ Level23\Druid\Metadata\Structure Object
 ## Reindex / compact data / kill
 
 Druid stores data in segments. When you want to update some data, you have to rebuild the _whole_ segment.
-Therefore, we use smaller segments when the data is still "fresh". The chance of data needed to be rebuild is the biggest
-when it is fresh. In this way, we only need to rebuild 1 hour of data, instead for a whole month or such. 
+Therefore, we use smaller segments when the data is still "fresh". 
+In our experience, if data needs to be updated (rebuild), it is most of the times fresh data.
+By keeping fresh data in smaller segments, we only need to rebuild 1 hour of data, instead for a whole month or such. 
 
 We use for example hour segments for "today" and "yesterday", and we have some processes which will change this data into
 bigger segments after that. 
@@ -2939,6 +3027,9 @@ while (true) {
     sleep(2);
 }
 
+// Or, simply use:
+// $status = $client->pollTaskStatus($taskId);
+
 echo "Final status: \n";
 print_r($status->data());
 ```
@@ -2985,6 +3076,9 @@ while (true) {
     sleep(2);
 }
 
+// Or, simply use:
+// $status = $client->pollTaskStatus($taskId);
+
 echo "Final status: \n";
 print_r($status->data());
 ```
@@ -3004,6 +3098,8 @@ the task Id for your task. You can then execute it.
 The kill task will delete all __unused__ segments which match with your given interval. If you often re-index your data
 you probably want to also use this task a lot, otherwise you will also store all old versions of your data. 
 
+If you want to remove segments which are not yet marked as __unused__, you can use the `markAsUnused()` method:
+
 Example:
 ```php
 $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -3011,6 +3107,7 @@ $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
 // Build our kill task and execute it.
 $taskId = $client->kill('wikipedia')
     ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+    ->markAsUnused() // mark segments as unused
     ->execute();
 
 echo "Kill task inserted with id: " . $taskId . "\n";
@@ -3026,6 +3123,438 @@ while (true) {
     sleep(2);
 }
 
+// Or, simply use:
+// $status =$client->pollTaskStatus($taskId);
+
 echo "Final status: \n";
 print_r($status->data());
+```
+
+## Importing data using a batch index job
+
+When you want to manually import data into druid, you can do this with a simple `index` task.
+When you want to import data, you will have to specify an input source. The input source is where the data is read from.
+
+There are various input sources, for example an Local file, an HTTP endpoint or data retrieved from an SQL source.
+Below we will describe all available input sources, but first we will explain how an index task is created.
+
+The `$client->index(...)` method returns an `IndexTaskBuilder` object, which allows you to specify your index task. 
+
+It is important to understand that druid will replace your SEGMENTS by default!
+So, for example, of you stored your data in DAY segments, then you have to import your data for that whole segment in
+one task. Otherwise, the second task will replace the previous data.
+
+To solve this, you can use `appendToExisting()`, which will allow you to append to an existing segment without removing
+the previous imported data.
+
+For more methods on the `IndexTaskBuilder`, see the example below. Above each method call we have added some comment as explanation:
+
+```php
+$client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
+
+// First, define your inputSource. 
+$inputSource = new \Level23\Druid\InputSources\HttpInputSource([
+    'https://your-site.com/path/to/file1.json',
+    'https://your-site.com/path/to/file2.json',
+]);
+
+# Now, build and execute our index task
+$taskId = $client->index('myTableName', $inputSource)
+    // specify the date range which will be imported.
+    ->interval('now - 1 week', 'now')
+    // Specify that we want to "rollup" our data 
+    ->rollup()
+    // We want to make segment files of 1 week of data
+    ->segmentGranularity(Granularity::WEEK)
+    // We want to be able to query at minimum level of HOUR data.
+    ->queryGranularity(Granularity::HOUR)
+    // Process the input source parallel (like multi-threaded instead of 1 thread).
+    ->parallel()
+    // By default, an INDEX task will OVERWRITE _segments_. If you want to APPEND, use this: 
+    ->appendToExisting()    
+    // Set a unique id for this task.
+    ->taskId('MY-TASK')
+    // Specify your "time" column in your input source
+    ->timestamp('time', 'posix')
+    // Now we will add some dimensions which we want to add to our data-source.
+    // These are the field names to read from input records, as well as the column name stored in generated segments.
+    ->dimension('country', 'string')
+    ->dimension('age', 'long')
+    ->dimension('version', 'float')
+    // Add the metrics which we want to ingest from our input source. (only when rollup is enabled!)
+    ->sum('clicks', 'totalClicks', 'long')
+    ->sum('visits', 'totalVisits', 'long')
+    ->sum('revenue', 'profit', 'float')
+    // Execute the task
+    ->execute();
+    
+// If you want to stop your task (for whatever reason), you can call:    
+// $client->cancelQuery($taskId);    
+    
+// Now poll for our final status    
+$status = $client->pollTaskStatus($taskId);
+
+echo "Final status: \n";
+print_r($status->data());       
+```
+
+## Input Sources
+
+To index data, you can specify various locations where your data is located. 
+
+#### `AzureInputSource`
+
+The AzureInputSource reads data from your Azure Blob store or Azure Data Lake sources. 
+
+Important! You need to include the `druid-azure-extensions` as an extension to use the Azure input source.
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                                                                                                         | **Description**                                                                                                                        |
+|----------|-----------------------|--------------|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| array    | Optional              | `$uris`      | `["azure://<container>/<path-to-file>", ...]`                                                                       | Array of URIs where the Azure objects to be ingested are located.                                                                      |
+| array    | Optional              | `$prefixes`  | `["azure://<container>/<prefix>", ...]`                                                                             | Array of URI prefixes for the locations of Azure objects to ingest. Empty objects starting with one of the given prefixes are skipped. |
+| array    | Optional              | `$objects`   | `[ ["bucket" => "container", "path" => "path/file1.json"], ["bucket" => "container", "path" => "path/file2.json"]]` | Array of Azure objects to ingest.                                                                                                      |
+
+Either one of these parameters is required. When you execute your index task in parallel, each task will process one (or more)
+of the objects given. 
+
+Example:
+
+```php
+
+// First, define your inputSource. 
+$inputSource = new \Level23\Druid\InputSources\AzureInputSource([
+    'azure://bucket/file1.json',
+    'azure://bucket/file2.json',
+]);
+
+# Now, start building your task (import it into a datasource called azureData) 
+$indexTaskBuilder = $client->index('azureData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `GoogleCloudInputSource`
+
+The GoogleCloudInputSource reads data from your Azure Blob store or Azure Data Lake sources.
+
+Important! You need to include the `druid-google-extensions` as an extension to use the Google Cloud Storage input source.
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                                                                                                         | **Description**                                                                                                                        |
+|----------|-----------------------|--------------|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| array    | Optional              | `$uris`      | `["gs://<container>/<path-to-file>", ...]`                                                                       | Array of URIs where the Google Cloud Storage to be ingested are located.                                                                      |
+| array    | Optional              | `$prefixes`  | `["gs://<container>/<prefix>", ...]`                                                                             | Array of URI prefixes for the locations of Google Cloud Storage to ingest. Empty objects starting with one of the given prefixes are skipped. |
+| array    | Optional              | `$objects`   | `[ ["bucket" => "container", "path" => "path/file1.json"], ["bucket" => "container", "path" => "path/file2.json"]]` | Array of Google Cloud Storage to ingest.                                                                                                      |
+
+Either one of these parameters is required. When you execute your index task in parallel, each task will process one (or more)
+of the objects given.
+
+Example:
+
+```php
+
+// First, define your inputSource. 
+$inputSource = new \Level23\Druid\InputSources\GoogleCloudInputSource([
+    'gs://bucket/file1.json',
+    'gs://bucket/file2.json',
+]);
+
+# Now, start building your task (import it into a datasource called googleData) 
+$indexTaskBuilder = $client->index('googleData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `S3InputSource`
+
+The S3InputSource reads data from Amazon S3.
+
+Important! You need to include the `druid-s3-extensions` as an extension to use the S3 input source.
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                                                                                         | **Description**                                                                                                                              |
+|----------|-----------------------|---------------|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| array    | Optional              | `$uris`       | `["s3://<bucket>/<path-to-file>", ...]`                                                                             | Array of URIs where S3 objects to be ingested are located.                                                                                   |
+| array    | Optional              | `$prefixes`   | `["s3://<bucket>/<prefix>", ...]`                                                                                   | Array of URI prefixes for the locations of S3 objects to be ingested. Empty objects starting with one of the given prefixes will be skipped. |
+| array    | Optional              | `$objects`    | `[ ["bucket" => "container", "path" => "path/file1.json"], ["bucket" => "container", "path" => "path/file2.json"]]` | Array of S3 Objects to be ingested.                                                                                                          |
+| array    | Optional              | `$properties` | `["accessKeyId" => "KLJ78979SDFdS2", ... ]`                                                                         | Properties array for overriding the default S3 configuration. See below for more information.                                                |
+
+Either one of these parameters is required. When you execute your index task in parallel, each task will process one (or more)
+of the objects given.
+
+Example:
+
+```php
+
+// First, define your inputSource. 
+$inputSource = new \Level23\Druid\InputSources\S3InputSource(
+    [
+        's3://bucket/file1.json',
+        's3://bucket/file2.json',
+    ],
+    [], // no prefixes
+    [], // no objects
+    [
+        "accessKeyId" => "KLJ78979SDFdS2", 
+        "secretAccessKey" => "KLS89s98sKJHKJKJH8721lljkd", 
+        "assumeRoleArn" => "arn:aws:iam::2981002874992:role/role-s3",
+    ]
+);
+
+# Now, start building your task (import it into a datasource called awsS3Data) 
+$indexTaskBuilder = $client->index('awsS3Data', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `HdfsInputSource`
+
+The HdfsInputSource reads files directly from HDFS storage.
+
+Important! You need to include the `druid-hdfs-storage` as an extension to use the HDFS input source.
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                                                                             | **Description**                                                                                                                                                                             |
+|----------|-----------------------|--------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array    | Required              | `$paths`     | `["hdfs://namenode_host/foo/bar/file.json", "hdfs://namenode_host/bar/foo/file2.json"]` | HDFS paths. Can be either a JSON array or comma-separated string of paths. Wildcards like * are supported in these paths. Empty files located under one of the given paths will be skipped. |
+
+
+When you execute your index task in parallel, each task will process one (or more)
+of the files given.
+
+Example:
+
+```php
+
+// First, define your inputSource. 
+$inputSource = new \Level23\Druid\InputSources\HdfsInputSource(
+    ["hdfs://namenode_host/foo/bar/file.json", "hdfs://namenode_host/bar/foo/file2.json"]
+);
+
+# Now, start building your task (import it into a datasource called hdfsData) 
+$indexTaskBuilder = $client->index('hdfsData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `HttpInputSource`
+
+The HttpInputSource reads files directly from remote sites via HTTP.
+
+The constructor allows you to specify the following parameters:
+
+| **Type**     | **Optional/Required** | **Argument** | **Example**                                               | **Description**                                                                                                                                          |
+|--------------|-----------------------|--------------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array        | Required              | `$uris`      | `["http://example.com/uri1", "http://example2.com/uri2"]` | URIs of the input files.                                                                                                                                 |
+| string       | Optional              | `$username`  | `"john"`                                                  | Username to use for authentication with specified URIs. Can be optionally used if the URIs specified in the spec require a Basic Authentication Header.  |
+| string/array | Optional              | `$password`  | `"isTheBest"`                                             | Password or PasswordProvider to use with specified URIs. Can be optionally used if the URIs specified in the spec require a Basic Authentication Header. |
+
+
+When you execute your index task in parallel, each task will process one (or more)
+of the files (uris) given.
+
+Example:
+
+```php
+// First, define your inputSource. 
+
+// Example 1. Without Basic Authentication 
+$inputSource = new \Level23\Druid\InputSources\HttpInputSource(
+    ["http://example.com/uri1", "http://example2.com/uri2"]
+);
+
+// Example 2. In this example we have a plain username-password combination. 
+$inputSource = new \Level23\Druid\InputSources\HttpInputSource(
+    ["http://example.com/uri1", "http://example2.com/uri2"],
+    "username",
+    "password"
+);
+
+// Example 3. In this example we use the password provider. 
+$inputSource = new \Level23\Druid\InputSources\HttpInputSource(
+    ["http://example.com/uri1", "http://example2.com/uri2"],
+    "username",
+    [
+        "type" => "environment",
+        "variable" => "HTTP_INPUT_SOURCE_PW"
+    ]
+);
+
+# Now, start building your task (import it into a datasource called httpData) 
+$indexTaskBuilder = $client->index('httpData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `InlineInputSource`
+
+The InlineInputSource reads the data directly from what is given. 
+It can be used for demos or for quickly testing out parsing and schema.
+
+The constructor allows you to specify the following parameters:
+
+| **Type**     | **Optional/Required** | **Argument** | **Example**                                     | **Description**                         |
+|--------------|-----------------------|--------------|-------------------------------------------------|-----------------------------------------|
+| array        | Required              | `$data`      | `[["row1", 16, 9.18], ["row2", 12, 9.22], ...]` | Array with rows which contain the data. |
+
+
+Example:
+
+```php
+// First, define your inputSource. 
+$inputSource = new \Level23\Druid\InputSources\InlineInputSource([
+    ["row1", 16, 9.18], 
+    ["row2", 12, 9.22],
+    // ...
+]);
+
+# Now, start building your task (import it into a datasource called inlineData) 
+$indexTaskBuilder = $client->index('inlineData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `LocalInputSource`
+
+The LocalInputSource reads files directly from local storage.
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required**     | **Argument** | **Example**                | **Description**                                                                                                                                                  |
+|----------|---------------------------|--------------|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array    | Required without $baseDir | `$files`     | `["/bar/foo", "/foo/bar"]` | File paths to ingest. Some files can be ignored to avoid ingesting duplicate files if they are located under the specified baseDir. Empty files will be skipped. |
+| string   | Required without $files   | `$baseDir`   | `"/data/directory"`        | Directory to search recursively for files to be ingested. Empty files under the baseDir will be skipped.                                                         |
+| string   | Required with $baseDir    | `$filter`    | `"*.csv"`                  | A wildcard filter for files.                                                                                                                                     |
+
+
+Example:
+
+```php
+// First, define your inputSource. 
+
+// Example 1, specify the files to ingest
+$inputSource = new \Level23\Druid\InputSources\LocalInputSource([
+    ["/bar/foo/file.json", "/foo/bar/file.json"]
+]);
+
+// Example 2, specify a dir and wildcard for files to ingest
+$inputSource = new \Level23\Druid\InputSources\LocalInputSource([
+    [],
+    "/path/to/dir",
+    "*.json"
+]);
+
+# Now, start building your task (import it into a datasource called inlineData) 
+$indexTaskBuilder = $client->index('inlineData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `DruidInputSource`
+
+The DruidInputSource reads data directly from existing druid segments.
+
+The constructor allows you to specify the following parameters:
+
+| **Type**          | **Optional/Required** | **Argument**  | **Example**                          | **Description**                                                                                                       |
+|-------------------|-----------------------|---------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| array             | Required              | `$dataSource` | `["/bar/foo", "/foo/bar"]`           | The datasource where you want to read data from.                                                                      |
+| IntervalInterface | Optional              | `$inteval`    | `new Interval('now - 1 day', 'now')` | The interval which will be used for eading data from your datasource. Only records within this interval will be read. |
+| FilterInterface   | Optional              | `$filter`     | (See below)                          | A filter which will be used to select records which will be read. Only records matching this filter will be used.     |
+
+
+Example:
+
+```php
+// First, define your inputSource. 
+
+// Example 1, specify the files to ingest
+$inputSource = new \Level23\Druid\InputSources\DruidInputSource('hits');
+
+// only process records from a week ago until now.
+$inputSource->interval('now - 1 week', 'now');
+
+// only process records matching these filters.
+$inputSource->where('browser', 'Android');
+$inputSource->whereIn('version', ['8', '9', '10']);
+// etc.
+
+# Now, start building your task (import it into a datasource called androidHits) 
+$indexTaskBuilder = $client->index('androidHits', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+#### `SqlInputSource`
+
+The SqlInputSource reads records directly from a database using queries which you will specify.
+In parallel mode, each task will process one or more queries. 
+
+Note: If you want to use mysql as source, you must have enabled the extension `mysql-metadata-storage` in druid.
+If you want to use postgresql as source, you must have enabled the extension `postgresql-metadata-storage` in druid.
+
+Since this input source has a fixed input format for reading events, no inputFormat field needs to be specified in the 
+ingestion spec when using this input source. Please refer to the Recommended practices section below before using this input source.
+
+See https://druid.apache.org/docs/latest/ingestion/native-batch.html#sql-input-source for more information. 
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                                                        | **Description**                                                                                                                                                          |
+|----------|-----------------------|---------------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$connectURI` | `"jdbc:mysql://host:port/schema"`                                                  | The connection URI to connect with your database.                                                                                                                        |
+| string   | Required              | `$username`   | `"user"`                                                                           | The username used for authentication.                                                                                                                                    |
+| string   | Required              | `$password`   | `"password"`                                                                       | The password used for authentication.                                                                                                                                    |
+| array    | Required              | `$sqls`       | `["select * from table where type = 'a'", "select * from table where type = 'b'"]` | A list of queries which will be executed to retrieve the data which you want to import.                                                                                  |
+| boolean  | Optional              | `$foldCase`   | `true`                                                                             | Toggle case folding of database column names. This may be enabled in cases where the database returns case insensitive column names in query results. Default is `false` |
+
+
+Example:
+
+```php
+// First, define your inputSource. 
+
+// Example 1, specify the files to ingest
+$inputSource = new \Level23\Druid\InputSources\SqlInputSource(
+    "jdbc:mysql://host:port/schema",
+    "username",
+    "password",
+    [
+        "select * from table where type = 'a'", 
+        "select * from table where type = 'b'"
+    ]
+);
+# Now, start building your task (import it into a datasource called mysqlData) 
+$indexTaskBuilder = $client->index('mysqlData', $inputSource);
+// $indexTaskBuilder-> ...
+```
+
+
+#### `CombiningInputSource`
+
+The CombiningInputSource allows you to retrieve data from multiple locations. It combines various input source methods.
+
+This input source should be only used if all the delegate input sources are splittable and can be used by the Parallel task. 
+This input source will identify the splits from its delegates and each split will be processed by a worker task. 
+Similar to other input sources, this input source supports a single inputFormat. Therefore, please note that delegate 
+input sources requiring an inputFormat must have the same format for input data.
+
+The constructor allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                          | **Description**                                                        |
+|----------|-----------------------|---------------|------------------------------------------------------|------------------------------------------------------------------------|
+| array    | Required              | `$inputSources` | `[new HttpInputSource(...), new S3InputSource(...)]` | List with other import sources which should be processed all together. |
+
+
+Example:
+
+```php
+// First, define your inputSource. 
+
+// Example 1, specify the files to ingest
+$inputSource = new \Level23\Druid\InputSources\CombiningInputSource([
+    new \Level23\Druid\InputSources\HttpInputSource(['http://127.0.0.1/file.json']),
+    new \Level23\Druid\InputSources\S3InputSource(['s3://bucket/file2.json'])
+]);
+
+# Now, start building your task (import it into a datasource called combinedData) 
+$indexTaskBuilder = $client->index('combinedData', $inputSource);
+// $indexTaskBuilder-> ...
 ```

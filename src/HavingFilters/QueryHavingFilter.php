@@ -7,10 +7,7 @@ use Level23\Druid\Filters\FilterInterface;
 
 class QueryHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface
-     */
-    protected $filter;
+    protected FilterInterface $filter;
 
     public function __construct(FilterInterface $filter)
     {

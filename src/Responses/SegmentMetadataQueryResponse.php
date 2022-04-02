@@ -6,7 +6,7 @@ namespace Level23\Druid\Responses;
 class SegmentMetadataQueryResponse extends QueryResponse
 {
     /**
-     * Return the data in a "normalized" way so we can easily iterate over it
+     * Return the data in a "normalized" way, so we can easily iterate over it
      *
      * @return array
      */

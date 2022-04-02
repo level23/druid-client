@@ -5,10 +5,7 @@ namespace Level23\Druid\Responses;
 
 abstract class QueryResponse implements ResponseInterface
 {
-    /**
-     * @var array
-     */
-    protected $response;
+    protected array $response;
 
     public function __construct(array $response)
     {
@@ -26,7 +23,7 @@ abstract class QueryResponse implements ResponseInterface
     }
 
     /**
-     * Return the data in a "normalized" way so we can easily iterate over it
+     * Return the data in a "normalized" way, so we can easily iterate over it
      *
      * @return array
      */

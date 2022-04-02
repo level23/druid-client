@@ -5,10 +5,7 @@ namespace Level23\Druid\Extractions;
 
 class UpperExtraction implements ExtractionInterface
 {
-    /**
-     * @var string|null
-     */
-    protected $locale;
+    protected ?string $locale;
 
     public function __construct(string $locale = null)
     {
@@ -16,7 +13,7 @@ class UpperExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

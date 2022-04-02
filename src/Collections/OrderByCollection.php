@@ -24,9 +24,7 @@ class OrderByCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        return array_map(function (OrderByInterface $item) {
-            return $item->toArray();
-        }, $this->items);
+        return array_map(fn(OrderByInterface $item) => $item->toArray(), $this->items);
     }
 
     /**

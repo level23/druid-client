@@ -5,15 +5,9 @@ namespace Level23\Druid\SearchFilters;
 
 class FragmentSearchFilter implements SearchFilterInterface
 {
-    /**
-     * @var array
-     */
-    protected $values;
+    protected array $values;
 
-    /**
-     * @var bool
-     */
-    protected $caseSensitive;
+    protected bool $caseSensitive;
 
     /**
      * FragmentSearchFilter constructor.

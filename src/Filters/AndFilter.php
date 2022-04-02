@@ -8,7 +8,7 @@ class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
     /**
      * @var array|\Level23\Druid\Filters\FilterInterface[]
      */
-    protected $filters;
+    protected array $filters;
 
     /**
      * AndFilter constructor.

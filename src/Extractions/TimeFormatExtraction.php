@@ -20,30 +20,15 @@ namespace Level23\Druid\Extractions;
  */
 class TimeFormatExtraction implements ExtractionInterface
 {
-    /**
-     * @var string|null
-     */
-    protected $format;
+    protected ?string $format;
 
-    /**
-     * @var string|null
-     */
-    protected $granularity;
+    protected ?string $granularity;
 
-    /**
-     * @var string|null
-     */
-    protected $locale;
+    protected ?string $locale;
 
-    /**
-     * @var string|null
-     */
-    protected $timeZone;
+    protected ?string $timeZone;
 
-    /**
-     * @var bool|null
-     */
-    protected $asMillis;
+    protected ?bool $asMillis;
 
     /**
      * TimeFormatExtraction constructor.
@@ -51,10 +36,10 @@ class TimeFormatExtraction implements ExtractionInterface
      * @param string|null $format         date time format for the resulting dimension value, in Joda Time
      *                                    DateTimeFormat, or null to use the default ISO8601 format.
      * @param string|null $granularity    granularity to apply before formatting, or omit to not apply any granularity.
-     * @param string|null $locale         locale (language and country) to use, given as a IETF BCP 47 language tag,
+     * @param string|null $locale         locale (language and country) to use, given as an IETF BCP 47 language tag,
      *                                    e.g. en-US, en-GB, fr-FR, fr-CA, etc.
      * @param string|null $timeZone       time zone to use in IANA tz database format, e.g. Europe/Berlin (this can
-     *                                    possibly be different than the aggregation time-zone)
+     *                                    possibly be different from the aggregation time-zone)
      * @param bool|null   $asMilliseconds boolean value, set to true to treat input strings as millis rather than
      *                                    ISO8601 strings. Additionally, if format is null or not specified, output
      *                                    will be in millis rather than ISO8601.
@@ -74,7 +59,7 @@ class TimeFormatExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

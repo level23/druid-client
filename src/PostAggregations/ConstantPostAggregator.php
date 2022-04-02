@@ -5,10 +5,7 @@ namespace Level23\Druid\PostAggregations;
 
 class ConstantPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
     /**
      * @var int|float

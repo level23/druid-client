@@ -8,20 +8,11 @@ use Level23\Druid\Collections\OrderByCollection;
 
 class Limit implements LimitInterface
 {
-    /**
-     * @var int|null
-     */
-    protected $limit;
+    protected ?int $limit;
 
-    /**
-     * @var \Level23\Druid\Collections\OrderByCollection|null
-     */
-    protected $orderBy;
+    protected ?OrderByCollection $orderBy;
 
-    /**
-     * @var int|null
-     */
-    protected $offset;
+    protected ?int $offset;
 
     public function __construct(int $limit = null, OrderByCollection $orderBy = null, int $offset = null)
     {

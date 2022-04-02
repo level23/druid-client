@@ -25,55 +25,28 @@ use Level23\Druid\Collections\DimensionCollection;
  */
 class SelectQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected string $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var bool
-     */
-    protected $descending = false;
+    protected bool $descending = false;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter = null;
 
-    /**
-     * @var \Level23\Druid\Collections\DimensionCollection|null
-     */
-    protected $dimensions;
+    protected ?DimensionCollection $dimensions = null;
 
-    /**
-     * @var string
-     */
-    protected $granularity = Granularity::ALL;
+    protected string $granularity = Granularity::ALL;
 
     /**
      * @var array|string[]
      */
-    protected $metrics;
+    protected array $metrics;
 
-    /**
-     * @var \Level23\Druid\Context\QueryContext|null
-     */
-    protected $context;
+    protected ?QueryContext $context = null;
 
-    /**
-     * @var int
-     */
-    protected $threshold;
+    protected int $threshold;
 
-    /**
-     * @var array|null
-     */
-    protected $pagingIdentifier;
+    protected ?array $pagingIdentifier = null;
 
     /**
      * SelectQuery constructor.
@@ -109,7 +82,7 @@ class SelectQuery implements QueryInterface
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
      * @return array
      */

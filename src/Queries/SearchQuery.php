@@ -12,52 +12,28 @@ use Level23\Druid\SearchFilters\SearchFilterInterface;
 
 class SearchQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected string $dataSource;
 
-    /**
-     * @var string
-     */
-    protected $granularity;
+    protected string $granularity;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter = null;
 
-    /**
-     * @var int|null
-     */
-    protected $limit;
+    protected ?int $limit = null;
 
     /**
      * The dimensions to run the search over. Excluding this means the search is run over all dimensions.
      *
      * @var array|string[]
      */
-    protected $dimensions = [];
+    protected array $dimensions = [];
 
-    /**
-     * @var string
-     */
-    protected $sort = SortingOrder::LEXICOGRAPHIC;
+    protected string $sort = SortingOrder::LEXICOGRAPHIC;
 
-    /**
-     * @var \Level23\Druid\Context\QueryContext|null
-     */
-    protected $context;
+    protected ?QueryContext $context = null;
 
-    /**
-     * @var \Level23\Druid\SearchFilters\SearchFilterInterface
-     */
-    protected $searchFilter;
+    protected SearchFilterInterface $searchFilter;
 
     public function __construct(
         string $dataSource,
@@ -72,7 +48,7 @@ class SearchQuery implements QueryInterface
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
      * @return array
      */

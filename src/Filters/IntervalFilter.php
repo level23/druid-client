@@ -21,26 +21,20 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class IntervalFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
     /**
      * @var array|\Level23\Druid\Interval\IntervalInterface[]
      */
-    protected $intervals;
+    protected array $intervals;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * IntervalFilter constructor.
      *
      * @param string                    $dimension                 The dimension to filter on
-     * @param array|IntervalInterface[] $intervals                 A array containing Interval objects. This
+     * @param array|IntervalInterface[] $intervals                 An array containing Interval objects. This
      *                                                             defines the time ranges to filter on.
      * @param ExtractionInterface|null  $extractionFunction        If an extraction function is used with this filter,
      *                                                             the extraction function should output values that

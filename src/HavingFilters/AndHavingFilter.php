@@ -8,7 +8,7 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
     /**
      * @var array|\Level23\Druid\HavingFilters\HavingFilterInterface[]
      */
-    protected $filters;
+    protected array $filters;
 
     /**
      * AndHavingFilter constructor.
@@ -29,9 +29,7 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
     {
         return [
             'type'        => 'and',
-            'havingSpecs' => array_map(function (HavingFilterInterface $filter) {
-                return $filter->toArray();
-            }, $this->filters),
+            'havingSpecs' => array_map(fn(HavingFilterInterface $filter) => $filter->toArray(), $this->filters),
         ];
     }
 
@@ -40,7 +38,7 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
      *
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
      */
-    public function addHavingFilter(HavingFilterInterface $having)
+    public function addHavingFilter(HavingFilterInterface $having): void
     {
         $this->filters[] = $having;
     }

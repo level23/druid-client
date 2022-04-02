@@ -15,65 +15,29 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 class TopNQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected string $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var string
-     */
-    protected $granularity;
+    protected string $granularity;
 
-    /**
-     * @var \Level23\Druid\Dimensions\DimensionInterface
-     */
-    protected $dimension;
+    protected DimensionInterface $dimension;
 
-    /**
-     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
-     */
-    protected $virtualColumns;
+    protected ?VirtualColumnCollection $virtualColumns = null;
 
-    /**
-     * @var int
-     */
-    protected $threshold;
+    protected int $threshold;
 
-    /**
-     * @var string
-     */
-    protected $metric;
+    protected string $metric;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter = null;
 
-    /**
-     * @var \Level23\Druid\Collections\AggregationCollection|null
-     */
-    protected $aggregations;
+    protected ?AggregationCollection $aggregations = null;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    protected $postAggregations;
+    protected ?PostAggregationCollection $postAggregations = null;
 
-    /**
-     * @var \Level23\Druid\Context\ContextInterface|null
-     */
-    protected $context;
+    protected ?ContextInterface $context = null;
 
-    /**
-     * @var bool
-     */
-    protected $descending = true;
+    protected bool $descending = true;
 
     /**
      * TopNQuery constructor.
@@ -102,7 +66,7 @@ class TopNQuery implements QueryInterface
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
      * @return array
      */

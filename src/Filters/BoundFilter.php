@@ -17,30 +17,15 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class BoundFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $operator;
+    protected string $operator;
 
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
-    /**
-     * @var string|null
-     */
-    protected $ordering;
+    protected string $ordering;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * BoundFilter constructor.
@@ -48,9 +33,9 @@ class BoundFilter implements FilterInterface
      * @param string                   $dimension         The dimension to filter on
      * @param string                   $operator          The operator to use. Use ">", ">=", "<", or "<=" Or use the
      *                                                    BoundOperator constants.
-     * @param string                   $value             The value to compare with. This can either be an numeric or a
+     * @param string                   $value             The value to compare with. This can either be a numeric or a
      *                                                    string.
-     * @param string|null              $ordering          Specifies the sorting order to use when comparing values
+     * @param string|null              $ordering          Specifies the sorting order using when comparing values
      *                                                    against the bound.
      * @param ExtractionInterface|null $extractionFunction
      */

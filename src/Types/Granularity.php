@@ -31,7 +31,7 @@ final class Granularity extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($granularity)
+    public static function validate(string $granularity): string
     {
         $granularity = strtolower($granularity);
         if (!Granularity::isValidValue($granularity)) {

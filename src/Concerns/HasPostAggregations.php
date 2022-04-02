@@ -22,13 +22,13 @@ trait HasPostAggregations
     /**
      * @var array|\Level23\Druid\PostAggregations\PostAggregatorInterface[]
      */
-    protected $postAggregations = [];
+    protected array $postAggregations = [];
 
     /**
      * Build our input field for the post aggregation.
      * This array can contain:
      *  - A string, referring to a metric or dimension in the query
-     *  - A Closure, which allows you to build another postAggretator
+     *  - A Closure, which allows you to build another postAggregator
      *
      * @param array $fields
      *
@@ -79,7 +79,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function divide(string $as, ...$fieldOrClosure)
+    public function divide(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new ArithmeticPostAggregator(
             $as,
@@ -103,7 +103,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function multiply(string $as, ...$fieldOrClosure)
+    public function multiply(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new ArithmeticPostAggregator(
             $as,
@@ -127,7 +127,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function subtract(string $as, ...$fieldOrClosure)
+    public function subtract(string $as, ...$fieldOrClosure): self
     {
 
         $this->postAggregations[] = new ArithmeticPostAggregator(
@@ -152,7 +152,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function add(string $as, ...$fieldOrClosure)
+    public function add(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new ArithmeticPostAggregator(
             $as,
@@ -176,7 +176,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function quotient(string $as, ...$fieldOrClosure)
+    public function quotient(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new ArithmeticPostAggregator(
             $as,
@@ -207,7 +207,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function fieldAccess(string $aggregatorOutputName, string $as = '', bool $finalizing = false)
+    public function fieldAccess(string $aggregatorOutputName, string $as = '', bool $finalizing = false): self
     {
         $this->postAggregations[] = new FieldAccessPostAggregator(
             $aggregatorOutputName,
@@ -226,7 +226,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function constant($numericValue, string $as)
+    public function constant($numericValue, string $as): self
     {
         $this->postAggregations[] = new ConstantPostAggregator($as, $numericValue);
 
@@ -245,7 +245,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function longGreatest(string $as, ...$fieldOrClosure)
+    public function longGreatest(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new GreatestPostAggregator(
             $as,
@@ -268,7 +268,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function doubleGreatest(string $as, ...$fieldOrClosure)
+    public function doubleGreatest(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new GreatestPostAggregator(
             $as,
@@ -291,7 +291,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function longLeast(string $as, ...$fieldOrClosure)
+    public function longLeast(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new LeastPostAggregator(
             $as,
@@ -314,7 +314,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function doubleLeast(string $as, ...$fieldOrClosure)
+    public function doubleLeast(string $as, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new LeastPostAggregator(
             $as,
@@ -343,7 +343,7 @@ trait HasPostAggregations
      * @return $this
      * @see https://druid.apache.org/docs/latest/querying/post-aggregations.html#javascript-post-aggregator
      */
-    public function postJavascript(string $as, string $function, ...$fieldOrClosure)
+    public function postJavascript(string $as, string $function, ...$fieldOrClosure): self
     {
         $this->postAggregations[] = new JavaScriptPostAggregator(
             $as,
@@ -364,12 +364,12 @@ trait HasPostAggregations
      *
      * @see https://druid.apache.org/docs/latest/querying/post-aggregations.html#hyperunique-cardinality-post-aggregator
      *
-     * @param string $hyperUniqueField The name field value of the hyperUnique aggregator
-     * @param string $as               The output name
+     * @param string      $hyperUniqueField The name field value of the hyperUnique aggregator
+     * @param string|null $as               The output name
      *
      * @return $this
      */
-    public function hyperUniqueCardinality(string $hyperUniqueField, string $as = null)
+    public function hyperUniqueCardinality(string $hyperUniqueField, string $as = null): self
     {
         $this->postAggregations[] = new HyperUniqueCardinalityPostAggregator($hyperUniqueField, $as);
 

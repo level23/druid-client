@@ -5,10 +5,7 @@ namespace Level23\Druid\Responses;
 
 class TimeSeriesQueryResponse extends QueryResponse
 {
-    /**
-     * @var string
-     */
-    protected $timeOutputName;
+    protected string $timeOutputName;
 
     /**
      * TimeSeriesQueryResponse constructor.
@@ -24,7 +21,7 @@ class TimeSeriesQueryResponse extends QueryResponse
     }
 
     /**
-     * Return the data in a "normalized" way so we can easily iterate over it
+     * Return the data in a "normalized" way, so we can easily iterate over it
      *
      * @return array
      */

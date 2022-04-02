@@ -8,10 +8,7 @@ use Level23\Druid\Collections\IntervalCollection;
 
 class UniformGranularity extends AbstractGranularity implements GranularityInterface
 {
-    /**
-     * @var string
-     */
-    protected $segmentGranularity;
+    protected string $segmentGranularity;
 
     /**
      * UniformGranularity constructor.

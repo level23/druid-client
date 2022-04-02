@@ -5,10 +5,7 @@ namespace Level23\Druid\HavingFilters;
 
 class GreaterThanHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $metric;
+    protected string $metric;
 
     /**
      * @var float|int

@@ -39,7 +39,7 @@ class SelectQueryResponse extends QueryResponse
     }
 
     /**
-     * Return the data in a "normalized" way so we can easily iterate over it
+     * Return the data in a "normalized" way, so we can easily iterate over it
      *
      * @return array
      */
@@ -49,8 +49,6 @@ class SelectQueryResponse extends QueryResponse
             return [];
         }
 
-        return array_map(function ($row) {
-            return $row['event'];
-        }, $this->response[0]['result']['events']);
+        return array_map(fn($row) => $row['event'], $this->response[0]['result']['events']);
     }
 }

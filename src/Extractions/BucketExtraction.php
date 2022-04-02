@@ -5,15 +5,9 @@ namespace Level23\Druid\Extractions;
 
 class BucketExtraction implements ExtractionInterface
 {
-    /**
-     * @var int
-     */
-    protected $size;
+    protected int $size;
 
-    /**
-     * @var int
-     */
-    protected $offset;
+    protected int $offset;
 
     public function __construct(int $size = 1, int $offset = 0)
     {
@@ -22,7 +16,7 @@ class BucketExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

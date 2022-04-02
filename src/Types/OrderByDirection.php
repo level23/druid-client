@@ -21,7 +21,7 @@ final class OrderByDirection extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate(string $direction)
+    public static function validate(string $direction): string
     {
         $direction = strtolower($direction);
         if ($direction == 'asc') {

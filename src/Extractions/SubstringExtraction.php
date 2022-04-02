@@ -31,12 +31,12 @@ class SubstringExtraction implements ExtractionInterface
     /**
      * @var int
      */
-    protected $index;
+    protected int $index;
 
     /**
      * @var int|null
      */
-    protected $length;
+    protected ?int $length;
 
     /**
      * RegexExtraction constructor.
@@ -51,7 +51,7 @@ class SubstringExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

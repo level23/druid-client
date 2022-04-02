@@ -8,20 +8,11 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 abstract class MethodPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection
-     */
-    protected $fields;
+    protected PostAggregationCollection $fields;
 
-    /**
-     * @var string
-     */
-    protected $type;
+    protected string $type;
 
     /**
      *  constructor.

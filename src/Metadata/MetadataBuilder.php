@@ -9,10 +9,7 @@ use Level23\Druid\Exceptions\QueryResponseException;
 
 class MetadataBuilder
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
+    protected DruidClient $client;
 
     public function __construct(DruidClient $client)
     {
@@ -36,6 +33,7 @@ class MetadataBuilder
      * @return array
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function intervals(string $dataSource): array
     {
@@ -111,6 +109,7 @@ class MetadataBuilder
      *
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function interval(string $dataSource, string $interval): array
     {
@@ -189,6 +188,7 @@ class MetadataBuilder
      * @return array
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function getColumnsForInterval(string $dataSource, string $interval): array
     {
@@ -211,6 +211,7 @@ class MetadataBuilder
      *
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function getIntervalByShorthand(string $dataSource, string $shortHand): string
     {
@@ -236,8 +237,8 @@ class MetadataBuilder
      * @param string $interval "last", "first" or a raw interval string as returned by druid.
      *
      * @return \Level23\Druid\Metadata\Structure
+     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
-     * @throws \Exception
      */
     public function structure(string $dataSource, string $interval = 'last'): Structure
     {

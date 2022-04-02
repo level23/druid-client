@@ -10,12 +10,12 @@ class StringFormatExtraction implements ExtractionInterface
     /**
      * @var string
      */
-    protected $sprintfExpression;
+    protected string $sprintfExpression;
 
     /**
      * @var string
      */
-    protected $nullHandling;
+    protected string $nullHandling;
 
     public function __construct(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING)
     {
@@ -24,7 +24,7 @@ class StringFormatExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

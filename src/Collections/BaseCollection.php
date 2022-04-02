@@ -12,10 +12,7 @@ use InvalidArgumentException;
 
 abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countable
 {
-    /**
-     * @var array
-     */
-    protected $items;
+    protected array $items;
 
     /**
      * @return \ArrayIterator
@@ -58,7 +55,7 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
     abstract public function getType(): string;
 
     /**
-     * Whether a offset exists
+     * Whether an offset exists
      *
      * @link  https://php.net/manual/en/arrayaccess.offsetexists.php
      *
@@ -69,10 +66,10 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      * @return boolean true on success or false on failure.
      * </p>
      * <p>
-     * The return value will be casted to boolean if non-boolean was returned.
+     * The return value will be cast to boolean if non-boolean was returned.
      * @since 5.0.0
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->items[$offset]);
     }
@@ -91,7 +88,7 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      */
     public function offsetGet($offset)
     {
-        return isset($this->items[$offset]) ? $this->items[$offset] : null;
+        return $this->items[$offset] ?? null;
     }
 
     /**
@@ -150,7 +147,7 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count(): int
     {
         return count($this->items);
     }

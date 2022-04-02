@@ -24,7 +24,7 @@ final class SortingOrder extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($ordering)
+    public static function validate(string $ordering): string
     {
         $ordering = strtolower($ordering);
 

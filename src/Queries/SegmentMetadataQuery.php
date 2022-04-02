@@ -8,15 +8,9 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class SegmentMetadataQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected string $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
     public function __construct(string $dataSource, IntervalCollection $intervals)
     {
@@ -25,7 +19,7 @@ class SegmentMetadataQuery implements QueryInterface
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
      * @return array
      */

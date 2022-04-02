@@ -8,7 +8,7 @@ class TuningConfig implements TuningConfigInterface
     /**
      * @var array
      */
-    protected $properties = [];
+    protected array $properties = [];
 
     /**
      * TuningConfig constructor.
@@ -48,7 +48,7 @@ class TuningConfig implements TuningConfigInterface
      * @var string
      * @required
      */
-    public function setType(string $type)
+    public function setType(string $type): self
     {
         $this->properties['type'] = $type;
 
@@ -62,7 +62,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxRowsPerSegment(int $maxRowsPerSegment)
+    public function setMaxRowsPerSegment(int $maxRowsPerSegment): self
     {
         $this->properties['maxRowsPerSegment'] = $maxRowsPerSegment;
 
@@ -79,7 +79,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxRowsInMemory(int $maxRowsInMemory)
+    public function setMaxRowsInMemory(int $maxRowsInMemory): self
     {
         $this->properties['maxRowsInMemory'] = $maxRowsInMemory;
 
@@ -97,7 +97,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxBytesInMemory(int $maxBytesInMemory)
+    public function setMaxBytesInMemory(int $maxBytesInMemory): self
     {
         $this->properties['maxBytesInMemory'] = $maxBytesInMemory;
 
@@ -113,7 +113,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxTotalRows(int $maxTotalRows)
+    public function setMaxTotalRows(int $maxTotalRows): self
     {
         $this->properties['maxTotalRows'] = $maxTotalRows;
 
@@ -122,7 +122,7 @@ class TuningConfig implements TuningConfigInterface
 
     /**
      * Directly specify the number of shards to create. If this is specified and 'intervals' is specified in the
-     * granularitySpec, the index task can skip the determine intervals/partitions pass through the data. numShards
+     * granularitySpec, the index task can skip to determine intervals/partitions pass through the data. numShards
      * cannot be specified if maxRowsPerSegment is set.
      *
      * Default: null
@@ -130,7 +130,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setNumShards(int $numShards)
+    public function setNumShards(int $numShards): self
     {
         $this->properties['numShards'] = $numShards;
 
@@ -148,7 +148,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @return \Level23\Druid\TuningConfig\TuningConfig
      */
-    public function setSplitHintSpec(array $splitHintSpec)
+    public function setSplitHintSpec(array $splitHintSpec): self
     {
         $this->properties['splitHintSpec'] = $splitHintSpec;
 
@@ -164,7 +164,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @return $this
      */
-    public function setPartitionsSpec(array $partitionsSpec)
+    public function setPartitionsSpec(array $partitionsSpec): self
     {
         $this->properties['partitionsSpec'] = $partitionsSpec;
 
@@ -179,7 +179,7 @@ class TuningConfig implements TuningConfigInterface
      * @var array
      * @return $this
      */
-    public function setIndexSpec(array $indexSpec)
+    public function setIndexSpec(array $indexSpec): self
     {
         $this->properties['indexSpec'] = $indexSpec;
 
@@ -198,7 +198,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @return $this
      */
-    public function setIndexSpecForIntermediatePersists(array $indexSpecForIntermediatePersists)
+    public function setIndexSpecForIntermediatePersists(array $indexSpecForIntermediatePersists): self
     {
         $this->properties['indexSpecForIntermediatePersists'] = $indexSpecForIntermediatePersists;
 
@@ -215,7 +215,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxPendingPersists(int $maxPendingPersists)
+    public function setMaxPendingPersists(int $maxPendingPersists): self
     {
         $this->properties['maxPendingPersists'] = $maxPendingPersists;
 
@@ -231,7 +231,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var bool
      */
-    public function setReportParseExceptions(bool $reportParseExceptions)
+    public function setReportParseExceptions(bool $reportParseExceptions): self
     {
         $this->properties['reportParseExceptions'] = $reportParseExceptions;
 
@@ -248,7 +248,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @return $this
      */
-    public function setForceGuaranteedRollup(bool $forceGuaranteedRollup)
+    public function setForceGuaranteedRollup(bool $forceGuaranteedRollup): self
     {
         $this->properties['forceGuaranteedRollup'] = $forceGuaranteedRollup;
 
@@ -263,7 +263,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setPushTimeout(int $pushTimeout)
+    public function setPushTimeout(int $pushTimeout): self
     {
         $this->properties['pushTimeout'] = $pushTimeout;
 
@@ -278,7 +278,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var string
      */
-    public function setSegmentWriteOutMediumFactory(string $segmentWriteOutMediumFactory)
+    public function setSegmentWriteOutMediumFactory(string $segmentWriteOutMediumFactory): self
     {
         $this->properties['segmentWriteOutMediumFactory'] = $segmentWriteOutMediumFactory;
 
@@ -296,7 +296,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @return $this
      */
-    public function setMaxNumConcurrentSubTasks(int $maxNumConcurrentSubTasks)
+    public function setMaxNumConcurrentSubTasks(int $maxNumConcurrentSubTasks): self
     {
         $this->properties['maxNumConcurrentSubTasks'] = $maxNumConcurrentSubTasks;
 
@@ -314,7 +314,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxNumSubTasks(int $maxNumSubTasks)
+    public function setMaxNumSubTasks(int $maxNumSubTasks): self
     {
         $this->properties['maxNumSubTasks'] = $maxNumSubTasks;
 
@@ -329,7 +329,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setMaxRetry(int $maxRetry)
+    public function setMaxRetry(int $maxRetry): self
     {
         $this->properties['maxRetry'] = $maxRetry;
 
@@ -337,14 +337,14 @@ class TuningConfig implements TuningConfigInterface
     }
 
     /**
-     * Max limit for the number of segments that a single task can merge at the same time in the second phase.
+     * Maximum limit for the number of segments that a single task can merge at the same time in the second phase.
      * Used only forceGuaranteedRollup is set.
      *
      * @param int $maxNumSegmentsToMerge
      *
      * @return $this
      */
-    public function setMaxNumSegmentsToMerge(int $maxNumSegmentsToMerge)
+    public function setMaxNumSegmentsToMerge(int $maxNumSegmentsToMerge): self
     {
         $this->properties['maxNumSegmentsToMerge'] = $maxNumSegmentsToMerge;
 
@@ -358,7 +358,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @return $this
      */
-    public function setTotalNumMergeTasks(int $totalNumMergeTasks)
+    public function setTotalNumMergeTasks(int $totalNumMergeTasks): self
     {
         $this->properties['totalNumMergeTasks'] = $totalNumMergeTasks;
 
@@ -373,7 +373,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setTaskStatusCheckPeriodMs(int $taskStatusCheckPeriodMs)
+    public function setTaskStatusCheckPeriodMs(int $taskStatusCheckPeriodMs): self
     {
         $this->properties['taskStatusCheckPeriodMs'] = $taskStatusCheckPeriodMs;
 
@@ -388,7 +388,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var string
      */
-    public function setChatHandlerTimeout(string $chatHandlerTimeout)
+    public function setChatHandlerTimeout(string $chatHandlerTimeout): self
     {
         $this->properties['chatHandlerTimeout'] = $chatHandlerTimeout;
 
@@ -403,7 +403,7 @@ class TuningConfig implements TuningConfigInterface
      * @return $this
      * @var int
      */
-    public function setChatHandlerNumRetries(int $chatHandlerNumRetries)
+    public function setChatHandlerNumRetries(int $chatHandlerNumRetries): self
     {
         $this->properties['chatHandlerNumRetries'] = $chatHandlerNumRetries;
 

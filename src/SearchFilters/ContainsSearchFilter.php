@@ -5,15 +5,9 @@ namespace Level23\Druid\SearchFilters;
 
 class ContainsSearchFilter implements SearchFilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
-    /**
-     * @var bool
-     */
-    protected $caseSensitive;
+    protected bool $caseSensitive;
 
     /**
      * ContainsSearchFilter constructor.

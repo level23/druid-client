@@ -16,20 +16,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class RegexFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $pattern;
+    protected string $pattern;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * RegexFilter constructor.

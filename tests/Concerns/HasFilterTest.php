@@ -32,6 +32,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Filters\ExpressionFilter;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Extractions\ExtractionBuilder;
@@ -44,7 +45,7 @@ class HasFilterTest extends TestCase
     /**
      * @var \Level23\Druid\DruidClient
      */
-    protected $client;
+    protected DruidClient $client;
 
     /**
      * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
@@ -532,12 +533,50 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the whereExpression method.
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereExpression(): void
+    {
+        $this->client = new DruidClient([]);
+
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder->makePartial();
+
+        $this->getFilterMock(ExpressionFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('(field == 1)');
+
+        $response = $this->builder->whereExpression('(field == 1)');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereExpression method.
+     */
+    public function testOrWhereExpression(): void
+    {
+        $this->builder->shouldReceive('whereExpression')
+            ->with('(field == 1)', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereExpression('(field == 1)');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the orWhereFlags method.
      */
     public function testOrWhereFlags(): void
     {
         $this->builder->shouldReceive('whereFlags')
-            ->with('flags', 32, 'or')
+            ->with('flags', 32, 'or', false)
             ->once()
             ->andReturn($this->builder);
 
@@ -618,57 +657,61 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * Test the whereFlags filter
-     * @testWith ["0.18.0"]
-     *           ["0.21.1"]
-     *           [null]
-     */
-    public function testWhereFlags(string $version = null): void
+    public function testWhereFlagsWithJavascript(): void
     {
         $extractionBuilder = Mockery::mock(ExtractionBuilder::class);
 
-        $this->client = new DruidClient(['version' => $version]);
+        $this->client = new DruidClient([]);
 
         $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
         $this->builder->makePartial();
 
-        if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
-            $this->builder->shouldReceive('virtualColumn')
-                ->once()
-                ->with('bitwiseAnd("flags", 33)', 'v0', DataType::LONG)
-                ->andReturn($this->builder);
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use (
+                $extractionBuilder
+            ) {
+                $this->assertEquals('flags', $dimension);
+                $this->assertEquals('=', $operator);
+                $this->assertEquals(33, $flags);
+                $this->assertInstanceOf(Closure::class, $extractionClosure);
+                $this->assertEquals('and', $boolean);
 
-            $this->builder->shouldReceive('where')
-                ->once()
-                ->with('v0', '=', 33, null, 'and')
-                ->andReturn($this->builder);
-        } else {
-            $this->builder->shouldReceive('where')
-                ->once()
-                ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use (
-                    $extractionBuilder
-                ) {
-                    $this->assertEquals('flags', $dimension);
-                    $this->assertEquals('=', $operator);
-                    $this->assertEquals(33, $flags);
-                    $this->assertInstanceOf(Closure::class, $extractionClosure);
-                    $this->assertEquals('and', $boolean);
+                $extractionBuilder->shouldReceive('javascript')
+                    ->once()
+                    ->withArgs(function ($js) {
+                        $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
 
-                    $extractionBuilder->shouldReceive('javascript')
-                        ->once()
-                        ->withArgs(function ($js) {
-                            $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
+                        return true;
+                    });
 
-                            return true;
-                        });
+                $extractionClosure($extractionBuilder);
 
-                    $extractionClosure($extractionBuilder);
+                return true;
+            })
+            ->andReturn($this->builder);
 
-                    return true;
-                })
-                ->andReturn($this->builder);
-        }
+        $response = $this->builder->whereFlags('flags', 33, 'and', true);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    public function testWhereFlagsWithoutJavascript(): void
+    {
+        $this->client = new DruidClient([]);
+
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder->makePartial();
+
+        $this->builder->shouldReceive('virtualColumn')
+            ->once()
+            ->with('bitwiseAnd("flags", 33)', 'v0', DataType::LONG)
+            ->andReturn($this->builder);
+
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->with('v0', '=', 33, null, 'and')
+            ->andReturn($this->builder);
 
         $response = $this->builder->whereFlags('flags', 33);
 
@@ -761,23 +804,28 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
+    /**
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testWhereFlagsInTaskBuilder()
     {
-        $this->expectException(\BadFunctionCallException::class);
-        $this->expectExceptionMessage('The whereFlags() method is only available in queries!');
-
         $client = Mockery::mock(DruidClient::class);
         $client->makePartial();
-
-        $client->shouldReceive('config')
-            ->once()
-            ->with('version')
-            ->andReturn('0.21.0');
 
         $metaDataBuilder = Mockery::mock(MetadataBuilder::class);
         $metaDataBuilder->shouldReceive('structure')
             ->once()
             ->andReturn(new Structure('something', [], []));
+
+        $this->getFilterMock(ExpressionFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('bitwiseAnd("flags", 128) == 128');
 
         $client->shouldReceive('metadata')
             ->once()

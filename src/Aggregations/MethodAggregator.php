@@ -12,17 +12,11 @@ abstract class MethodAggregator implements AggregatorInterface
      *
      * @var string
      */
-    protected $type;
+    protected string $type;
 
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $metricName;
+    protected string $metricName;
 
     /**
      * constructor.

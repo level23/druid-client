@@ -13,7 +13,7 @@ class ScanQueryContext extends QueryContext
      *
      * @return $this
      */
-    public function setMaxRowsQueuedForOrdering(int $maxRowsQueuedForOrdering)
+    public function setMaxRowsQueuedForOrdering(int $maxRowsQueuedForOrdering): self
     {
         $this->properties['maxRowsQueuedForOrdering'] = $maxRowsQueuedForOrdering;
 
@@ -29,7 +29,7 @@ class ScanQueryContext extends QueryContext
      *
      * @return $this
      */
-    public function setMaxSegmentPartitionsOrderedInMemory(int $maxSegmentPartitionsOrderedInMemory)
+    public function setMaxSegmentPartitionsOrderedInMemory(int $maxSegmentPartitionsOrderedInMemory): self
     {
         $this->properties['maxSegmentPartitionsOrderedInMemory'] = $maxSegmentPartitionsOrderedInMemory;
 

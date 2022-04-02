@@ -19,18 +19,16 @@ use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
+use Level23\Druid\InputSources\InputSourceInterface;
+use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
 
 class DruidClient
 {
-    /**
-     * @var GuzzleClient
-     */
-    protected $client;
+    protected GuzzleClient $client;
 
-    /**
-     * @var LoggerInterface|null
-     */
-    protected $logger = null;
+    protected ?LoggerInterface $logger = null;
 
     /**
      * @var array<string, int|string|null>
@@ -41,32 +39,32 @@ class DruidClient
          * Domain + optional port or the druid router. If this is set, it will be used for the broker,
          * coordinator and overlord.
          */
-        'router_url'      => '',
+        'router_url'            => '',
 
         /**
          * Domain + optional port. Don't add the api path like "/druid/v2"
          */
-        'broker_url'      => '',
+        'broker_url'            => '',
 
         /**
          * Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
          */
-        'coordinator_url' => '',
+        'coordinator_url'       => '',
 
         /**
          * Domain + optional port. Don't add the api path like "/druid/indexer/v1"
          */
-        'overlord_url'    => '',
+        'overlord_url'          => '',
 
         /**
-         * The maximum duration of a druid query. If the response takes longer, we will close the connection.
+         * The maximum duration in seconds of a druid query. If the response takes longer, we will close the connection.
          */
-        'timeout'         => 60,
+        'timeout'               => 60,
 
         /**
-         * The maximum duration of connecting to the druid instance.
+         * The maximum duration in seconds of connecting to the druid instance.
          */
-        'connect_timeout' => 10,
+        'connect_timeout'       => 10,
 
         /**
          * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
@@ -76,7 +74,7 @@ class DruidClient
          * Then we do the FIRST retry.
          * Then we do the SECOND retry.
          */
-        'retries'         => 2,
+        'retries'               => 2,
 
         /**
          * When a query fails to be executed, this is the delay before a query is retried.
@@ -84,14 +82,12 @@ class DruidClient
          *
          * Set to 0 to disable they delay between retries.
          */
-        'retry_delay_ms'  => 500,
+        'retry_delay_ms'        => 500,
 
         /**
-         * Supply the druid version which you are sending your queries to.
-         * Based on this druid version, we can enable / disable certain new features if your
-         * server supports this.
+         * Amount of time in seconds to wait till we try and poll a task status again.
          */
-        'version'         => null,
+        'polling_sleep_seconds' => 2,
     ];
 
     /**
@@ -142,7 +138,8 @@ class DruidClient
      * @param \Level23\Druid\Queries\QueryInterface $druidQuery
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function executeQuery(QueryInterface $druidQuery): array
     {
@@ -190,7 +187,8 @@ class DruidClient
      * @param array  $data   The data to POST or GET.
      *
      * @return array
-     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function executeRawRequest(string $method, string $url, array $data = []): array
     {
@@ -247,7 +245,7 @@ class DruidClient
 
             $error = $this->parseResponse($response, $data);
 
-            // When its not a formatted error response from druid we rethrow the original exception
+            // When it's not a formatted error response from druid we rethrow the original exception
             if (!isset($error['error'], $error['errorMessage'])) {
                 throw $exception;
             }
@@ -341,10 +339,10 @@ class DruidClient
     {
         $contents = $response->getBody()->getContents();
         try {
-            $row = \json_decode($contents, true) ?: [];
-            if (\JSON_ERROR_NONE !== \json_last_error()) {
+            $row = json_decode($contents, true) ?: [];
+            if (JSON_ERROR_NONE !== json_last_error()) {
                 throw new InvalidArgumentException(
-                    'json_decode error: ' . \json_last_error_msg()
+                    'json_decode error: ' . json_last_error_msg()
                 );
             }
         } catch (InvalidArgumentException $exception) {
@@ -402,6 +400,28 @@ class DruidClient
     }
 
     /**
+     * Waits till a druid task completes and returns the status of it.
+     *
+     * @param string $taskId
+     *
+     * @return \Level23\Druid\Responses\TaskResponse
+     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function pollTaskStatus(string $taskId): TaskResponse
+    {
+        while (true) {
+            $status = $this->taskStatus($taskId);
+
+            if ($status->getStatus() != 'RUNNING') {
+                break;
+            }
+            sleep(intval($this->config('polling_sleep_seconds')));
+        }
+
+        return $status;
+    }
+
+    /**
      * Build a new compact task.
      *
      * @param string $dataSource
@@ -426,12 +446,25 @@ class DruidClient
     }
 
     /**
+     * Create an index task
+     *
+     * @param string                                           $dataSource
+     * @param \Level23\Druid\InputSources\InputSourceInterface $inputSource
+     *
+     * @return \Level23\Druid\Tasks\IndexTaskBuilder
+     */
+    public function index(string $dataSource, InputSourceInterface $inputSource): IndexTaskBuilder
+    {
+        return new IndexTaskBuilder($this, $dataSource, $inputSource);
+    }
+
+    /**
      * Create a re-index task for druid.
      *
-     * The $start and $stop dates are checked if they match a valid interval. Otherwise there is a
+     * The $start and $stop dates are checked if they match a valid interval. Otherwise, there is a
      * risk to of data loss.
      *
-     * We will return an string with the task job identifier, or an exception is thrown in case of an error.
+     * We will return a string with the task job identifier, or an exception is thrown in case of an error.
      * Example:
      * "index_traffic-conversions-2019-03-18T16:26:05.186Z"
      *
@@ -439,14 +472,19 @@ class DruidClient
      *
      * @return \Level23\Druid\Tasks\IndexTaskBuilder
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function reindex(string $dataSource): IndexTaskBuilder
     {
         $structure = $this->metadata()->structure($dataSource);
 
-        $builder = new IndexTaskBuilder($this, $dataSource, DruidInputSource::class);
-        $builder->fromDataSource($dataSource);
+        $builder = new IndexTaskBuilder(
+            $this,
+            $dataSource,
+            new DruidInputSource($dataSource)
+        );
 
+        $builder->timestamp('__time', 'auto');
         foreach ($structure->dimensions as $dimension => $type) {
             $builder->dimension($dimension, $type);
         }

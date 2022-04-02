@@ -7,7 +7,6 @@ use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Aggregations\AnyAggregator;
-use Level23\Druid\Aggregations\LastAggregator;
 
 class AnyAggregatorTest extends TestCase
 {
@@ -17,7 +16,8 @@ class AnyAggregatorTest extends TestCase
             [DataType::LONG],
             [DataType::DOUBLE],
             [DataType::FLOAT],
-            [DataType::STRING, true],
+            [DataType::STRING],
+            ["wrong", true],
         ];
     }
 
@@ -39,6 +39,18 @@ class AnyAggregatorTest extends TestCase
             'type'      => $type . 'Any',
             'name'      => 'dim123',
             'fieldName' => 'abc',
+        ], $aggregator->toArray());
+    }
+
+    public function testMaxStringBytes(): void
+    {
+        $aggregator = new AnyAggregator('revenue', 'totals', 'string', 2048);
+
+        $this->assertEquals([
+            'type'           => 'stringAny',
+            'fieldName'      => 'revenue',
+            'name'           => 'totals',
+            'maxStringBytes' => 2048,
         ], $aggregator->toArray());
     }
 }

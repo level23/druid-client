@@ -8,7 +8,7 @@ use Level23\Druid\Responses\QueryResponse;
 interface QueryInterface
 {
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
      * @return array
      */
@@ -21,5 +21,5 @@ interface QueryInterface
      *
      * @return QueryResponse
      */
-    public function parseResponse(array $response);
+    public function parseResponse(array $response): QueryResponse;
 }

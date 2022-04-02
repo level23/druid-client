@@ -8,15 +8,9 @@ use Level23\Druid\Collections\TransformCollection;
 
 class TransformSpec
 {
-    /**
-     * @var TransformCollection
-     */
-    protected $transforms;
+    protected TransformCollection $transforms;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter;
 
     /**
      * TransformSpec constructor.

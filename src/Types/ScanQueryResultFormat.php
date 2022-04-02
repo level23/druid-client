@@ -16,7 +16,7 @@ class ScanQueryResultFormat extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($resultFormat)
+    public static function validate(string $resultFormat): string
     {
         if (!ScanQueryResultFormat::isValidValue($resultFormat)) {
             throw new InvalidArgumentException(

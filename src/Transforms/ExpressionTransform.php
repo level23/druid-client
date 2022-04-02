@@ -5,15 +5,9 @@ namespace Level23\Druid\Transforms;
 
 class ExpressionTransform implements TransformInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $expression;
+    protected string $expression;
 
     /**
      * ExpressionTransform constructor.
@@ -30,7 +24,7 @@ class ExpressionTransform implements TransformInterface
     /**
      * Return the transform in such a way so that we can use it in a druid query.
      *
-     * @return mixed
+     * @return array
      */
     public function toArray()
     {

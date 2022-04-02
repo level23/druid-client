@@ -7,20 +7,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
 
 class InFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var array
-     */
-    protected $values;
+    protected array $values;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extraction;
+    protected ?ExtractionInterface $extraction;
 
     /**
      * InFilter constructor.

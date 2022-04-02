@@ -76,6 +76,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function testExecute(): void
     {
@@ -132,7 +133,6 @@ class QueryBuilderTest extends TestCase
             'outputType' => 'float',
             'outputName' => 'fooBar',
         ], $this->builder->getDimensions()[0]->toArray());
-
 
         $this->assertEquals($this->builder, $response);
     }
@@ -585,7 +585,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
-     * @throws \Exception
+     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
     public function testGroupByV1()
     {
@@ -627,8 +627,9 @@ class QueryBuilderTest extends TestCase
         $result       = [['event' => ['result' => 'here']]];
         $parsedResult = new GroupByQueryResponse($result);
 
+        $this->builder->interval('now - 1 week/now');
         $this->builder->shouldReceive('buildGroupByQuery')
-            ->with($context, 'v2')
+            ->with($context)
             ->once()
             ->andReturn($query);
 
@@ -821,7 +822,7 @@ class QueryBuilderTest extends TestCase
 
         $this->builder->shouldReceive('buildGroupByQuery')
             ->once()
-            ->with($context, 'v2')
+            ->with($context)
             ->andReturn($groupBy);
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -967,11 +968,9 @@ class QueryBuilderTest extends TestCase
                 ->andReturn(($direction == 'desc'));
         }
 
-        if ($direction == 'desc') {
-            $query->shouldReceive('setDescending')
-                ->once()
-                ->with(true);
-        }
+        $query->shouldReceive('setDescending')
+            ->once()
+            ->with($direction == 'desc');
 
         if ($contextAsObject) {
             $context = new TimeSeriesQueryContext($context);
@@ -1007,6 +1006,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function testBuildSelectQueryWithoutInterval(): void
     {

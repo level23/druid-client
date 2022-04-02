@@ -5,20 +5,11 @@ namespace Level23\Druid\Dimensions;
 
 class LookupDimension implements DimensionInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $registeredLookupFunction;
+    protected string $registeredLookupFunction;
 
     /**
      * @var bool|string

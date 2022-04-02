@@ -8,11 +8,14 @@ use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Transforms\TransformSpec;
+use Level23\Druid\Dimensions\TimestampSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\InputSources\HttpInputSource;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Transforms\ExpressionTransform;
+use Level23\Druid\InputSources\InlineInputSource;
 use Level23\Druid\Collections\TransformCollection;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
@@ -82,6 +85,9 @@ class IndexTaskTest extends TestCase
             $taskId
         );
 
+        $timestampSpec = new TimestampSpec('timestamp', 'auto');
+        $task->setTimestampSpec($timestampSpec);
+
         $this->assertFalse($this->getProperty($task, 'appendToExisting'));
 
         $task->setAppendToExisting($withAppend);
@@ -91,10 +97,7 @@ class IndexTaskTest extends TestCase
             'spec' => [
                 'dataSchema' => [
                     'dataSource'     => $dataSource,
-                    'timestampSpec'  => [
-                        'column' => '__time',
-                        'format' => 'auto',
-                    ],
+                    'timestampSpec'  => $timestampSpec->toArray(),
                     'dimensionsSpec' => [
                         'dimensions' => $dimensions,
                     ],
@@ -143,5 +146,65 @@ class IndexTaskTest extends TestCase
         $expected['type']                     = 'index_parallel';
 
         $this->assertEquals($expected, $task->toArray());
+    }
+
+    /**
+     * @testWith ["csv"]
+     *           ["json"]
+     *           [null]
+     *
+     * @param string $inputFormat
+     *
+     * @return void
+     * @throws \ReflectionException
+     */
+    public function testWithInlineInputSource(?string $inputFormat)
+    {
+        $dimensions = [
+            ['name' => 'country', 'type' => 'string'],
+            ['name' => 'duration', 'type' => 'long'],
+        ];
+
+        $inlineInputSource = $inputFormat ? new InlineInputSource([], $inputFormat) : new HttpInputSource([]);
+
+        $task = new IndexTask(
+            'people',
+            $inlineInputSource,
+            new UniformGranularity(
+                'week',
+                'day',
+                true,
+                new IntervalCollection(new Interval('12-02-2019', '13-02-2019'))
+            ),
+            null,
+            null,
+            null,
+            null,
+            $dimensions,
+            null,
+        );
+
+        $this->assertEquals($inputFormat ?? 'json', $this->getProperty($task, 'inputFormat'));
+
+        $task->setInputFormat('json');
+        $this->assertEquals('json', $this->getProperty($task, 'inputFormat'));
+
+        $task->setInputFormat('csv');
+        $this->assertEquals('csv', $this->getProperty($task, 'inputFormat'));
+    }
+
+    public function testTaskWithoutTimestamp(): void
+    {
+        $task = new IndexTask(
+            'money',
+            new HttpInputSource(['http://127.0.0.1/data.json']),
+            new UniformGranularity('day', 'day', true, new IntervalCollection(
+                new Interval('now - 1 day', 'now')
+            ))
+        );
+
+        $this->expectExceptionMessage('You have to specify your timestamp column!');
+        $this->expectException(\InvalidArgumentException::class);
+        $task->toArray();
     }
 }

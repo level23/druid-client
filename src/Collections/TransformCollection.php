@@ -34,8 +34,6 @@ class TransformCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        return array_map(function (TransformInterface $item) {
-            return $item->toArray();
-        }, $this->items);
+        return array_map(fn(TransformInterface $item) => $item->toArray(), $this->items);
     }
 }

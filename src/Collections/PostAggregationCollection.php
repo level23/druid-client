@@ -19,9 +19,7 @@ class PostAggregationCollection extends BaseCollection
      */
     public function toArray(): array
     {
-        return array_map(function (PostAggregatorInterface $item) {
-            return $item->toArray();
-        }, $this->items);
+        return array_map(fn(PostAggregatorInterface $item) => $item->toArray(), $this->items);
     }
 
     /**

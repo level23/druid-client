@@ -5,17 +5,14 @@ namespace Level23\Druid\HavingFilters;
 
 class NotHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var \Level23\Druid\HavingFilters\HavingFilterInterface
-     */
-    protected $filter;
+    protected HavingFilterInterface $filter;
 
     /**
      * NotHavingFilter constructor.
      *
      * @param HavingFilterInterface $filter
      */
-    public function __construct($filter)
+    public function __construct(HavingFilterInterface $filter)
     {
         $this->filter = $filter;
     }

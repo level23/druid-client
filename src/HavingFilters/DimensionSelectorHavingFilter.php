@@ -5,15 +5,9 @@ namespace Level23\Druid\HavingFilters;
 
 class DimensionSelectorHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
     /**
      * LessThanHavingFilter constructor.

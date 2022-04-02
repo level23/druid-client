@@ -13,30 +13,15 @@ namespace Level23\Druid\Aggregations;
  */
 class JavascriptAggregator implements AggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var array
-     */
-    protected $fieldNames = [];
+    protected array $fieldNames = [];
 
-    /**
-     * @var string
-     */
-    protected $fnAggregate;
+    protected string $fnAggregate;
 
-    /**
-     * @var string
-     */
-    protected $fnCombine;
+    protected string $fnCombine;
 
-    /**
-     * @var string
-     */
-    protected $fnReset;
+    protected string $fnReset;
 
     /**
      * JavascriptAggregator constructor.

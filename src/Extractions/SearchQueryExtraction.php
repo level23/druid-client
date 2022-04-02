@@ -15,10 +15,7 @@ class SearchQueryExtraction implements ExtractionInterface
      */
     protected $valueOrValues;
 
-    /**
-     * @var bool
-     */
-    protected $caseSensitive;
+    protected bool $caseSensitive;
 
     /**
      * SearchQueryExtraction constructor.
@@ -33,7 +30,7 @@ class SearchQueryExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
      * @return array
      */

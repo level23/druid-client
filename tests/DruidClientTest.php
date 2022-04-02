@@ -26,6 +26,7 @@ use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use GuzzleHttp\Exception\BadResponseException;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\InputSources\DruidInputSource;
+use Level23\Druid\InputSources\LocalInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
@@ -123,6 +124,24 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
+    public function testIndex(): void
+    {
+        $client = new DruidClient([]);
+
+        $inputSource = new LocalInputSource(['/path/to/file.json']);
+
+        $builder = Mockery::mock('overload:' . IndexTaskBuilder::class);
+        $builder->shouldReceive('__construct')
+            ->once()
+            ->with($client, 'someDataSource', $inputSource);
+
+        $client->index('someDataSource', $inputSource);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testCompact(): void
     {
         $client = new DruidClient([]);
@@ -181,9 +200,10 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client, $dataSource, DruidInputSource::class);
 
-        $indexTaskBuilder->shouldReceive('fromDataSource')
-            ->with($dataSource)
-            ->once();
+        $indexTaskBuilder->shouldReceive('timestamp')
+            ->once()
+            ->with('__time', 'auto')
+            ->andReturn($indexTaskBuilder);
 
         $indexTaskBuilder->shouldReceive('dimension')
             ->with('name', 'string')
@@ -283,6 +303,29 @@ class DruidClientTest extends TestCase
 
         $this->assertInstanceOf(TaskResponse::class, $response);
         $this->assertEquals($expectedResponse['id'] ?? '', $response->getId());
+    }
+
+    public function testPollTaskStatus()
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $client->shouldReceive('taskStatus')
+            ->with('task-1234')
+            ->andReturn(
+                new TaskResponse(['status' => ['status' => 'RUNNING']]),
+                new TaskResponse(['status' => ['status' => 'SUCCESS']])
+            );
+
+        $client->shouldReceive('config')
+            ->with('polling_sleep_seconds')
+            ->andReturn(0);
+
+        $response = $client->pollTaskStatus('task-1234');
+
+        $this->assertInstanceOf(TaskResponse::class, $response);
+
+        $this->assertEquals('SUCCESS', $response->getStatus());
     }
 
     public function testLogHandler(): void
@@ -509,12 +552,11 @@ class DruidClientTest extends TestCase
         string $method,
         callable $responseFunction,
         $expectException,
-        $is204 = false
+        bool $is204 = false
     ) {
         if ($expectException) {
             $this->expectException($expectException);
         }
-
 
         $url  = 'http://test.dev/v2/task';
         $data = ['payload' => 'here'];
@@ -528,7 +570,6 @@ class DruidClientTest extends TestCase
 
         $client = $this->mockDruidClient([], $guzzle);
         $client->makePartial();
-
 
         $expectedResponse = [];
         if (!$is204 && (!$expectException || $expectException instanceof ResponseInterface)) {

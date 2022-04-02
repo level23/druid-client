@@ -15,38 +15,26 @@ class CompactTaskBuilder extends TaskBuilder
 {
     use HasInterval, HasSegmentGranularity, HasTuningConfig;
 
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected string $dataSource;
 
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
-
-    /**
-     * @var int
-     */
-    protected $targetCompactionSizeBytes;
+    protected ?int $targetCompactionSizeBytes = null;
 
     /**
      * CompactTaskBuilder constructor.
      *
      * A compaction task internally generates an index task spec for performing compaction work with some fixed
-     * parameters. For example, its firehose is always the ingestSegmentSpec, and dimensionsSpec and metricsSpec
+     * parameters. For example, its input source is always DruidInputSource, and dimensionsSpec and metricsSpec
      * include all dimensions and metrics of the input segments by default.
      *
      * Compaction tasks will exit with a failure status code, without doing anything, if the interval you specify has
      * no data segments loaded in it (or if the interval you specify is empty).
      *
-     * @param \Level23\Druid\DruidClient $client
-     * @param string                     $dataSource
+     * @param string $dataSource
      */
-    public function __construct(DruidClient $client, string $dataSource)
+    public function __construct(DruidClient $druidClient, string $dataSource)
     {
+        $this->client     = $druidClient;
         $this->dataSource = $dataSource;
-        $this->client     = $client;
     }
 
     /**
@@ -54,6 +42,7 @@ class CompactTaskBuilder extends TaskBuilder
      *
      * @return \Level23\Druid\Tasks\CompactTask
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     protected function buildTask($context): TaskInterface
     {
@@ -90,7 +79,7 @@ class CompactTaskBuilder extends TaskBuilder
      *
      * @return $this
      */
-    public function targetCompactionSize(int $bytes)
+    public function targetCompactionSize(int $bytes): CompactTaskBuilder
     {
         $this->targetCompactionSizeBytes = $bytes;
 

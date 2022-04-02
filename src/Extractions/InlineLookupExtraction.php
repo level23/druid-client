@@ -5,30 +5,15 @@ namespace Level23\Druid\Extractions;
 
 class InlineLookupExtraction implements ExtractionInterface
 {
-    /**
-     * @var array
-     */
-    protected $map;
+    protected array $map;
 
-    /**
-     * @var bool
-     */
-    protected $optimize;
+    protected bool $optimize;
 
-    /**
-     * @var bool|null
-     */
-    protected $injective;
+    protected ?bool $injective = null;
 
-    /**
-     * @var bool
-     */
-    protected $retainMissingValue;
+    protected bool $retainMissingValue;
 
-    /**
-     * @var string|null
-     */
-    private $replaceMissingValueWith;
+    private ?string $replaceMissingValueWith = null;
 
     /**
      * InlineLookupExtraction constructor.
@@ -41,7 +26,7 @@ class InlineLookupExtraction implements ExtractionInterface
      *                                         the missing values and replace them with the string value.
      * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
      *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
+     * @param bool|null   $injective           A property of injective can override the lookups own sense of whether
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
      */

@@ -41,9 +41,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $groupByIsSingleThreaded
      *
-     * @return $this;
+     * @return $this
      */
-    public function setGroupByIsSingleThreaded(bool $groupByIsSingleThreaded)
+    public function setGroupByIsSingleThreaded(bool $groupByIsSingleThreaded): self
     {
         $this->properties['groupByIsSingleThreaded'] = $groupByIsSingleThreaded;
 
@@ -55,9 +55,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $bufferGrouperInitialBuckets
      *
-     * @return $this;
+     * @return $this
      */
-    public function setBufferGrouperInitialBuckets(int $bufferGrouperInitialBuckets)
+    public function setBufferGrouperInitialBuckets(int $bufferGrouperInitialBuckets): self
     {
         $this->properties['bufferGrouperInitialBuckets'] = $bufferGrouperInitialBuckets;
 
@@ -69,9 +69,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $bufferGrouperMaxLoadFactor
      *
-     * @return $this;
+     * @return $this
      */
-    public function setBufferGrouperMaxLoadFactor(int $bufferGrouperMaxLoadFactor)
+    public function setBufferGrouperMaxLoadFactor(int $bufferGrouperMaxLoadFactor): self
     {
         $this->properties['bufferGrouperMaxLoadFactor'] = $bufferGrouperMaxLoadFactor;
 
@@ -83,9 +83,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $forceHashAggregation
      *
-     * @return $this;
+     * @return $this
      */
-    public function setForceHashAggregation(bool $forceHashAggregation)
+    public function setForceHashAggregation(bool $forceHashAggregation): self
     {
         $this->properties['forceHashAggregation'] = $forceHashAggregation;
 
@@ -97,9 +97,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $intermediateCombineDegree
      *
-     * @return $this;
+     * @return $this
      */
-    public function setIntermediateCombineDegree(int $intermediateCombineDegree)
+    public function setIntermediateCombineDegree(int $intermediateCombineDegree): self
     {
         $this->properties['intermediateCombineDegree'] = $intermediateCombineDegree;
 
@@ -111,9 +111,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $numParallelCombineThreads
      *
-     * @return $this;
+     * @return $this
      */
-    public function setNumParallelCombineThreads(int $numParallelCombineThreads)
+    public function setNumParallelCombineThreads(int $numParallelCombineThreads): self
     {
         $this->properties['numParallelCombineThreads'] = $numParallelCombineThreads;
 
@@ -125,9 +125,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $sortByDimsFirst
      *
-     * @return $this;
+     * @return $this
      */
-    public function setSortByDimsFirst(bool $sortByDimsFirst)
+    public function setSortByDimsFirst(bool $sortByDimsFirst): self
     {
         $this->properties['sortByDimsFirst'] = $sortByDimsFirst;
 
@@ -143,9 +143,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $forceLimitPushDown
      *
-     * @return $this;
+     * @return $this
      */
-    public function setForceLimitPushDown(bool $forceLimitPushDown)
+    public function setForceLimitPushDown(bool $forceLimitPushDown): self
     {
         $this->properties['forceLimitPushDown'] = $forceLimitPushDown;
 
@@ -157,9 +157,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $maxMergingDictionarySize
      *
-     * @return $this;
+     * @return $this
      */
-    public function setMaxMergingDictionarySize(int $maxMergingDictionarySize)
+    public function setMaxMergingDictionarySize(int $maxMergingDictionarySize): self
     {
         $this->properties['maxMergingDictionarySize'] = $maxMergingDictionarySize;
 
@@ -171,9 +171,9 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $maxOnDiskStorage
      *
-     * @return $this;
+     * @return $this
      */
-    public function setMaxOnDiskStorage(int $maxOnDiskStorage)
+    public function setMaxOnDiskStorage(int $maxOnDiskStorage): self
     {
         $this->properties['maxOnDiskStorage'] = $maxOnDiskStorage;
 
@@ -186,8 +186,10 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
      * druid.query.groupBy.applyLimitPushDownToSegment.
      *
      * @param bool $applyLimitPushDownToSegment
+     *
+     * @return $this
      */
-    public function setApplyLimitPushDownToSegment(bool $applyLimitPushDownToSegment)
+    public function setApplyLimitPushDownToSegment(bool $applyLimitPushDownToSegment): self
     {
         $this->properties['applyLimitPushDownToSegment'] = $applyLimitPushDownToSegment;
 

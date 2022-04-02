@@ -23,7 +23,7 @@ final class BoundOperator extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($operator)
+    public static function validate(string $operator): string
     {
         if (!BoundOperator::isValidValue($operator)) {
             throw new InvalidArgumentException(

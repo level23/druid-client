@@ -5,10 +5,7 @@ namespace Level23\Druid\Filters;
 
 class NotFilter implements FilterInterface
 {
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface
-     */
-    protected $filter;
+    protected FilterInterface $filter;
 
     /**
      * NotFilter constructor.
@@ -17,7 +14,6 @@ class NotFilter implements FilterInterface
      */
     public function __construct(FilterInterface $filter)
     {
-
         $this->filter = $filter;
     }
 
