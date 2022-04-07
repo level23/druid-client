@@ -25,7 +25,7 @@ class CascadeExtraction implements ExtractionInterface
      *
      * @param \Level23\Druid\Extractions\ExtractionInterface $extraction
      */
-    public function addExtraction(ExtractionInterface $extraction)
+    public function addExtraction(ExtractionInterface $extraction): void
     {
         $this->extractions[] = $extraction;
     }

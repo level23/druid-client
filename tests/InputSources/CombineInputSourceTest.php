@@ -34,6 +34,7 @@ class CombineInputSourceTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Only input sources are allowed!');
+        // @phpstan-ignore-next-line
         new CombineInputSource([new \DateTime('now')]);
     }
 }

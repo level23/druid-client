@@ -27,7 +27,7 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      *
      * @param mixed ...$item
      */
-    public function add(...$item)
+    public function add(...$item): void
     {
         $type = $this->getType();
 

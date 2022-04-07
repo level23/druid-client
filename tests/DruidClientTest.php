@@ -305,7 +305,7 @@ class DruidClientTest extends TestCase
         $this->assertEquals($expectedResponse['id'] ?? '', $response->getId());
     }
 
-    public function testPollTaskStatus()
+    public function testPollTaskStatus(): void
     {
         $client = $this->mockDruidClient();
         $client->makePartial();
@@ -541,20 +541,20 @@ class DruidClientTest extends TestCase
     /**
      * @dataProvider executeRawRequestDataProvider
      *
-     * @param string   $method
-     * @param callable $responseFunction
-     * @param mixed    $expectException
-     * @param bool     $is204
+     * @param string      $method
+     * @param callable    $responseFunction
+     * @param bool|string $expectException
+     * @param bool        $is204
      *
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testExecuteRawRequest(
         string $method,
         callable $responseFunction,
         $expectException,
         bool $is204 = false
-    ) {
-        if ($expectException) {
+    ): void {
+        if ($expectException && is_string($expectException)) {
             $this->expectException($expectException);
         }
 
@@ -572,7 +572,7 @@ class DruidClientTest extends TestCase
         $client->makePartial();
 
         $expectedResponse = [];
-        if (!$is204 && (!$expectException || $expectException instanceof ResponseInterface)) {
+        if (!$is204 && !$expectException) {
 
             $client->shouldAllowMockingProtectedMethods()
                 ->shouldReceive('parseResponse')
@@ -594,7 +594,7 @@ class DruidClientTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function testCancelQuery()
+    public function testCancelQuery(): void
     {
         $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
 

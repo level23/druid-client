@@ -11,13 +11,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
     use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 
     /**
-     * @param mixed  $object
+     * @param object $object
      * @param string $propertyName
      *
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function getProperty($object, string $propertyName)
+    public static function getProperty(object $object, string $propertyName)
     {
         $reflectionClass = new ReflectionClass($object);
 
@@ -27,7 +27,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         return $property->getValue($object);
     }
 
-    public function assertArrayContainsSubset(array $expectedSubset, array $actualArray)
+    public function assertArrayContainsSubset(array $expectedSubset, array $actualArray): void
     {
         foreach ($expectedSubset as $key => $value) {
             $this->assertArrayHasKey($key, $actualArray);

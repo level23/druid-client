@@ -40,7 +40,7 @@ class BaseCollectionTest extends TestCase
         $this->assertEquals($collection->offsetGet(0), $item);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('We only accept instances of type');
+        $this->expectExceptionMessage('We only accept instances of type ' . $collection->getType());
         $collection->add('hallo');
     }
 

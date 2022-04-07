@@ -42,7 +42,7 @@ class DimensionTest extends TestCase
         string $type,
         ?ExtractionInterface $extractionFunction,
         bool $expectException
-    ) {
+    ): void {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
         }

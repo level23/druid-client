@@ -42,7 +42,7 @@ class LookupExtractionTest extends TestCase
         $keepMissing,
         bool $optimize,
         ?bool $injective
-    ) {
+    ): void {
         $extraction = new LookupExtraction(
             $lookup,
             $keepMissing,

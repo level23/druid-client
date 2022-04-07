@@ -96,7 +96,12 @@ class ContextTest extends TestCase
 
     public function testSettingValueUsingConstructor(): void
     {
-        $context = new GroupByV2QueryContext(['timeout' => 6271]);
+        $context = \Mockery::mock(GroupByV2QueryContext::class)->makePartial();
+
+        $context->makePartial();
+        $context->shouldReceive('setTimeout')
+            ->once()
+            ->with(6271);
 
         $response = $context->toArray();
         $this->assertEquals(6271, $response['timeout']);
@@ -119,7 +124,7 @@ class ContextTest extends TestCase
         new GroupByV2QueryContext(['priority' => ['oops']]);
     }
 
-    protected function getRandomWord()
+    protected function getRandomWord(): string
     {
         $characters   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $randomString = '';

@@ -18,12 +18,12 @@ interface LimitInterface
     /**
      * @param int $limit
      */
-    public function setLimit(int $limit);
+    public function setLimit(int $limit): void;
 
     /**
      * @param int $offset
      */
-    public function setOffset(int $offset);
+    public function setOffset(int $offset): void;
 
     /**
      * Get the limit which is currently configured.
@@ -51,5 +51,5 @@ interface LimitInterface
      *
      * @param \Level23\Druid\OrderBy\OrderByInterface $orderBy
      */
-    public function addOrderBy(OrderByInterface $orderBy);
+    public function addOrderBy(OrderByInterface $orderBy): void;
 }

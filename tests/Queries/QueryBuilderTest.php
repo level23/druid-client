@@ -587,7 +587,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
-    public function testGroupByV1()
+    public function testGroupByV1(): void
     {
         $context = ['foo' => 'bar'];
         $query   = $this->getGroupByQueryMock();
@@ -718,7 +718,7 @@ class QueryBuilderTest extends TestCase
         bool $isScanQuery,
         bool $isSelectQuery,
         bool $isSearchQuery
-    ) {
+    ): void {
         $context = ['foo' => 'bar'];
 
         $this->builder->interval('12-02-2015', '13-02-2015');
@@ -876,7 +876,7 @@ class QueryBuilderTest extends TestCase
         string $direction = 'asc',
         bool $contextAsObject = true,
         bool $useLegacyOrderBy = false
-    ) {
+    ): void {
         $dataSource = 'phones';
 
         $this->builder->interval('12-02-2019/13-02-2019');
@@ -1081,7 +1081,7 @@ class QueryBuilderTest extends TestCase
         int $limit,
         array $dimensions,
         bool $withFilter
-    ) {
+    ): void {
         $this->builder->dataSource('wikipedia');
         $this->builder->granularity($granularity);
         $this->builder->interval('12-02-2019/13-02-2019');
@@ -1179,7 +1179,7 @@ class QueryBuilderTest extends TestCase
         string $orderByDirection,
         bool $withPagingIdentifier,
         bool $useLegacyOrderBy = false
-    ) {
+    ): void {
         $this->builder->dataSource('wikipedia');
         $this->builder->interval('12-02-2019/13-02-2019');
         $this->builder->limit($limit);
@@ -1324,7 +1324,7 @@ class QueryBuilderTest extends TestCase
         string $orderByField,
         bool $asc,
         bool $useLegacyOrderBy = true
-    ) {
+    ): void {
         $this->builder->interval('12-02-2019/13-02-2019');
         $this->builder->dataSource('wikipedia');
 
@@ -1457,7 +1457,7 @@ class QueryBuilderTest extends TestCase
         string $direction,
         array $context,
         bool $contextAsArray
-    ) {
+    ): void {
         $dataSource = 'phones';
 
         $this->builder->interval('12-02-2019/13-02-2019');
@@ -1579,7 +1579,7 @@ class QueryBuilderTest extends TestCase
         bool $withHaving,
         bool $withPostAggregations,
         bool $withSubtotals
-    ) {
+    ): void {
         $dataSource = 'drinks';
 
         $this->builder->select('cans');

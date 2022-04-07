@@ -31,9 +31,9 @@ class DruidClient
     protected ?LoggerInterface $logger = null;
 
     /**
-     * @var array<string, int|string|null>
+     * @var array<string,string|int>
      */
-    protected $config = [
+    protected array $config = [
 
         /**
          * Domain + optional port or the druid router. If this is set, it will be used for the broker,

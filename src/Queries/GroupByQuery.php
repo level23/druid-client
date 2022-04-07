@@ -121,7 +121,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
      */
-    public function setFilter(FilterInterface $filter)
+    public function setFilter(FilterInterface $filter): void
     {
         $this->filter = $filter;
     }
@@ -129,7 +129,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Collections\AggregationCollection|array $aggregations
      */
-    public function setAggregations($aggregations)
+    public function setAggregations($aggregations) : void
     {
         if (is_array($aggregations)) {
             $aggregations = new AggregationCollection(...$aggregations);

@@ -55,7 +55,7 @@ class Limit implements LimitInterface
      *
      * @param \Level23\Druid\OrderBy\OrderByInterface $orderBy
      */
-    public function addOrderBy(OrderByInterface $orderBy)
+    public function addOrderBy(OrderByInterface $orderBy): void
     {
         if ($this->orderBy === null) {
             $this->orderBy = new OrderByCollection();

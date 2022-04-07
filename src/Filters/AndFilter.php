@@ -23,7 +23,7 @@ class AndFilter implements FilterInterface, LogicalExpressionFilterInterface
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
      */
-    public function addFilter(FilterInterface $filter)
+    public function addFilter(FilterInterface $filter): void
     {
         $this->filters[] = $filter;
     }

@@ -21,7 +21,6 @@ use Level23\Druid\InputSources\HttpInputSource;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\InputSources\LocalInputSource;
 use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\InputSources\InlineInputSource;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\InputSources\InputSourceInterface;
@@ -104,36 +103,6 @@ class IndexTaskBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["json"]
-     *           ["csv"]
-     *
-     * @param string $type
-     *
-     * @return void
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
-     */
-    public function testWithInputSourceType(string $type): void
-    {
-        $localInputSource = new InlineInputSource([[18, 'female', 1]], $type);
-
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'things', $localInputSource);
-        $builder->queryGranularity(Granularity::HOUR);
-        $builder->segmentGranularity(Granularity::DAY);
-        $builder->timestamp('datetime', 'auto');
-        $builder->interval('now - 1 day/now');
-        $data = $builder->toArray();
-
-        $this->assertEquals($type, $data['spec']['ioConfig']['inputFormat']['type']);
-        $this->assertEquals($localInputSource->toArray(), $data['spec']['ioConfig']['inputSource']);
-
-        $builder->inputFormat($type == 'csv' ? 'json' : 'csv');
-        $data = $builder->toArray();
-
-        $this->assertEquals($type == 'csv' ? 'json' : 'csv', $data['spec']['ioConfig']['inputFormat']['type']);
-    }
-
-    /**
      * @throws \ReflectionException
      */
     public function testParallel(): void
@@ -183,7 +152,6 @@ class IndexTaskBuilderTest extends TestCase
             $counter++;
 
             if ($withTransform) {
-                /** @var TransformBuilder $builder */
                 $builder->transform('concat(foo, bar)', 'fooBar');
             }
         };
@@ -195,6 +163,7 @@ class IndexTaskBuilderTest extends TestCase
         $this->assertEquals(1, $counter);
 
         if ($withTransform) {
+            /** @var TransformSpec $transformSpec */
             $transformSpec = $this->getProperty($builder, 'transformSpec');
             $this->assertInstanceOf(
                 TransformSpec::class,
@@ -261,7 +230,7 @@ class IndexTaskBuilderTest extends TestCase
         string $segmentGranularity,
         Interval $interval,
         ?InputSourceInterface $inputSource
-    ) {
+    ): void {
         $context    = [];
         $client     = new DruidClient([]);
         $dataSource = 'farmers';

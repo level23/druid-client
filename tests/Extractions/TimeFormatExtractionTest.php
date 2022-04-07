@@ -35,7 +35,7 @@ class TimeFormatExtractionTest extends TestCase
         string $locale = null,
         string $timezone = null,
         bool $asMillis = null
-    ) {
+    ): void {
         $extraction = new TimeFormatExtraction(
             $format,
             $granularity,

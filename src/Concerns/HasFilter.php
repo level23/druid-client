@@ -46,10 +46,10 @@ trait HasFilter
      * 'javascript', 'not javascript', 'search' and 'not search'
      *
      * @param string|FilterInterface|\Closure $filterOrDimensionOrClosure The dimension which you want to filter.
-     * @param string|null                     $operator                   The operator which you want to use to filter.
+     * @param string|int|null                 $operator                   The operator which you want to use to filter.
      *                                                                    See below for a complete list of supported
      *                                                                    operators.
-     * @param mixed                           $value                      The value which you want to use in your
+     * @param string|int|null|string[]        $value                      The value which you want to use in your
      *                                                                    filter comparison
      * @param \Closure|null                   $extraction                 A closure which builds one or more extraction
      *                                                                    function. These are applied before the filter
@@ -64,7 +64,7 @@ trait HasFilter
      */
     public function where(
         $filterOrDimensionOrClosure,
-        string $operator = null,
+        $operator = null,
         $value = null,
         Closure $extraction = null,
         string $boolean = 'and'
@@ -80,7 +80,12 @@ trait HasFilter
                 throw new InvalidArgumentException('You have to supply an operator and an compare value when you supply a dimension as string');
             }
 
-            $operator = strtolower($operator);
+            $operator = strtolower((string)$operator);
+            if (is_array($value) && !in_array($operator, ['search', 'not search'])) {
+                throw new InvalidArgumentException('Given $value is invalid in combination with operator ' . $operator);
+            }
+
+            /** @var string|int|null $value */
 
             if ($operator == '=') {
                 $filter = new SelectorFilter(
@@ -102,23 +107,25 @@ trait HasFilter
                 );
             } elseif ($operator == 'like') {
                 $filter = new LikeFilter(
-                    $filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction)
+                    $filterOrDimensionOrClosure, (string)$value, '\\', $this->getExtraction($extraction)
                 );
             } elseif ($operator == 'not like') {
                 $filter = new NotFilter(
-                    new LikeFilter($filterOrDimensionOrClosure, $value, '\\', $this->getExtraction($extraction))
+                    new LikeFilter($filterOrDimensionOrClosure, (string)$value, '\\', $this->getExtraction($extraction))
                 );
             } elseif ($operator == 'javascript') {
-                $filter = new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+                $filter = new JavascriptFilter($filterOrDimensionOrClosure, (string)$value,
+                    $this->getExtraction($extraction));
             } elseif ($operator == 'not javascript') {
                 $filter = new NotFilter(
-                    new JavascriptFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction))
+                    new JavascriptFilter($filterOrDimensionOrClosure, (string)$value, $this->getExtraction($extraction))
                 );
             } elseif ($operator == 'regex' || $operator == 'regexp') {
-                $filter = new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction));
+                $filter = new RegexFilter($filterOrDimensionOrClosure, (string)$value,
+                    $this->getExtraction($extraction));
             } elseif ($operator == 'not regex' || $operator == 'not regexp') {
                 $filter = new NotFilter(
-                    new RegexFilter($filterOrDimensionOrClosure, $value, $this->getExtraction($extraction))
+                    new RegexFilter($filterOrDimensionOrClosure, (string)$value, $this->getExtraction($extraction))
                 );
             } elseif ($operator == 'search') {
                 $filter = new SearchFilter(
@@ -832,6 +839,19 @@ trait HasFilter
         return $this->whereInterval($dimension, $intervals, $extraction, 'or');
     }
 
+    /**
+     * Filter on a spatial dimension where the spatial dimension value (x,y coordinates) are between the
+     * given min and max coordinates.
+     *
+     * @param string $dimension The name of the spatial dimension.
+     * @param array  $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
+     * @param array  $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
+     * @param string $boolean   This influences how this filter will be joined with previous added filters.
+     *                          Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                          "and".
+     *
+     * @return $this
+     */
     public function whereSpatialRectangular(
         string $dimension,
         array $minCoords,
@@ -845,6 +865,20 @@ trait HasFilter
         return $this;
     }
 
+    /**
+     * Select all records where the spatial dimension is within the given radios.
+     * You can specify an x,y, z coordinate and the radius. All the records where the spatial dimension
+     * is within the given area will be returned.
+     *
+     * @param string $dimension The name of the spatial dimension.
+     * @param array  $coords    Origin coordinates in the form [x, y, z, …]
+     * @param float  $radius    The float radius value
+     * @param string $boolean   This influences how this filter will be joined with previous added filters.
+     *                          Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                          "and".
+     *
+     * @return $this
+     */
     public function whereSpatialRadius(string $dimension, array $coords, float $radius, string $boolean = 'and'): self
     {
         $filter = new SpatialRadiusFilter($dimension, $coords, $radius);
@@ -854,6 +888,18 @@ trait HasFilter
         return $this;
     }
 
+    /**
+     * Return the records where the spatial dimension is within the area of the defined polygon.
+     *
+     * @param string $dimension The name of the spatial dimension.
+     * @param array  $abscissa  (The x axis) Horizontal coordinate for corners of the polygon
+     * @param array  $ordinate  (The y axis) Vertical coordinate for corners of the polygon
+     * @param string $boolean   This influences how this filter will be joined with previous added filters.
+     *                          Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                          "and".
+     *
+     * @return $this
+     */
     public function whereSpatialPolygon(
         string $dimension,
         array $abscissa,
@@ -867,16 +913,46 @@ trait HasFilter
         return $this;
     }
 
+    /**
+     * Filter on a spatial dimension where the spatial dimension value (x,y coordinates) are between the
+     * given min and max coordinates.
+     *
+     * @param string $dimension The name of the spatial dimension.
+     * @param array  $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
+     * @param array  $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
+     *
+     * @return $this
+     */
     public function orWhereSpatialRectangular(string $dimension, array $minCoords, array $maxCoords): self
     {
         return $this->whereSpatialRectangular($dimension, $minCoords, $maxCoords, 'or');
     }
 
+    /**
+     * Select all records where the spatial dimension is within the given radios.
+     * You can specify an x,y, z coordinate and the radius. All of the records where the spatial dimension
+     * is within the given area will be returned.
+     *
+     * @param string $dimension The name of the spatial dimension.
+     * @param array  $coords    Origin coordinates in the form [x, y, z, …]
+     * @param float  $radius    The float radius value
+     *
+     * @return $this
+     */
     public function orWhereSpatialRadius(string $dimension, array $coords, float $radius): self
     {
         return $this->whereSpatialRadius($dimension, $coords, $radius, 'or');
     }
 
+    /**
+     * Return the records where the spatial dimension is within the area of the defined polygon.
+     *
+     * @param string $dimension The name of the spatial dimension.
+     * @param array  $abscissa  (The x axis) Horizontal coordinate for corners of the polygon
+     * @param array  $ordinate  (The y axis) Vertical coordinate for corners of the polygon
+     *
+     * @return $this
+     */
     public function orWhereSpatialPolygon(string $dimension, array $abscissa, array $ordinate): self
     {
         return $this->whereSpatialPolygon($dimension, $abscissa, $ordinate, 'or');

@@ -30,6 +30,7 @@ class FirstAggregatorTest extends TestCase
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"');
         }
 
         $aggregator = new FirstAggregator('abc', 'dim123', $type);

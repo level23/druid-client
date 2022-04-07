@@ -80,6 +80,8 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement support for Spatial filters
 - Implement support for multi-value dimensions
+- Implement hadoop based batch ingestion (indexing)
+- Implement Avro Stream and Avro OCF input formats.
 
 ## Changelog
 
@@ -198,7 +200,13 @@ for more information.
     - [orWhereFlags()](#orwhereflags) 
     - [whereExpression()](#whereexpression)
     - [orWhereExpression()](#orwehereexpression)
-  - [QueryBuilder: Extractions](#querybuilder-extractions)
+    - [whereSpatialRectangular()](#wherespatialrectangular)
+    - [whereSpatialRadius()](#wherespatialradius)
+    - [whereSpatialPolygon()](#wherespatialpolygon)
+    - [orWhereSpatialRectangular()](#orwherespatialrectangular)
+    - [orWhereSpatialRadius()](#orwherespatialradius)
+    - [orWhereSpatialPolygon()](#orwherespatialpolygon) 
+    - [QueryBuilder: Extractions](#querybuilder-extractions)
     - [lookup()](#lookup-extraction)
     - [inlineLookup()](#inlinelookup-extraction)
     - [format()](#format-extraction)
@@ -1509,6 +1517,94 @@ This method has the following arguments:
 
 Same as `whereExpression()`, but now we will join previous added filters with a `or` instead of an `and`.
 
+### `whereSpatialRectangular()`
+
+This filter allows you to filter on your records where your spatial dimension is within the given rectangular shape.
+
+Example:
+
+```php
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    ->whereSpatialRectangular('location', [0.350189, 51.248163], [-0.613861, 51.248163]);
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
+| array    | Required              | `$minCoords` | `[0.350189, 51.248163]`  | List of minimum dimension coordinates for coordinates [x, y, z]                                                                                              |
+| array    | Required              | `$maxCoords` | `[-0.613861, 51.248163]` | List of maximum dimension coordinates for coordinates [x, y, z]                                                                                              |
+| string   | Optional              | `$boolean`   | "and"                    | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+### `orWhereSpatialRectangular()`
+
+Same as `whereSpatialRectangular()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+### `whereSpatialRadius()`
+
+This filter allows you to filter on your records where your spatial dimension is within radios of a given point.
+
+Example:
+
+```php
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    ->whereSpatialRectangular('location', [0.350189, 51.248163], [-0.613861, 51.248163]);
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
+| array    | Required              | `$minCoords` | `[0.350189, 51.248163]`  | List of minimum dimension coordinates for coordinates [x, y, z]                                                                                              |
+| array    | Required              | `$maxCoords` | `[-0.613861, 51.248163]` | List of maximum dimension coordinates for coordinates [x, y, z]                                                                                              |
+| string   | Optional              | `$boolean`   | `"and"`                  | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+### `orWhereSpatialRadius()`
+
+Same as `whereSpatialRadius()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+### `whereSpatialPolygon()`
+
+This filter allows you to filter on your records where your spatial dimension is within a given polygon.
+
+Example:
+
+```php
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    ->whereSpatialPolygon('location', [0.350189, 51.248163], [-0.613861, 51.248163]);
+```
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
+| array    | Required              | `$abscissa`  | `[0.350189, 51.248163]`  | (The x axis) Horizontal coordinate for corners of the polygon                                                                                                |
+| array    | Required              | `$ordinate`  | `[-0.613861, 51.248163]` | (The y axis) Vertical coordinate for corners of the polygon                                                                                                  |
+| string   | Optional              | `$boolean`   | `"and"`                  | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+
+### `orWhereSpatialPolygon()`
+
+Same as `orWhereSpatialPolygon()`, but now we will join previous added filters with a `or` instead of an `and`.
+
 ## QueryBuilder: Extractions
 
 With an extraction you can _extract_ a value from the dimension. These extractions can be used to select the data (see
@@ -1527,7 +1623,6 @@ $builder->select('surName', 'nameCategory', function(ExtractionBuilder $extracti
     $extraction->substring(3)->upper();
 });
 ```
-
 
 #### `lookup()` extraction
 
@@ -3181,6 +3276,8 @@ $taskId = $client->index('myTableName', $inputSource)
     ->dimension('country', 'string')
     ->dimension('age', 'long')
     ->dimension('version', 'float')
+    // You can also import spatial dimensions (x,y(,z)) coordinates
+    ->spatialDimension('location', ['lat', 'long'])
     // Add the metrics which we want to ingest from our input source. (only when rollup is enabled!)
     ->sum('clicks', 'totalClicks', 'long')
     ->sum('visits', 'totalVisits', 'long')
@@ -3200,7 +3297,7 @@ print_r($status->data());
 
 ## Input Sources
 
-To index data, you can specify various locations where your data is located. 
+To index data, you need to specify where the data is read from. You can do this with an 
 
 #### `AzureInputSource`
 

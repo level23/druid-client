@@ -13,7 +13,7 @@ parameters:
       - '#Property Level23\\Druid\\DruidClient::\$config has no typehint specified.#'
       - '#Function GuzzleHttp\\json_(en|de)code not found.#'
       - '#PHPDoc tag @throws with type (.*) is not subtype of Throwable#'
-    excludes_analyse:
+    excludePaths:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php
     paths:

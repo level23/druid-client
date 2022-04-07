@@ -26,10 +26,10 @@
     "guzzlehttp/guzzle": "^6.2|^7.0"
   },
   "require-dev": {
-    "illuminate/support": "~5.0",
+    "infection/infection": "^0.26.6",
     "mockery/mockery": "^1.2",
     "php-coveralls/php-coveralls": "^2.1",
-    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan": "^1.0",
     "phpunit/phpunit": "^8|^9"
   },
   "suggest": {

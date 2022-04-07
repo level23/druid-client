@@ -103,7 +103,7 @@ class HasExtractionsTest extends TestCase
             ->with(1, 0);
 
         $builder  = new ExtractionBuilder();
-        $response = $builder->bucket(1, 0);
+        $response = $builder->bucket();
 
         $this->assertEquals($builder, $response);
 

@@ -37,7 +37,7 @@ class CompactTaskTest extends TestCase
         int $targetCompactionSizeBytes = null,
         bool $expectException = false,
         string $taskId = null
-    ) {
+    ): void {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
         }

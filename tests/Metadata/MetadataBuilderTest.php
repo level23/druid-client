@@ -212,11 +212,11 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @param string                            $dataSource
-     * @param string                            $interval
-     * @param array                             $intervalResponse
-     * @param array                             $columnsResponse
-     * @param \Level23\Druid\Metadata\Structure $expectedResponse
+     * @param string                                 $dataSource
+     * @param string                                 $interval
+     * @param array                                  $intervalResponse
+     * @param array                                  $columnsResponse
+     * @param \Level23\Druid\Metadata\Structure|null $expectedResponse
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @dataProvider structureDataProvider
@@ -226,8 +226,8 @@ class MetadataBuilderTest extends TestCase
         string $interval,
         array $intervalResponse,
         array $columnsResponse,
-        $expectedResponse
-    ) {
+        ?Structure $expectedResponse
+    ): void {
 
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
 

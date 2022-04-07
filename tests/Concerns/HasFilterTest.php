@@ -131,6 +131,16 @@ class HasFilterTest extends TestCase
                 InvalidArgumentException::class,
             ],
             [
+                ['/'],
+                [],
+                InvalidArgumentException::class,
+            ],
+            [
+                ['', '', ''],
+                [],
+                InvalidArgumentException::class,
+            ],
+            [
                 ['19-02-2019 00:00:00', '20-02-2019 00:00:00', '21-02-2019 00:00:00'],
                 [],
                 InvalidArgumentException::class,
@@ -154,6 +164,12 @@ class HasFilterTest extends TestCase
     {
         if (!empty($expectException)) {
             $this->expectException($expectException);
+
+            $item = $given[0];
+            if( is_string($item)) {
+                $item =explode('/', $item);
+            }
+            $this->expectExceptionMessage( 'Invalid type given in the interval array. We cannot process ' );
         }
         /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->normalizeIntervals($given);
@@ -679,8 +695,21 @@ class HasFilterTest extends TestCase
 
                 $extractionBuilder->shouldReceive('javascript')
                     ->once()
-                    ->withArgs(function ($js) {
-                        $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
+                    ->withArgs(function ($js) use ($flags) {
+                        $this->assertEquals(trim('
+                    function(dimensionValue) { 
+                        var givenValue = ' . $flags . '; 
+                        var hi = 0x80000000; 
+                        var low = 0x7fffffff; 
+                        var hi1 = ~~(dimensionValue / hi); 
+                        var hi2 = ~~(givenValue / hi); 
+                        var low1 = dimensionValue & low; 
+                        var low2 = givenValue & low; 
+                        var h = hi1 & hi2; 
+                        var l = low1 & low2; 
+                        return (h*hi + l); 
+                    }
+                '), trim($js));
 
                         return true;
                     });
@@ -721,7 +750,7 @@ class HasFilterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testFlagsInFilterBuilder()
+    public function testFlagsInFilterBuilder(): void
     {
         $this->client = new DruidClient(['version' => '0.20.2']);
 

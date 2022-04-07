@@ -4,14 +4,13 @@ declare(strict_types=1);
 namespace Level23\Druid\Tasks;
 
 use InvalidArgumentException;
-use Level23\Druid\Types\InputFormat;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Dimensions\TimestampSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
-use Level23\Druid\InputSources\InlineInputSource;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\InputSources\InputSourceInterface;
+use Level23\Druid\InputFormats\InputFormatInterface;
 use Level23\Druid\Granularities\GranularityInterface;
 use Level23\Druid\Collections\SpatialDimensionCollection;
 
@@ -44,7 +43,7 @@ class IndexTask implements TaskInterface
 
     protected ?string $taskId;
 
-    protected string $inputFormat;
+    protected ?InputFormatInterface $inputFormat;
 
     protected ?TimestampSpec $timestampSpec;
 
@@ -53,17 +52,18 @@ class IndexTask implements TaskInterface
     /**
      * IndexTask constructor.
      *
-     * @param string                                                $dateSource
-     * @param \Level23\Druid\InputSources\InputSourceInterface      $inputSource
-     * @param \Level23\Druid\Granularities\GranularityInterface     $granularity
-     * @param \Level23\Druid\Transforms\TransformSpec|null          $transformSpec
-     * @param \Level23\Druid\TuningConfig\TuningConfig|null         $tuningConfig
-     * @param \Level23\Druid\Context\TaskContext|null               $context
-     * @param \Level23\Druid\Collections\AggregationCollection|null $aggregations
-     * @param array                                                 $dimensions
-     * @param string|null                                           $taskId
-     * @param string|null                                           $inputFormat
-     * @param \Level23\Druid\Dimensions\TimestampSpec|null          $timestampSpec
+     * @param string                                                     $dateSource
+     * @param \Level23\Druid\InputSources\InputSourceInterface           $inputSource
+     * @param \Level23\Druid\Granularities\GranularityInterface          $granularity
+     * @param \Level23\Druid\Transforms\TransformSpec|null               $transformSpec
+     * @param \Level23\Druid\TuningConfig\TuningConfig|null              $tuningConfig
+     * @param \Level23\Druid\Context\TaskContext|null                    $context
+     * @param \Level23\Druid\Collections\AggregationCollection|null      $aggregations
+     * @param array                                                      $dimensions
+     * @param string|null                                                $taskId
+     * @param \Level23\Druid\InputFormats\InputFormatInterface|null      $inputFormat
+     * @param \Level23\Druid\Dimensions\TimestampSpec|null               $timestampSpec
+     * @param \Level23\Druid\Collections\SpatialDimensionCollection|null $spatialDimensions
      */
     public function __construct(
         string $dateSource,
@@ -75,26 +75,20 @@ class IndexTask implements TaskInterface
         AggregationCollection $aggregations = null,
         array $dimensions = [],
         string $taskId = null,
-        string $inputFormat = null,
+        InputFormatInterface $inputFormat = null,
         TimestampSpec $timestampSpec = null,
         SpatialDimensionCollection $spatialDimensions = null
     ) {
-        $this->tuningConfig  = $tuningConfig;
-        $this->context       = $context;
-        $this->inputSource   = $inputSource;
-        $this->dateSource    = $dateSource;
-        $this->granularity   = $granularity;
-        $this->transformSpec = $transformSpec;
-        $this->aggregations  = $aggregations;
-        $this->dimensions    = $dimensions;
-        $this->taskId        = $taskId;
-        if ($inputFormat) {
-            $this->inputFormat = InputFormat::validate($inputFormat);
-        } elseif ($this->inputSource instanceof InlineInputSource) {
-            $this->inputFormat = $this->inputSource->getInputFormat();
-        } else {
-            $this->inputFormat = InputFormat::JSON;
-        }
+        $this->tuningConfig      = $tuningConfig;
+        $this->context           = $context;
+        $this->inputSource       = $inputSource;
+        $this->dateSource        = $dateSource;
+        $this->granularity       = $granularity;
+        $this->transformSpec     = $transformSpec;
+        $this->aggregations      = $aggregations;
+        $this->dimensions        = $dimensions;
+        $this->taskId            = $taskId;
+        $this->inputFormat       = $inputFormat;
         $this->timestampSpec     = $timestampSpec;
         $this->spatialDimensions = $spatialDimensions;
     }
@@ -126,9 +120,7 @@ class IndexTask implements TaskInterface
                 'ioConfig'   => [
                     'type'             => $this->parallel ? 'index_parallel' : 'index',
                     'inputSource'      => $this->inputSource->toArray(),
-                    'inputFormat'      => [
-                        'type' => $this->inputFormat,
-                    ],
+                    'inputFormat'      => $this->inputFormat ? $this->inputFormat->toArray() : null,
                     'appendToExisting' => $this->appendToExisting,
                 ],
             ],
@@ -183,11 +175,11 @@ class IndexTask implements TaskInterface
     }
 
     /**
-     * @param string $inputFormat
+     * @param InputFormatInterface $inputFormat
      *
      * @return IndexTask
      */
-    public function setInputFormat(string $inputFormat): IndexTask
+    public function setInputFormat(InputFormatInterface $inputFormat): IndexTask
     {
         $this->inputFormat = $inputFormat;
 

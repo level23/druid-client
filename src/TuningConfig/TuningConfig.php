@@ -44,8 +44,9 @@ class TuningConfig implements TuningConfigInterface
     /**
      * The task type
      *
+     * @param string $type
+     *
      * @return $this
-     * @var string
      * @required
      */
     public function setType(string $type): self
@@ -59,8 +60,9 @@ class TuningConfig implements TuningConfigInterface
      * Used in sharding. Determines how many rows are in each segment.
      * Default: 5000000
      *
+     * @param int $maxRowsPerSegment
+     *
      * @return $this
-     * @var int
      */
     public function setMaxRowsPerSegment(int $maxRowsPerSegment): self
     {
@@ -76,8 +78,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 1000000
      *
+     * @param int $maxRowsInMemory
+     *
      * @return $this
-     * @var int
      */
     public function setMaxRowsInMemory(int $maxRowsInMemory): self
     {
@@ -94,8 +97,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 1/6 of max JVM memory
      *
+     * @param int $maxBytesInMemory
+     *
      * @return $this
-     * @var int
      */
     public function setMaxBytesInMemory(int $maxBytesInMemory): self
     {
@@ -110,8 +114,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 20000000
      *
+     * @param int $maxTotalRows
+     *
      * @return $this
-     * @var int
      */
     public function setMaxTotalRows(int $maxTotalRows): self
     {
@@ -127,8 +132,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: null
      *
+     * @param int $numShards
+     *
      * @return $this
-     * @var int
      */
     public function setNumShards(int $numShards): self
     {
@@ -176,7 +182,8 @@ class TuningConfig implements TuningConfigInterface
      *
      * @see https://druid.apache.org/docs/latest/ingestion/native_tasks.html#indexspec
      *
-     * @var array
+     * @param array $indexSpec
+     *
      * @return $this
      */
     public function setIndexSpec(array $indexSpec): self
@@ -212,8 +219,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 0 (meaning one persist can be running concurrently with ingestion, and none can be queued up)
      *
+     * @param int $maxPendingPersists
+     *
      * @return $this
-     * @var int
      */
     public function setMaxPendingPersists(int $maxPendingPersists): self
     {
@@ -228,8 +236,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: false
      *
+     * @param bool $reportParseExceptions
+     *
      * @return $this
-     * @var bool
      */
     public function setReportParseExceptions(bool $reportParseExceptions): self
     {
@@ -260,8 +269,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 0
      *
+     * @param int $pushTimeout
+     *
      * @return $this
-     * @var int
      */
     public function setPushTimeout(int $pushTimeout): self
     {
@@ -275,8 +285,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: Not specified, the value from druid.peon.defaultSegmentWriteOutMediumFactory.type is used
      *
+     * @param string $segmentWriteOutMediumFactory
+     *
      * @return $this
-     * @var string
      */
     public function setSegmentWriteOutMediumFactory(string $segmentWriteOutMediumFactory): self
     {
@@ -311,8 +322,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 1
      *
+     * @param int $maxNumSubTasks
+     *
      * @return $this
-     * @var int
      */
     public function setMaxNumSubTasks(int $maxNumSubTasks): self
     {
@@ -326,8 +338,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 3
      *
+     * @param int $maxRetry
+     *
      * @return $this
-     * @var int
      */
     public function setMaxRetry(int $maxRetry): self
     {
@@ -370,8 +383,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 1000
      *
+     * @param int $taskStatusCheckPeriodMs
+     *
      * @return $this
-     * @var int
      */
     public function setTaskStatusCheckPeriodMs(int $taskStatusCheckPeriodMs): self
     {
@@ -385,8 +399,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: PT10S
      *
+     * @param string $chatHandlerTimeout
+     *
      * @return $this
-     * @var string
      */
     public function setChatHandlerTimeout(string $chatHandlerTimeout): self
     {
@@ -400,8 +415,9 @@ class TuningConfig implements TuningConfigInterface
      *
      * Default: 5
      *
+     * @param int $chatHandlerNumRetries
+     *
      * @return $this
-     * @var int
      */
     public function setChatHandlerNumRetries(int $chatHandlerNumRetries): self
     {
