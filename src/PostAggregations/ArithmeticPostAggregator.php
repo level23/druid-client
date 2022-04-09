@@ -58,7 +58,6 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
         $this->function              = ArithmeticFunction::validate($function);
         $this->fields                = $fields;
         $this->floatingPointOrdering = $floatingPointOrdering;
-        $this->function              = $function;
     }
 
     /**
