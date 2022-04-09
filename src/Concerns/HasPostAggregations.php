@@ -124,7 +124,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new QuantilePostAggregator(
-            $fields[0], /** @scrutinizer ignore-type */
+        /** @scrutinizer ignore-type */$fields[0],
             $as,
             $fraction
         );
@@ -159,7 +159,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new QuantilesPostAggregator(
-            $fields[0], /** @scrutinizer ignore-type */
+        /** @scrutinizer ignore-type */$fields[0],
             $as,
             $fractions
         );
@@ -198,7 +198,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new HistogramPostAggregator(
-            $fields[0], /** @scrutinizer ignore-type */
+        /** @scrutinizer ignore-type */ $fields[0],
             $as,
             $splitPoints,
             $numBins
@@ -234,7 +234,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new RankPostAggregator(
-            $fields[0], /** @scrutinizer ignore-type */
+        /** @scrutinizer ignore-type */ $fields[0],
             $as,
             $value
         );
@@ -271,7 +271,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new CdfPostAggregator(
-            $fields[0], /** @scrutinizer ignore-type */
+        /** @scrutinizer ignore-type */ $fields[0],
             $as,
             $splitPoints
         );
@@ -304,7 +304,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new SketchSummaryPostAggregator(
-            $fields[0], /** @scrutinizer ignore-type */
+        /** @scrutinizer ignore-type */ $fields[0],
             $as
         );
 
