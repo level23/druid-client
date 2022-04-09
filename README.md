@@ -98,6 +98,17 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Updated IndexTask (Native batch ingestion) to correct syntax as described in the manual.
 - Added support for PHP 8.
 
+**v1.2**
+
+- Added support for DataSketches aggregator `doublesSketch()`
+- Added DataSketches post aggregators:
+  - `quantile()`
+  - `quantiles()`
+  - `histogram()`
+  - `rank()`
+  - `cdf()`
+  - `sketchSummary()`
+
 **v2.0**
 
 - Updated minimal supported PHP version to 7.4, which allows us to use property type hinting, short function syntax and more.
@@ -124,9 +135,9 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
   - Inline
   - SQL
   - Combine
-- Updated DruidInputSource so that you now can also specify a filter on it. 
+- Updated DruidInputSource so that you now can also specify a filter on it.
 - Added `pollTaskStatus` in the client, which will poll until the status of a task is other than `RUNNING`.
-  The time between each check can be influenced by the `'polling_sleep_seconds'` config setting or 
+  The time between each check can be influenced by the `'polling_sleep_seconds'` config setting or
   the `DRUID_POLLING_SLEEP_SECONDS` .env setting for Laravel/Lumen applications.
 
 ## Migrating to v2
@@ -135,13 +146,14 @@ If you are currently using druid-client version 1.*, you should check for these 
 
 1. The `IndexTaskBuilder` constructor now only accepts an InputSourceInterface as second parameter.
 2. The `IndexTaskBuilder` has no `fromDataSource()` and `setFromDataSource()` methods anymore. These where related to the
-   IngestSegmentFirehose. 
+   IngestSegmentFirehose.
 3. IngestSegmentFirehose and FirehoseInterface are gone. You should now use the InputSource variant instead.
 4. We removed DRUID_VERSION and 'version' from the config. This was only used for the `whereFlags()` methods. If you want
    to fall back to the old javascript behaviour, you can now use the 4th parameter `$useJavascript`. If you do not use
    the javascript variant, no changes are required.
 5. You can remove the `'version'` settings from your config, as the `DRUID_VERSION` from your .env if you are using this.
-   However, if you do not remove them it will not break. 
+   However, if you do not remove them it will not break.
+
 
 ## Examples
 
@@ -182,7 +194,8 @@ for more information.
     - [javascript()](#javascript)
     - [hyperUnique()](#hyperunique)
     - [cardinality()](#cardinality)
-    - [distinctCount()](#distinctcount)    
+    - [distinctCount()](#distinctcount)
+    - [doublesSketch()](#doublesSketch)
   - [QueryBuilder: Filters](#querybuilder-filters)
     - [where()](#where)
     - [orWhere()](#orwhere)
@@ -238,6 +251,12 @@ for more information.
     - [longLeast() and doubleLeast()](#longleast-and-doubleleast)
     - [postJavascript()](#postjavascript)
     - [hyperUniqueCardinality()](#hyperuniquecardinality)
+    - [quantile()](#quantile)
+    - [quantiles()](#quantiles)
+    - [histogram()](#histogram)
+    - [rank()](#rank)
+    - [cdf()](#cdf)
+    - [sketchSummary()](#sketchsummary)
   - [QueryBuilder: Search Filters](#querybuilder-search-filters)
     - [searchContains()](#searchcontains)
     - [searchFragment()](#searchfragment)
@@ -1205,7 +1224,7 @@ The `cardinality()` aggregation method has the following parameters:
 
 The `distinctCount()` aggregation function computes the distinct number of occurrences of the given dimension.
 
-This method uses the Theta Sketch extension and it should be enabled to make use of this aggregator.  
+This method uses the Theta Sketch extension, and it should be enabled to make use of this aggregator.  
 For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
 
 Example:
@@ -1222,9 +1241,42 @@ The `distinctCount()` aggregation method has the following parameters:
 | string   | Optional              | `$as`            | "categoryCount"                              | The name which will be used in the output result                                                                                                                               |
 | int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches.  |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                        |
-  
-  
-  
+
+
+#### `doublesSketch()`
+
+The `doublesSketch()` aggregation function will create a DoubleSketch data field which can be used by various 
+post aggregation methods to do extra calculations over the collected data.
+
+DoubleSketch is a mergeable streaming algorithm to estimate the distribution of values, and approximately answer 
+queries about the rank of a value, probability mass function of the distribution (PMF) or histogram, 
+cumulative distribution function (CDF), and quantiles (median, min, max, 95th percentile and such).
+
+This method uses the datasketches extension, and it should be enabled to make use of this aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
+
+Example:
+```php
+// Get the 95th percentile of the salaries per country.
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    ->quantile('quantile95', 'salaryData', 0.95) // this uses the data which was collected 
+```
+
+To view more information about the doubleSketch data, see the `sketchSummary()` post aggregation method.
+
+The `doublesSketch()` aggregation method has the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**       | **Example**    | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|----------|-----------------------|--------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$metric`          | `"salary"`     | The metric where you want to do calculations over.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| string   | Optional              | `$as`              | `"salaryData"` | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| int      | Optional              | `$sizeAndAccuracy` | 128            | Parameter that determines the accuracy and size of the sketch. Higher k means higher accuracy but more space to store sketches. Must be a power of 2 from 2 to 32768. See accuracy information in the DataSketches documentation for details.                                                                                                                                                                                                                  |
+| int      | Optional              | `$maxStreamLength` | 1000000000     | This parameter is a temporary solution to avoid a known issue. It may be removed in a future release after the bug is fixed. This parameter defines the maximum number of items to store in each sketch. If a sketch reaches the limit, the query can throw IllegalStateException. To workaround this issue, increase the maximum stream length. See accuracy information in the DataSketches documentation for how many bytes are required per stream length. |
+
+
 ## QueryBuilder: Filters
 
 With filters you can filter on certain values. The following filters are available:
@@ -2401,6 +2453,207 @@ The `hyperUniqueCardinality()` post aggregator has the following arguments:
 |----------|-----------------------|---------------------|-------------|-------------------------------------------------------------------------------------|
 | string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
 | string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
+
+#### `quantile()`
+
+The `quantile()` post aggregator is used to return an approximation to the value that would be preceded by a 
+given fraction of a hypothetical sorted version of the input stream. 
+
+This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Get the 95th percentile of the salaries per country.
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    ->quantile('quantile95', 'salaryData', 0.95) // this uses the data which was collected 
+```
+
+The `quantile()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**      | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                           |
+|----------------|-----------------------|-------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`             | myResult    | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
+| string/Closure | Required              | `$fieldOrClosure` | myField     | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
+| float          | Required              | `$fraction`       | 0.95        | Fractional position in the hypothetical sorted stream, number from 0 to 1 inclusive                                                                                                                                                                                                                                                                                       |
+
+#### `quantiles()`
+
+The `quantiles()` post aggregator returns an array of quantiles corresponding to a given array of fractions.
+
+This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Get the 95th percentile of the salaries per country.
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    ->quantiles('quantile95', 'salaryData', [0.8, 0.95]) // this uses the data which was collected 
+```
+
+The `quantiles()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
+|----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
+| string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
+| array          | Required              | `$fraction`       | `[0.8, 0.95]` | Array of fractional positions in the hypothetical sorted stream, number from 0 to 1 inclusive                                                                                                                                                                                                                                                                             |
+
+
+#### `histogram()`
+
+The `histogram()` post aggregator returns an approximation to the histogram given an array of split points that define 
+the histogram bins or a number of bins (not both). 
+An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals. 
+The definition of an interval is inclusive of the left split point and exclusive of the right split point. 
+If the number of bins is specified instead of split points, the interval between the minimum and maximum values is 
+divided into the given number of equally-spaced bins.
+
+This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Create our builder
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    // This would spit the data in "buckets". 
+    // It will return an array with the number of people earning, 1000 or less, 
+    // the number of people earning 1001 to 1500, etc.
+    ->histogram('salaryGroups', 'salaryData', [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]);  
+```
+
+The `histogram()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
+|----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
+| string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                         |
+| int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` as defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
+
+The parameters `$splitPoints` and `$numBins` are mutually exclusive.
+
+#### `rank()`
+
+The `rank()` post aggregator returns an approximation to the rank of a given value that is the fraction 
+of the distribution less than that value.
+
+This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Create our builder
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    // This will get the ranking of the value 2500 compared to all available "salary" values in the resultset.
+    // The result will be a float between 0 and 1.
+    ->rank('mySalaryRank', 'salaryData', 2500);  
+```
+
+The `rank()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
+|----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
+| string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                         |
+| int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` as defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
+
+The parameters `$splitPoints` and `$numBins` are mutually exclusive.
+
+#### `cdf()`
+
+CDF stands for Cumulative Distribution Function. 
+
+The `cdf()` post aggregator returns an approximation to the Cumulative Distribution Function given an array of 
+split points that define the edges of the bins. An array of m unique, monotonically increasing split points divide 
+the real number line into m+1 consecutive disjoint intervals. 
+The definition of an interval is inclusive of the left split point and exclusive of the right split point. 
+The resulting array of fractions can be viewed as ranks of each split point with one additional rank that is always 1.
+
+This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Create our builder
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    ->cdf('salaryGroups', 'salaryData', [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]);
+```
+
+The `cdf()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
+|----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
+| string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                         |
+
+
+#### `sketchSummary()`
+
+CDF stands for Cumulative Distribution Function.
+
+The `sketchSummary()` post aggregator returns a summary of the sketch that can be used for debugging. 
+This is the result of calling toString() method.
+
+This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example:
+```php
+// Create our builder
+$builder = $client->query('dataSource')
+    ->interval('now - 1 hour', 'now')
+    ->select('country')
+    ->doublesSketch('salary', 'salaryData') // this collects the data 
+    ->sketchSummary('debug', 'salaryData');
+```
+
+The `sketchSummary()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**      | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                          |
+|----------------|-----------------------|-------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`             | myResult    | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                        |
+| string/Closure | Required              | `$fieldOrClosure` | myField     | Field which will be used that refers to a DoublesSketch (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
+
+Example output:
+
+```
+### Quantiles HeapUpdateDoublesSketch SUMMARY: 
+   Empty                        : false
+   Direct, Capacity bytes       : false, 
+   Estimation Mode              : true
+   K                            : 128
+   N                            : 28,025
+   Levels (Needed, Total, Valid): 7, 7, 5
+   Level Bit Pattern            : 1101101
+   BaseBufferCount              : 121
+   Combined Buffer Capacity     : 1,152
+   Retained Items               : 761
+   Compact Storage Bytes        : 6,120
+   Updatable Storage Bytes      : 9,248
+   Normalized Rank Error        : 1.406%
+   Normalized Rank Error (PMF)  : 1.711%
+   Min Value                    : 0.000000e+00
+   Max Value                    : 8.000000e-03
+### END SKETCH SUMMARY
+```
 
 ## QueryBuilder: Search Filters
 

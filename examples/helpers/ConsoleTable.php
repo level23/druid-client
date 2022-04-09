@@ -14,14 +14,18 @@ class ConsoleTable
         // Find longest string in each column
         $columns = [];
         foreach ($data as $row_key => $row) {
-            foreach ($row as $cell_key => $cell) {
+            foreach ($row as $cellKey => $cell) {
+                if (is_array($cell)) {
+                    $cell = implode(', ', $cell);
+                }
+
                 $valueLength = strlen(((string)$cell));
-                $nameLength  = strlen(($cell_key));
+                $nameLength  = strlen(($cellKey));
 
                 $length = $nameLength > $valueLength ? $nameLength : $valueLength;
 
-                if (empty($columns[$cell_key]) || $columns[$cell_key] < $length) {
-                    $columns[$cell_key] = $length;
+                if (empty($columns[$cellKey]) || $columns[$cellKey] < $length) {
+                    $columns[$cellKey] = $length;
                 }
             }
         }
@@ -47,10 +51,10 @@ class ConsoleTable
         $table .= $this->buildRow();
 
         // Build the header
-        foreach ($data as $row_key => $row) {
+        foreach ($data as $row) {
             $table .= '| ';
-            foreach ($row as $cell_key => $cell) {
-                $table .= str_pad((string)$cell_key, $this->columns[$cell_key]) . ' | ';
+            foreach ($row as $cellKey => $cell) {
+                $table .= str_pad((string)$cellKey, $this->columns[$cellKey]) . ' | ';
             }
             $table .= PHP_EOL;
 
@@ -69,11 +73,15 @@ class ConsoleTable
         $table = $this->buildHeader($data);
 
         // Output table, padding columns
-        foreach ($data as $i => $row) {
+        foreach ($data as $row) {
             $table .= '| ';
 
             foreach ($this->columns as $column => $length) {
-                $table .= str_pad((string)($row[$column] ?? ''), $length) . ' | ';
+                $value = $row[$column] ?? '';
+                if (is_array($value)) {
+                    $value = implode(', ', $value);
+                }
+                $table .= str_pad((string)($value), $length) . ' | ';
             }
             $table .= PHP_EOL;
         }
