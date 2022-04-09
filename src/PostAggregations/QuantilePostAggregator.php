@@ -5,20 +5,11 @@ namespace Level23\Druid\PostAggregations;
 
 class QuantilePostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var PostAggregatorInterface
-     */
-    protected $dimension;
+    protected PostAggregatorInterface $dimension;
 
-    /**
-     * @var float
-     */
-    protected $fraction;
+    protected float $fraction;
 
     /**
      * QuantilePostAggregator constructor.

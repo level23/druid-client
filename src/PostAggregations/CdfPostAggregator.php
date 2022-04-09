@@ -5,20 +5,14 @@ namespace Level23\Druid\PostAggregations;
 
 class CdfPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
+
+    protected PostAggregatorInterface $dimension;
 
     /**
-     * @var PostAggregatorInterface
+     * @var float[]
      */
-    protected $dimension;
-
-    /**
-     * @var array
-     */
-    protected $splitPoints;
+    protected array $splitPoints;
 
     /**
      * QuantilePostAggregator constructor.
@@ -26,7 +20,7 @@ class CdfPostAggregator implements PostAggregatorInterface
      * @param PostAggregatorInterface $dimension    Post aggregator that refers to a DoublesSketch (fieldAccess or
      *                                              another post aggregator)
      * @param string                  $outputName   The name as it will be used in our result.
-     * @param array                   $splitPoints  Array of split points
+     * @param float[]                 $splitPoints  Array of split points
      */
     public function __construct(PostAggregatorInterface $dimension, string $outputName, array $splitPoints)
     {

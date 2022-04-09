@@ -5,25 +5,13 @@ namespace Level23\Druid\PostAggregations;
 
 class HistogramPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var PostAggregatorInterface
-     */
-    protected $dimension;
+    protected PostAggregatorInterface $dimension;
 
-    /**
-     * @var array|null
-     */
-    protected $splitPoints;
+    protected ?array $splitPoints = null;
 
-    /**
-     * @var int|null
-     */
-    protected $numBins;
+    protected ?int $numBins = null;
 
     /**
      * HistogramPostAggregator constructor.

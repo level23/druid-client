@@ -10,14 +10,14 @@ class DoublesSketchAggregator implements AggregatorInterface
      *
      * @var string
      */
-    protected $metricName;
+    protected string $metricName;
 
     /**
      * A String for the output (result) name of the calculation.
      *
      * @var string
      */
-    protected $outputName;
+    protected string $outputName;
 
     /**
      * Parameter that determines the accuracy and size of the sketch. Higher k means higher accuracy but more space to
@@ -26,7 +26,7 @@ class DoublesSketchAggregator implements AggregatorInterface
      *
      * @var int|null
      */
-    protected $sizeAndAccuracy;
+    protected ?int $sizeAndAccuracy = null;
 
     /**
      * This parameter is a temporary solution to avoid a known issue. It may be removed in a future release after the
@@ -37,7 +37,7 @@ class DoublesSketchAggregator implements AggregatorInterface
      *
      * @var int|null
      */
-    protected $maxStreamLength;
+    protected ?int $maxStreamLength = null;
 
     /**
      * @param string   $metricName      A String for the name of the input field (can contain sketches or raw numeric
