@@ -124,7 +124,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new QuantilePostAggregator(
-            $fields[0],
+            $fields[0], /** @scrutinizer ignore-type */
             $as,
             $fraction
         );
@@ -159,7 +159,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new QuantilesPostAggregator(
-            $fields[0],
+            $fields[0], /** @scrutinizer ignore-type */
             $as,
             $fractions
         );
@@ -198,7 +198,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new HistogramPostAggregator(
-            $fields[0],
+            $fields[0], /** @scrutinizer ignore-type */
             $as,
             $splitPoints,
             $numBins
@@ -234,7 +234,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new RankPostAggregator(
-            $fields[0],
+            $fields[0], /** @scrutinizer ignore-type */
             $as,
             $value
         );
@@ -271,7 +271,7 @@ trait HasPostAggregations
         }
 
         $this->postAggregations[] = new CdfPostAggregator(
-            $fields[0],
+            $fields[0], /** @scrutinizer ignore-type */
             $as,
             $splitPoints
         );
@@ -303,7 +303,10 @@ trait HasPostAggregations
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
-        $this->postAggregations[] = new SketchSummaryPostAggregator($fields[0], $as);
+        $this->postAggregations[] = new SketchSummaryPostAggregator(
+            $fields[0], /** @scrutinizer ignore-type */
+            $as
+        );
 
         return $this;
     }

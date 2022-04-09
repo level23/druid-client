@@ -76,11 +76,11 @@ class DoublesSketchAggregator implements AggregatorInterface
             'fieldName' => $this->metricName,
         ];
 
-        if ($this->sizeAndAccuracy) {
+        if ($this->sizeAndAccuracy !== null) {
             $result['k'] = $this->sizeAndAccuracy;
         }
 
-        if ($this->maxStreamLength) {
+        if ($this->maxStreamLength !== null) {
             $result['maxStreamLength'] = $this->maxStreamLength;
         }
 

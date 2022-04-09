@@ -59,11 +59,11 @@ class HistogramPostAggregator implements PostAggregatorInterface
             'field' => $this->dimension->toArray(),
         ];
 
-        if ($this->splitPoints) {
+        if ($this->splitPoints !== null) {
             $result['splitPoints'] = $this->splitPoints;
         }
 
-        if ($this->numBins) {
+        if ($this->numBins !== null) {
             $result['numBins'] = $this->numBins;
         }
 
