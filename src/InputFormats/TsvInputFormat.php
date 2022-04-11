@@ -8,10 +8,10 @@ class TsvInputFormat extends CsvInputFormat
     protected ?string $delimiter;
 
     /**
-     * @param string|null $delimiter             A custom delimiter for data values.
-     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param array|null  $columns               Specifies the columns of the data. The columns should be in the same
      *                                           order with the columns of your data.
+     * @param string|null $delimiter             A custom delimiter for data values.
+     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param bool|null   $findColumnsFromHeader If this is set, the task will find the column names from the header
      *                                           row. Note that skipHeaderRows will be applied before finding column
      *                                           names from the header. For example, if you set skipHeaderRows to 2 and
@@ -21,14 +21,14 @@ class TsvInputFormat extends CsvInputFormat
      * @param int         $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function __construct(
+        array $columns = null,
         string $delimiter = null,
         string $listDelimiter = null,
-        array $columns = null,
         bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ) {
         $this->delimiter = $delimiter;
-        parent::__construct($listDelimiter, $columns, $findColumnsFromHeader, $skipHeaderRows);
+        parent::__construct($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);
     }
 
     /**

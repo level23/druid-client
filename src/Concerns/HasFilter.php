@@ -85,7 +85,7 @@ trait HasFilter
                 throw new InvalidArgumentException('Given $value is invalid in combination with operator ' . $operator);
             }
 
-            /** @var string|int|null $value */
+            /** @var string|int $value */
 
             if ($operator == '=') {
                 $filter = new SelectorFilter(
@@ -128,10 +128,16 @@ trait HasFilter
                     new RegexFilter($filterOrDimensionOrClosure, (string)$value, $this->getExtraction($extraction))
                 );
             } elseif ($operator == 'search') {
+                if (is_int($value)) {
+                    $value = (string)$value;
+                }
                 $filter = new SearchFilter(
                     $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
                 );
             } elseif ($operator == 'not search') {
+                if (is_int($value)) {
+                    $value = (string)$value;
+                }
                 $filter = new NotFilter(new SearchFilter(
                     $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
                 ));

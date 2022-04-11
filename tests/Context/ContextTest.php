@@ -94,19 +94,6 @@ class ContextTest extends TestCase
         }
     }
 
-    public function testSettingValueUsingConstructor(): void
-    {
-        $context = \Mockery::mock(GroupByV2QueryContext::class)->makePartial();
-
-        $context->makePartial();
-        $context->shouldReceive('setTimeout')
-            ->once()
-            ->with(6271);
-
-        $response = $context->toArray();
-        $this->assertEquals(6271, $response['timeout']);
-    }
-
     public function testNonExistingProperty(): void
     {
         $context = new GroupByV2QueryContext(['something' => 1]);

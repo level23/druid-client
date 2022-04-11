@@ -34,10 +34,13 @@ use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Filters\ExpressionFilter;
 use Level23\Druid\Dimensions\DimensionBuilder;
+use Level23\Druid\Filters\SpatialRadiusFilter;
 use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Filters\SpatialPolygonFilter;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Filters\ColumnComparisonFilter;
 use Level23\Druid\Extractions\SubstringExtraction;
+use Level23\Druid\Filters\SpatialRectangularFilter;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 class HasFilterTest extends TestCase
@@ -166,10 +169,10 @@ class HasFilterTest extends TestCase
             $this->expectException($expectException);
 
             $item = $given[0];
-            if( is_string($item)) {
-                $item =explode('/', $item);
+            if (is_string($item)) {
+                $item = explode('/', $item);
             }
-            $this->expectExceptionMessage( 'Invalid type given in the interval array. We cannot process ' );
+            $this->expectExceptionMessage('Invalid type given in the interval array. We cannot process ');
         }
         /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->normalizeIntervals($given);
@@ -184,12 +187,7 @@ class HasFilterTest extends TestCase
      */
     protected function getFilterMock(string $class)
     {
-        $builder = new Mockery\Generator\MockConfigurationBuilder();
-        $builder->setInstanceMock(true);
-        $builder->setName($class);
-        $builder->addTarget(FilterInterface::class);
-
-        return Mockery::mock($builder);
+        return $this->getConstructorMock($class, FilterInterface::class);
     }
 
     /**
@@ -296,6 +294,52 @@ class HasFilterTest extends TestCase
         } else {
             $this->assertInstanceOf(OrFilter::class, $this->builder->getFilter());
         }
+    }
+
+    /**
+     * @testWith ["search"]
+     *           ["SeArCh"]
+     *           ["="]
+     *           ["!="]
+     *           ["not search"]
+     *           ["not SeArCH"]
+     *
+     * @param string $operator
+     *
+     * @return void
+     */
+    public function testWhereWithArrayValue(string $operator): void
+    {
+        $operator = strtolower($operator);
+        if (!in_array($operator, ['search', 'not search'])) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Given $value is invalid in combination with operator ' . $operator);
+        }
+
+        $result = $this->builder->where('field', $operator, ['value1', 'value2']);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @testWith ["search"]
+     *           ["not search"]
+     *
+     * @param string $operator
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereSearchWithInt(string $operator): void
+    {
+        $search = $this->getFilterMock(SearchFilter::class);
+        $search->shouldReceive('__construct')
+            ->once()
+            ->with('field', '12', false, null);
+
+        $result = $this->builder->where('field', $operator, 12);
+
+        $this->assertEquals($this->builder, $result);
     }
 
     public function testWhereMultipleAnd(): void
@@ -1015,6 +1059,126 @@ class HasFilterTest extends TestCase
         $response = $this->builder->orWhereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
 
         $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testWhereSpatialRectangular(): void
+    {
+        $filter = $this->getFilterMock(SpatialRectangularFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], [49.5, 52.5]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addAndFilter')
+            ->once();
+
+        $this->builder->whereSpatialRectangular('location', [48.0, 51.0], [49.5, 52.5]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testWhereSpatialRadius(): void
+    {
+        $filter = $this->getFilterMock(SpatialRadiusFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], 0.5);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addAndFilter')
+            ->once();
+
+        $this->builder->whereSpatialRadius('location', [48.0, 51.0], 0.5);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testWhereSpatialPolygon(): void
+    {
+        $filter = $this->getFilterMock(SpatialPolygonFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [1, 2], [3, 4]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addAndFilter')
+            ->once();
+
+        $this->builder->whereSpatialPolygon('location', [1, 2], [3, 4]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testOrWhereSpatialPolygon(): void
+    {
+        $filter = $this->getFilterMock(SpatialPolygonFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [1, 2], [3, 4]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addOrFilter')
+            ->once();
+
+        $this->builder->orWhereSpatialPolygon('location', [1, 2], [3, 4]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testOrWhereSpatialRadius(): void
+    {
+        $filter = $this->getFilterMock(SpatialRadiusFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], 0.5);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addOrFilter')
+            ->once();
+
+        $this->builder->orWhereSpatialRadius('location', [48.0, 51.0], 0.5);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testOrWhereSpatialRectangular(): void
+    {
+        $filter = $this->getFilterMock(SpatialRectangularFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], [49.5, 52.5]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addOrFilter')
+            ->once();
+
+        $this->builder->orWhereSpatialRectangular('location', [48.0, 51.0], [49.5, 52.5]);
     }
 
     /**

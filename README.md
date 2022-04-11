@@ -283,6 +283,13 @@ for more information.
     - [S3InputSource](#s3inputsource)
     - [HdfsInputSource](#hdfsinputsource)
     - [HttpInputSource](#httpinputsource)
+  - [Input Formats](#input-formats)
+    - [csvFormat()](#csvformat)
+    - [tsvFormat()](#tsvformat)
+    - [jsonFormat()](#jsonformat)
+    - [orcFormat()](#orcformat)
+    - [parquetFormat()](#parquetformat)
+    - [protobufFormat()](#protobufformat)
 
 # Documentation
 
@@ -3908,3 +3915,34 @@ $inputSource = new \Level23\Druid\InputSources\CombiningInputSource([
 $indexTaskBuilder = $client->index('combinedData', $inputSource);
 // $indexTaskBuilder-> ...
 ```
+
+
+## Input Formats
+
+For most input sources you also need to specify the format of the incoming data. You can do this with an input format.
+You can choose several input formats in your TaskBuilder. Below they are explained.
+
+## `csvFormat()`
+
+The `csvFormat()` allows you to specify how your csv data is build.
+
+This method allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**      | **Description**                                                        |
+|----------|-----------------------|--------------|------------------|------------------------------------------------------------------------|
+| array    | Required              | `$columns`   | `["name", "age"]` | List with other import sources which should be processed all together. |
+
+
+## `tsvFormat()`
+
+
+## `jsonFormat()`
+
+
+## `orcFormat()`
+
+
+## `parquetFormat()`
+
+
+## `protobufFormat()`

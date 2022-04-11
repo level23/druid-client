@@ -40,7 +40,7 @@ class SpatialRadiusFilter implements FilterInterface
      */
     public function toArray(): array
     {
-        $result = [
+        return [
             'type'      => 'spatial',
             'dimension' => $this->dimension,
             'bound'     => [
@@ -49,7 +49,5 @@ class SpatialRadiusFilter implements FilterInterface
                 'radius' => $this->radius,
             ],
         ];
-
-        return $result;
     }
 }

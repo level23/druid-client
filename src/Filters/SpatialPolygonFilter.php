@@ -46,7 +46,7 @@ class SpatialPolygonFilter implements FilterInterface
      */
     public function toArray(): array
     {
-        $result = [
+        return [
             'type'      => 'spatial',
             'dimension' => $this->dimension,
             'bound'     => [
@@ -55,7 +55,5 @@ class SpatialPolygonFilter implements FilterInterface
                 'ordinate' => $this->ordinate,
             ],
         ];
-
-        return $result;
     }
 }

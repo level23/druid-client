@@ -11,6 +11,8 @@ use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Dimensions\TimestampSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\InputFormats\CsvInputFormat;
+use Level23\Druid\Dimensions\SpatialDimension;
 use Level23\Druid\InputSources\HttpInputSource;
 use Level23\Druid\InputFormats\JsonInputFormat;
 use Level23\Druid\InputSources\DruidInputSource;
@@ -19,18 +21,20 @@ use Level23\Druid\Transforms\ExpressionTransform;
 use Level23\Druid\Collections\TransformCollection;
 use Level23\Druid\Granularities\UniformGranularity;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\Collections\SpatialDimensionCollection;
 
 class IndexTaskTest extends TestCase
 {
     /**
-     * @testWith [true, true, true, true, true, null]
-     *           [false, false, false, false, false, "task-1337"]
+     * @testWith [true, true, true, true, true, true, null]
+     *           [false, false, false, false, false, false, "task-1337"]
      *
      * @param bool        $withAggregations
      * @param bool        $withTransformSpec
      * @param bool        $withAppend
      * @param bool        $withTuning
      * @param bool        $withContext
+     * @param bool        $withSpatialDimensions
      * @param string|null $taskId
      *
      * @throws \ReflectionException
@@ -41,6 +45,7 @@ class IndexTaskTest extends TestCase
         bool $withAppend,
         bool $withTuning,
         bool $withContext,
+        bool $withSpatialDimensions,
         string $taskId = null
     ): void {
         $dataSource = 'people';
@@ -64,6 +69,10 @@ class IndexTaskTest extends TestCase
 
         $taskContext = $withContext ? new TaskContext(['priority' => 75]) : null;
 
+        $spatialDimensions = $withSpatialDimensions ? new SpatialDimensionCollection(new SpatialDimension(
+            'location', ['lat', 'long']
+        )) : null;
+
         $aggregations = $withAggregations ? new AggregationCollection(
             new SumAggregator('age')
         ) : null;
@@ -85,13 +94,20 @@ class IndexTaskTest extends TestCase
             $aggregations,
             $dimensions,
             $taskId,
-            $inputFormat
+            $inputFormat,
+            null,
+            $spatialDimensions
         );
 
         $timestampSpec = new TimestampSpec('timestamp', 'auto');
         $task->setTimestampSpec($timestampSpec);
 
         $this->assertFalse($this->getProperty($task, 'appendToExisting'));
+        $this->assertEquals($inputFormat, $this->getProperty($task, 'inputFormat'));
+
+        $inputFormat = new CsvInputFormat(['name', 'age']);
+        $task->setInputFormat($inputFormat);
+        $this->assertEquals($inputFormat, $this->getProperty($task, 'inputFormat'));
 
         $task->setAppendToExisting($withAppend);
 
@@ -117,6 +133,10 @@ class IndexTaskTest extends TestCase
                 ],
             ],
         ];
+
+        if ($spatialDimensions) {
+            $expected['spec']['dataSchema']['dimensionsSpec']['spatialDimensions'] = $spatialDimensions->toArray();
+        }
 
         if ($taskId) {
             $expected['id'] = $taskId;

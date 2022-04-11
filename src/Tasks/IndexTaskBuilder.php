@@ -210,12 +210,12 @@ class IndexTaskBuilder extends TaskBuilder
      * @param int         $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function csvFormat(
-        string $listDelimiter = null,
         array $columns = null,
+        string $listDelimiter = null,
         bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ): self {
-        $this->inputFormat = new CsvInputFormat($listDelimiter, $columns, $findColumnsFromHeader, $skipHeaderRows);
+        $this->inputFormat = new CsvInputFormat($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);
 
         return $this;
     }
@@ -223,10 +223,10 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Specify that we use TSV as input format.
      *
-     * @param string|null $delimiter             A custom delimiter for data values.
-     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param array|null  $columns               Specifies the columns of the data. The columns should be in the same
      *                                           order with the columns of your data.
+     * @param string|null $delimiter             A custom delimiter for data values.
+     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param bool|null   $findColumnsFromHeader If this is set, the task will find the column names from the header
      *                                           row. Note that skipHeaderRows will be applied before finding column
      *                                           names from the header. For example, if you set skipHeaderRows to 2 and
@@ -236,16 +236,16 @@ class IndexTaskBuilder extends TaskBuilder
      * @param int         $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function tsvFormat(
+        array $columns = null,
         string $delimiter = null,
         string $listDelimiter = null,
-        array $columns = null,
         bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ): self {
         $this->inputFormat = new TsvInputFormat(
+            $columns,
             $delimiter,
             $listDelimiter,
-            $columns,
             $findColumnsFromHeader,
             $skipHeaderRows
         );
@@ -380,7 +380,8 @@ class IndexTaskBuilder extends TaskBuilder
             $this->dimensions,
             $this->taskId,
             $this->inputFormat,
-            $this->timestampSpec
+            $this->timestampSpec,
+            $this->spatialDimensions
         );
 
         if ($this->parallel) {

@@ -14,9 +14,9 @@ class CsvInputFormat implements InputFormatInterface
     protected int $skipHeaderRows;
 
     /**
-     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param array|null  $columns               Specifies the columns of the data. The columns should be in the same
      *                                           order with the columns of your data.
+     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param bool|null   $findColumnsFromHeader If this is set, the task will find the column names from the header
      *                                           row. Note that skipHeaderRows will be applied before finding column
      *                                           names from the header. For example, if you set skipHeaderRows to 2 and
@@ -26,8 +26,8 @@ class CsvInputFormat implements InputFormatInterface
      * @param int         $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function __construct(
-        string $listDelimiter = null,
         array $columns = null,
+        string $listDelimiter = null,
         bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ) {

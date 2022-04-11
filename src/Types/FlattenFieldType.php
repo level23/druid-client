@@ -42,7 +42,7 @@ final class FlattenFieldType extends Enum
         if (!FlattenFieldType::isValidValue($flattenFieldType)) {
             throw new InvalidArgumentException(
                 'The given flatten field type is invalid: ' . $flattenFieldType . '. ' .
-                'Allowed are: ' . implode(',', FlattenFieldType::values())
+                'Allowed are: ' . implode(', ', FlattenFieldType::values())
             );
         }
 
