@@ -29,6 +29,7 @@ use Level23\Druid\Aggregations\JavascriptAggregator;
 use Level23\Druid\Aggregations\HyperUniqueAggregator;
 use Level23\Druid\Aggregations\CardinalityAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
+use Level23\Druid\Aggregations\DoublesSketchAggregator;
 
 class HasAggregationsTest extends TestCase
 {
@@ -72,6 +73,46 @@ class HasAggregationsTest extends TestCase
 
                 return $aggregator;
             });
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @testWith [null, null]
+     *           [256, null]
+     *           [null, 1000000]
+     *           [128, 1000000000]
+     *
+     * @param int|null $sizeAndAccuracy
+     * @param int|null $maxStreamLength
+     */
+    public function testDoubleSketch(?int $sizeAndAccuracy, ?int $maxStreamLength): void
+    {
+        $this->getAggregationMock(DoublesSketchAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('myMetric', 'myOutput', $sizeAndAccuracy, $maxStreamLength);
+
+        $result = $this->builder->doublesSketch('myMetric', 'myOutput', $sizeAndAccuracy, $maxStreamLength);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testDoubleSketchDefaults(): void
+    {
+        $this->getAggregationMock(DoublesSketchAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('myMetric', 'myMetric', null, null);
+
+        $result = $this->builder->doublesSketch('myMetric');
+
+        $this->assertEquals($this->builder, $result);
     }
 
     /**
@@ -596,7 +637,6 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -633,7 +673,6 @@ class HasAggregationsTest extends TestCase
         $response = $this->builder->any('age');
         $this->assertEquals($this->builder, $response);
     }
-
 
     public function testLongAny(): void
     {

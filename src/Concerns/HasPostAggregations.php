@@ -6,15 +6,21 @@ namespace Level23\Druid\Concerns;
 use Closure;
 use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
+use Level23\Druid\PostAggregations\CdfPostAggregator;
+use Level23\Druid\PostAggregations\RankPostAggregator;
 use Level23\Druid\PostAggregations\LeastPostAggregator;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ConstantPostAggregator;
 use Level23\Druid\PostAggregations\GreatestPostAggregator;
+use Level23\Druid\PostAggregations\QuantilePostAggregator;
 use Level23\Druid\PostAggregations\PostAggregationsBuilder;
 use Level23\Druid\PostAggregations\PostAggregatorInterface;
+use Level23\Druid\PostAggregations\QuantilesPostAggregator;
+use Level23\Druid\PostAggregations\HistogramPostAggregator;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
+use Level23\Druid\PostAggregations\SketchSummaryPostAggregator;
 use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
 
 trait HasPostAggregations
@@ -86,6 +92,220 @@ trait HasPostAggregations
             '/',
             $this->buildFields($fieldOrClosure),
             true
+        );
+
+        return $this;
+    }
+
+    /**
+     * This returns an approximation to the value that would be preceded by a given fraction of a hypothetical sorted
+     * version of the input stream.
+     *
+     * To use this aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string         $as             The name which will be used in the output
+     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     *                                       another post aggregator). When a string is given, we assume that it refers
+     *                                       to another field in the query. If you give a closure, it will receive an
+     *                                       instance of the PostAggregationsBuilder. With this builder you can build
+     *                                       another post-aggregation or use constants as input for this method.
+     * @param float          $fraction       Fractional position in the hypothetical sorted stream, number from 0 to 1
+     *                                       inclusive
+     *
+     * @return $this
+     */
+    public function quantile(string $as, $fieldOrClosure, float $fraction): self
+    {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new QuantilePostAggregator(
+        /** @scrutinizer ignore-type */$fields[0],
+            $as,
+            $fraction
+        );
+
+        return $this;
+    }
+
+    /**
+     * This returns an approximation to the value that would be preceded by a given fraction of a hypothetical sorted
+     * version of the input stream. This returns an array of quantiles corresponding to a given array of fractions.
+     *
+     * To use this aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string         $as             The name which will be used in the output
+     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     *                                       another post aggregator). When a string is given, we assume that it refers
+     *                                       to another field in the query. If you give a closure, it will receive an
+     *                                       instance of the PostAggregationsBuilder. With this builder you can build
+     *                                       another post-aggregation or use constants as input for this method.
+     * @param float[]        $fractions      Array of Fractional positions in the hypothetical sorted stream, number
+     *                                       from 0 to 1 inclusive
+     *
+     * @return $this
+     */
+    public function quantiles(string $as, $fieldOrClosure, array $fractions): self
+    {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new QuantilesPostAggregator(
+        /** @scrutinizer ignore-type */$fields[0],
+            $as,
+            $fractions
+        );
+
+        return $this;
+    }
+
+    /**
+     * This returns an approximation to the histogram given an array of split points that define the histogram bins or
+     * a number of bins (not both). An array of m unique, monotonically increasing split points divide the real number
+     * line into m+1 consecutive disjoint intervals. The definition of an interval is inclusive of the left split point
+     * and exclusive of the right split point. If the number of bins is specified instead of split points, the interval
+     * between the minimum and maximum values is divided into the given number of equally-spaced bins.
+     *
+     * To use this aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string                $as             The name which will be used in the output
+     * @param string|Closure        $fieldOrClosure Field which will be used that refers to a DoublesSketch
+     *                                              (fieldAccess or another post aggregator). When a string is given,
+     *                                              we assume that it refers to another field in the query. If you give
+     *                                              a closure, it will receive an instance of the
+     *                                              PostAggregationsBuilder. With this builder you can build another
+     *                                              post-aggregation or use constants as input for this method.
+     * @param array<int|float>|null $splitPoints    Array of split points (optional)
+     * @param int|null              $numBins        Number of bins (optional, defaults to 10)
+     *
+     * @return $this
+     */
+    public function histogram(string $as, $fieldOrClosure, ?array $splitPoints = null, ?int $numBins = null): self
+    {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new HistogramPostAggregator(
+        /** @scrutinizer ignore-type */ $fields[0],
+            $as,
+            $splitPoints,
+            $numBins
+        );
+
+        return $this;
+    }
+
+    /**
+     * This returns an approximation to the rank of a given value that is the fraction of the distribution less than
+     * that value.
+     *
+     * To use this aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string         $as             The name which will be used in the output
+     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     *                                       another post aggregator). When a string is given, we assume that it refers
+     *                                       to another field in the query. If you give a closure, it will receive an
+     *                                       instance of the PostAggregationsBuilder. With this builder you can build
+     *                                       another post-aggregation or use constants as input for this method.
+     * @param float|int      $value          This returns an approximation to the rank of a given value that is the
+     *                                       fraction of the distribution less than that value.
+     *
+     * @return $this
+     */
+    public function rank(string $as, $fieldOrClosure, $value): self
+    {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new RankPostAggregator(
+        /** @scrutinizer ignore-type */ $fields[0],
+            $as,
+            $value
+        );
+
+        return $this;
+    }
+
+    /**
+     * This returns an approximation to the Cumulative Distribution Function given an array of split points that define
+     * the edges of the bins. An array of m unique, monotonically increasing split points divide the real number line
+     * into m+1 consecutive disjoint intervals. The definition of an interval is inclusive of the left split point and
+     * exclusive of the right split point. The resulting array of fractions can be viewed as ranks of each split point
+     * with one additional rank that is always 1.
+     *
+     * To use this aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string         $as             The name which will be used in the output
+     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     *                                       another post aggregator). When a string is given, we assume that it refers
+     *                                       to another field in the query. If you give a closure, it will receive an
+     *                                       instance of the PostAggregationsBuilder. With this builder you can build
+     *                                       another post-aggregation or use constants as input for this method.
+     * @param array          $splitPoints    Array of split points
+     *
+     * @return $this
+     */
+    public function cdf(string $as, $fieldOrClosure, array $splitPoints): self
+    {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new CdfPostAggregator(
+        /** @scrutinizer ignore-type */ $fields[0],
+            $as,
+            $splitPoints
+        );
+
+        return $this;
+    }
+
+    /**
+     * This returns a summary of the sketch that can be used for debugging. This is the result of calling toString()
+     * method.
+     *
+     * To use this aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string         $as             The name which will be used in the output
+     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     *                                       another post aggregator). When a string is given, we assume that it refers
+     *                                       to another field in the query. If you give a closure, it will receive an
+     *                                       instance of the PostAggregationsBuilder. With this builder you can build
+     *                                       another post-aggregation or use constants as input for this method.
+     *
+     * @return $this
+     */
+    public function sketchSummary(string $as, $fieldOrClosure): self
+    {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new SketchSummaryPostAggregator(
+        /** @scrutinizer ignore-type */ $fields[0],
+            $as
         );
 
         return $this;
@@ -364,8 +584,8 @@ trait HasPostAggregations
      *
      * @see https://druid.apache.org/docs/latest/querying/post-aggregations.html#hyperunique-cardinality-post-aggregator
      *
-     * @param string $hyperUniqueField The name field value of the hyperUnique aggregator
-     * @param string $as               The output name
+     * @param string      $hyperUniqueField The name field value of the hyperUnique aggregator
+     * @param string|null $as               The output name
      *
      * @return $this
      */

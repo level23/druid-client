@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Aggregations;
 
-use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
 
 class AnyAggregator extends MethodAggregator
@@ -28,12 +27,7 @@ class AnyAggregator extends MethodAggregator
         string $type = 'long',
         int $maxStringBytes = null
     ) {
-        $type = strtolower($type);
-        if (!in_array($type, ['long', 'float', 'double'])) {
-            throw new InvalidArgumentException(
-                'Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"'
-            );
-        }
+        $type = DataType::validate($type);
 
         $this->type           = $type;
         $this->metricName     = $metricName;

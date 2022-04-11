@@ -23,6 +23,7 @@ use Level23\Druid\Aggregations\AggregatorInterface;
 use Level23\Druid\Aggregations\JavascriptAggregator;
 use Level23\Druid\Aggregations\HyperUniqueAggregator;
 use Level23\Druid\Aggregations\CardinalityAggregator;
+use Level23\Druid\Aggregations\DoublesSketchAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 trait HasAggregations
@@ -66,6 +67,48 @@ trait HasAggregations
         $this->aggregations[] = $this->buildFilteredAggregation(
             new SumAggregator($metric, $as, $type),
             $filterBuilder
+        );
+
+        return $this;
+    }
+
+    /**
+     * DoublesSketch is a mergeable streaming algorithm to estimate the distribution of values, and approximately
+     * answer queries about the rank of a value, probability mass function of the distribution (PMF) or histogram,
+     * cumulative distribution function (CDF), and quantiles (median, min, max, 95th percentile and such). See
+     * Quantiles Sketch Overview.
+     *s
+     * To make use of this aggregator you have to have the datasketches module enabled in your druid server:
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     *
+     * @param string   $metric          A String for the name of the input field (can contain sketches or raw numeric
+     *                                  values).
+     * @param string   $as              A String for the output (result) name of the calculation.
+     * @param int|null $sizeAndAccuracy Parameter that determines the accuracy and size of the sketch. Higher k means
+     *                                  higher accuracy but more space to store sketches. Must be a power of 2 from 2
+     *                                  to 32768. See accuracy information in the DataSketches documentation for
+     *                                  details.
+     * @param int|null $maxStreamLength This parameter is a temporary solution to avoid a known issue. It may be
+     *                                  removed in a future release after the bug is fixed. This parameter defines the
+     *                                  maximum number of items to store in each sketch. If a sketch reaches the limit,
+     *                                  the query can throw IllegalStateException. To workaround this issue, increase
+     *                                  the maximum stream length. See accuracy information in the DataSketches
+     *                                  documentation for how many bytes are required per stream length.
+     *
+     * @return $this
+     */
+    public function doublesSketch(
+        string $metric,
+        string $as = '',
+        ?int $sizeAndAccuracy = null,
+        ?int $maxStreamLength = null
+    ): self {
+        $this->aggregations[] = new DoublesSketchAggregator(
+            $metric,
+            $as ?: $metric,
+            $sizeAndAccuracy,
+            $maxStreamLength
         );
 
         return $this;
@@ -437,13 +480,18 @@ trait HasAggregations
      * @param string        $as
      * @param string        $type
      * @param int|null      $maxStringBytes For string types only. Optional, defaults to 1024.
-     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
-     *                                     "any" function to the records which match with the given filter.
+     * @param \Closure|null $filterBuilder  A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                      "any" function to the records which match with the given filter.
      *
      * @return $this
      */
-    public function any(string $metric, string $as = '', $type = DataType::LONG, int $maxStringBytes = null, Closure $filterBuilder = null)
-    {
+    public function any(
+        string $metric,
+        string $as = '',
+        $type = DataType::LONG,
+        int $maxStringBytes = null,
+        Closure $filterBuilder = null
+    ) {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new AnyAggregator($metric, $as, $type, $maxStringBytes),
             $filterBuilder
@@ -519,13 +567,17 @@ trait HasAggregations
      * @param string        $metric
      * @param string        $as
      * @param int|null      $maxStringBytes Optional, defaults to 1024
-     * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
-     *                                     "any" function to the records which match with the given filter.
+     * @param \Closure|null $filterBuilder  A closure which receives a FilterBuilder. When given, we will only apply the
+     *                                      "any" function to the records which match with the given filter.
      *
      * @return $this
      */
-    public function stringAny(string $metric, string $as = '', int $maxStringBytes = null, Closure $filterBuilder = null)
-    {
+    public function stringAny(
+        string $metric,
+        string $as = '',
+        int $maxStringBytes = null,
+        Closure $filterBuilder = null
+    ) {
         return $this->any($metric, $as, DataType::STRING, $maxStringBytes, $filterBuilder);
     }
 
