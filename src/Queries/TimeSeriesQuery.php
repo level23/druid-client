@@ -7,6 +7,7 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Responses\TimeSeriesQueryResponse;
 use Level23\Druid\Collections\VirtualColumnCollection;
@@ -14,7 +15,7 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 class TimeSeriesQuery implements QueryInterface
 {
-    protected string $dataSource;
+    protected DataSourceInterface $dataSource;
 
     protected IntervalCollection $intervals;
 
@@ -26,9 +27,9 @@ class TimeSeriesQuery implements QueryInterface
 
     protected ?AggregationCollection $aggregations = null;
 
-    protected ?PostAggregationCollection $postAggregations= null;
+    protected ?PostAggregationCollection $postAggregations = null;
 
-    protected ?ContextInterface $context= null;
+    protected ?ContextInterface $context = null;
 
     protected bool $descending = false;
 
@@ -47,12 +48,15 @@ class TimeSeriesQuery implements QueryInterface
     /**
      * TimeSeriesQuery constructor.
      *
-     * @param string             $dataSource
-     * @param IntervalCollection $intervals
-     * @param string             $granularity
+     * @param DataSourceInterface $dataSource
+     * @param IntervalCollection  $intervals
+     * @param string              $granularity
      */
-    public function __construct(string $dataSource, IntervalCollection $intervals, string $granularity = 'all')
-    {
+    public function __construct(
+        DataSourceInterface $dataSource,
+        IntervalCollection $intervals,
+        string $granularity = 'all'
+    ) {
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;
         $this->granularity = Granularity::validate($granularity);
@@ -61,13 +65,13 @@ class TimeSeriesQuery implements QueryInterface
     /**
      * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|bool|int>
      */
     public function toArray(): array
     {
         $result = [
             'queryType'   => 'timeseries',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'descending'  => $this->descending,
             'intervals'   => $this->intervals->toArray(),
             'granularity' => $this->granularity,
@@ -143,7 +147,7 @@ class TimeSeriesQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,array<mixed>|int|string> $response
      *
      * @return TimeSeriesQueryResponse
      */

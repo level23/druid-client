@@ -8,7 +8,7 @@ class TopNQueryResponse extends QueryResponse
     /**
      * Return the data in a "normalized" way, so we can easily iterate over it
      *
-     * @return array
+     * @return array<array<mixed>>
      */
     public function data(): array
     {
@@ -16,6 +16,9 @@ class TopNQueryResponse extends QueryResponse
             return [];
         }
 
-        return array_map(fn($row) => $row['result'], $this->response)[0];
+        return array_map(function ($row) {
+            /** @var array<string,array<array<mixed>>> $row */
+            return $row['result'];
+        }, $this->response)[0];
     }
 }

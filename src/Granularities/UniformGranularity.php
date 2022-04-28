@@ -32,7 +32,7 @@ class UniformGranularity extends AbstractGranularity implements GranularityInter
     /**
      * Return the granularity in array format so that we can use it in a druid request.
      *
-     * @return array
+     * @return array<string,string|string[]|bool>
      */
     public function toArray(): array
     {

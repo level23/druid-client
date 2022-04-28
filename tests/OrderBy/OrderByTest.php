@@ -11,6 +11,9 @@ use Level23\Druid\Types\OrderByDirection;
 
 class OrderByTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [

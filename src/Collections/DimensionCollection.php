@@ -5,6 +5,9 @@ namespace Level23\Druid\Collections;
 
 use Level23\Druid\Dimensions\DimensionInterface;
 
+/**
+ * @extends \Level23\Druid\Collections\BaseCollection<DimensionInterface>
+ */
 class DimensionCollection extends BaseCollection
 {
     /**
@@ -14,7 +17,7 @@ class DimensionCollection extends BaseCollection
      */
     public function __construct(DimensionInterface ...$dimensions)
     {
-        $this->items = $dimensions;
+        $this->items = array_values($dimensions);
     }
 
     /**
@@ -30,7 +33,7 @@ class DimensionCollection extends BaseCollection
     /**
      * Return an array representation of our items
      *
-     * @return array
+     * @return array<array<string,string|array<mixed>>>
      */
     public function toArray(): array
     {

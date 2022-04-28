@@ -11,7 +11,7 @@ interface LimitInterface
     /**
      * Return the limit in array format so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string>>|int>
      */
     public function toArray(): array;
 

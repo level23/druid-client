@@ -35,66 +35,48 @@ class DruidClient
      */
     protected array $config = [
 
-        /**
-         * Domain + optional port or the druid router. If this is set, it will be used for the broker,
-         * coordinator and overlord.
-         */
+        // Domain + optional port or the druid router. If this is set, it will be used for the broker,
+        // coordinator and overlord.
         'router_url'            => '',
 
-        /**
-         * Domain + optional port. Don't add the api path like "/druid/v2"
-         */
+        // Domain + optional port. Don't add the api path like "/druid/v2"
         'broker_url'            => '',
 
-        /**
-         * Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
-         */
+        // Domain + optional port. Don't add the api path like "/druid/coordinator/v1"
         'coordinator_url'       => '',
 
-        /**
-         * Domain + optional port. Don't add the api path like "/druid/indexer/v1"
-         */
+        // Domain + optional port. Don't add the api path like "/druid/indexer/v1"
         'overlord_url'          => '',
 
-        /**
-         * The maximum duration in seconds of a druid query. If the response takes longer, we will close the connection.
-         */
+        // The maximum duration in seconds of a druid query. If the response takes longer, we will close the connection.
         'timeout'               => 60,
 
-        /**
-         * The maximum duration in seconds of connecting to the druid instance.
-         */
+        // The maximum duration in seconds of connecting to the druid instance.
         'connect_timeout'       => 10,
 
-        /**
-         * The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
-         * execute the query in worst case 3 times.
-         *
-         * First time is the normal attempt to execute the query.
-         * Then we do the FIRST retry.
-         * Then we do the SECOND retry.
-         */
+        // The number of times we will try to do a retry in case of a failure. So if retries is 2, we will try to
+        // execute the query in worst case 3 times.
+        //
+        // First time is the normal attempt to execute the query.
+        // Then we do the FIRST retry.
+        // Then we do the SECOND retry.
         'retries'               => 2,
 
-        /**
-         * When a query fails to be executed, this is the delay before a query is retried.
-         * Default is 500 ms, which is 0.5 seconds.
-         *
-         * Set to 0 to disable they delay between retries.
-         */
+        // When a query fails to be executed, this is the delay before a query is retried.
+        // Default is 500 ms, which is 0.5 seconds.
+        //
+        // Set to 0 to disable they delay between retries.
         'retry_delay_ms'        => 500,
 
-        /**
-         * Amount of time in seconds to wait till we try and poll a task status again.
-         */
+        // Amount of time in seconds to wait till we try and poll a task status again.
         'polling_sleep_seconds' => 2,
     ];
 
     /**
      * DruidService constructor.
      *
-     * @param array                   $config The configuration for this client.
-     * @param \GuzzleHttp\Client|null $client
+     * @param array<string,string|int> $config The configuration for this client.
+     * @param \GuzzleHttp\Client|null  $client
      */
     public function __construct(array $config, GuzzleClient $client = null)
     {
@@ -137,7 +119,7 @@ class DruidClient
      *
      * @param \Level23\Druid\Queries\QueryInterface $druidQuery
      *
-     * @return array
+     * @return array<string|int,array<mixed>|string|int>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -164,10 +146,12 @@ class DruidClient
      */
     public function executeTask(TaskInterface $task): string
     {
+        /** @var array<string,array<mixed>|int|string> $payload */
         $payload = $task->toArray();
 
         $this->log('Executing druid task', ['task' => $payload]);
 
+        /** @var string[] $result */
         $result = $this->executeRawRequest(
             'post',
             $this->config('overlord_url') . '/druid/indexer/v1/task',
@@ -182,11 +166,11 @@ class DruidClient
     /**
      * Execute a raw druid request and return the response.
      *
-     * @param string $method POST or GET
-     * @param string $url    The url where to send the "query" to.
-     * @param array  $data   The data to POST or GET.
+     * @param string                                $method POST or GET
+     * @param string                                $url    The url where to send the "query" to.
+     * @param array<string,string|int|array<mixed>> $data   The data to POST or GET.
      *
-     * @return array
+     * @return array<string,array<mixed>|string|int>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -221,7 +205,10 @@ class DruidClient
             if ($retries++ < $configRetries) {
                 $this->log(
                     'Query failed due to a server exception. Doing a retry. Retry attempt ' . $retries . ' of ' . $configRetries,
-                    [$exception->getMessage(), $exception->getTraceAsString()]
+                    [
+                        'message' => $exception->getMessage(),
+                        'trace'   => $exception->getTraceAsString(),
+                    ]
                 );
 
                 if ($configDelay > 0) {
@@ -243,6 +230,7 @@ class DruidClient
                 );
             }
 
+            /** @var array<string,string> $error */
             $error = $this->parseResponse($response, $data);
 
             // When it's not a formatted error response from druid we rethrow the original exception
@@ -329,10 +317,10 @@ class DruidClient
     }
 
     /**
-     * @param \Psr\Http\Message\ResponseInterface $response
-     * @param array                               $query
+     * @param \Psr\Http\Message\ResponseInterface   $response
+     * @param array<string,string|int|array<mixed>> $query
      *
-     * @return array
+     * @return array<string,array<mixed>|string|int>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     protected function parseResponse(ResponseInterface $response, array $query = []): array
@@ -344,6 +332,10 @@ class DruidClient
                 throw new InvalidArgumentException(
                     'json_decode error: ' . json_last_error_msg()
                 );
+            }
+
+            if (!is_array($row)) {
+                throw new InvalidArgumentException('We failed to parse response!');
             }
         } catch (InvalidArgumentException $exception) {
             $this->log('We failed to decode druid response. ');
@@ -358,14 +350,14 @@ class DruidClient
             );
         }
 
-        return (array)$row;
+        return $row;
     }
 
     /**
      * Log a message
      *
-     * @param string $message
-     * @param array  $context
+     * @param string                                $message
+     * @param array<string,array<mixed>|string|int> $context
      */
     protected function log(string $message, array $context = []): void
     {

@@ -27,6 +27,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
         return $property->getValue($object);
     }
 
+    /**
+     * @param array<int|string,mixed> $expectedSubset
+     * @param array<int|string,mixed> $actualArray
+     *
+     * @return void
+     */
     public function assertArrayContainsSubset(array $expectedSubset, array $actualArray): void
     {
         foreach ($expectedSubset as $key => $value) {

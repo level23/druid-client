@@ -18,7 +18,7 @@ class BucketExtraction implements ExtractionInterface
     /**
      * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|int>
      */
     public function toArray(): array
     {

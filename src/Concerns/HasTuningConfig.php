@@ -15,7 +15,7 @@ trait HasTuningConfig
     /**
      * Set the tuning config.
      *
-     * @param array|TuningConfig $tuningConfig
+     * @param array<string,string|int|bool|array<string,string|int>>|TuningConfig $tuningConfig
      *
      * @return $this
      */

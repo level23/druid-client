@@ -11,6 +11,9 @@ use Level23\Druid\Extractions\ExtractionInterface;
 
 class DimensionTest extends TestCase
 {
+    /**
+     * @return array<array<string|null|bool|RegexExtraction>>
+     */
     public function dataProvider(): array
     {
         $extraction = new RegexExtraction("^([a-z]+)$");

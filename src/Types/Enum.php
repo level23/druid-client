@@ -9,25 +9,25 @@ use ReflectionException;
 abstract class Enum
 {
     /**
-     * @var null|array
+     * @var array<string,array<string,scalar>>
      */
-    protected static ?array $constCacheArray = null;
+    protected static array $constCacheArray = [];
 
     /**
-     * @return array
+     * @return array<string,scalar>
      * @codeCoverageIgnore
      */
     protected static function getConstants(): array
     {
-        if (self::$constCacheArray == null) {
-            self::$constCacheArray = [];
-        }
         $calledClass = get_called_class();
         if (!array_key_exists($calledClass, self::$constCacheArray)) {
             try {
                 $reflect = new ReflectionClass($calledClass);
 
-                self::$constCacheArray[$calledClass] = $reflect->getConstants();
+                /** @var array<string,scalar> $values */
+                $values = $reflect->getConstants();
+                
+                self::$constCacheArray[$calledClass] = $values;
             } catch (ReflectionException $e) {
                 return [];
             }
@@ -51,7 +51,7 @@ abstract class Enum
     /**
      * Return all values
      *
-     * @return array
+     * @return array<scalar>
      */
     public static function values(): array
     {

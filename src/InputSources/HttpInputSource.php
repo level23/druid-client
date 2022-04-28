@@ -5,21 +5,24 @@ namespace Level23\Druid\InputSources;
 
 class HttpInputSource implements InputSourceInterface
 {
+    /**
+     * @var string[]
+     */
     protected array $uris;
 
     protected ?string $username;
 
     /**
-     * @var null|string|array
+     * @var null|string|string[]
      */
     protected $password;
 
     /**
      * HttpInputSource constructor.
      *
-     * @param array             $uris
-     * @param string|null       $username
-     * @param null|string|array $password
+     * @param string[]             $uris
+     * @param string|null          $username
+     * @param null|string|string[] $password
      */
     public function __construct(array $uris, ?string $username = null, $password = null)
     {
@@ -28,6 +31,9 @@ class HttpInputSource implements InputSourceInterface
         $this->password = $password;
     }
 
+    /**
+     * @return array<string,string|string[]>
+     */
     public function toArray(): array
     {
         $response = [

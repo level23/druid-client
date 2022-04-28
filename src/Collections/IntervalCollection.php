@@ -5,6 +5,9 @@ namespace Level23\Druid\Collections;
 
 use Level23\Druid\Interval\IntervalInterface;
 
+/**
+ * @extends \Level23\Druid\Collections\BaseCollection<IntervalInterface>
+ */
 class IntervalCollection extends BaseCollection
 {
     /**
@@ -14,13 +17,13 @@ class IntervalCollection extends BaseCollection
      */
     public function __construct(IntervalInterface ...$intervals)
     {
-        $this->items = $intervals;
+        $this->items = array_values($intervals);
     }
 
     /**
      * Return an array representation of our items
      *
-     * @return array
+     * @return array<int,string>
      */
     public function toArray(): array
     {

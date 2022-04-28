@@ -9,6 +9,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 
 /**
  * Class ScanQuery
@@ -18,7 +19,7 @@ use Level23\Druid\Collections\IntervalCollection;
  */
 class ScanQuery implements QueryInterface
 {
-    protected string $dataSource;
+    protected DataSourceInterface $dataSource;
 
     protected IntervalCollection $intervals;
 
@@ -73,7 +74,7 @@ class ScanQuery implements QueryInterface
      */
     protected array $columns = [];
 
-    public function __construct(string $dataSource, IntervalCollection $intervals)
+    public function __construct(DataSourceInterface $dataSource, IntervalCollection $intervals)
     {
         $this->dataSource = $dataSource;
         $this->intervals  = $intervals;
@@ -82,13 +83,13 @@ class ScanQuery implements QueryInterface
     /**
      * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|int|bool>
      */
     public function toArray(): array
     {
         $result = [
             'queryType'    => 'scan',
-            'dataSource'   => $this->dataSource,
+            'dataSource'   => $this->dataSource->toArray(),
             'intervals'    => $this->intervals->toArray(),
             'resultFormat' => $this->resultFormat,
             'columns'      => $this->columns,
@@ -128,7 +129,7 @@ class ScanQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,string|int|array<mixed>> $response
      *
      * @return ScanQueryResponse
      */

@@ -7,18 +7,15 @@ class ConstantPostAggregator implements PostAggregatorInterface
 {
     protected string $outputName;
 
-    /**
-     * @var int|float
-     */
-    protected $numericValue;
+    protected float $numericValue;
 
     /**
      * ConstantPostAggregator constructor.
      *
-     * @param string    $outputName
-     * @param int|float $numericValue
+     * @param string $outputName
+     * @param float  $numericValue
      */
-    public function __construct(string $outputName, $numericValue)
+    public function __construct(string $outputName, float $numericValue)
     {
         $this->outputName   = $outputName;
         $this->numericValue = $numericValue;
@@ -27,7 +24,7 @@ class ConstantPostAggregator implements PostAggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|float>
      */
     public function toArray(): array
     {

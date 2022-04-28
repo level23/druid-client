@@ -9,6 +9,9 @@ class FlattenSpec
 {
     protected bool $useFieldDiscovery = true;
 
+    /**
+     * @var array<array<string,string>>
+     */
     protected array $fields = [];
 
     public function __construct(bool $useFieldDiscovery = true)
@@ -56,7 +59,7 @@ class FlattenSpec
     /**
      * Return the FlattenSpec so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,bool|array<array<string,string>>>
      */
     public function toArray(): array
     {

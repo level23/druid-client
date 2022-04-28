@@ -18,10 +18,10 @@ class CsvInputFormatTest extends TestCase
      *           ["\\", null, null, 0]
      *
      *
-     * @param string|null $listDelimiter
-     * @param array|null  $columns
-     * @param bool|null   $findColumnsFromHeader
-     * @param int         $skipHeaderRows
+     * @param string|null   $listDelimiter
+     * @param string[]|null $columns
+     * @param bool|null     $findColumnsFromHeader
+     * @param int           $skipHeaderRows
      *
      * @return void
      */

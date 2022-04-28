@@ -8,7 +8,7 @@ class ArbitraryGranularity extends AbstractGranularity implements GranularityInt
     /**
      * Return the granularity in array format so that we can use it in a druid request.
      *
-     * @return array
+     * @return array<string,string|string[]|bool>
      */
     public function toArray(): array
     {

@@ -6,7 +6,7 @@ namespace Level23\Druid\Extractions;
 class CascadeExtraction implements ExtractionInterface
 {
     /**
-     * @var array|\Level23\Druid\Extractions\ExtractionInterface[]
+     * @var \Level23\Druid\Extractions\ExtractionInterface[]
      */
     protected array $extractions = [];
 
@@ -33,7 +33,7 @@ class CascadeExtraction implements ExtractionInterface
     /**
      * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|int|bool|array<mixed>>>>
      */
     public function toArray(): array
     {

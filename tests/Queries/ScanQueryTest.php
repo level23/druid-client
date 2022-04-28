@@ -11,6 +11,7 @@ use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\Collections\IntervalCollection;
 
 class ScanQueryTest extends TestCase
@@ -29,14 +30,13 @@ class ScanQueryTest extends TestCase
             new Interval('12-02-2018', '13-02-2018')
         );
 
-        $query = new ScanQuery(
-            'wikipedia',
-            $intervals
-        );
+        $dataSource = new TableDataSource('wikipedia');
+
+        $query = new ScanQuery($dataSource, $intervals);
 
         $expected = [
             'queryType'    => 'scan',
-            'dataSource'   => 'wikipedia',
+            'dataSource'   => $dataSource->toArray(),
             'intervals'    => $intervals->toArray(),
             'resultFormat' => ScanQueryResultFormat::NORMAL_LIST,
             'columns'      => [],

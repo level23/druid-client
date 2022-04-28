@@ -24,7 +24,7 @@ class ExpressionFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

@@ -68,6 +68,9 @@ class DoublesSketchAggregator implements AggregatorInterface
         $this->maxStreamLength = $maxStreamLength;
     }
 
+    /**
+     * @return array<string,string|int>
+     */
     public function toArray(): array
     {
         $result = [

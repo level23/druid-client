@@ -1,18 +1,14 @@
 parameters:
     level: max
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
-    reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: true
+    #reportUnmatchedIgnoredErrors: false
     ignoreErrors:
+      - '#Cannot call method getName\(\) on ReflectionType\|null.#'
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
       - '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
-      - '#Cannot call method getName\(\) on ReflectionType\|null.#'
-      - '#has no return typehint specified#'
       - '#expects class-string<Throwable>, string given.#'
-      - '#expects Level23\\Druid\\Interval\\Interval(Interface)?, Level23\\Druid\\Interval\\Interval\|null given.#'
-      - '#Property Level23\\Druid\\DruidClient::\$config has no typehint specified.#'
-      - '#Function GuzzleHttp\\json_(en|de)code not found.#'
-      - '#PHPDoc tag @throws with type (.*) is not subtype of Throwable#'
+    #  - '#expects Level23\\Druid\\Interval\\Interval(Interface)?, Level23\\Druid\\Interval\\Interval\|null given.#'
+    #  - '#PHPDoc tag @throws with type (.*) is not subtype of Throwable#'
     excludePaths:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php

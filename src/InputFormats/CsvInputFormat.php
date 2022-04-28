@@ -7,14 +7,17 @@ class CsvInputFormat implements InputFormatInterface
 {
     protected ?string $listDelimiter;
 
-    protected ?array $columns;
+    /**
+     * @var string[]|null
+     */
+    protected ?array $columns = null;
 
     protected ?bool $findColumnsFromHeader;
 
     protected int $skipHeaderRows;
 
     /**
-     * @param array|null  $columns               Specifies the columns of the data. The columns should be in the same
+     * @param string[]|null  $columns               Specifies the columns of the data. The columns should be in the same
      *                                           order with the columns of your data.
      * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
      * @param bool|null   $findColumnsFromHeader If this is set, the task will find the column names from the header
@@ -40,7 +43,7 @@ class CsvInputFormat implements InputFormatInterface
     /**
      * Return the CsvInputFormat so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|string[]|int|bool>
      */
     public function toArray(): array
     {

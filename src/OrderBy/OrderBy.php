@@ -34,7 +34,7 @@ class OrderBy implements OrderByInterface
     /**
      * Return the order by in array format so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

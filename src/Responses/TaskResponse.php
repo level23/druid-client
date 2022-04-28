@@ -6,6 +6,11 @@ namespace Level23\Druid\Responses;
 class TaskResponse extends QueryResponse
 {
     /**
+     * @var array<string,array<string,string|int>>
+     */
+    protected array $response;
+
+    /**
      * We will return an array like this:
      *
      * [
@@ -31,11 +36,14 @@ class TaskResponse extends QueryResponse
      *
      * or an empty array when no status was found.
      *
-     * @return array
+     * @return array<string,string|int|array<mixed>>
      */
     public function data(): array
     {
-        return $this->response['status'] ?? [];
+        /** @var array<string,string|int|array<mixed>> $data */
+        $data = $this->response['status'] ?? [];
+
+        return $data;
     }
 
     /**
@@ -45,7 +53,11 @@ class TaskResponse extends QueryResponse
      */
     public function getId(): string
     {
-        return $this->response['status']['id'] ?? '';
+        if (isset($this->response['status']['id'])) {
+            return (string)$this->response['status']['id'];
+        }
+
+        return '';
     }
 
     /**
@@ -55,7 +67,11 @@ class TaskResponse extends QueryResponse
      */
     public function getStatusCode(): string
     {
-        return $this->response['status']['statusCode'] ?? '';
+        if (isset($this->response['status']['statusCode'])) {
+            return (string)$this->response['status']['statusCode'];
+        }
+
+        return '';
     }
 
     /**
@@ -65,7 +81,11 @@ class TaskResponse extends QueryResponse
      */
     public function getStatus(): string
     {
-        return $this->response['status']['status'] ?? '';
+        if (isset($this->response['status']['status'])) {
+            return (string)$this->response['status']['status'];
+        }
+
+        return '';
     }
 
     /**
@@ -75,6 +95,9 @@ class TaskResponse extends QueryResponse
      */
     public function getErrorMsg(): string
     {
-        return $this->response['status']['errorMsg'] ?? '';
+        if(isset($this->response['status']['errorMsg'])) {
+            return (string) $this->response['status']['errorMsg'];
+        }
+        return '';
     }
 }

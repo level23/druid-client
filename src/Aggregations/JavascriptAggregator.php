@@ -15,6 +15,9 @@ class JavascriptAggregator implements AggregatorInterface
 {
     protected string $outputName;
 
+    /**
+     * @var string[]
+     */
     protected array $fieldNames = [];
 
     protected string $fnAggregate;
@@ -28,11 +31,11 @@ class JavascriptAggregator implements AggregatorInterface
      *
      * @see https://druid.apache.org/docs/latest/querying/aggregations.html#javascript-aggregator
      *
-     * @param array  $fieldNames
-     * @param string $outputName
-     * @param string $fnAggregate
-     * @param string $fnCombine
-     * @param string $fnReset
+     * @param string[] $fieldNames
+     * @param string   $outputName
+     * @param string   $fnAggregate
+     * @param string   $fnCombine
+     * @param string   $fnReset
      */
     public function __construct(
         array $fieldNames,
@@ -51,7 +54,7 @@ class JavascriptAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|string[]>
      */
     public function toArray(): array
     {

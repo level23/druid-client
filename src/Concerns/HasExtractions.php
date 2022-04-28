@@ -53,20 +53,22 @@ trait HasExtractions
     }
 
     /**
-     * @param array       $map                 A map with items. The key is the value of the given dimension. It will
-     *                                         be replaced by the value.
-     * @param bool|string $keepMissingValue    When true, we will keep values which are not known in the lookup
-     *                                         function. The original value will be kept. If false, the missing items
-     *                                         will not be kept in the result set. If this is a string, we will keep
-     *                                         the missing values and replace them with the string value.
-     * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
-     *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           Whether this list is injective. Injective lookups should include
-     *                                         all possible keys that may show up in your dataset, and should also map
-     *                                         all keys to unique values. This matters because non-injective lookups
-     *                                         may map different keys to the same value, which must be accounted for
-     *                                         during aggregation, lest query results contain two result values that
-     *                                         should have been aggregated into one.
+     * @param array<string,string> $map              A map with items. The key is the value of the given dimension. It
+     *                                               will be replaced by the value.
+     * @param bool|string          $keepMissingValue When true, we will keep values which are not known in the lookup
+     *                                               function. The original value will be kept. If false, the missing
+     *                                               items will not be kept in the result set. If this is a string, we
+     *                                               will keep the missing values and replace them with the string
+     *                                               value.
+     * @param bool                 $optimize         When set to true, we allow the optimization layer (which will run
+     *                                               on the broker) to rewrite the extraction filter if needed.
+     * @param bool|null            $injective        Whether this list is injective. Injective lookups should include
+     *                                               all possible keys that may show up in your dataset, and should
+     *                                               also map all keys to unique values. This matters because
+     *                                               non-injective lookups may map different keys to the same value,
+     *                                               which must be accounted for during aggregation, lest query results
+     *                                               contain two result values that should have been aggregated into
+     *                                               one.
      *
      * @return $this
      */
@@ -195,8 +197,8 @@ trait HasExtractions
     /**
      * SearchQueryExtraction
      *
-     * @param string|array $valueOrValues
-     * @param bool         $caseSensitive
+     * @param string|string[] $valueOrValues
+     * @param bool            $caseSensitive
      *
      * @return $this
      */

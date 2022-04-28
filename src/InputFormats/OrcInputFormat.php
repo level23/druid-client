@@ -5,9 +5,6 @@ namespace Level23\Druid\InputFormats;
 
 class OrcInputFormat implements InputFormatInterface
 {
-    /**
-     * @var \Level23\Druid\InputFormats\FlattenSpec|null
-     */
     protected ?FlattenSpec $flattenSpec;
 
     protected ?bool $binaryAsString;
@@ -27,7 +24,7 @@ class OrcInputFormat implements InputFormatInterface
     /**
      * Return the OrcInputFormat so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,bool|array<array<string,string>>>|bool>
      */
     public function toArray(): array
     {

@@ -22,7 +22,7 @@ class HasSearchFiltersTest extends TestCase
     public function setUp(): void
     {
         $client        = new DruidClient([]);
-        $this->builder = Mockery::mock(QueryBuilder::class, [$client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$client, 'https://']);
         $this->builder->makePartial();
     }
 
@@ -103,7 +103,7 @@ class HasSearchFiltersTest extends TestCase
      * @testWith [{"0": "john", "1": "Doe"}, true]
      *           [{"0": "USA", "1": "America"}, false]
      *
-     * @param array $values
+     * @param array<int|string,string> $values
      * @param bool  $caseSensitive
      *
      * @runInSeparateProcess

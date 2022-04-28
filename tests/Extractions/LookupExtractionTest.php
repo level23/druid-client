@@ -8,20 +8,22 @@ use Level23\Druid\Extractions\LookupExtraction;
 
 class LookupExtractionTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool|null>>
+     */
     public function dataProvider(): array
     {
         $arguments = [];
-        foreach (['numbers'] as $lookup) {
-            foreach ([true, false, 'UNKNOWN'] as $keepMissing) {
-                foreach ([true, false] as $optimize) {
-                    foreach ([null, true, false] as $injective) {
-                        $arguments[] = [
-                            $lookup,
-                            $keepMissing,
-                            $optimize,
-                            $injective,
-                        ];
-                    }
+        $lookup    = 'numbers';
+        foreach ([true, false, 'UNKNOWN'] as $keepMissing) {
+            foreach ([true, false] as $optimize) {
+                foreach ([null, true, false] as $injective) {
+                    $arguments[] = [
+                        $lookup,
+                        $keepMissing,
+                        $optimize,
+                        $injective,
+                    ];
                 }
             }
         }

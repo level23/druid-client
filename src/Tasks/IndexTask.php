@@ -32,6 +32,9 @@ class IndexTask implements TaskInterface
 
     protected ?AggregationCollection $aggregations;
 
+    /**
+     * @var array<array<string,string>>
+     */
     protected array $dimensions = [];
 
     /**
@@ -59,7 +62,7 @@ class IndexTask implements TaskInterface
      * @param \Level23\Druid\TuningConfig\TuningConfig|null              $tuningConfig
      * @param \Level23\Druid\Context\TaskContext|null                    $context
      * @param \Level23\Druid\Collections\AggregationCollection|null      $aggregations
-     * @param array                                                      $dimensions
+     * @param array<array<string,string>>                                $dimensions
      * @param string|null                                                $taskId
      * @param \Level23\Druid\InputFormats\InputFormatInterface|null      $inputFormat
      * @param \Level23\Druid\Dimensions\TimestampSpec|null               $timestampSpec
@@ -96,7 +99,7 @@ class IndexTask implements TaskInterface
     /**
      * Return the task in a format so that we can send it to druid.
      *
-     * @return array
+     * @return array<string,array<string,array<string,array<int|string,array<mixed>|bool|int|string>|bool|int|string|null>|bool|int|string>|string>
      */
     public function toArray(): array
     {

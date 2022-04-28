@@ -9,13 +9,14 @@ use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 
 class TopNQuery implements QueryInterface
 {
-    protected string $dataSource;
+    protected DataSourceInterface $dataSource;
 
     protected IntervalCollection $intervals;
 
@@ -42,15 +43,15 @@ class TopNQuery implements QueryInterface
     /**
      * TopNQuery constructor.
      *
-     * @param string             $dataSource
-     * @param IntervalCollection $intervals
-     * @param DimensionInterface $dimension
-     * @param int                $threshold
-     * @param string             $metric
-     * @param string             $granularity
+     * @param DataSourceInterface $dataSource
+     * @param IntervalCollection  $intervals
+     * @param DimensionInterface  $dimension
+     * @param int                 $threshold
+     * @param string              $metric
+     * @param string              $granularity
      */
     public function __construct(
-        string $dataSource,
+        DataSourceInterface $dataSource,
         IntervalCollection $intervals,
         DimensionInterface $dimension,
         int $threshold,
@@ -68,7 +69,7 @@ class TopNQuery implements QueryInterface
     /**
      * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|int|array<mixed>>
      */
     public function toArray(): array
     {
@@ -86,7 +87,7 @@ class TopNQuery implements QueryInterface
 
         $result = [
             'queryType'   => 'topN',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'intervals'   => $this->intervals->toArray(),
             'granularity' => $this->granularity,
             'dimension'   => $this->dimension->toArray(),
@@ -152,7 +153,7 @@ class TopNQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,array<mixed>|int|string> $response
      *
      * @return TopNQueryResponse
      */

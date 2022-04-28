@@ -17,7 +17,7 @@ class QueryHavingFilter implements HavingFilterInterface
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

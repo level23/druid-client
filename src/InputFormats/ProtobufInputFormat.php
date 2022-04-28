@@ -5,19 +5,20 @@ namespace Level23\Druid\InputFormats;
 
 class ProtobufInputFormat implements InputFormatInterface
 {
+    /**
+     * @var array<string,string>
+     */
     protected array $protoBytesDecoder;
 
-    /**
-     * @var \Level23\Druid\InputFormats\FlattenSpec|null
-     */
     protected ?FlattenSpec $flattenSpec;
 
     /**
      *
-     * @param array            $protoBytesDecoder Specifies how to decode bytes to Protobuf record. See below for an
-     *                                            example.
-     * @param FlattenSpec|null $flattenSpec       Define a flattenSpec to extract nested values from a Parquet file.
-     *                                            Note that only 'path' expression are supported ('jq' is unavailable).
+     * @param array<string,string> $protoBytesDecoder Specifies how to decode bytes to Protobuf record. See below for
+     *                                                an example.
+     * @param FlattenSpec|null     $flattenSpec       Define a flattenSpec to extract nested values from a Parquet
+     *                                                file. Note that only 'path' expression are supported ('jq' is
+     *                                                unavailable).
      *
      * Example $protoBytesDecoder value:
      * ```
@@ -39,7 +40,7 @@ class ProtobufInputFormat implements InputFormatInterface
     /**
      * Return the ProtobufInputFormat so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,bool|array<array<string,string>>>|string[]>
      */
     public function toArray(): array
     {

@@ -5,6 +5,9 @@ namespace Level23\Druid\Collections;
 
 use Level23\Druid\Dimensions\SpatialDimension;
 
+/**
+ * @extends \Level23\Druid\Collections\BaseCollection<SpatialDimension>
+ */
 class SpatialDimensionCollection extends BaseCollection
 {
     /**
@@ -14,7 +17,7 @@ class SpatialDimensionCollection extends BaseCollection
      */
     public function __construct(SpatialDimension ...$dimensions)
     {
-        $this->items = $dimensions;
+        $this->items = array_values($dimensions);
     }
 
     /**
@@ -30,7 +33,7 @@ class SpatialDimensionCollection extends BaseCollection
     /**
      * Return an array representation of our items
      *
-     * @return array
+     * @return array<int,array<mixed>>
      */
     public function toArray(): array
     {

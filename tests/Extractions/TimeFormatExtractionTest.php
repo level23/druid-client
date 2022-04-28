@@ -8,6 +8,9 @@ use Level23\Druid\Extractions\TimeFormatExtraction;
 
 class TimeFormatExtractionTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [

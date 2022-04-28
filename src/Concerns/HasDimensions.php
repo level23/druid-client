@@ -30,11 +30,15 @@ trait HasDimensions
      * Select a dimension from our statistics. Possible use a lookup function to find the
      * real data which we want to use.
      *
-     * @param array|\ArrayObject|string|DimensionInterface $dimension
-     * @param string                                       $as         When dimensions is a string (the dimension), you
-     *                                                                 can specify the alias output name here.
-     * @param \Closure|null                                $extraction
-     * @param string                                       $outputType This can either be "long", "float" or "string"
+     * @param string[]|\ArrayObject<int|string, string>|string|DimensionInterface $dimension
+     * @param string                                                              $as         When dimensions is a
+     *                                                                                        string (the dimension),
+     *                                                                                        you can specify the alias
+     *                                                                                        output name here.
+     * @param \Closure|null                                                       $extraction
+     * @param string                                                              $outputType This can either be
+     *                                                                                        "long",
+     *                                                                                        "float" or "string"
      *
      * @return $this
      */
@@ -97,7 +101,7 @@ trait HasDimensions
     /**
      * Add a dimension or a set of dimensions to our dimension list.
      *
-     * @param DimensionInterface|string|array|ArrayObject $dimension
+     * @param DimensionInterface|string|string[]|ArrayObject<int|string,string> $dimension
      */
     protected function addDimension($dimension): void
     {

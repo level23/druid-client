@@ -5,6 +5,9 @@ namespace Level23\Druid\InputSources;
 
 class SqlInputSource implements InputSourceInterface
 {
+    /**
+     * @var string[]
+     */
     protected array $sqls;
 
     protected bool $foldCase;
@@ -18,12 +21,12 @@ class SqlInputSource implements InputSourceInterface
     /**
      * SqlInputSource constructor.
      *
-     * @param string $connectURI
-     * @param string $username
-     * @param string $password
-     * @param array  $sqls     List of SQL queries where each SQL query would retrieve the data to be indexed.
-     * @param bool   $foldCase Toggle case folding of database column names. This may be enabled in cases where the
-     *                         database returns case insensitive column names in query results.
+     * @param string   $connectURI
+     * @param string   $username
+     * @param string   $password
+     * @param string[] $sqls     List of SQL queries where each SQL query would retrieve the data to be indexed.
+     * @param bool     $foldCase Toggle case folding of database column names. This may be enabled in cases where the
+     *                           database returns case insensitive column names in query results.
      */
     public function __construct(
         string $connectURI,
@@ -39,6 +42,9 @@ class SqlInputSource implements InputSourceInterface
         $this->password   = $password;
     }
 
+    /**
+     * @return array<string,string|true|array<string,string|string[]>>
+     */
     public function toArray(): array
     {
         $response = [

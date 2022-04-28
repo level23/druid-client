@@ -276,7 +276,7 @@ class HasPostAggregationsTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      *
-     * @param array|null $splitPoints
+     * @param int[]|null $splitPoints
      * @param int|null   $numBins
      */
     public function testHistogram(?array $splitPoints, ?int $numBins): void

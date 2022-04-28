@@ -16,39 +16,43 @@ class SelectQueryResponse extends QueryResponse
      * )
      * ```
      *
-     * @return array
+     * @return array<string,int>
      */
     public function pagingIdentifier(): array
     {
-        if (isset($this->response[0]['result']['pagingIdentifiers'])) {
-            return $this->response[0]['result']['pagingIdentifiers'];
-        }
+        /** @var array<string,array<string,int>> $row */
+        $row = $this->getResultRow();
 
-        return [];
-    }
-
-    /**
-     * Return the paging identifier.
-     *
-     * @return array
-     * @deprecated Use pagingIdentifier() instead.
-     */
-    public function getPagingIdentifier(): array
-    {
-        return $this->pagingIdentifier();
+        return $row['pagingIdentifiers'] ?? [];
     }
 
     /**
      * Return the data in a "normalized" way, so we can easily iterate over it
      *
-     * @return array
+     * @return array<mixed>
      */
     public function data(): array
     {
-        if (!isset($this->response[0]['result']['events'])) {
+        /** @var array<string,array<string,array<mixed>>> $resultRow */
+        $resultRow = $this->getResultRow();
+
+        return array_map(function ($row) {
+            /** @var array<string, array<mixed>> $row */
+            return $row['event'];
+        }, $resultRow['events'] ?? []);
+    }
+
+    /**
+     * @return array<string,array<mixed>>
+     */
+    protected function getResultRow(): array
+    {
+        /** @var null|array<string,array<string,array<mixed>>> $row */
+        $row = $this->response[0] ?? null;
+        if ($row === null) {
             return [];
         }
 
-        return array_map(fn($row) => $row['event'], $this->response[0]['result']['events']);
+        return $row['result'] ?? [];
     }
 }

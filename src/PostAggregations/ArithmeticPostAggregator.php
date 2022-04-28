@@ -51,7 +51,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|array<mixed>>>|null>
      */
     public function toArray(): array
     {

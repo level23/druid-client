@@ -33,7 +33,7 @@ class HasDimensionsTest extends TestCase
     /**
      * Our data sets for our select method.
      *
-     * @return array
+     * @return array<array<array<string,string>|bool|array<int|string,string|null|array<int|string,string|null>|Dimension|\ArrayObject<string,string>>>>
      */
     public function selectDataProvider(): array
     {
@@ -79,11 +79,11 @@ class HasDimensionsTest extends TestCase
      *
      * @dataProvider selectDataProvider
      *
-     * @param array $parameters
-     * @param array $expectedResult
-     * @param bool  $expectException
+     * @param array<int,string|DimensionInterface|ArrayObject<string,string>|array<int|string,string|null>> $parameters
+     * @param array<string,string>                                                                          $expectedResult
+     * @param bool                                                                                          $expectException
      */
-    public function testSelect(array $parameters, $expectedResult, bool $expectException = false): void
+    public function testSelect(array $parameters, array $expectedResult, bool $expectException = false): void
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
@@ -165,7 +165,7 @@ class HasDimensionsTest extends TestCase
         $counter = 0;
         $this->builder->select('user_id', 'username', function (ExtractionBuilder $builder) use (&$counter) {
             $counter++;
-            $builder->lookup('user', false);
+            $builder->lookup('user');
         });
 
         $this->assertEquals(1, $counter);

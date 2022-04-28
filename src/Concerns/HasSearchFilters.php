@@ -15,12 +15,15 @@ trait HasSearchFilters
      */
     protected ?SearchFilterInterface $searchFilter = null;
 
+    /**
+     * @var string[]
+     */
     protected array $searchDimensions = [];
 
     /**
      * Supply the dimensions where we want to search in using a Search Query.
      *
-     * @param array $dimensions
+     * @param string[] $dimensions
      *
      * @return $this
      */

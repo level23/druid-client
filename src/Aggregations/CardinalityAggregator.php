@@ -74,7 +74,7 @@ class CardinalityAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string|bool|array<int,array<mixed>>>
      */
     public function toArray(): array
     {

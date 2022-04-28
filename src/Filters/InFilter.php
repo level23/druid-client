@@ -9,6 +9,9 @@ class InFilter implements FilterInterface
 {
     protected string $dimension;
 
+    /**
+     * @var string[]|int[]
+     */
     protected array $values;
 
     protected ?ExtractionInterface $extraction;
@@ -17,7 +20,7 @@ class InFilter implements FilterInterface
      * InFilter constructor.
      *
      * @param string                   $dimension
-     * @param array                    $values
+     * @param string[]|int[]           $values
      * @param ExtractionInterface|null $extraction
      */
     public function __construct(string $dimension, array $values, ExtractionInterface $extraction = null)
@@ -30,7 +33,7 @@ class InFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<int|string>|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

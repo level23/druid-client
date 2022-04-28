@@ -37,7 +37,7 @@ abstract class MethodPostAggregator implements PostAggregatorInterface
     /**
      * Return the post aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|array<mixed>>>>
      */
     public function toArray(): array
     {

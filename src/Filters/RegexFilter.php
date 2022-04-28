@@ -45,7 +45,7 @@ class RegexFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

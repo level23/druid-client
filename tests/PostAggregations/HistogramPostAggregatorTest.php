@@ -14,7 +14,7 @@ class HistogramPostAggregatorTest extends TestCase
      *           [null, 10]
      *           [[1,2,3], null]
      *
-     * @param array|null $splitPoints
+     * @param array<int>|null $splitPoints
      * @param int|null   $numBins
      */
     public function testHistogram(?array $splitPoints, ?int $numBins): void

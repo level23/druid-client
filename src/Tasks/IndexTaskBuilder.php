@@ -38,6 +38,9 @@ class IndexTaskBuilder extends TaskBuilder
 {
     use HasSegmentGranularity, HasQueryGranularity, HasInterval, HasTuningConfig, HasAggregations;
 
+    /**
+     * @var array<array<string,string>>
+     */
     protected array $dimensions = [];
 
     protected SpatialDimensionCollection $spatialDimensions;
@@ -124,8 +127,8 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Add a spatial dimension.
      *
-     * @param string $name Name of the dimension.
-     * @param array  $dims Field names where latitude,longitude data are read from.
+     * @param string   $name Name of the dimension.
+     * @param string[] $dims Field names where latitude,longitude data are read from.
      *
      * @return $this
      */
@@ -181,10 +184,10 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Specify that we use JSON as input format.
      *
-     * @param FlattenSpec|null $flattenSpec Specifies flattening configuration for nested JSON data. See flattenSpec
-     *                                      for more info.
-     * @param array|null       $features    JSON parser features supported by Jackson library. Those features will be
-     *                                      applied when parsing the input JSON data.
+     * @param FlattenSpec|null        $flattenSpec Specifies flattening configuration for nested JSON data. See
+     *                                             flattenSpec for more info.
+     * @param array<string,bool>|null $features    JSON parser features supported by Jackson library. Those features
+     *                                             will be applied when parsing the input JSON data.
      *
      * @see https://github.com/FasterXML/jackson-core/wiki/JsonParser-Features
      */
@@ -198,16 +201,16 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Specify that we use CSV as input format.
      *
-     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
-     * @param array|null  $columns               Specifies the columns of the data. The columns should be in the same
-     *                                           order with the columns of your data.
-     * @param bool|null   $findColumnsFromHeader If this is set, the task will find the column names from the header
-     *                                           row. Note that skipHeaderRows will be applied before finding column
-     *                                           names from the header. For example, if you set skipHeaderRows to 2 and
-     *                                           findColumnsFromHeader to true, the task will skip the first two lines
-     *                                           and then extract column information from the third line. columns will
-     *                                           be ignored if this is set to true.
-     * @param int         $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
+     * @param string[]|null $columns               Specifies the columns of the data. The columns should be in the same
+     *                                             order with the columns of your data.
+     * @param string|null   $listDelimiter         A custom delimiter for multi-value dimensions.
+     * @param bool|null     $findColumnsFromHeader If this is set, the task will find the column names from the header
+     *                                             row. Note that skipHeaderRows will be applied before finding column
+     *                                             names from the header. For example, if you set skipHeaderRows to 2
+     *                                             and findColumnsFromHeader to true, the task will skip the first two
+     *                                             lines and then extract column information from the third line.
+     *                                             columns will be ignored if this is set to true.
+     * @param int           $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function csvFormat(
         array $columns = null,
@@ -223,17 +226,19 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Specify that we use TSV as input format.
      *
-     * @param array|null  $columns               Specifies the columns of the data. The columns should be in the same
-     *                                           order with the columns of your data.
-     * @param string|null $delimiter             A custom delimiter for data values.
-     * @param string|null $listDelimiter         A custom delimiter for multi-value dimensions.
-     * @param bool|null   $findColumnsFromHeader If this is set, the task will find the column names from the header
-     *                                           row. Note that skipHeaderRows will be applied before finding column
-     *                                           names from the header. For example, if you set skipHeaderRows to 2 and
-     *                                           findColumnsFromHeader to true, the task will skip the first two lines
-     *                                           and then extract column information from the third line. columns will
-     *                                           be ignored if this is set to true.
-     * @param int         $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
+     * @param array<string>|null $columns               Specifies the columns of the data. The columns should be in the
+     *                                                  same order with the columns of your data.
+     * @param string|null        $delimiter             A custom delimiter for data values.
+     * @param string|null        $listDelimiter         A custom delimiter for multi-value dimensions.
+     * @param bool|null          $findColumnsFromHeader If this is set, the task will find the column names from the
+     *                                                  header row. Note that skipHeaderRows will be applied before
+     *                                                  finding column names from the header. For example, if you set
+     *                                                  skipHeaderRows to 2 and findColumnsFromHeader to true, the task
+     *                                                  will skip the first two lines and then extract column
+     *                                                  information from the third line. columns will be ignored if
+     *                                                  this is set to true.
+     * @param int                $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows
+     *                                                  rows.
      */
     public function tsvFormat(
         array $columns = null,
@@ -292,10 +297,11 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * You need to include the druid-protobuf-extensions as an extension to use the Protobuf input format.
      *
-     * @param array            $protoBytesDecoder Specifies how to decode bytes to Protobuf record. See below for an
-     *                                            example.
-     * @param FlattenSpec|null $flattenSpec       Define a flattenSpec to extract nested values from a Parquet file.
-     *                                            Note that only 'path' expression are supported ('jq' is unavailable).
+     * @param array<string,string> $protoBytesDecoder Specifies how to decode bytes to Protobuf record. See below for
+     *                                                an example.
+     * @param FlattenSpec|null     $flattenSpec       Define a flattenSpec to extract nested values from a Parquet
+     *                                                file. Note that only 'path' expression are supported ('jq' is
+     *                                                unavailable).
      *
      * Example $protoBytesDecoder value:
      * ```
@@ -316,7 +322,7 @@ class IndexTaskBuilder extends TaskBuilder
     }
 
     /**
-     * @param \Level23\Druid\Context\TaskContext|array $context
+     * @param \Level23\Druid\Context\TaskContext|array<string,string|int|bool> $context
      *
      * @return \Level23\Druid\Tasks\TaskInterface
      */

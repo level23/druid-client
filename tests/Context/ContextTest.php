@@ -17,6 +17,9 @@ use Level23\Druid\Context\TimeSeriesQueryContext;
 
 class ContextTest extends TestCase
 {
+    /**
+     * @return array<array<array<string,string>|string>>
+     */
     public function dataProvider(): array
     {
         return [
@@ -32,8 +35,8 @@ class ContextTest extends TestCase
     /**
      * @dataProvider dataProvider
      *
-     * @param string $class
-     * @param array  $extra
+     * @param string               $class
+     * @param array<string,string> $extra
      *
      * @throws \ReflectionException
      * @throws \Exception
@@ -108,6 +111,7 @@ class ContextTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid value');
+        // @phpstan-ignore-next-line
         new GroupByV2QueryContext(['priority' => ['oops']]);
     }
 

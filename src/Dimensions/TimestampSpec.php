@@ -21,6 +21,9 @@ class TimestampSpec
         $this->missingValue = $missingValue;
     }
 
+    /**
+     * @return array<string,string>
+     */
     public function toArray(): array
     {
         $response = [

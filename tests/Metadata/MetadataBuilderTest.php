@@ -23,7 +23,7 @@ class MetadataBuilderTest extends TestCase
 
     protected function setUp(): void
     {
-        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+        $guzzle = new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         $this->client = Mockery::mock(DruidClient::class, [[], $guzzle]);
 
@@ -31,7 +31,7 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testIntervals(): void
     {
@@ -65,7 +65,7 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testInterval(): void
     {
@@ -95,6 +95,9 @@ class MetadataBuilderTest extends TestCase
         $this->assertEquals($intervalResponse, $response);
     }
 
+    /**
+     * @return array<array<array<int|string,array<string,array<string,array<int|string,array<scalar>|int|string>>|int|string>>|Structure|string|null>>.
+     */
     public function structureDataProvider(): array
     {
         $dataSource = 'myDataSource';
@@ -199,7 +202,7 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testStructureWithEmptyInterval(): void
     {
@@ -212,13 +215,13 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @param string                                 $dataSource
-     * @param string                                 $interval
-     * @param array                                  $intervalResponse
-     * @param array                                  $columnsResponse
-     * @param \Level23\Druid\Metadata\Structure|null $expectedResponse
+     * @param string                                                                                    $dataSource
+     * @param string                                                                                    $interval
+     * @param array<string,array<string,array<string,array<string[]|string,string|int|array<scalar>>>>> $intervalResponse
+     * @param array<array<string,string|int>>                                                           $columnsResponse
+     * @param \Level23\Druid\Metadata\Structure|null                                                    $expectedResponse
      *
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      * @dataProvider structureDataProvider
      */
     public function testStructure(
@@ -274,7 +277,7 @@ class MetadataBuilderTest extends TestCase
     /**
      * @testWith [[{"columns": {"__time": {"type":"LONG"}}}]]
      *
-     * @param array $segmentMetadataResponse
+     * @param array<string,array<string,array<string,string>>> $segmentMetadataResponse
      */
     public function testGetColumnsForInterval(array $segmentMetadataResponse): void
     {

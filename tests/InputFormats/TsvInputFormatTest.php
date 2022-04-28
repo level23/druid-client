@@ -20,7 +20,7 @@ class TsvInputFormatTest extends TestCase
      *
      * @param string|null $delimiter
      * @param string|null $listDelimiter
-     * @param array|null  $columns
+     * @param string[]|null  $columns
      * @param bool|null   $findColumnsFromHeader
      * @param int         $skipHeaderRows
      *

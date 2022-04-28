@@ -42,7 +42,7 @@ class HyperUniqueAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

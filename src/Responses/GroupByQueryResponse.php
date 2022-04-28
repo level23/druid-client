@@ -8,10 +8,13 @@ class GroupByQueryResponse extends QueryResponse
     /**
      * Return the data in a "normalized" way, so we can easily iterate over it
      *
-     * @return array
+     * @return array<string,string|int|array<mixed>>
      */
     public function data(): array
     {
-        return array_map(fn($row) => $row['event'], $this->response);
+        return array_map(function ($row) {
+            /** @var array<string,string|int|array<mixed>> $row */
+            return $row['event'];
+        }, $this->response);
     }
 }

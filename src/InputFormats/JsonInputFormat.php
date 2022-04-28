@@ -10,12 +10,15 @@ class JsonInputFormat implements InputFormatInterface
      */
     protected ?FlattenSpec $flattenSpec;
 
+    /**
+     * @var array<string,bool>
+     */
     protected ?array $features;
 
     /**
-     * @param FlattenSpec|null         $flattenSpec Specifies flattening configuration for nested JSON data. See
+     * @param FlattenSpec|null        $flattenSpec  Specifies flattening configuration for nested JSON data. See
      *                                              flattenSpec for more info.
-     * @param array<string, bool>|null $features    JSON parser features supported by Jackson library. Those features
+     * @param array<string,bool>|null $features     JSON parser features supported by Jackson library. Those features
      *                                              will be applied when parsing the input JSON data.
      *
      * @see https://github.com/FasterXML/jackson-core/wiki/JsonParser-Features
@@ -29,7 +32,7 @@ class JsonInputFormat implements InputFormatInterface
     /**
      * Return the JsonInputFormat so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,bool>|array<string,bool|array<array<string,string>>>>
      */
     public function toArray(): array
     {

@@ -20,7 +20,7 @@ class InlineInputSource implements InputSourceInterface
     }
 
     /**
-     * @throws \Exception
+     * @return array<string,string>
      */
     public function toArray(): array
     {
@@ -33,7 +33,7 @@ class InlineInputSource implements InputSourceInterface
     /**
      * Helper method to convert array to a json string.
      *
-     * @param array $data
+     * @param array<array<string|int|float|bool|null|array<mixed>>> $data
      *
      * @return string
      */
@@ -45,7 +45,7 @@ class InlineInputSource implements InputSourceInterface
     /**
      * Helper method to convert an array to a csv string.
      *
-     * @param array  $data
+     * @param array<array<string|int|float|bool|null>>  $data
      * @param string $separator
      * @param string $enclosure
      * @param string $escape

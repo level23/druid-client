@@ -69,7 +69,7 @@ class CompactTask implements TaskInterface
     /**
      * Return the task in a format so that we can send it to druid.
      *
-     * @return array
+     * @return array<string,int|null|string|array<string,string|int|bool|array<string,string|int>>>
      */
     public function toArray(): array
     {

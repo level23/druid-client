@@ -11,14 +11,17 @@ use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Responses\GroupByQueryResponse;
 use Level23\Druid\Collections\DimensionCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
+use Level23\Druid\Aggregations\AggregatorInterface;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\Collections\PostAggregationCollection;
+use Level23\Druid\PostAggregations\PostAggregatorInterface;
 
 class GroupByQuery implements QueryInterface
 {
-    protected string $dataSource;
+    protected DataSourceInterface $dataSource;
 
     protected DimensionCollection $dimensions;
 
@@ -40,19 +43,22 @@ class GroupByQuery implements QueryInterface
 
     protected IntervalCollection $intervals;
 
+    /**
+     * @var array<array<string>>
+     */
     protected array $subtotals = [];
 
     /**
      * GroupByQuery constructor.
      *
-     * @param string                                         $dataSource
-     * @param \Level23\Druid\Collections\DimensionCollection $dimensions
-     * @param \Level23\Druid\Collections\IntervalCollection  $intervals
-     * @param null|array|AggregationCollection               $aggregations
-     * @param string                                         $granularity
+     * @param DataSourceInterface                                   $dataSource
+     * @param \Level23\Druid\Collections\DimensionCollection        $dimensions
+     * @param \Level23\Druid\Collections\IntervalCollection         $intervals
+     * @param null|array<AggregatorInterface>|AggregationCollection $aggregations
+     * @param string                                                $granularity
      */
     public function __construct(
-        string $dataSource,
+        DataSourceInterface $dataSource,
         DimensionCollection $dimensions,
         IntervalCollection $intervals,
         $aggregations = null,
@@ -71,13 +77,13 @@ class GroupByQuery implements QueryInterface
     /**
      * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>>
      */
     public function toArray(): array
     {
         $query = [
             'queryType'   => 'groupBy',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'intervals'   => $this->intervals->toArray(),
             'dimensions'  => $this->dimensions->toArray(),
             'granularity' => $this->granularity,
@@ -127,9 +133,9 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * @param \Level23\Druid\Collections\AggregationCollection|array $aggregations
+     * @param \Level23\Druid\Collections\AggregationCollection|array<AggregatorInterface> $aggregations
      */
-    public function setAggregations($aggregations) : void
+    public function setAggregations($aggregations): void
     {
         if (is_array($aggregations)) {
             $aggregations = new AggregationCollection(...$aggregations);
@@ -139,7 +145,7 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * @param \Level23\Druid\Collections\PostAggregationCollection|array $postAggregations
+     * @param \Level23\Druid\Collections\PostAggregationCollection|array<PostAggregatorInterface> $postAggregations
      */
     public function setPostAggregations($postAggregations): void
     {
@@ -199,7 +205,7 @@ class GroupByQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,string|int|array<mixed>> $response
      *
      * @return GroupByQueryResponse
      */
@@ -217,7 +223,7 @@ class GroupByQuery implements QueryInterface
     }
 
     /**
-     * @param array $subtotals
+     * @param array<array<string>> $subtotals
      */
     public function setSubtotals(array $subtotals): void
     {

@@ -30,7 +30,7 @@ class MetadataBuilder
      *
      * @param string $dataSource
      *
-     * @return array
+     * @return array<string,array<string,string|int>>
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -107,7 +107,7 @@ class MetadataBuilder
      * @param string $dataSource
      * @param string $interval
      *
-     * @return array
+     * @return array<string,array<mixed>|string|int>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -185,7 +185,7 @@ class MetadataBuilder
      * @param string $dataSource
      * @param string $interval
      *
-     * @return array
+     * @return array<int,array<string,string>>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -264,6 +264,7 @@ class MetadataBuilder
             );
         }
 
+        /** @var array<string|string[]> $data */
         $data = reset($structureData);
 
         $dimensionFields = explode(',', $data['metadata']['dimensions'] ?? '');

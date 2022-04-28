@@ -17,6 +17,8 @@ class AnyAggregator extends MethodAggregator
      * @param string   $type                                The type of field. This can either be "long", "float" or
      *                                                      "double"
      * @param int|null $maxStringBytes                      optional, defaults to 1024
+     *
+     * @noinspection PhpMissingParentConstructorInspection
      */
     public function __construct(
         string $metricName,
@@ -35,7 +37,7 @@ class AnyAggregator extends MethodAggregator
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|int>
      */
     public function toArray(): array
     {

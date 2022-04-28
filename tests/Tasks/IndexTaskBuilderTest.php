@@ -367,6 +367,9 @@ class IndexTaskBuilderTest extends TestCase
         ], $this->getProperty($builder, 'dimensions'));
     }
 
+    /**
+     * @return array<array<string|Interval|null|InputSourceInterface>>
+     */
     public function buildTaskDataProvider(): array
     {
         return [

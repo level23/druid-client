@@ -5,15 +5,18 @@ namespace Level23\Druid\InputSources;
 
 class S3InputSource extends CloudInputSource
 {
+    /**
+     * @var array<string,string>
+     */
     protected array $properties;
 
     /**
      * S3InputSource constructor.
      *
-     * @param array $uris
-     * @param array $prefixes
-     * @param array $objects
-     * @param array $properties
+     * @param string[]                    $uris
+     * @param string[]                    $prefixes
+     * @param array<array<string,string>> $objects
+     * @param array<string,string>        $properties
      */
     public function __construct(array $uris = [], array $prefixes = [], array $objects = [], array $properties = [])
     {
@@ -22,6 +25,9 @@ class S3InputSource extends CloudInputSource
         $this->properties = $properties;
     }
 
+    /**
+     * @return array<string,string|string[]|array<array<string,string>>>
+     */
     public function toArray(): array
     {
         $response = parent::toArray();

@@ -10,6 +10,7 @@ use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Queries\SearchQuery;
 use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Filters\SelectorFilter;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\Responses\SearchQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\SearchFilters\ContainsSearchFilter;
@@ -27,8 +28,10 @@ class SearchQueryTest extends TestCase
 
         $searchFilter = new ContainsSearchFilter('john doe');
 
+        $dataSource = new TableDataSource('wikipedia');
+
         $query = new SearchQuery(
-            'wikipedia',
+            $dataSource,
             Granularity::DAY,
             $intervals,
             $searchFilter
@@ -36,7 +39,7 @@ class SearchQueryTest extends TestCase
 
         $expected = [
             'queryType'   => 'search',
-            'dataSource'  => 'wikipedia',
+            'dataSource'  => $dataSource->toArray(),
             'granularity' => 'day',
             'intervals'   => $intervals->toArray(),
             'query'       => $searchFilter->toArray(),

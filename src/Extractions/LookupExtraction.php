@@ -13,7 +13,7 @@ class LookupExtraction implements ExtractionInterface
 
     protected ?bool $injective = null;
 
-    protected ?bool $optimize = null;
+    protected bool $optimize;
 
     /**
      * LookupExtraction constructor.
@@ -53,7 +53,7 @@ class LookupExtraction implements ExtractionInterface
     /**
      * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

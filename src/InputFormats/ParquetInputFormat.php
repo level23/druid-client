@@ -19,7 +19,7 @@ class ParquetInputFormat extends OrcInputFormat
     /**
      * Return the ParquetInputFormat so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,bool|array<array<string,string>>>|bool>
      */
     public function toArray(): array
     {

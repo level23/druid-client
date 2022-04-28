@@ -51,6 +51,9 @@ class DruidInputSource implements InputSourceInterface
         $this->filter     = $filter;
     }
 
+    /**
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
+     */
     public function toArray(): array
     {
         if (empty($this->interval)) {

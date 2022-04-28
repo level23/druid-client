@@ -9,7 +9,7 @@ interface InputFormatInterface
     /**
      * Return the InputFormat so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|bool|int>
      */
     public function toArray(): array;
 }

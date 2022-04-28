@@ -30,6 +30,9 @@ namespace Level23\Druid\Context;
  */
 class GroupByV1QueryContext extends QueryContext implements ContextInterface
 {
+    /**
+     * @param array<string,string|int|bool> $properties
+     */
     public function __construct(array $properties)
     {
         parent::__construct($properties);

@@ -10,6 +10,9 @@ use Level23\Druid\Aggregations\LastAggregator;
 
 class LastAggregatorTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [

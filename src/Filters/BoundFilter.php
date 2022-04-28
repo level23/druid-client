@@ -56,7 +56,7 @@ class BoundFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|bool|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

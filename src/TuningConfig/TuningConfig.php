@@ -6,14 +6,14 @@ namespace Level23\Druid\TuningConfig;
 class TuningConfig implements TuningConfigInterface
 {
     /**
-     * @var array
+     * @var array<string,string|int|bool|array<string,string|int>>
      */
     protected array $properties = [];
 
     /**
      * TuningConfig constructor.
      *
-     * @param array $properties
+     * @param array<string,string|int|bool|array<string,string|int>> $properties
      */
     public function __construct(array $properties = [])
     {
@@ -34,7 +34,7 @@ class TuningConfig implements TuningConfigInterface
     /**
      * Return the context as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|int|bool|array<string,string|int>>
      */
     public function toArray(): array
     {
@@ -150,7 +150,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @see https://druid.apache.org/docs/0.20.2/ingestion/native-batch.html#split-hint-spec
      *
-     * @param array $splitHintSpec
+     * @param array<string,string|int> $splitHintSpec
      *
      * @return \Level23\Druid\TuningConfig\TuningConfig
      */
@@ -166,7 +166,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @see https://druid.apache.org/docs/0.20.2/ingestion/native-batch.html#partitionsspec
      *
-     * @param array $partitionsSpec
+     * @param array<string,string|int> $partitionsSpec
      *
      * @return $this
      */
@@ -182,7 +182,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @see https://druid.apache.org/docs/latest/ingestion/native_tasks.html#indexspec
      *
-     * @param array $indexSpec
+     * @param array<string,string|int> $indexSpec
      *
      * @return $this
      */
@@ -201,7 +201,7 @@ class TuningConfig implements TuningConfigInterface
      *
      * @see https://druid.apache.org/docs/0.20.2/ingestion/index.html#indexspec
      *
-     * @param array $indexSpecForIntermediatePersists
+     * @param array<string,string|int> $indexSpecForIntermediatePersists
      *
      * @return $this
      */

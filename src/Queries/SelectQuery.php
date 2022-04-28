@@ -10,6 +10,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Responses\SelectQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\DimensionCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 
 /**
  * Class SelectQuery
@@ -25,7 +26,7 @@ use Level23\Druid\Collections\DimensionCollection;
  */
 class SelectQuery implements QueryInterface
 {
-    protected string $dataSource;
+    protected DataSourceInterface $dataSource;
 
     protected IntervalCollection $intervals;
 
@@ -46,12 +47,13 @@ class SelectQuery implements QueryInterface
 
     protected int $threshold;
 
+    /** @var array<string,int>|null */
     protected ?array $pagingIdentifier = null;
 
     /**
      * SelectQuery constructor.
      *
-     * @param string                   $dataSource A String or Object defining the data source to query, very similar
+     * @param DataSourceInterface      $dataSource A DataSourceInterface defining the data source to query, very similar
      *                                             to a table in a relational database.
      * @param IntervalCollection       $intervals  This defines the time ranges to run the query over.
      * @param int                      $threshold  The threshold determines how many hits are returned, with each hit
@@ -66,7 +68,7 @@ class SelectQuery implements QueryInterface
      *                                             will be negative value.
      */
     public function __construct(
-        string $dataSource,
+        DataSourceInterface $dataSource,
         IntervalCollection $intervals,
         int $threshold,
         DimensionCollection $dimensions = null,
@@ -84,13 +86,13 @@ class SelectQuery implements QueryInterface
     /**
      * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|bool>
      */
     public function toArray(): array
     {
         $result = [
             'queryType'   => 'select',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'intervals'   => $this->intervals->toArray(),
             'descending'  => $this->descending,
             'dimensions'  => $this->dimensions ? $this->dimensions->toArray() : [],
@@ -116,7 +118,7 @@ class SelectQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,string|int|array<mixed>> $response
      *
      * @return SelectQueryResponse
      */
@@ -155,7 +157,7 @@ class SelectQuery implements QueryInterface
 
     /**
      *
-     * @param array $pagingIdentifier
+     * @param array<string,int> $pagingIdentifier
      */
     public function setPagingIdentifier(array $pagingIdentifier): void
     {

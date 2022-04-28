@@ -7,18 +7,15 @@ class EqualToHavingFilter implements HavingFilterInterface
 {
     protected string $metric;
 
-    /**
-     * @var float|int
-     */
-    protected $value;
+    protected float $value;
 
     /**
      * EqualToHavingFilter constructor.
      *
-     * @param string    $metric
-     * @param int|float $value
+     * @param string $metric
+     * @param float  $value
      */
-    public function __construct(string $metric, $value)
+    public function __construct(string $metric, float $value)
     {
         $this->metric = $metric;
         $this->value  = $value;
@@ -27,7 +24,7 @@ class EqualToHavingFilter implements HavingFilterInterface
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|float>
      */
     public function toArray(): array
     {

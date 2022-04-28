@@ -24,7 +24,7 @@ class ContainsSearchFilter implements SearchFilterInterface
     /**
      * Return the search filter so that it can be used in a search query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

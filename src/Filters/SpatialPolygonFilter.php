@@ -13,12 +13,12 @@ class SpatialPolygonFilter implements FilterInterface
     protected string $dimension;
 
     /**
-     * @var array<float>
+     * @var float[]
      */
     protected array $abscissa;
 
     /**
-     * @var array<float>
+     * @var float[]
      */
     protected array $ordinate;
 
@@ -26,8 +26,8 @@ class SpatialPolygonFilter implements FilterInterface
      * SpatialPolygonFilter constructor.
      *
      * @param string       $dimension The dimension to filter on
-     * @param array<float> $abscissa  Horizontal coordinate for corners of the polygon
-     * @param array<float> $ordinate  Vertical coordinate for corners of the polygon
+     * @param float[] $abscissa  Horizontal coordinate for corners of the polygon
+     * @param float[] $ordinate  Vertical coordinate for corners of the polygon
      */
     public function __construct(
         string $dimension,
@@ -42,7 +42,7 @@ class SpatialPolygonFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|float[]>>
      */
     public function toArray(): array
     {

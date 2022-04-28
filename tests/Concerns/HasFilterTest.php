@@ -58,10 +58,13 @@ class HasFilterTest extends TestCase
     public function setUp(): void
     {
         $this->client  = new DruidClient([]);
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
     }
 
+    /**
+     * @return array<array<string|int|float|bool|null|string[]>>
+     */
     public function whereDataProvider(): array
     {
         return [
@@ -74,6 +77,8 @@ class HasFilterTest extends TestCase
             ['name', '<>', 'John', 'AND'],
             ['age', '>', '18', 'and'],
             ['age', '>=', 18, 'and'],
+            ['age', '>=', 18.5, 'and'],
+            ['age', '=', true, 'and'],
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
             ['name', 'LiKE', 'John%', 'and'],
@@ -89,6 +94,9 @@ class HasFilterTest extends TestCase
         ];
     }
 
+    /**
+     * @return  array<int,array<int,array<int,mixed>|string>>
+     */
     public function normalizeIntervalsDataProvider(): array
     {
         return [
@@ -157,9 +165,9 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @param array  $given
-     * @param array  $expected
-     * @param string $expectException
+     * @param array<null|int|string|DateTime|array<string>> $given
+     * @param array<Interval>                               $expected
+     * @param string                                        $expectException
      *
      * @dataProvider normalizeIntervalsDataProvider
      */
@@ -168,10 +176,10 @@ class HasFilterTest extends TestCase
         if (!empty($expectException)) {
             $this->expectException($expectException);
 
-            $item = $given[0];
-            if (is_string($item)) {
-                $item = explode('/', $item);
-            }
+            //            $item = $given[0];
+            //            if (is_string($item)) {
+            //                $item = explode('/', $item);
+            //            }
             $this->expectExceptionMessage('Invalid type given in the interval array. We cannot process ');
         }
         /** @noinspection PhpUndefinedMethodInspection */
@@ -193,10 +201,10 @@ class HasFilterTest extends TestCase
     /**
      * @dataProvider        whereDataProvider
      *
-     * @param string $field
-     * @param string $operator
-     * @param mixed  $value
-     * @param string $boolean
+     * @param string                     $field
+     * @param string                     $operator
+     * @param string|int|float|bool|null $value
+     * @param string                     $boolean
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -204,7 +212,7 @@ class HasFilterTest extends TestCase
      */
     public function testWhere(string $field, string $operator, $value, string $boolean): void
     {
-        if ($value === null && $operator !== null) {
+        if ($value === null) {
             $testingValue    = $operator;
             $testingOperator = '=';
         } else {
@@ -351,7 +359,9 @@ class HasFilterTest extends TestCase
         $filter = $this->builder->getFilter();
         if ($filter instanceof LogicalExpressionFilterInterface) {
             $this->assertEquals(AndFilter::class, get_class($filter));
-            $this->assertCount(3, $filter->toArray()['fields']);
+            /** @var array<string,array<scalar>> $records */
+            $records = $filter->toArray();
+            $this->assertCount(3, $records['fields']);
         }
     }
 
@@ -364,7 +374,9 @@ class HasFilterTest extends TestCase
         $filter = $this->builder->getFilter();
         if ($filter instanceof LogicalExpressionFilterInterface) {
             $this->assertEquals(OrFilter::class, get_class($filter));
-            $this->assertCount(3, $filter->toArray()['fields']);
+            /** @var array<string,array<scalar>> $records */
+            $records = $filter->toArray();
+            $this->assertCount(3, $records['fields']);
         }
     }
 
@@ -427,6 +439,7 @@ class HasFilterTest extends TestCase
 
         if ($filter instanceof AndFilter) {
 
+            /** @var array<string,array<scalar>> $filters */
             $filters = $filter->toArray();
 
             $this->assertCount(3, $filters['fields']);
@@ -602,15 +615,19 @@ class HasFilterTest extends TestCase
     {
         $this->client = new DruidClient([]);
 
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
+        $this->builder->shouldAllowMockingProtectedMethods();
 
         $this->getFilterMock(ExpressionFilter::class)
             ->shouldReceive('__construct')
             ->once()
             ->with('(field == 1)');
 
-        $response = $this->builder->whereExpression('(field == 1)');
+        $this->builder->shouldReceive('addAndFilter')
+            ->once();
+
+        $response = $this->builder->whereExpression('(field == 1)', 'AnD');
 
         $this->assertEquals($this->builder, $response);
     }
@@ -723,7 +740,7 @@ class HasFilterTest extends TestCase
 
         $this->client = new DruidClient([]);
 
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
 
         $this->builder->shouldReceive('where')
@@ -773,7 +790,7 @@ class HasFilterTest extends TestCase
     {
         $this->client = new DruidClient([]);
 
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
 
         $this->builder->shouldReceive('virtualColumn')
@@ -798,7 +815,7 @@ class HasFilterTest extends TestCase
     {
         $this->client = new DruidClient(['version' => '0.20.2']);
 
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
 
         $response = $this->builder->where(function (FilterBuilder $filterBuilder) {
@@ -827,6 +844,7 @@ class HasFilterTest extends TestCase
             ],
         ], $filter ? $filter->toArray() : []);
 
+        /** @var array<VirtualColumn> $virtualColumns */
         $virtualColumns = $this->getProperty($this->builder, 'virtualColumns');
         $this->assertIsArray($virtualColumns);
         $this->assertTrue(sizeof($virtualColumns) == 2);
@@ -1039,13 +1057,15 @@ class HasFilterTest extends TestCase
                 $this->assertNull($extraction);
             });
 
-        $response = $this->builder->whereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->whereInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $this->assertEquals($this->builder, $response);
     }
 
     /**
      * Test the orWhereInterval method.
+     *
+     * @throws \Exception
      */
     public function testOrWhereInterval(): void
     {
@@ -1056,7 +1076,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->orWhereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->orWhereInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -1206,7 +1226,7 @@ class HasFilterTest extends TestCase
             ->with(new IsInstanceOf(IntervalFilter::class));
 
         /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -1221,7 +1241,7 @@ class HasFilterTest extends TestCase
         $this->builder->where('foo', '=', 'bar');
 
         /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $filter = $response->getFilter();
 
@@ -1300,7 +1320,7 @@ class HasFilterTest extends TestCase
         $counter = 0;
         $this->builder->whereIn('user_id', ['bob', 'john'], function (ExtractionBuilder $builder) use (&$counter) {
             $counter++;
-            $builder->lookup('username', false);
+            $builder->lookup('username');
         });
 
         $this->assertEquals(1, $counter);

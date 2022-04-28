@@ -19,7 +19,7 @@ class SearchFilter implements FilterInterface
     protected ?ExtractionInterface $extractionFunction;
 
     /**
-     * @var string|array
+     * @var string|string[]
      */
     protected $value;
 
@@ -32,7 +32,7 @@ class SearchFilter implements FilterInterface
      * the values specified in this search query spec.
      *
      * @param string                   $dimension
-     * @param string|string[]|array    $valueOrValues
+     * @param string|string[]          $valueOrValues
      * @param bool                     $caseSensitive
      * @param ExtractionInterface|null $extractionFunction
      */
@@ -51,7 +51,7 @@ class SearchFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

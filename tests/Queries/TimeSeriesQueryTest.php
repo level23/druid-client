@@ -8,6 +8,7 @@ use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
@@ -24,7 +25,7 @@ class TimeSeriesQueryTest extends TestCase
      */
     public function testQuery(): void
     {
-        $dataSource  = 'buildings';
+        $dataSource  = new TableDataSource('buildings');
         $intervals   = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));
         $granularity = 'week';
 
@@ -32,7 +33,7 @@ class TimeSeriesQueryTest extends TestCase
 
         $expected = [
             'queryType'   => 'timeseries',
-            'dataSource'  => $dataSource,
+            'dataSource'  => $dataSource->toArray(),
             'descending'  => false,
             'intervals'   => $intervals->toArray(),
             'granularity' => $granularity,

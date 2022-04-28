@@ -26,7 +26,7 @@ use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
 trait HasPostAggregations
 {
     /**
-     * @var array|\Level23\Druid\PostAggregations\PostAggregatorInterface[]
+     * @var \Level23\Druid\PostAggregations\PostAggregatorInterface[]
      */
     protected array $postAggregations = [];
 
@@ -36,7 +36,7 @@ trait HasPostAggregations
      *  - A string, referring to a metric or dimension in the query
      *  - A Closure, which allows you to build another postAggregator
      *
-     * @param array $fields
+     * @param array<string|Closure|PostAggregatorInterface|string[]> $fields
      *
      * @return PostAggregationCollection
      * @throws InvalidArgumentException
@@ -76,12 +76,12 @@ trait HasPostAggregations
     /**
      * Divide two or more fields with each other.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -119,12 +119,12 @@ trait HasPostAggregations
     public function quantile(string $as, $fieldOrClosure, float $fraction): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
-        if ($fields->count() != 1) {
+        if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
         $this->postAggregations[] = new QuantilePostAggregator(
-        /** @scrutinizer ignore-type */$fields[0],
+            $fields[0],
             $as,
             $fraction
         );
@@ -154,12 +154,12 @@ trait HasPostAggregations
     public function quantiles(string $as, $fieldOrClosure, array $fractions): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
-        if ($fields->count() != 1) {
+        if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
         $this->postAggregations[] = new QuantilesPostAggregator(
-        /** @scrutinizer ignore-type */$fields[0],
+            $fields[0],
             $as,
             $fractions
         );
@@ -193,12 +193,12 @@ trait HasPostAggregations
     public function histogram(string $as, $fieldOrClosure, ?array $splitPoints = null, ?int $numBins = null): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
-        if ($fields->count() != 1) {
+        if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
         $this->postAggregations[] = new HistogramPostAggregator(
-        /** @scrutinizer ignore-type */ $fields[0],
+            $fields[0],
             $as,
             $splitPoints,
             $numBins
@@ -229,12 +229,12 @@ trait HasPostAggregations
     public function rank(string $as, $fieldOrClosure, $value): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
-        if ($fields->count() != 1) {
+        if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
         $this->postAggregations[] = new RankPostAggregator(
-        /** @scrutinizer ignore-type */ $fields[0],
+            $fields[0],
             $as,
             $value
         );
@@ -259,19 +259,19 @@ trait HasPostAggregations
      *                                       to another field in the query. If you give a closure, it will receive an
      *                                       instance of the PostAggregationsBuilder. With this builder you can build
      *                                       another post-aggregation or use constants as input for this method.
-     * @param array          $splitPoints    Array of split points
+     * @param float[]        $splitPoints    Array of split points
      *
      * @return $this
      */
     public function cdf(string $as, $fieldOrClosure, array $splitPoints): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
-        if ($fields->count() != 1) {
+        if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
         $this->postAggregations[] = new CdfPostAggregator(
-        /** @scrutinizer ignore-type */ $fields[0],
+            $fields[0],
             $as,
             $splitPoints
         );
@@ -299,12 +299,12 @@ trait HasPostAggregations
     public function sketchSummary(string $as, $fieldOrClosure): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
-        if ($fields->count() != 1) {
+        if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
         }
 
         $this->postAggregations[] = new SketchSummaryPostAggregator(
-        /** @scrutinizer ignore-type */ $fields[0],
+            $fields[0],
             $as
         );
 
@@ -314,12 +314,12 @@ trait HasPostAggregations
     /**
      * Multiply two or more fields with each other.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -338,12 +338,12 @@ trait HasPostAggregations
     /**
      * Subtract two or more fields with each other.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -363,12 +363,12 @@ trait HasPostAggregations
     /**
      * Add two or more fields with each other.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -387,12 +387,12 @@ trait HasPostAggregations
     /**
      * Return the quotient of two or more fields.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -456,12 +456,12 @@ trait HasPostAggregations
     /**
      * Return the highest value of multiple columns in one row.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -479,12 +479,12 @@ trait HasPostAggregations
     /**
      * Return the highest value of multiple columns in one row.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -502,12 +502,12 @@ trait HasPostAggregations
     /**
      * Return the lowest value of multiple columns in one row.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -525,12 +525,12 @@ trait HasPostAggregations
     /**
      * Return the lowest value of multiple columns in one row.
      *
-     * @param string               $as                The name which will be used in the output
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The name which will be used in the output
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      */
@@ -552,13 +552,13 @@ trait HasPostAggregations
      * NOTE: JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming
      * guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it.
      *
-     * @param string               $as                The output name
-     * @param string               $function          The javascript function which should be applied.
-     * @param string|Closure|array ...$fieldOrClosure One or more fields which will be used. When a string is given,
-     *                                                we assume that it refers to another field in the query. If you
-     *                                                give a closure, it will receive an instance of the
-     *                                                PostAggregationsBuilder. With this builder you can build other
-     *                                                post-aggregations or use constants as input for this method.
+     * @param string                  $as                The output name
+     * @param string                  $function          The javascript function which should be applied.
+     * @param string|Closure|string[] ...$fieldOrClosure One or more fields which will be used. When a string is given,
+     *                                                   we assume that it refers to another field in the query. If you
+     *                                                   give a closure, it will receive an instance of the
+     *                                                   PostAggregationsBuilder. With this builder you can build other
+     *                                                   post-aggregations or use constants as input for this method.
      *
      * @return $this
      * @see https://druid.apache.org/docs/latest/querying/post-aggregations.html#javascript-post-aggregator

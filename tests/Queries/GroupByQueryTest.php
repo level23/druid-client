@@ -13,6 +13,7 @@ use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Aggregations\SumAggregator;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Collections\IntervalCollection;
@@ -58,8 +59,10 @@ class GroupByQueryTest extends TestCase
         $context->setFinalize(true);
         $context->setMaxOnDiskStorage(15000);
 
+        $dataSource = new TableDataSource('tableName');
+
         $query = new GroupByQuery(
-            'tableName',
+            $dataSource,
             $dimensionCollection,
             $intervalCollection,
             [$sum],
@@ -84,7 +87,7 @@ class GroupByQueryTest extends TestCase
 
         $expected = [
             'queryType'        => 'groupBy',
-            'dataSource'       => 'tableName',
+            'dataSource'       => $dataSource->toArray(),
             'intervals'        => $intervalCollection->toArray(),
             'dimensions'       => $dimensionCollection->toArray(),
             'granularity'      => $granularity,
@@ -112,10 +115,13 @@ class GroupByQueryTest extends TestCase
         $this->assertEquals((new Limit(15, null, 20))->toArray(), $response['limitSpec']);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testSetLimitAsInt(): void
     {
         $query = new GroupByQuery(
-            'tableName',
+            new TableDataSource('wikipedia'),
             new DimensionCollection(),
             new IntervalCollection(),
             [new SumAggregator('salary', 'myMoney')],
@@ -131,10 +137,13 @@ class GroupByQueryTest extends TestCase
         $this->assertEquals(10, $limit->getLimit());
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testSetOffset(): void
     {
         $query = new GroupByQuery(
-            'tableName',
+            new TableDataSource('wikipedia'),
             new DimensionCollection(),
             new IntervalCollection(),
             [new SumAggregator('salary', 'myMoney')],

@@ -208,10 +208,10 @@ trait HasFilter
      * This applies a filter, only it will join previous added filters with an "or" instead of an "and".
      * See the documentation of the "where" method for more information
      *
-     * @param string|FilterInterface $filterOrDimension
-     * @param string|null            $operator
-     * @param mixed|null             $value
-     * @param \Closure|null          $extraction
+     * @param string|FilterInterface   $filterOrDimension
+     * @param string|null              $operator
+     * @param string|int|null|string[] $value
+     * @param \Closure|null            $extraction
      *
      * @return $this
      * @see \Level23\Druid\Concerns\HasFilter::where()
@@ -228,12 +228,12 @@ trait HasFilter
     /**
      * Filter records where the given dimension exists in the given list of items
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $items      A list of values. We will return records where the dimension is in this list.
-     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
-     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
-     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                                  "and".
+     * @param string         $dimension  The dimension which you want to filter
+     * @param string[]|int[] $items      A list of values. We will return records where the dimension is in this list.
+     * @param \Closure|null  $extraction An extraction function to extract a different value from the dimension.
+     * @param string         $boolean    This influences how this filter will be joined with previous added filters.
+     *                                   Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                   "and".
      *
      * @return $this
      */
@@ -289,9 +289,9 @@ trait HasFilter
      *
      * If there are previously defined filters, this filter will be joined with an "or".
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $items      A list of values. We will return records where the dimension is in this list.
-     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
+     * @param string         $dimension  The dimension which you want to filter
+     * @param string[]|int[] $items      A list of values. We will return records where the dimension is in this list.
+     * @param \Closure|null  $extraction An extraction function to extract a different value from the dimension.
      *
      * @return $this
      */
@@ -580,13 +580,13 @@ trait HasFilter
     /**
      * Filter records where the given dimension NOT exists in the given list of items
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $items      A list of values. We will return records where the dimension is NOT in this
-     *                                  list.
-     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
-     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
-     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                                  "and".
+     * @param string            $dimension  The dimension which you want to filter
+     * @param array<string|int> $items      A list of values. We will return records where the dimension is NOT in this
+     *                                      list.
+     * @param \Closure|null     $extraction An extraction function to extract a different value from the dimension.
+     * @param string            $boolean    This influences how this filter will be joined with previous added filters.
+     *                                      Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                                      "and".
      *
      * @return $this
      * @deprecated Use the whereNot() method combined with a whereIn instead.
@@ -605,10 +605,10 @@ trait HasFilter
     /**
      * Filter records where the given dimension NOT exists in the given list of items
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $items      A list of values. We will return records where the dimension is NOT in this
-     *                                  list.
-     * @param \Closure|null $extraction An extraction function to extract a different value from the dimension.
+     * @param string            $dimension  The dimension which you want to filter
+     * @param array<int|string> $items      A list of values. We will return records where the dimension is NOT in this
+     *                                      list.
+     * @param \Closure|null     $extraction An extraction function to extract a different value from the dimension.
      *
      * @return $this
      * @deprecated Use the orWhereNot() method combined with a whereIn instead.
@@ -635,12 +635,24 @@ trait HasFilter
      * [['now', 'now + 1 hour'], ['tomorrow', 'tomorrow + 1 hour']]
      * ['2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z']
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $intervals  The interval which you do not want to match. See above for more info.
-     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
-     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
-     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                                  "and".
+     * @param string                                                               $dimension  The dimension which you
+     *                                                                                         want to filter
+     * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals  The interval which you
+     *                                                                                         do not want to match.
+     *                                                                                         See above for more info.
+     * @param \Closure|null                                                        $extraction Extraction function to
+     *                                                                                         extract a different
+     *                                                                                         value from the
+     *                                                                                         dimension.
+     * @param string                                                               $boolean    This influences how this
+     *                                                                                         filter will be joined
+     *                                                                                         with previous added
+     *                                                                                         filters. Should both
+     *                                                                                         filters apply
+     *                                                                                         ("and") or one or the
+     *                                                                                         other ("or") ? Default
+     *                                                                                         is
+     *                                                                                         "and".
      *
      * @return $this
      * @throws \Exception
@@ -676,9 +688,15 @@ trait HasFilter
      * [['now', 'now + 1 hour'], ['tomorrow', 'tomorrow + 1 hour']]
      * ['2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z']
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $intervals  The interval which you do not want to match. See above for more info.
-     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
+     * @param string                                                               $dimension  The dimension which you
+     *                                                                                         want to filter
+     * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals  The interval which you
+     *                                                                                         do not want to match.
+     *                                                                                         See above for more info.
+     * @param \Closure|null                                                        $extraction Extraction function to
+     *                                                                                         extract a different
+     *                                                                                         value from the
+     *                                                                                         dimension.
      *
      * @return $this
      * @deprecated Use the orWhereNot() method combined with a whereInterval instead.
@@ -799,12 +817,24 @@ trait HasFilter
      * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
      *   or anything which can be parsed by DateTime::__construct
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $intervals  The interval which you want to match. See above for more info.
-     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
-     * @param string        $boolean    This influences how this filter will be joined with previous added filters.
-     *                                  Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                                  "and".
+     * @param string                                                               $dimension  The dimension which you
+     *                                                                                         want to filter
+     * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals  The interval which you
+     *                                                                                         want to match. See above
+     *                                                                                         for more info.
+     * @param \Closure|null                                                        $extraction Extraction function to
+     *                                                                                         extract a different
+     *                                                                                         value from the
+     *                                                                                         dimension.
+     * @param string                                                               $boolean    This influences how this
+     *                                                                                         filter will be joined
+     *                                                                                         with previous added
+     *                                                                                         filters. Should both
+     *                                                                                         filters apply
+     *                                                                                         ("and") or one or the
+     *                                                                                         other ("or") ? Default
+     *                                                                                         is
+     *                                                                                         "and".
      *
      * @return $this
      * @throws \Exception
@@ -833,9 +863,11 @@ trait HasFilter
      * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
      *   or anything which can be parsed by DateTime::__construct
      *
-     * @param string        $dimension  The dimension which you want to filter
-     * @param array         $intervals  The interval which you want to match. See above for more info.
-     * @param \Closure|null $extraction Extraction function to extract a different value from the dimension.
+     * @param string                                $dimension  The dimension which you want to filter
+     * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals  The interval which you want to match. See above for
+     *                                                          more info.
+     * @param \Closure|null                         $extraction Extraction function to extract a different value from
+     *                                                          the dimension.
      *
      * @return $this
      * @throws \Exception
@@ -849,12 +881,12 @@ trait HasFilter
      * Filter on a spatial dimension where the spatial dimension value (x,y coordinates) are between the
      * given min and max coordinates.
      *
-     * @param string $dimension The name of the spatial dimension.
-     * @param array  $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
-     * @param array  $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
-     * @param string $boolean   This influences how this filter will be joined with previous added filters.
-     *                          Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                          "and".
+     * @param string  $dimension The name of the spatial dimension.
+     * @param float[] $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
+     * @param float[] $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
+     * @param string  $boolean   This influences how this filter will be joined with previous added filters.
+     *                           Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                           "and".
      *
      * @return $this
      */
@@ -876,12 +908,12 @@ trait HasFilter
      * You can specify an x,y, z coordinate and the radius. All the records where the spatial dimension
      * is within the given area will be returned.
      *
-     * @param string $dimension The name of the spatial dimension.
-     * @param array  $coords    Origin coordinates in the form [x, y, z, …]
-     * @param float  $radius    The float radius value
-     * @param string $boolean   This influences how this filter will be joined with previous added filters.
-     *                          Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                          "and".
+     * @param string  $dimension The name of the spatial dimension.
+     * @param float[] $coords    Origin coordinates in the form [x, y, z, …]
+     * @param float   $radius    The float radius value
+     * @param string  $boolean   This influences how this filter will be joined with previous added filters.
+     *                           Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                           "and".
      *
      * @return $this
      */
@@ -897,12 +929,12 @@ trait HasFilter
     /**
      * Return the records where the spatial dimension is within the area of the defined polygon.
      *
-     * @param string $dimension The name of the spatial dimension.
-     * @param array  $abscissa  (The x axis) Horizontal coordinate for corners of the polygon
-     * @param array  $ordinate  (The y axis) Vertical coordinate for corners of the polygon
-     * @param string $boolean   This influences how this filter will be joined with previous added filters.
-     *                          Should both filters apply ("and") or one or the other ("or") ? Default is
-     *                          "and".
+     * @param string  $dimension The name of the spatial dimension.
+     * @param float[] $abscissa  (The x axis) Horizontal coordinate for corners of the polygon
+     * @param float[] $ordinate  (The y axis) Vertical coordinate for corners of the polygon
+     * @param string  $boolean   This influences how this filter will be joined with previous added filters.
+     *                           Should both filters apply ("and") or one or the other ("or") ? Default is
+     *                           "and".
      *
      * @return $this
      */
@@ -923,9 +955,9 @@ trait HasFilter
      * Filter on a spatial dimension where the spatial dimension value (x,y coordinates) are between the
      * given min and max coordinates.
      *
-     * @param string $dimension The name of the spatial dimension.
-     * @param array  $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
-     * @param array  $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
+     * @param string  $dimension The name of the spatial dimension.
+     * @param float[] $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
+     * @param float[] $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
      *
      * @return $this
      */
@@ -939,9 +971,9 @@ trait HasFilter
      * You can specify an x,y, z coordinate and the radius. All of the records where the spatial dimension
      * is within the given area will be returned.
      *
-     * @param string $dimension The name of the spatial dimension.
-     * @param array  $coords    Origin coordinates in the form [x, y, z, …]
-     * @param float  $radius    The float radius value
+     * @param string  $dimension The name of the spatial dimension.
+     * @param float[] $coords    Origin coordinates in the form [x, y, z, …]
+     * @param float   $radius    The float radius value
      *
      * @return $this
      */
@@ -953,9 +985,9 @@ trait HasFilter
     /**
      * Return the records where the spatial dimension is within the area of the defined polygon.
      *
-     * @param string $dimension The name of the spatial dimension.
-     * @param array  $abscissa  (The x axis) Horizontal coordinate for corners of the polygon
-     * @param array  $ordinate  (The y axis) Vertical coordinate for corners of the polygon
+     * @param string  $dimension The name of the spatial dimension.
+     * @param float[] $abscissa  (The x axis) Horizontal coordinate for corners of the polygon
+     * @param float[] $ordinate  (The y axis) Vertical coordinate for corners of the polygon
      *
      * @return $this
      */
@@ -992,13 +1024,17 @@ trait HasFilter
     /**
      * Normalize the given intervals into Interval objects.
      *
-     * @param array $intervals
+     * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals
      *
-     * @return array
+     * @return array<IntervalInterface>
      * @throws \Exception
      */
     protected function normalizeIntervals(array $intervals): array
     {
+        if (sizeof($intervals) == 0) {
+            return [];
+        }
+
         $first = reset($intervals);
 
         // If first is an array or already a druid interval string or object we do not wrap it in an array
@@ -1008,6 +1044,7 @@ trait HasFilter
 
         return array_map(function ($interval) {
 
+            /** @var string|IntervalInterface|array<string|\DateTimeInterface|int> $interval */
             if ($interval instanceof IntervalInterface) {
                 return $interval;
             }

@@ -20,10 +20,7 @@ use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 
 class HasHavingTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
+    protected DruidClient $client;
 
     /**
      * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
@@ -33,7 +30,7 @@ class HasHavingTest extends TestCase
     public function setUp(): void
     {
         $this->client  = new DruidClient([]);
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
     }
 
@@ -67,15 +64,21 @@ class HasHavingTest extends TestCase
         return Mockery::mock($builder);
     }
 
+    /**
+     * @return array<array<string|null|bool|int|float>>
+     */
     public function whereDataProvider(): array
     {
         return [
             ['name', '=', 'John', 'and'],
+            ['name', '=', true, 'and'],
             ['name', 'John', null, 'and'],
             ['age', '!=', '11', 'and'],
             ['id', '0', null, 'and'],
             ['age', '<>', '12', 'and'],
             ['age', '>', '18', 'and'],
+            ['age', '>', 18, 'and'],
+            ['age', '>', 18.5, 'and'],
             ['age', '>=', '18', 'and'],
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
@@ -87,26 +90,24 @@ class HasHavingTest extends TestCase
     /**
      * @dataProvider        whereDataProvider
      *
-     * @param string      $field
-     * @param string      $operator
-     * @param string|null $value
-     * @param string      $boolean
+     * @param string                     $field
+     * @param string                     $operator
+     * @param string|null|bool|int|float $value
+     * @param string                     $boolean
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      * @throws \Exception
      */
-    public function testHaving($field, $operator, $value, $boolean): void
+    public function testHaving(string $field, string $operator, $value, string $boolean): void
     {
-        if ($value === null && $operator !== null) {
+        if ($value === null) {
             $testingValue    = $operator;
             $testingOperator = '=';
         } else {
             $testingOperator = strtolower($operator);
             $testingValue    = $value;
         }
-
-        $expected = null;
 
         switch ($testingOperator) {
             case '<>':
@@ -252,7 +253,9 @@ class HasHavingTest extends TestCase
         }
 
         if ($filter instanceof AndHavingFilter) {
-            $this->assertCount(3, $filter->toArray()['havingSpecs']);
+            /** @var array<string,array<scalar>> $record */
+            $record = $filter->toArray();
+            $this->assertCount(3, $record['havingSpecs']);
         }
     }
 
@@ -267,7 +270,9 @@ class HasHavingTest extends TestCase
             $this->assertEquals(OrHavingFilter::class, get_class($filter));
         }
         if ($filter instanceof OrHavingFilter) {
-            $this->assertCount(3, $filter->toArray()['havingSpecs']);
+            /** @var array<string,array<scalar>> $record */
+            $record = $filter->toArray();
+            $this->assertCount(3, $record['havingSpecs']);
         }
     }
 

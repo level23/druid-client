@@ -9,10 +9,18 @@ class LocalInputSource implements InputSourceInterface
 {
     protected ?string $baseDir;
 
+    /**
+     * @var string[]
+     */
     protected array $files;
 
     protected ?string $filter;
 
+    /**
+     * @param string[]    $files
+     * @param string|null $baseDir
+     * @param string|null $filter
+     */
     public function __construct(array $files = [], ?string $baseDir = null, ?string $filter = null)
     {
         if (empty($baseDir) && count($files) == 0) {
@@ -32,6 +40,9 @@ class LocalInputSource implements InputSourceInterface
         $this->files   = $files;
     }
 
+    /**
+     * @return array<string,string|string[]>
+     */
     public function toArray(): array
     {
         $response = [

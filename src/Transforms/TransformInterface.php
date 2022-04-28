@@ -8,7 +8,7 @@ interface TransformInterface
     /**
      * Return the transform in such a way so that we can use it in a druid query.
      *
-     * @return mixed
+     * @return array<mixed>
      */
     public function toArray();
 }

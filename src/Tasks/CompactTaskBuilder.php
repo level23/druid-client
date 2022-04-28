@@ -38,7 +38,7 @@ class CompactTaskBuilder extends TaskBuilder
     }
 
     /**
-     * @param \Level23\Druid\Context\TaskContext|array $context
+     * @param \Level23\Druid\Context\TaskContext|array<string,string|int|bool> $context
      *
      * @return \Level23\Druid\Tasks\CompactTask
      * @throws \Level23\Druid\Exceptions\QueryResponseException
@@ -50,7 +50,8 @@ class CompactTaskBuilder extends TaskBuilder
             $context = new TaskContext($context);
         }
 
-        if (!$this->interval instanceof IntervalInterface) {
+        $interval = $this->interval;
+        if (!$interval instanceof IntervalInterface) {
             throw new InvalidArgumentException('You have to specify an interval!');
         }
 
@@ -58,14 +59,14 @@ class CompactTaskBuilder extends TaskBuilder
         // match the beginning and end of an interval.
         $properties = $context->toArray();
         if (empty($properties['skipIntervalValidation'])) {
-            $this->validateInterval($this->dataSource, $this->interval);
+            $this->validateInterval($this->dataSource, $interval);
         }
 
         // @todo: add support for building metricSpec and DimensionSpec.
 
         return new CompactTask(
             $this->dataSource,
-            $this->interval,
+            $interval,
             $this->segmentGranularity,
             $this->tuningConfig,
             $context,

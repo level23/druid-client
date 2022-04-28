@@ -21,12 +21,12 @@ class CompactTaskTest extends TestCase
      *           ["week", {"type": "index"}, null, 1024, false, "task-1337"]
      *
      *
-     * @param string      $segmentGranularity
-     * @param array|null  $tuningConfig
-     * @param array|null  $context
-     * @param int|null    $targetCompactionSizeBytes
-     * @param bool        $expectException
-     * @param string|null $taskId
+     * @param string                        $segmentGranularity
+     * @param array<string,string>|null     $tuningConfig
+     * @param array<string,int|string>|null $context
+     * @param int|null                      $targetCompactionSizeBytes
+     * @param bool                          $expectException
+     * @param string|null                   $taskId
      *
      * @throws \Exception
      */

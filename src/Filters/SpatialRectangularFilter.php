@@ -12,16 +12,22 @@ class SpatialRectangularFilter implements FilterInterface
 {
     protected string $dimension;
 
+    /**
+     * @var float[]
+     */
     protected array $minCoords;
 
+    /**
+     * @var float[]
+     */
     protected array $maxCoords;
 
     /**
      * SpatialRectangularFilter constructor.
      *
-     * @param string $dimension The dimension to filter on
-     * @param array  $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
-     * @param array  $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
+     * @param string  $dimension The dimension to filter on
+     * @param float[] $minCoords List of minimum dimension coordinates for coordinates [x, y, z, …]
+     * @param float[] $maxCoords List of maximum dimension coordinates for coordinates [x, y, z, …]
      */
     public function __construct(
         string $dimension,
@@ -36,7 +42,7 @@ class SpatialRectangularFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|float[]>>
      */
     public function toArray(): array
     {

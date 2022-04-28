@@ -24,9 +24,9 @@ class ExpressionTransform implements TransformInterface
     /**
      * Return the transform in such a way so that we can use it in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'type'       => 'expression',

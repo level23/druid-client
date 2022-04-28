@@ -15,7 +15,7 @@ interface LogicalExpressionHavingFilterInterface
     /**
      * Return all having filters which are used by this logical expression filter.
      *
-     * @return array
+     * @return \Level23\Druid\HavingFilters\HavingFilterInterface[]
      */
     public function getHavingFilters(): array;
 }

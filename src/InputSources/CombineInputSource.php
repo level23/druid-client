@@ -27,16 +27,14 @@ class CombineInputSource implements InputSourceInterface
         $this->inputSources = $inputSources;
     }
 
+    /**
+     * @return array<string,string|array<array<string,string|array<mixed>|bool|int>>>
+     */
     public function toArray(): array
     {
-        $delegates = [];
-        foreach ($this->inputSources as $inputSource) {
-            $delegates[] = $inputSource->toArray();
-        }
-
         return [
             'type'      => 'combining',
-            'delegates' => $delegates,
+            'delegates' => array_map(fn(InputSourceInterface $inputSource) => $inputSource->toArray(), $this->inputSources),
         ];
     }
 }

@@ -22,7 +22,7 @@ class TaskBuilderTest extends TestCase
 
     protected function setUp(): void
     {
-        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+        $guzzle = new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         $this->client = Mockery::mock(DruidClient::class, [[], $guzzle]);
 
@@ -43,6 +43,7 @@ class TaskBuilderTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function testExecute(): void
     {
@@ -144,6 +145,9 @@ class TaskBuilderTest extends TestCase
         $this->assertEquals(['task' => 'here'], $response);
     }
 
+    /**
+     * @return array<array<string|bool|array<string,array<string,int>>>>
+     */
     public function validateIntervalDataProvider(): array
     {
         return [
@@ -196,10 +200,10 @@ class TaskBuilderTest extends TestCase
     }
 
     /**
-     * @param string $givenInterval
-     * @param array  $allIntervals
+     * @param string                          $givenInterval
+     * @param array<string,array<string,int>> $allIntervals
      *
-     * @param bool   $expectsValid
+     * @param bool                            $expectsValid
      *
      * @throws \Exception
      * @dataProvider validateIntervalDataProvider

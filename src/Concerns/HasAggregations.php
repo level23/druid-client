@@ -220,17 +220,18 @@ trait HasAggregations
      *
      * @see https://druid.apache.org/docs/latest/querying/hll-old.html
      *
-     * @param string         $as                           The output name which is used for the result.
-     * @param \Closure|array $dimensionsOrDimensionBuilder An array with the dimensions which you want to calculate the
-     *                                                     cardinality over, or a closure which will receive a
-     *                                                     DimensionBuilder. You should build the dimensions which are
-     *                                                     used to calculate the cardinality over.
-     * @param bool           $byRow                        For more details see method description.
-     * @param bool           $round                        Only affects query-time behavior, and is ignored at
-     *                                                     ingestion-time. The HyperLogLog algorithm generates decimal
-     *                                                     estimates with some error. "round" can be set to true to
-     *                                                     round off estimated values to whole numbers. Note that even
-     *                                                     with rounding, the cardinality is still an estimate.
+     * @param string            $as                           The output name which is used for the result.
+     * @param \Closure|string[] $dimensionsOrDimensionBuilder An array with the dimensions which you want to calculate
+     *                                                        the cardinality over, or a closure which will receive a
+     *                                                        DimensionBuilder. You should build the dimensions which
+     *                                                        are used to calculate the cardinality over.
+     * @param bool              $byRow                        For more details see method description.
+     * @param bool              $round                        Only affects query-time behavior, and is ignored at
+     *                                                        ingestion-time. The HyperLogLog algorithm generates
+     *                                                        decimal estimates with some error. "round" can be set to
+     *                                                        true to round off estimated values to whole numbers. Note
+     *                                                        that even with rounding, the cardinality is still an
+     *                                                        estimate.
      *
      * @return $this
      */
@@ -353,8 +354,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function min(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null): self
-    {
+    public function min(
+        string $metric,
+        string $as = '',
+        string $type = DataType::LONG,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new MinAggregator($metric, $as, $type),
             $filterBuilder
@@ -419,8 +424,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function max(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null): self
-    {
+    public function max(
+        string $metric,
+        string $as = '',
+        string $type = DataType::LONG,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new MaxAggregator($metric, $as, $type),
             $filterBuilder
@@ -697,8 +706,12 @@ trait HasAggregations
      *
      * @return $this
      */
-    public function last(string $metric, string $as = '', string $type = DataType::LONG, Closure $filterBuilder = null): self
-    {
+    public function last(
+        string $metric,
+        string $as = '',
+        string $type = DataType::LONG,
+        Closure $filterBuilder = null
+    ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
             new LastAggregator($metric, $as, $type),
             $filterBuilder
@@ -787,7 +800,7 @@ trait HasAggregations
      * guide for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it.
      *
      * @param string        $as            The output name as the result will be available
-     * @param array         $fieldNames    The columns which will be given to the fnAggregate function. Both metrics
+     * @param string[]      $fieldNames    The columns which will be given to the fnAggregate function. Both metrics
      *                                     and dimensions are allowed.
      * @param string        $fnAggregate   A javascript function which does the aggregation. This function will receive
      *                                     the "current" value as first parameter. The other parameters will be the

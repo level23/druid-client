@@ -8,11 +8,12 @@ use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Responses\SearchQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\SearchFilters\SearchFilterInterface;
 
 class SearchQuery implements QueryInterface
 {
-    protected string $dataSource;
+    protected DataSourceInterface $dataSource;
 
     protected string $granularity;
 
@@ -36,7 +37,7 @@ class SearchQuery implements QueryInterface
     protected SearchFilterInterface $searchFilter;
 
     public function __construct(
-        string $dataSource,
+        DataSourceInterface $dataSource,
         string $granularity,
         IntervalCollection $intervals,
         SearchFilterInterface $searchFilter
@@ -50,13 +51,13 @@ class SearchQuery implements QueryInterface
     /**
      * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|int>
      */
     public function toArray(): array
     {
         $result = [
             'queryType'   => 'search',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'granularity' => $this->granularity,
             'intervals'   => $this->intervals->toArray(),
             'sort'        => ['type' => $this->sort],
@@ -85,7 +86,7 @@ class SearchQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,string|int|array<mixed>> $response
      *
      * @return SearchQueryResponse
      */

@@ -46,7 +46,7 @@ class LookupDimension implements DimensionInterface
     /**
      * Return the dimension as it should be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

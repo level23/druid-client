@@ -11,7 +11,7 @@ namespace Level23\Druid\Extractions;
 class SearchQueryExtraction implements ExtractionInterface
 {
     /**
-     * @var array|string
+     * @var string|string[]
      */
     protected $valueOrValues;
 
@@ -20,8 +20,8 @@ class SearchQueryExtraction implements ExtractionInterface
     /**
      * SearchQueryExtraction constructor.
      *
-     * @param string|array $valueOrValues
-     * @param bool         $caseSensitive
+     * @param string|string[] $valueOrValues
+     * @param bool            $caseSensitive
      */
     public function __construct($valueOrValues, bool $caseSensitive = false)
     {
@@ -32,7 +32,7 @@ class SearchQueryExtraction implements ExtractionInterface
     /**
      * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool|string[]>
      */
     public function toArray(): array
     {

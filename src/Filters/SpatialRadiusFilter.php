@@ -12,6 +12,9 @@ class SpatialRadiusFilter implements FilterInterface
 {
     protected string $dimension;
 
+    /**
+     * @var float[]
+     */
     protected array $coords;
 
     protected float $radius;
@@ -20,7 +23,7 @@ class SpatialRadiusFilter implements FilterInterface
      * SpatialRadiusFilter constructor.
      *
      * @param string $dimension The dimension to filter on
-     * @param array  $coords    Origin coordinates in the form [x, y, z, …]
+     * @param float[]  $coords    Origin coordinates in the form [x, y, z, …]
      * @param float  $radius    The float radius value
      */
     public function __construct(
@@ -36,7 +39,7 @@ class SpatialRadiusFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|float|float[]>>
      */
     public function toArray(): array
     {

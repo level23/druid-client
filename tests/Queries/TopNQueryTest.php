@@ -11,6 +11,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\Responses\TopNQueryResponse;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\AggregationCollection;
@@ -22,7 +23,7 @@ class TopNQueryTest extends TestCase
 {
     public function testQuery(): void
     {
-        $dataSource  = 'animals';
+        $dataSource  = new TableDataSource('animals');
         $intervals   = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));
         $granularity = 'week';
         $dimension   = new Dimension('name', 'pet_name');
@@ -31,7 +32,7 @@ class TopNQueryTest extends TestCase
 
         $expected = [
             'queryType'   => 'topN',
-            'dataSource'  => $dataSource,
+            'dataSource'  => $dataSource->toArray(),
             'intervals'   => $intervals->toArray(),
             'granularity' => $granularity,
             'dimension'   => $dimension->toArray(),

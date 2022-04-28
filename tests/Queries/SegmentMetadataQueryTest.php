@@ -5,6 +5,7 @@ namespace Level23\Druid\Tests\Queries;
 
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
@@ -13,14 +14,14 @@ class SegmentMetadataQueryTest extends TestCase
 {
     public function testQuery(): void
     {
-        $dataSource = 'hardware';
+        $dataSource = new TableDataSource('hardware');
         $intervals  = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));
 
         $query = new SegmentMetadataQuery($dataSource, $intervals);
 
         $this->assertEquals([
             'queryType'  => 'segmentMetadata',
-            'dataSource' => $dataSource,
+            'dataSource' => $dataSource->toArray(),
             'intervals'  => $intervals->toArray(),
         ], $query->toArray());
 

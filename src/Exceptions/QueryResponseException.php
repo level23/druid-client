@@ -8,14 +8,17 @@ use Throwable;
 
 class QueryResponseException extends Exception
 {
+    /**
+     * @var array<string,bool|string|int|array<mixed>>
+     */
     protected array $query;
 
     /**
      * DruidQueryException constructor.
      *
-     * @param array           $query
-     * @param string          $message
-     * @param \Throwable|null $previous
+     * @param array<string,bool|string|int|array<mixed>> $query
+     * @param string                         $message
+     * @param \Throwable|null                $previous
      */
     public function __construct(array $query, string $message = "", Throwable $previous = null)
     {
@@ -24,7 +27,7 @@ class QueryResponseException extends Exception
     }
 
     /**
-     * @return array
+     * @return array<string,bool|string|int|array<mixed>>
      */
     public function getQuery(): array
     {

@@ -27,9 +27,9 @@ trait HasHaving
      *
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like'
      *
-     * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|null|int                      $operator
-     * @param string|null|int                      $value
+     * @param string|HavingFilterInterface|FilterInterface|Closure $havingOrMetricOrClosure
+     * @param string|null|float                    $operator
+     * @param string|null|float                    $value
      * @param string                               $boolean
      *
      * @return $this
@@ -103,8 +103,8 @@ trait HasHaving
      * Add a having filter
      *
      * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|int|null                      $operator
-     * @param string|int|null                      $value
+     * @param string|float|null                    $operator
+     * @param string|float|null                    $value
      *
      * @return $this
      */

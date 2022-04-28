@@ -49,7 +49,7 @@ class Dimension implements DimensionInterface
     /**
      * Return the dimension as it should be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<mixed>>
      */
     public function toArray(): array
     {

@@ -11,6 +11,9 @@ use Level23\Druid\Extractions\LookupExtraction;
 
 class BoundFilterTest extends TestCase
 {
+    /**
+     * @return array<array<string|null|bool|float>>
+     */
     public function dataProvider(): array
     {
         $fields      = ['name'];

@@ -7,18 +7,27 @@ use InvalidArgumentException;
 
 abstract class CloudInputSource implements InputSourceInterface
 {
+    /**
+     * @var array<string>
+     */
     protected array $uris;
 
+    /**
+     * @var array<string>
+     */
     protected array $prefixes;
 
+    /**
+     * @var array<array<string,string>>
+     */
     protected array $objects;
 
     /**
      * S3InputSource constructor.
      *
-     * @param array $uris
-     * @param array $prefixes
-     * @param array $objects
+     * @param array<string> $uris
+     * @param array<string> $prefixes
+     * @param array<array<string,string>> $objects
      */
     public function __construct(array $uris = [], array $prefixes = [], array $objects = [])
     {
@@ -33,6 +42,9 @@ abstract class CloudInputSource implements InputSourceInterface
 
     abstract protected function getCloudType(): string;
 
+    /**
+     * @return array<string,string|string[]|array<array<string,string>>>
+     */
     public function toArray(): array
     {
         $response = [

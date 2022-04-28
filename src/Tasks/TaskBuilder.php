@@ -70,7 +70,7 @@ abstract class TaskBuilder
     /**
      * Execute the index task. We will return the task identifier.
      *
-     * @param \Level23\Druid\Context\TaskContext|array $context
+     * @param \Level23\Druid\Context\TaskContext|array<string,string|int|bool> $context
      *
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
@@ -85,7 +85,7 @@ abstract class TaskBuilder
     /**
      * Return the task in Json format.
      *
-     * @param \Level23\Druid\Context\TaskContext|array $context
+     * @param \Level23\Druid\Context\TaskContext|array<string,string|int|bool> $context
      *
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException
@@ -107,9 +107,9 @@ abstract class TaskBuilder
     /**
      * Return the task as array
      *
-     * @param \Level23\Druid\Context\TaskContext|array $context
+     * @param \Level23\Druid\Context\TaskContext|array<string,string|int|bool> $context
      *
-     * @return array
+     * @return array<string,mixed>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function toArray($context = []): array
@@ -135,7 +135,7 @@ abstract class TaskBuilder
     }
 
     /**
-     * @param \Level23\Druid\Context\TaskContext|array $context
+     * @param \Level23\Druid\Context\TaskContext|array<string,string|int|bool> $context
      *
      * @return \Level23\Druid\Tasks\TaskInterface
      * @throws \Level23\Druid\Exceptions\QueryResponseException
