@@ -142,7 +142,7 @@ for more information.
         - [whereFlags()](#whereflags)
         - [orWhereFlags()](#orwhereflags)
         - [whereExpression()](#whereexpression)
-        - [orWhereExpression()](#orwehereexpression)
+        - [orWhereExpression()](#orwhereexpression)
         - [whereSpatialRectangular()](#wherespatialrectangular)
         - [whereSpatialRadius()](#wherespatialradius)
         - [whereSpatialPolygon()](#wherespatialpolygon)
@@ -302,11 +302,10 @@ configuration of your instance.
 
 The `DruidClient` constructor has the following arguments:
 
-| **Type**            | **Optional/Required** | **Argument** | **
-Example**                         | ** Description**                                                                                                                        |
-|---------------------|-----------------------|--------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to.  |
-| `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.             |  
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | ** Description**                                                                                                                       |
+|---------------------|-----------------------|--------------|-------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to. |
+| `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.            |
 
 For a complete list of configuration settings take a look at the default values which are defined in the
 `$config` property in the DruidClient class.
@@ -358,11 +357,10 @@ $builder = $client->query('wikipedia', Granularity::DAY);
 
 The query method has 2 parameters:
 
-| **Type** | **Optional/Required** | **Argument**   | **Example** | **
-Description**                                                                                                                                                                                                                                                                                                                                                      |
-|----------|-----------------------|----------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to query.                                                                                                                                                                                                                                                                                                          |
-| string   | Optional              | `$granularity` | "all"       | The granularity which you want to use for this query. You can think of this like an extra "group by" per time window. The results will be grouped by this time window. By default we will use "all", which will return the resultSet in 1 set. Valid values are: all, none, second, minute, fifteen_minute, thirty_minute, hour, day, week, month, quarter and year  |
+| **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                     |
+|----------|-----------------------|----------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to query.                                                                                                                                                                                                                                                                                                         |
+| string   | Optional              | `$granularity` | "all"       | The granularity which you want to use for this query. You can think of this like an extra "group by" per time window. The results will be grouped by this time window. By default we will use "all", which will return the resultSet in 1 set. Valid values are: all, none, second, minute, fifteen_minute, thirty_minute, hour, day, week, month, quarter and year |
 
 The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
 
@@ -400,8 +398,7 @@ $client->cancelQuery('my-query6148716d3772c')
 
 The query method has 1 parameter:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example** | **
-Description**                                                   |
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
 |----------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
 | string   | Required              | `$identifier` | "myqueryid" | The unique query identifier which was given in the query context. |
 
@@ -478,11 +475,10 @@ The start date should be before the end date. If not, an `InvalidArgumentExcepti
 
 The `interval()` method has the following parameters:
 
-| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **
-Description**                                                                                                                                                                    |
-|---------------------------|-----------------------|--------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                         |
-| /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out.  | 
+| **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                   |
+|---------------------------|-----------------------|--------------|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                        |
+| /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out. |
 
 #### `limit()`
 
@@ -530,8 +526,7 @@ $builder
 
 The `orderBy()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**              | **
-Description**                                                                                                        |
+| **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                                        |
 |----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                                     |
 | string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |
@@ -571,10 +566,9 @@ $response = $client->query('wikipedia', 'hour')
 
 The `orderByDirection()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**              | **
-Description**                                                                                           |
-|----------|-----------------------|--------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc".  |
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                          |
+|----------|-----------------------|--------------|--------------------------|----------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". |
 
 #### `pagingIdentifier()`
 
@@ -612,8 +606,7 @@ An paging identifier is an array and looks something like this:
 
 The `pagingIdentifier()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**        | **Example** | **
-Description**                                   |
+| **Type** | **Optional/Required** | **Argument**        | **Example** | **Description**                                   |
 |----------|-----------------------|---------------------|-------------|---------------------------------------------------|
 | array    | Required              | `$pagingIdentifier` | See above.  | The paging identifier from your previous request. |
 
@@ -669,8 +662,7 @@ Finally, the last record is the 'total'.
 
 The `subtotals()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**                                | **
-Description**                                                                                               |
+| **Type** | **Optional/Required** | **Argument** | **Example**                                | **Description**                                                                                               |
 |----------|-----------------------|--------------|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
 
@@ -692,8 +684,7 @@ $result = $client->query('wikipedia')
 
 The `metrics()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**            | **
-Description**                                                 |
+| **Type** | **Optional/Required** | **Argument** | **Example**            | **Description**                                                 |
 |----------|-----------------------|--------------|------------------------|-----------------------------------------------------------------|
 | array    | Required              | `$metrics`   | `['added', 'deleted']` | Array of metrics which you want to select in your select query. |
 
@@ -717,8 +708,7 @@ $response = $client->query('wikipedia')
 
 The `dimensions()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**           | **
-Description**                                  |
+| **Type** | **Optional/Required** | **Argument**  | **Example**           | **Description**                                  |
 |----------|-----------------------|---------------|-----------------------|--------------------------------------------------|
 | array    | Required              | `$dimensions` | `['name', 'address']` | Array of dimensions where you want to search in. |
 
@@ -780,13 +770,12 @@ To select a _dimension_, you can use one of the methods below:
 
 This method has the following arguments:
 
-| **Type**        | **Optional/Required** | **Argument**  | **Example**                        | **
-Description**                                                                                                                                                    |
-|-----------------|-----------------------|---------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string or array | Required              | `$dimension`  | country_iso                        |  The dimension which you want to select                                                                                                                            |
-| string          | Optional              | `$as`         | country                            | The name where the result will be available by in the result set.                                                                                                  |
-| Closure         | Optional              | `$extraction` | A PHP closure, see example below.  | A PHP Closure function. This function will receive an instance of the ExtractionBuilder, which allows you to extract data from the dimension as you would like it. |
-| string          | Optional              | `$outputType` | string                             | The output type of the data. If left unspecified, we will use `string`.                                                                                            |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**                       | **Description**                                                                                                                                                    |
+|-----------------|-----------------------|---------------|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string or array | Required              | `$dimension`  | country_iso                       | The dimension which you want to select                                                                                                                             |
+| string          | Optional              | `$as`         | country                           | The name where the result will be available by in the result set.                                                                                                  |
+| Closure         | Optional              | `$extraction` | A PHP closure, see example below. | A PHP Closure function. This function will receive an instance of the ExtractionBuilder, which allows you to extract data from the dimension as you would like it. |
+| string          | Optional              | `$outputType` | string                            | The output type of the data. If left unspecified, we will use `string`.                                                                                            |
 
 This method allows you to select a dimension in various way's, as shown in the example above.
 
@@ -851,8 +840,7 @@ Lookup's are a handy way to transform an ID value into a user readable name, lik
 
 This method has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**        | **Example**    | **
-Description**                                                                                                                                                                                                                                                      |
+| **Type**       | **Optional/Required** | **Argument**        | **Example**    | **Description**                                                                                                                                                                                                                                                      |
 |----------------|-----------------------|---------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$lookupFunction`   | username_by_id | The name of the lookup function which you want to use for this dimension.                                                                                                                                                                                            |
 | string         | Required              | `$dimension`        | user_id        | The dimension which you want to transform.                                                                                                                                                                                                                           |
@@ -908,8 +896,7 @@ Example:
 $builder->count('nrOfResults');
 ```
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                         |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                         |
 |----------|-----------------------|------------------|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$as`            | "nrOfRows"                                   | The size of the bucket where the numerical values are grouped in                                                        |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter. |
@@ -930,8 +917,7 @@ $builder->sum('views', 'totalViews');
 
 The `sum()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                       |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                       |
 |----------|-----------------------|------------------|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`        | "views"                                      | The metric which you want to sum                                                                                      |
 | string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                      |
@@ -954,8 +940,7 @@ $builder->min('age', 'minAge');
 
 The `min()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                                                  |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
 |----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the minimum value of.                                                                                     |
 | string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
@@ -978,8 +963,7 @@ $builder->max('age', 'maxAge');
 
 The `max()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                                                  |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
 |----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the maximum value of.                                                                                     |
 | string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
@@ -1001,8 +985,7 @@ $builder->first('device');
 
 The `first()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                              |
 |----------|-----------------------|------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`        | "device"                                     | The metric which you want to compute the first value of.                                                                                     |
 | string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                             |
@@ -1027,8 +1010,7 @@ $builder->last('email');
 
 The `last()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                                             |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                             |
 |----------|-----------------------|------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`        | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
 | string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                            |
@@ -1050,8 +1032,7 @@ $builder->any('price');
 
 The `any()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**      | **Example**                                  | **
-Description**                                                                                                                             |
+| **Type** | **Optional/Required** | **Argument**      | **Example**                                  | **Description**                                                                                                                             |
 |----------|-----------------------|-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`         | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
 | string   | Optional              | `$as`             | "anyDevice"                                  | The name which will be used in the output result                                                                                            |
@@ -1083,8 +1064,7 @@ $builder->javascript(
 
 The `javascript()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                                                                                                                      |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                                                      |
 |----------|-----------------------|------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$as`            | "result"                                     | The name which will be used in the output result                                                                                                                                                                     |
 | array    | Required              | `$fieldNames`    | ["metric_field", "dimension_field"]          | The columns which will be given to the fnAggregate function. Both metrics and dimensions are allowed.                                                                                                                |
@@ -1114,13 +1094,12 @@ $builder->hyperUnique('dimension', 'myResult');
 
 The `hyperUnique()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**          | **Example** | **
-Description**                                                                                                                                                                                                      |
+| **Type** | **Optional/Required** | **Argument**          | **Example** | **Description**                                                                                                                                                                                                      |
 |----------|-----------------------|-----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`             | "dimension" |  The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                  |
+| string   | Required              | `$metric`             | "dimension" | The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                   |
 | string   | Required              | `$as`                 | "myField"   | The name which will be used in the output result                                                                                                                                                                     |
 | bool     | Optional              | `$round`              | true        | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
-| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll is expected).                                                        | 
+| bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll is expected).                                                        |
 
 #### `cardinality()`
 
@@ -1191,8 +1170,7 @@ $builder->cardinality(
 
 The `cardinality()` aggregation method has the following parameters:
 
-| **Type**      | **Optional/Required** | **Argument**                    | **Example**        | **
-Description**                                                                                                                                                                                                      |
+| **Type**      | **Optional/Required** | **Argument**                    | **Example**        | **Description**                                                                                                                                                                                                      |
 |---------------|-----------------------|---------------------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string        | Required              | `$as`                           | "distinctCount"    | The name which will be used in the output result                                                                                                                                                                     |
 | Closure/array | Required              | `$dimensionsOrDimensionBuilder` | See example above. | An array with dimension(s) or a function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                         |
@@ -1215,8 +1193,7 @@ $builder->distinctCount('category_id', 'categoryCount');
 
 The `distinctCount()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **
-Description**                                                                                                                                                                |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                |
 |----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`     | "category_id"                                | The dimension where you want to count the distinct values from.                                                                                                                |
 | string   | Optional              | `$as`            | "categoryCount"                              | The name which will be used in the output result                                                                                                                               |
@@ -1250,8 +1227,7 @@ To view more information about the doubleSketch data, see the `sketchSummary()` 
 
 The `doublesSketch()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**       | **Example**    | **
-Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Type** | **Optional/Required** | **Argument**       | **Example**    | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 |----------|-----------------------|--------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`          | `"salary"`     | The metric where you want to do calculations over.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | string   | Optional              | `$as`              | `"salaryData"` | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -1268,26 +1244,23 @@ This is probably the most used filter. It is very flexible.
 
 This method uses the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**        | **
-Description**                                                                                                                                                                         |
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                                                                                                         |
 |----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
 | string   | Required              | `$operator`   | "="                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                                     |
 | mixed    | Required              | `$value`      | "Auburn"           | The value which you want to use in your filter comparison                                                                                                                               |
-| Closure  | Optional              | `$extraction` | See example below. | A closure which builds one or more extraction function. These are applied _
-before_ the filter will be applied. So the filter will use the value returned by the extraction function(s). |
+| Closure  | Optional              | `$extraction` | See example below. | A closure which builds one or more extraction function. These are applied _before_ the filter will be applied. So the filter will use the value returned by the extraction function(s). |
 | string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
 
 The following `$operator` values are supported:
 
-| **Operator**   | **
-Description**                                                                                                                                                                                |
+| **Operator**   | **Description**                                                                                                                                                                                |
 |----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | =              | Check if the dimension is equal to the given value.                                                                                                                                            |
 | !=             | Check if the dimension is not equal to the given value.                                                                                                                                        |
 | <>             | Same as `!=`                                                                                                                                                                                   |
 | >              | Check if the dimension is greater than the given value.                                                                                                                                        |
-| > =             | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
+| > =            | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
 | <              | Check if the dimension is less than the given value.                                                                                                                                           |
 | <=             | Check if the dimension is less than or equal to the given value.                                                                                                                               |
 | like           | Check if the dimension matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character).                             |
@@ -1297,7 +1270,7 @@ Description**                                                                   
 | regex          | Check if the dimension matches the given regular expression.                                                                                                                                   |
 | not regex      | Check if the dimension does not match the given regular expression.                                                                                                                            |
 | search         | Check if the dimension partially matches the given string(s). When an array of values are given, we expect the dimension value contains all of the values specified in this search query spec. |
-| not search     | Same as `search`, only now the dimension should not match.                                                                                                                                     | 
+| not search     | Same as `search`, only now the dimension should not match.                                                                                                                                     |
 
 We support retrieving a value using an extraction function. This can be done by passing a `Closure` function in the
 `$extraction` parameter. This function will receive a `ExtractionBuilder`, which allows you to extract the value which
@@ -1371,8 +1344,7 @@ You can use this in combination with all the other filters!
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example** | **
-Description**                                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                              |
 |----------|-----------------------|------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Closure  | Required              | `$filterBuilder` | "flags"     | A closure function which will receive a `FilterBuilder` object. All applied filters will be inverted.                                                        |
 | string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
@@ -1387,12 +1359,11 @@ With this method you can filter on records using multiple values.
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**        | **
-Description**                                                                |
-|----------|-----------------------|---------------|--------------------|--------------------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | country_iso        | The dimension which you want to filter                                         |
-| array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.  |
-| Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.        |
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                               |
+|----------|-----------------------|---------------|--------------------|-------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | country_iso        | The dimension which you want to filter                                        |
+| array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list. |
+| Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.       |
 
 #### `orWhereIn()`
 
@@ -1408,8 +1379,7 @@ The SQL equivalent would be:
 
 This method has the following arguments:
 
-| **Type**   | **Optional/Required** | **Argument**  | **Example**     | **
-Description**                                                                                                                                                                                                                                                                      |
+| **Type**   | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                                                                                                                                                                                                                      |
 |------------|-----------------------|---------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string     | Required              | `$dimension`  | year            | The dimension which you want to filter                                                                                                                                                                                                                                               |
 | int/string | Required              | `$minValue`   | 1990            | The minimum value where the dimension should match. It should be equal or greater than this value.                                                                                                                                                                                   |
@@ -1441,8 +1411,7 @@ $builder->whereColumn('initials', function(DimensionBuilder $dimensionBuilder) {
 
 The `whereColumn()` filter has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**  | **Example**  | **
-Description**                                                                                                                                             |
+| **Type**       | **Optional/Required** | **Argument**  | **Example**  | **Description**                                                                                                                                             |
 |----------------|-----------------------|---------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
 | string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
@@ -1462,8 +1431,7 @@ It will then use a between filter to see if the interval matches.
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**       | **
-Description**                                                      |
+| **Type** | **Optional/Required** | **Argument**  | **Example**       | **Description**                                                      |
 |----------|-----------------------|---------------|-------------------|----------------------------------------------------------------------|
 | string   | Required              | `$dimension`  | __time            | The dimension which you want to filter                               |
 | array    | Required              | `$intervals`  | ['yesterday/now'] | See below for more info                                              |
@@ -1519,8 +1487,7 @@ $client->query('myDataSource')
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example** | **
-Description**                                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                              |
 |----------|-----------------------|------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`     | "flags"     | The dimension where you want to filter on                                                                                                                    |
 | int      | Required              | `$flags`         | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
@@ -1553,8 +1520,7 @@ $client->query('myDataSource')
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**                                 | **
-Description**                                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                 | **Description**                                                                                                                                              |
 |----------|-----------------------|---------------|---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$expression` | `"((product_type == 42) && (!is_deleted))"` | The expression to use for your filter.                                                                                                                       |
 | string   | Optional              | `$boolean`    | `"and"`                                     | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
@@ -1581,8 +1547,7 @@ $client->query('myDataSource')
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**              | **
-Description**                                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
 | array    | Required              | `$minCoords` | `[0.350189, 51.248163]`  | List of minimum dimension coordinates for coordinates [x, y, z]                                                                                              |
@@ -1611,8 +1576,7 @@ $client->query('myDataSource')
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**              | **
-Description**                                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
 | array    | Required              | `$minCoords` | `[0.350189, 51.248163]`  | List of minimum dimension coordinates for coordinates [x, y, z]                                                                                              |
@@ -1641,8 +1605,7 @@ $client->query('myDataSource')
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**              | **
-Description**                                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
 | array    | Required              | `$abscissa`  | `[0.350189, 51.248163]`  | (The x axis) Horizontal coordinate for corners of the polygon                                                                                                |
@@ -1694,8 +1657,7 @@ $builder->where('country_id', 'like', '%Nether%', function (ExtractionBuilder $e
 
 The `lookup()` extraction function has the following arguments:
 
-| **Type**    | **Optional/Required** | **Argument**        | **Example**            | **
-Description**                                                                                                                                                                                                                                                                                                 |
+| **Type**    | **Optional/Required** | **Argument**        | **Example**            | **Description**                                                                                                                                                                                                                                                                                                 |
 |-------------|-----------------------|---------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string      | Required              | `$lookupName`       | "country_name_by_id"   | The name of the registered lookup function to transform the dimension value to another value.                                                                                                                                                                                                                   |
 | bool/string | Optional              | `$keepMissingValue` | `false` or `"Unknown"` | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                        |
@@ -1717,8 +1679,7 @@ $builder->select('likesAnimals', 'LikesAnimals', function(ExtractionBuilder $ext
 
 The `inlineLookup()` extraction function has the following arguments:
 
-| **Type**    | **Optional/Required** | **Argument**        | **Example**                 | **
-Description**                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Type**    | **Optional/Required** | **Argument**        | **Example**                 | **Description**                                                                                                                                                                                                                                                                                                                                                                                         |
 |-------------|-----------------------|---------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array       | Required              | `$map`              | ["y" => "Yes", "n" => "No"] | An array with key => value items which will be used as lookup map.                                                                                                                                                                                                                                                                                                                                      |
 | bool/string | Optional              | `$keepMissingValue` | `false` or `"Unknown"`      | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                                                                                                                |
@@ -1741,8 +1702,7 @@ $builder->select('number', 'myBigNumber', function(ExtractionBuilder $extraction
 
 The `format()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**   | **
-Description**                                                                                                                                  |
+| **Type** | **Optional/Required** | **Argument**         | **Example**   | **Description**                                                                                                                                  |
 |----------|-----------------------|----------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$sprintfExpression` | "%02d"        | The format string which will be used to format the dimensions value.                                                                             |
 | string   | Optional              | `$nullHandling`      | "emptyString" | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. |
@@ -1763,8 +1723,7 @@ $builder->select('cityName', 'city', function(ExtractionBuilder $extraction) {
 
 The `upper()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example** | **
-Description**                                              |
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
 |----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
 | string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform upper transformation |
 
@@ -1784,8 +1743,7 @@ $builder->where('cityName', '=', strtolower($city), function(ExtractionBuilder $
 
 The `lower()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example** | **
-Description**                                              |
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
 |----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
 | string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform lower transformation |
 
@@ -1824,8 +1782,7 @@ $builder->select('birthday', 'dayOfBirth', function(ExtractionBuilder $extractio
 
 The `timeParse()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**    | **Example** | **
-Description**                                                         |
+| **Type** | **Optional/Required** | **Argument**    | **Example** | **Description**                                                         |
 |----------|-----------------------|-----------------|-------------|-------------------------------------------------------------------------|
 | string   | Required              | `$inputFormat`  | yyyy-MM-dd  | The format which is used to parse the dimensions value.                 |
 | string   | Required              | `$outputFormat` | dd MMMM yy  | The format which is used to display the parsed value.                   |
@@ -1854,8 +1811,7 @@ $builder->select('__time', 'time', function(ExtractionBuilder $extraction) {
 
 The `timeFormat()` extraction function has the following arguments:
 
-| **Type**    | **Optional/Required** | **Argument**      | **Example**   | **
-Description**                                                                                                                                                                      |
+| **Type**    | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                      |
 |-------------|-----------------------|-------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/null | Optional              | `$format`         | dd-MM-yyyy    | Date time format for the resulting dimension value, in Joda TimeDateTimeFormat, or null to use the default ISO8601 format.                                                           |
 | string/null | Optional              | `$granularity`    | day           | Granularity to apply before formatting, or omit to not apply any granularity.                                                                                                        |
@@ -1880,8 +1836,7 @@ $builder->select('day', 'day', function(ExtractionBuilder $extraction) {
 
 The `regex()` extraction function has the following arguments:
 
-| **Type**    | **Optional/Required** | **Argument**         | **Example** | **
-Description**                                                                                                                                                                                                                                          |
+| **Type**    | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                                                                                                                                                          |
 |-------------|-----------------------|----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string      | Required              | `$regularExpression` | `[0-9]*`    | The regular expression where the dimensions value should match with.                                                                                                                                                                                     |
 | int         | Optional              | `$groupToExtract`    | 1           | If "$groupToExtract" is set, it will control which group from the match to extract. Index zero extracts the string matching the entire pattern.                                                                                                          |
@@ -1907,8 +1862,7 @@ $builder->select('zipcode', 'zipcode', function(ExtractionBuilder $extraction) {
 
 The `partial()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example** | **
-Description**                                                                                                     |
+| **Type** | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                     |
 |----------|-----------------------|----------------------|-------------|---------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$regularExpression` | `[0-9]*`    | The regular expression where the dimensions value should match with. All none matching values are changed to `null` |
 
@@ -1929,8 +1883,7 @@ $builder->select('page', 'page', function(ExtractionBuilder $extraction) {
 
 The `searchQuery()` extraction function has the following arguments:
 
-| **Type**     | **Optional/Required** | **Argument**     | **Example** | **
-Description**                                                                                                                                                                                            |
+| **Type**     | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                                                                            |
 |--------------|-----------------------|------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/array | Required              | `$valueOrValues` | "Talk"      | The word (string) or words (array) where the dimension should match with. If this word is in the dimension, it matches. When multiple words are given, all of then should match with the dimensions value. |
 | bool         | Optional              | `$caseSensitive` | true        | Set to true to do a case sensitive match, false for an case insensitive match.                                                                                                                             |
@@ -1956,8 +1909,7 @@ $builder->where('surname', '=', 'B', function(ExtractionBuilder $extraction) {
 
 The `substring()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example** | **
-Description**                                                             |
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                             |
 |----------|-----------------------|--------------|-------------|-----------------------------------------------------------------------------|
 | int      | Required              | `$index`     | 2           | The starting index from where the dimension's value should be returned.     |
 | int      | Optional              | `$length`    | 5           | The number of characters which should be returned from the $index position. |
@@ -1985,8 +1937,7 @@ https://druid.apache.org/docs/latest/development/javascript.html
 
 The `javascript()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**        | **
-Description**                                                                                          |
+| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                          |
 |----------|-----------------------|---------------|--------------------|----------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$javascript` | See examples above | The javascript function which transforms the given dimension value.                                      |
 | boolean  | Optional              | `$injective`  | true               | Set to true if this function preserves the uniqueness of the dimensions value. Default value is `false`. |
@@ -2007,8 +1958,7 @@ $builder->select('age', 'ageGroup', function(ExtractionBuilder $extraction) {
 
 The `bucket()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example** | **
-Description**                                                  |
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                  |
 |----------|-----------------------|--------------|-------------|------------------------------------------------------------------|
 | int      | Optional              | `$size`      | 10          | The size of the bucket where the numerical values are grouped in |
 | int      | Optional              | `$offset`    | 2           | The offset for the buckets                                       |
@@ -2028,28 +1978,26 @@ The `having()` filter is very simular to the `where()` filter. It is very flexib
 
 This method has the following arguments:
 
-| **Type**   | **Optional/Required** | **Argument**   | **Example**        | **
-Description**                                                                                                                                                            |
-|------------|-----------------------|----------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string     | Required              | `$having`      | "totalClicks"      | The metric which you want to filter.                                                                                                                                       |
-| string     | Required              | `$operator`    | ">"                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
-| string/int | Required              | `$value`       | 50                 | The value which you want to use in your filter comparison                                                                                                                  |
-| string     | Optional              | `$boolean`     | "and" / "or"       | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| **Type**   | **Optional/Required** | **Argument** | **Example**   | **Description**                                                                                                                                                            |
+|------------|-----------------------|--------------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string     | Required              | `$having`    | "totalClicks" | The metric which you want to filter.                                                                                                                                       |
+| string     | Required              | `$operator`  | ">"           | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
+| string/int | Required              | `$value`     | 50            | The value which you want to use in your filter comparison                                                                                                                  |
+| string     | Optional              | `$boolean`   | "and" / "or"  | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 The following `$operator` values are supported:
 
-| **Operator**   | **
-Description**                                                                                                                                                 |
-|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| =              | Check if the metric is equal to the given value.                                                                                                                |
-| !=             | Check if the metric is not equal to the given value.                                                                                                            |
-| <>             | Same as `!=`                                                                                                                                                    |
-| >              | Check if the metric is greater than the given value.                                                                                                            |
-| > =             | Check if the metric is greater than or equal to the given value.                                                                                                |
-| <              | Check if the metric is less than the given value.                                                                                                               |
-| <=             | Check if the metric is less than or equal to the given value.                                                                                                   |
-| like           | Check if the metric matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character). |
-| not like       | Same as `like`, only now the metric should not match.                                                                                                           |
+| **Operator** | **Description**                                                                                                                                                 |
+|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =            | Check if the metric is equal to the given value.                                                                                                                |
+| !=           | Check if the metric is not equal to the given value.                                                                                                            |
+| <>           | Same as `!=`                                                                                                                                                    |
+| >            | Check if the metric is greater than the given value.                                                                                                            |
+| > =          | Check if the metric is greater than or equal to the given value.                                                                                                |
+| <            | Check if the metric is less than the given value.                                                                                                               |
+| <=           | Check if the metric is less than or equal to the given value.                                                                                                   |
+| like         | Check if the metric matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character). |
+| not like     | Same as `like`, only now the metric should not match.                                                                                                           |
 
 This method supports a quick equals shorthand. Example:
 
@@ -2136,12 +2084,11 @@ $builder->virtualColumn('if(promo_id > 0, reward + 2, 0)', 'rewardWithPromoterPa
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**               | **
-Description**                                                                                                          |
-|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
-| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
-| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+| **Type** | **Optional/Required** | **Argument**  | **Example**              | **Description**                                                                                                         |
+|----------|-----------------------|---------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1) | The expression which you want to use to create this virtual column.                                                     |
+| string   | Required              | `$as`         | "myVirtualColumn"        | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function. |
+| string   | Optional              | `$type`       | "string"                 | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.         |
 
 #### `selectVirtual()`
 
@@ -2160,12 +2107,11 @@ $builder->selectVirtual(
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**               | **
-Description**                                                                                                          |
-|----------|-----------------------|---------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$expression` | if( dimension > 0, 2, 1)  | The expression which you want to use to create this virtual column.                                                      |
-| string   | Required              | `$as`         | "myVirtualColumn"         | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.  |
-| string   | Optional              | `$type`       | "string"                  | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.          |
+| **Type** | **Optional/Required** | **Argument**  | **Example**              | **Description**                                                                                                         |
+|----------|-----------------------|---------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$expression` | if( dimension > 0, 2, 1) | The expression which you want to use to create this virtual column.                                                     |
+| string   | Required              | `$as`         | "myVirtualColumn"        | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function. |
+| string   | Optional              | `$type`       | "string"                 | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.         |
 
 ## QueryBuilder: Post Aggregations
 
@@ -2206,8 +2152,7 @@ This is exactly the same. We will convert the given fields to `fieldAccess()` fo
 
 The `fieldAccess()` post aggregator has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**            | **Example**  | **
-Description**                                                                                 |
+| **Type** | **Optional/Required** | **Argument**            | **Example**  | **Description**                                                                                 |
 |----------|-----------------------|-------------------------|--------------|-------------------------------------------------------------------------------------------------|
 | string   | Required              | `$aggregatorOutputName` | totalRevenue | This refers to the output name of the aggregator given in the aggregations portion of the query |
 | string   | Required              | `$as`                   | myField      | The output name as how we can access it                                                         |
@@ -2297,8 +2242,7 @@ $builder->divide('avgSalary', function(PostAggregationsBuilder $builder){
 
 The `divide()` post aggregator has the following arguments:
 
-| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **
-Description**                                                      |
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                      |
 |-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                              |
 | array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to divide. See above for more information. |
@@ -2315,8 +2259,7 @@ $builder->multiply('volume', ['width', 'height', 'depth']);
 
 The `multiply()` post aggregator has the following arguments:
 
-| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **
-Description**                                                                 |
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
 |-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
 | array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to multiply. See the `divide()` method for more info. |
@@ -2333,8 +2276,7 @@ $builder->subtract('total', ['revenue', 'taxes']);
 
 The `subtract()` post aggregator has the following arguments:
 
-| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **
-Description**                                                                 |
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
 |-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
 | array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to subtract. See the `divide()` method for more info. |
@@ -2351,8 +2293,7 @@ $builder->add('total', ['salary', 'bonus']);
 
 The `add()` post aggregator has the following arguments:
 
-| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **
-Description**                                                            |
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                            |
 |-------------------------|-----------------------|-------------------|----------------------------------|----------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                    |
 | array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to add. See the `divide()` method for more info. |
@@ -2371,8 +2312,7 @@ $builder->quotient('quotient', ['dividend', 'divisor']);
 
 The `add()` post aggregator has the following arguments:
 
-| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **
-Description**                                                                 |
+| **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
 |-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
 | string                  | Required              | `$as`             | pi                               | The output name as how we can access it                                         |
 | array/Closure/...string | Required              | `$fieldOrClosure` | ['totalSalary', 'nrOfEmployees'] | The fields which you want to quotient. See the `divide()` method for more info. |
@@ -2397,8 +2337,7 @@ $builder
 
 The `longGreatest()` and `doubleGreatest()` post aggregator have the following arguments:
 
-| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **
-Description**                                                                                                                          |
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                          |
 |---------------|-----------------------|-------------------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                         |
 | Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the greatest value over. This can be done in multiple ways. See the `divide()` method for more info. |
@@ -2423,8 +2362,7 @@ $builder
 
 The `longLeast()` and `doubleLeast()` post aggregator have the following arguments:
 
-| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **
-Description**                                                                                                                        |
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                        |
 |---------------|-----------------------|-------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | string        | Required              | `$as`             | "lowestValue"      | The name which will be used in the output result                                                                                       |
 | Closure/array | Required              | `$fieldOrClosure` | See example above. | The fields where you want to select the lowest value over. This can be done in multiple ways. See the `divide()` method for more info. |
@@ -2450,8 +2388,7 @@ $builder->postJavascript(
 
 The `postJavascript()` post aggregation method has the following arguments:
 
-| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **
-Description**                                                                                                                                        |
+| **Type**      | **Optional/Required** | **Argument**      | **Example**        | **Description**                                                                                                                                        |
 |---------------|-----------------------|-------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string        | Required              | `$as`             | "highestValue"     | The name which will be used in the output result                                                                                                       |
 | string        | Required              | `$function`       | See example above. | A string containing the javascript function which will be applied to the given fields.                                                                 |
@@ -2476,11 +2413,10 @@ $builder
 
 The `hyperUniqueCardinality()` post aggregator has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**        | **Example** | **
-Description**                                                                     |
-|----------|-----------------------|---------------------|-------------|-------------------------------------------------------------------------------------|
-| string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from.  |
-| string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                   |
+| **Type** | **Optional/Required** | **Argument**        | **Example** | **Description**                                                                    |
+|----------|-----------------------|---------------------|-------------|------------------------------------------------------------------------------------|
+| string   | Required              | `$hyperUniqueField` | myField     | The name of the hyperUnique field where you want to retrieve the cardinality from. |
+| string   | Optional              | `$as`               | myResult    | The name which will be used in the output result.                                  |
 
 #### `quantile()`
 
@@ -2503,8 +2439,7 @@ $builder = $client->query('dataSource')
 
 The `quantile()` post aggregator has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**      | **Example** | **
-Description**                                                                                                                                                                                                                                                                                                                                                           |
+| **Type**       | **Optional/Required** | **Argument**      | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                           |
 |----------------|-----------------------|-------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult    | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField     | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
@@ -2530,8 +2465,7 @@ $builder = $client->query('dataSource')
 
 The `quantiles()` post aggregator has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **
-Description**                                                                                                                                                                                                                                                                                                                                                           |
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
@@ -2566,12 +2500,11 @@ $builder = $client->query('dataSource')
 
 The `histogram()` post aggregator has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **
-Description**                                                                                                                                                                                                                                                                                                                                                           |
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
-| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                         |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          | |
 | int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` as defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
 
 The parameters `$splitPoints` and `$numBins` are mutually exclusive.
@@ -2599,12 +2532,11 @@ $builder = $client->query('dataSource')
 
 The `rank()` post aggregator has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **
-Description**                                                                                                                                                                                                                                                                                                                                                           |
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
-| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                         |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          | |
 | int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` as defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
 
 The parameters `$splitPoints` and `$numBins` are mutually exclusive.
@@ -2635,12 +2567,11 @@ $builder = $client->query('dataSource')
 
 The `cdf()` post aggregator has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **
-Description**                                                                                                                                                                                                                                                                                                                                                           |
+| **Type**       | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                                                                                                                                                                                                           |
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
-| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                         |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          | |
 
 #### `sketchSummary()`
 
@@ -2665,8 +2596,7 @@ $builder = $client->query('dataSource')
 
 The `sketchSummary()` post aggregator has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**      | **Example** | **
-Description**                                                                                                                                                                                                                                                                                                                                                          |
+| **Type**       | **Optional/Required** | **Argument**      | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                          |
 |----------------|-----------------------|-------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult    | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                        |
 | string/Closure | Required              | `$fieldOrClosure` | myField     | Field which will be used that refers to a DoublesSketch (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
@@ -2721,8 +2651,7 @@ $response = $client->query('wikipedia')
 
 The `searchContains()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example** | **
-Description**                                                               |
+| **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                               |
 |----------|-----------------------|------------------|-------------|-------------------------------------------------------------------------------|
 | string   | Required              | `$value`         | "wikipedia" | Rows will be returned if the dimension(s) contain this value.                 |
 | bool     | Optional              | `$caseSensitive` | true        | Set to true for case sensitive matching, false for case insensitive matching. |
@@ -2746,8 +2675,7 @@ $response = $client->query('wikipedia')
 
 The `searchFragment()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**       | **
-Description**                                                                            |
+| **Type** | **Optional/Required** | **Argument**     | **Example**       | **Description**                                                                            |
 |----------|-----------------------|------------------|-------------------|--------------------------------------------------------------------------------------------|
 | array    | Required              | `$values`        | ["wiki", "pedia"] | An array with strings. Only dimensions which contain ALL of the given values are returned. |
 | bool     | Optional              | `$caseSensitive` | true              | Set to true for case sensitive matching, false for case insensitive matching.              |
@@ -2772,10 +2700,9 @@ $response = $client->query('wikipedia')
 
 The `searchRegex()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example** | **
-Description**                                                 |
-|----------|-----------------------|------------------|-------------|-----------------------------------------------------------------|
-| string   | Required              | `$pattern`       | "^Wiki"     | A regular expression where the dimension should match against.  |
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                |
+|----------|-----------------------|--------------|-------------|----------------------------------------------------------------|
+| string   | Required              | `$pattern`   | "^Wiki"     | A regular expression where the dimension should match against. |
 
 ## QueryBuilder: Execute The Query
 
@@ -2854,8 +2781,7 @@ https://druid.apache.org/docs/latest/querying/groupbyquery.html#implementation-d
 
 The `groupBy()` method and the `groupByV1()` method have the following arguments:
 
-| **Type**           | **Optional/Required** | **Argument** | **Example**        | **
-Description**                                           |
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
 |--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
 
@@ -2916,8 +2842,7 @@ $response = $client->query('wikipedia', 'all')
 
 The `topN()` method has the following arguments:
 
-| **Type**           | **Optional/Required** | **Argument** | **Example**        | **
-Description**                                           |
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
 |--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
 
@@ -2994,8 +2919,7 @@ $response = $builder->selectQuery($context);
 
 The `selectQuery()` method has the following arguments:
 
-| **Type**           | **Optional/Required** | **Argument** | **Example**        | **
-Description**                                           |
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
 |--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
 
@@ -3057,8 +2981,7 @@ $response = $builder->scan();
 
 the `scan()` method has the following parameters:
 
-| **Type**           | **Optional/Required** | **Argument**    | **Example**                        | **
-Description**                                                                                                                                                                                 |
+| **Type**           | **Optional/Required** | **Argument**    | **Example**                        | **Description**                                                                                                                                                                                 |
 |--------------------|-----------------------|-----------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array/QueryContext | Optional              | `$context`      | ['priority' => 75]                 | Query context parameters. See below for more information.                                                                                                                                       |
 | int                | Optional              | `$rowBatchSize` | 20480                              | How many rows buffered before return to client. Default is 20480                                                                                                                                |
@@ -3156,8 +3079,7 @@ $response = $builder->timeseries();
 
 The `timeseries()` method has the following arguments:
 
-| **Type**           | **Optional/Required** | **Argument** | **Example**        | **
-Description**                                           |
+| **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
 |--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. See below for more information. |
 
@@ -3214,8 +3136,7 @@ $response = $builder->search([], SortingOrder::STRLEN);
 
 The `search()` method has the following arguments:
 
-| **Type**           | **Optional/Required** | **Argument**    | **Example**            | **
-Description**                                           |
+| **Type**           | **Optional/Required** | **Argument**    | **Example**            | **Description**                                           |
 |--------------------|-----------------------|-----------------|------------------------|-----------------------------------------------------------|
 | array/QueryContext | Optional              | `$context`      | ['priority' => 75]     | Query context parameters. See below for more information. |
 | string             | Optional              | `$sortingOrder` | `SortingOrder::STRLEN` | This defines how the sorting is executed.                 |
@@ -3264,8 +3185,7 @@ $intervals = $client->metadata()->intervals('wikipedia');
 
 The `intervals()` method has 1 parameters:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example** | **
-Description**                                                                   |
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                   |
 |----------|-----------------------|---------------|-------------|-----------------------------------------------------------------------------------|
 | string   | Required              | `$dataSource` | "wikipedia" | The name of the dataSource (table) which you want to retrieve the intervals from. |
 
@@ -3291,8 +3211,7 @@ $response = $client->metadata()->interval('wikipedia', '2015-09-12T00:00:00.000Z
 
 The `interval()` method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**                                         | **
-Description**                                                                          |
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                         | **Description**                                                                          |
 |----------|-----------------------|---------------|-----------------------------------------------------|------------------------------------------------------------------------------------------|
 | string   | Required              | `$dataSource` | "wikipedia"                                         | The name of the dataSource (table) which you want to retrieve interval information from. |
 | string   | Required              | `$interval`   | "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" | The "raw" interval where you want to retrieve details for.                               |
@@ -3350,8 +3269,7 @@ $structure = $client->metadata()->structure('wikipedia');
 
 The `structure()` method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example** | **
-Description**                                                                                                                                                   |
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                                                                                                   |
 |----------|-----------------------|---------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dataSource` | "wikipedia" | The name of the dataSource (table) which you want to retrieve interval information from.                                                                          |
 | string   | Optional              | `$structure`  | "last"      | The interval where we read the structure data from. You can use "first", "last" or a raw interval string like "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" |
@@ -3642,9 +3560,7 @@ Important! You need to include the `druid-azure-extensions` as an extension to u
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument** | **
-Example**                                                                                                         | **
-Description**                                                                                                                        |
+| **Type** | **Optional/Required** | **Argument** | **Example**                                                                                                         | **Description**                                                                                                                        |
 |----------|-----------------------|--------------|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | array    | Optional              | `$uris`      | `["azure://<container>/<path-to-file>", ...]`                                                                       | Array of URIs where the Azure objects to be ingested are located.                                                                      |
 | array    | Optional              | `$prefixes`  | `["azure://<container>/<prefix>", ...]`                                                                             | Array of URI prefixes for the locations of Azure objects to ingest. Empty objects starting with one of the given prefixes are skipped. |
@@ -3678,12 +3594,10 @@ source.
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument** | **
-Example**                                                                                                         | **
-Description**                                                                                                                        |
-|----------|-----------------------|--------------|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| array    | Optional              | `$uris`      | `["gs://<container>/<path-to-file>", ...]`                                                                       | Array of URIs where the Google Cloud Storage to be ingested are located.                                                                      |
-| array    | Optional              | `$prefixes`  | `["gs://<container>/<prefix>", ...]`                                                                             | Array of URI prefixes for the locations of Google Cloud Storage to ingest. Empty objects starting with one of the given prefixes are skipped. |
+| **Type** | **Optional/Required** | **Argument** | **Example**                                                                                                         | **Description**                                                                                                                               |
+|----------|-----------------------|--------------|---------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| array    | Optional              | `$uris`      | `["gs://<container>/<path-to-file>", ...]`                                                                          | Array of URIs where the Google Cloud Storage to be ingested are located.                                                                      |
+| array    | Optional              | `$prefixes`  | `["gs://<container>/<prefix>", ...]`                                                                                | Array of URI prefixes for the locations of Google Cloud Storage to ingest. Empty objects starting with one of the given prefixes are skipped. |
 | array    | Optional              | `$objects`   | `[ ["bucket" => "container", "path" => "path/file1.json"], ["bucket" => "container", "path" => "path/file2.json"]]` | Array of Google Cloud Storage to ingest.                                                                                                      |
 
 Either one of these parameters is required. When you execute your index task in parallel, each task will process one (or
@@ -3713,9 +3627,7 @@ Important! You need to include the `druid-s3-extensions` as an extension to use 
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**  | **
-Example**                                                                                                         | **
-Description**                                                                                                                              |
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                                                                                         | **Description**                                                                                                                              |
 |----------|-----------------------|---------------|---------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
 | array    | Optional              | `$uris`       | `["s3://<bucket>/<path-to-file>", ...]`                                                                             | Array of URIs where S3 objects to be ingested are located.                                                                                   |
 | array    | Optional              | `$prefixes`   | `["s3://<bucket>/<prefix>", ...]`                                                                                   | Array of URI prefixes for the locations of S3 objects to be ingested. Empty objects starting with one of the given prefixes will be skipped. |
@@ -3758,9 +3670,7 @@ Important! You need to include the `druid-hdfs-storage` as an extension to use t
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument** | **
-Example**                                                                             | **
-Description**                                                                                                                                                                             |
+| **Type** | **Optional/Required** | **Argument** | **Example**                                                                             | **Description**                                                                                                                                                                             |
 |----------|-----------------------|--------------|-----------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array    | Required              | `$paths`     | `["hdfs://namenode_host/foo/bar/file.json", "hdfs://namenode_host/bar/foo/file2.json"]` | HDFS paths. Can be either a JSON array or comma-separated string of paths. Wildcards like * are supported in these paths. Empty files located under one of the given paths will be skipped. |
 
@@ -3787,8 +3697,7 @@ The HttpInputSource reads files directly from remote sites via HTTP.
 
 The constructor allows you to specify the following parameters:
 
-| **Type**     | **Optional/Required** | **Argument** | **Example**                                               | **
-Description**                                                                                                                                          |
+| **Type**     | **Optional/Required** | **Argument** | **Example**                                               | **Description**                                                                                                                                          |
 |--------------|-----------------------|--------------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array        | Required              | `$uris`      | `["http://example.com/uri1", "http://example2.com/uri2"]` | URIs of the input files.                                                                                                                                 |
 | string       | Optional              | `$username`  | `"john"`                                                  | Username to use for authentication with specified URIs. Can be optionally used if the URIs specified in the spec require a Basic Authentication Header.  |
@@ -3836,10 +3745,9 @@ It can be used for demos or for quickly testing out parsing and schema.
 
 The constructor allows you to specify the following parameters:
 
-| **Type**     | **Optional/Required** | **Argument** | **Example**                                     | **
-Description**                         |
-|--------------|-----------------------|--------------|-------------------------------------------------|-----------------------------------------|
-| array        | Required              | `$data`      | `[["row1", 16, 9.18], ["row2", 12, 9.22], ...]` | Array with rows which contain the data. |
+| **Type** | **Optional/Required** | **Argument** | **Example**                                     | **Description**                         |
+|----------|-----------------------|--------------|-------------------------------------------------|-----------------------------------------|
+| array    | Required              | `$data`      | `[["row1", 16, 9.18], ["row2", 12, 9.22], ...]` | Array with rows which contain the data. |
 
 Example:
 
@@ -3862,8 +3770,7 @@ The LocalInputSource reads files directly from local storage.
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required**     | **Argument** | **Example**                | **
-Description**                                                                                                                                                  |
+| **Type** | **Optional/Required**     | **Argument** | **Example**                | **Description**                                                                                                                                                  |
 |----------|---------------------------|--------------|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array    | Required without $baseDir | `$files`     | `["/bar/foo", "/foo/bar"]` | File paths to ingest. Some files can be ignored to avoid ingesting duplicate files if they are located under the specified baseDir. Empty files will be skipped. |
 | string   | Required without $files   | `$baseDir`   | `"/data/directory"`        | Directory to search recursively for files to be ingested. Empty files under the baseDir will be skipped.                                                         |
@@ -3897,8 +3804,7 @@ The DruidInputSource reads data directly from existing druid segments.
 
 The constructor allows you to specify the following parameters:
 
-| **Type**          | **Optional/Required** | **Argument**  | **Example**                          | **
-Description**                                                                                                       |
+| **Type**          | **Optional/Required** | **Argument**  | **Example**                          | **Description**                                                                                                       |
 |-------------------|-----------------------|---------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | array             | Required              | `$dataSource` | `["/bar/foo", "/foo/bar"]`           | The datasource where you want to read data from.                                                                      |
 | IntervalInterface | Optional              | `$inteval`    | `new Interval('now - 1 day', 'now')` | The interval which will be used for eading data from your datasource. Only records within this interval will be read. |
@@ -3941,9 +3847,7 @@ See https://druid.apache.org/docs/latest/ingestion/native-batch.html#sql-input-s
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**  | **
-Example**                                                                        | **
-Description**                                                                                                                                                          |
+| **Type** | **Optional/Required** | **Argument**  | **Example**                                                                        | **Description**                                                                                                                                                          |
 |----------|-----------------------|---------------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$connectURI` | `"jdbc:mysql://host:port/schema"`                                                  | The connection URI to connect with your database.                                                                                                                        |
 | string   | Required              | `$username`   | `"user"`                                                                           | The username used for authentication.                                                                                                                                    |
@@ -3983,9 +3887,8 @@ input sources requiring an inputFormat must have the same format for input data.
 
 The constructor allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**                                          | **
-Description**                                                        |
-|----------|-----------------------|---------------|------------------------------------------------------|------------------------------------------------------------------------|
+| **Type** | **Optional/Required** | **Argument**    | **Example**                                          | **Description**                                                        |
+|----------|-----------------------|-----------------|------------------------------------------------------|------------------------------------------------------------------------|
 | array    | Required              | `$inputSources` | `[new HttpInputSource(...), new S3InputSource(...)]` | List with other import sources which should be processed all together. |
 
 Example:
@@ -4015,9 +3918,8 @@ The `csvFormat()` allows you to specify how your csv data is build.
 
 This method allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**      | **
-Description**                                                                                           |
-|----------|-----------------------|--------------|------------------|-----------------------------------------------------------------------------------------------------------|
+| **Type** | **Optional/Required** | **Argument** | **Example**       | **Description**                                                                                           |
+|----------|-----------------------|--------------|-------------------|-----------------------------------------------------------------------------------------------------------|
 | array    | Required              | `$columns`   | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
 | string   | Required              | `$columns`   | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
 

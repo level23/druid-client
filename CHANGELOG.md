@@ -27,7 +27,7 @@
 **v2.0**
 
 - Updated minimal supported PHP version to 7.4, which allows us to use property type hinting, short function syntax and more.
-- Removed DRUID_VERSION hinting. This was only used for `whereFlags()` and made our code ugly. You can now use the oldskool
+- Removed DRUID_VERSION config setting. This was only used for `whereFlags()` and made our code ugly. You can now use the oldskool
   javascript variant by setting the new 4th parameter to true.
 - Added `markAsUnused` option to kill task and the KillTaskBuilder.
 - Refactored the IndexTask. It now allows an InputSource. Also added option to specify timestamp column. Added support
