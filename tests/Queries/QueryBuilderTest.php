@@ -1320,17 +1320,18 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [true, true, {}, true, 10, 20, null, false, "list", "", true, true]
-     *           [false, false, {}, false, 50, null, 10, true, "compactedList", "channel", false, true]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, true, 1, 1, 200, false, "list", "__time", true, true]
-     *           [false, true, {}, false, 12, 12, 0, true, "compactedList", "__time", false, true]
-     *           [true, false, {"maxRowsQueuedForOrdering":5}, false, 0, 0, 200, false, "list", "__time", true, false]
-     *           [false, true, {}, false, 12, null, 0, true, "compactedList", "__time", false, false]
+     * @testWith [true, false, true, {}, true, 10, 20, null, false, "list", "", true, true]
+     *           [false, true, false, {}, false, 50, null, 10, true, "compactedList", "channel", false, true]
+     *           [true, false, false, {"maxRowsQueuedForOrdering":5}, true, 1, 1, 200, false, "list", "__time", true, true]
+     *           [false, false, true, {}, false, 12, 12, 0, true, "compactedList", "__time", false, true]
+     *           [true, false, false, {"maxRowsQueuedForOrdering":5}, false, 0, 0, 200, false, "list", "__time", true, false]
+     *           [false, false, true, {}, false, 12, null, 0, true, "compactedList", "__time", false, false]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      *
      * @param bool              $withDimensions
+     * @param bool              $withVirtual
      * @param bool              $withFilter
      * @param array<string,int> $context
      * @param bool              $contextAsObj
@@ -1347,6 +1348,7 @@ class QueryBuilderTest extends TestCase
      */
     public function testBuildScanQuery(
         bool $withDimensions,
+        bool $withVirtual,
         bool $withFilter,
         array $context,
         bool $contextAsObj,
@@ -1365,6 +1367,10 @@ class QueryBuilderTest extends TestCase
         if ($withDimensions) {
             $this->builder->select('channel');
             $this->builder->select('delta');
+        }
+
+        if ($withVirtual) {
+            $this->builder->virtualColumn('concat(foo, bar)', 'fooBar');
         }
 
         $filter = new SelectorFilter('cityName', 'Auburn');
@@ -1431,6 +1437,12 @@ class QueryBuilderTest extends TestCase
             $query->shouldReceive('setBatchSize')
                 ->once()
                 ->with($rowBatchSize);
+        }
+
+        if ($withVirtual) {
+            $query->shouldReceive('setVirtualColumns')
+                ->once()
+                ->with(new IsInstanceOf(VirtualColumnCollection::class));
         }
 
         if ($orderByField == '__time') {

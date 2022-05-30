@@ -12,7 +12,9 @@ use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\DataSources\TableDataSource;
+use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 
 class ScanQueryTest extends TestCase
 {
@@ -28,6 +30,10 @@ class ScanQueryTest extends TestCase
     {
         $intervals = new IntervalCollection(
             new Interval('12-02-2018', '13-02-2018')
+        );
+
+        $virtualColumns = new VirtualColumnCollection(
+            new VirtualColumn("concat(first_name, ' ', last_name)", 'full_name')
         );
 
         $dataSource = new TableDataSource('wikipedia');
@@ -83,6 +89,10 @@ class ScanQueryTest extends TestCase
         $columns = ['added', 'delta'];
         $query->setColumns($columns);
         $expected['columns'] = $columns;
+        $this->assertEquals($expected, $query->toArray());
+
+        $query->setVirtualColumns($virtualColumns);
+        $expected['virtualColumns'] = $virtualColumns->toArray();
         $this->assertEquals($expected, $query->toArray());
 
         $rawResponse = [
