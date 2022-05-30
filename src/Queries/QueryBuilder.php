@@ -597,6 +597,10 @@ class QueryBuilder
             $query->setColumns($columns);
         }
 
+        if (count($this->virtualColumns) > 0) {
+            $query->setVirtualColumns(new VirtualColumnCollection(...$this->virtualColumns));
+        }
+
         if ($this->filter) {
             $query->setFilter($this->filter);
         }

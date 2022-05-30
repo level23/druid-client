@@ -9,6 +9,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\Collections\VirtualColumnCollection;
 
 /**
  * Class ScanQuery
@@ -88,6 +89,11 @@ class ScanQuery implements QueryInterface
      */
     protected $columns = [];
 
+    /**
+     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
+     */
+    protected $virtualColumns;
+
     public function __construct(string $dataSource, IntervalCollection $intervals)
     {
         $this->dataSource = $dataSource;
@@ -108,6 +114,10 @@ class ScanQuery implements QueryInterface
             'resultFormat' => $this->resultFormat,
             'columns'      => $this->columns,
         ];
+
+        if ($this->virtualColumns) {
+            $result['virtualColumns'] = $this->virtualColumns->toArray();
+        }
 
         if ($this->filter) {
             $result['filter'] = $this->filter->toArray();
@@ -211,6 +221,14 @@ class ScanQuery implements QueryInterface
     public function setContext(QueryContext $context): void
     {
         $this->context = $context;
+    }
+
+    /**
+     * @param \Level23\Druid\Collections\VirtualColumnCollection $virtualColumns
+     */
+    public function setVirtualColumns(VirtualColumnCollection $virtualColumns): void
+    {
+        $this->virtualColumns = $virtualColumns;
     }
 
     /**
