@@ -7,6 +7,7 @@ use Mockery;
 use ArrayObject;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
@@ -14,6 +15,9 @@ use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Dimensions\LookupDimension;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Extractions\ExtractionBuilder;
+use Level23\Druid\Dimensions\ListFilteredDimension;
+use Level23\Druid\Dimensions\RegexFilteredDimension;
+use Level23\Druid\Dimensions\PrefixFilteredDimension;
 
 class HasDimensionsTest extends TestCase
 {
@@ -131,7 +135,59 @@ class HasDimensionsTest extends TestCase
             })
             ->once();
 
+        $this->builder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('addDimension')
+            ->once();
+
         $response = $this->builder->lookup('full_name', 'name', 'display_name', 'John Doe');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testInlineLookup(): void
+    {
+        $departments = [
+            1 => 'Administration',
+            2 => 'Marketing',
+            3 => 'Shipping',
+            4 => 'IT',
+            5 => 'Accounting',
+            6 => 'Finance',
+        ];
+
+        Mockery::mock('overload:' . LookupDimension::class)
+            ->shouldReceive('__construct')
+            ->andReturnUsing(function (
+                $dimension,
+                $map,
+                $as,
+                $replaceMissingValue,
+                $isOneToOne
+            ) use ($departments) {
+                $this->assertEquals('department_id', $dimension);
+                $this->assertEquals('department', $as);
+                $this->assertEquals($departments, $map);
+                $this->assertEquals(true, $isOneToOne);
+
+                return true;
+            })
+            ->once();
+
+        $this->builder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('addDimension')
+            ->once();
+
+        $response = $this->builder->inlineLookup(
+            $departments,
+            'department_id',
+            'department',
+            'Unknown',
+            true
+        );
 
         $this->assertEquals($this->builder, $response);
     }
@@ -157,11 +213,108 @@ class HasDimensionsTest extends TestCase
             })
             ->once();
 
-        $this->builder->lookup('full_name', 'name');
+        $this->builder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('addDimension')
+            ->once();
+
+        $result = $this->builder->lookup('full_name', 'name');
+
+        $this->assertEquals($result, $this->builder);
+    }
+
+    /**
+     * @testWith ["string", true]
+     *           ["long", true]
+     *           ["double", false]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testMultiValueListSelect(string $outputType, bool $isWhitelist): void
+    {
+        $dimensionName = 'myMultiValDimension';
+        $values        = ['a', 'b', 'c'];
+        $as            = 'baz';
+
+        Mockery::mock('overload:' . Dimension::class)
+            ->shouldReceive('__construct')
+            ->with($dimensionName, $as, $outputType)
+            ->once();
+
+        Mockery::mock('overload:' . ListFilteredDimension::class)
+            ->shouldReceive('__construct')
+            ->with(new IsInstanceOf(Dimension::class), $values, $isWhitelist)
+            ->once();
+
+        $result = $this->builder->multiValueListSelect($dimensionName, $values, $as, $outputType, $isWhitelist);
+
+        $this->assertEquals($result, $this->builder);
+    }
+
+    /**
+     * @testWith ["string"]
+     *           ["long"]
+     *           ["float"]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testMultiValueRegexSelect(string $outputType): void
+    {
+        $dimensionName = 'myMultiValDimension';
+        $regex        = "^(a|b)$";
+        $as            = 'baz';
+
+        Mockery::mock('overload:' . Dimension::class)
+            ->shouldReceive('__construct')
+            ->with($dimensionName, $as, $outputType)
+            ->once();
+
+        Mockery::mock('overload:' . RegexFilteredDimension::class)
+            ->shouldReceive('__construct')
+            ->with(new IsInstanceOf(Dimension::class), $regex)
+            ->once();
+
+        $result = $this->builder->multiValueRegexSelect($dimensionName, $regex, $as, $outputType);
+
+        $this->assertEquals($result, $this->builder);
+    }
+
+    /**
+     * @testWith ["string"]
+     *           ["long"]
+     *           ["float"]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testMultiValuePrefixSelect(string $outputType): void
+    {
+        $dimensionName = 'myMultiValDimension';
+        $prefix        = "my";
+        $as            = 'baz';
+
+        Mockery::mock('overload:' . Dimension::class)
+            ->shouldReceive('__construct')
+            ->with($dimensionName, $as, $outputType)
+            ->once();
+
+        Mockery::mock('overload:' . PrefixFilteredDimension::class)
+            ->shouldReceive('__construct')
+            ->with(new IsInstanceOf(Dimension::class), $prefix)
+            ->once();
+
+        $result = $this->builder->multiValuePrefixSelect($dimensionName, $prefix, $as, $outputType);
+
+        $this->assertEquals($result, $this->builder);
     }
 
     public function testSelectWithExtraction(): void
     {
+        $this->builder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('addDimension')
+            ->once();
+
         $counter = 0;
         $this->builder->select('user_id', 'username', function (ExtractionBuilder $builder) use (&$counter) {
             $counter++;

@@ -137,6 +137,10 @@ class HasFilterTest extends TestCase
                 [new Interval('19-02-2019 00:00:00', '20-02-2019 00:00:00')],
             ],
             [
+                [],
+                []
+            ],
+            [
                 [null],
                 [],
                 InvalidArgumentException::class,

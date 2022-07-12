@@ -17,7 +17,6 @@ class QueryDataSource implements DataSourceInterface
      */
     public function __construct(QueryInterface $query)
     {
-
         $this->query = $query;
     }
 

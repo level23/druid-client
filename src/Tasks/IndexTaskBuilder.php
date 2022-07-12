@@ -14,6 +14,7 @@ use Level23\Druid\Concerns\HasTuningConfig;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Dimensions\TimestampSpec;
 use Level23\Druid\InputFormats\FlattenSpec;
+use Level23\Druid\Types\MultiValueHandling;
 use Level23\Druid\Transforms\TransformBuilder;
 use Level23\Druid\Dimensions\SpatialDimension;
 use Level23\Druid\InputFormats\CsvInputFormat;
@@ -39,7 +40,7 @@ class IndexTaskBuilder extends TaskBuilder
     use HasSegmentGranularity, HasQueryGranularity, HasInterval, HasTuningConfig, HasAggregations;
 
     /**
-     * @var array<array<string,string>>
+     * @var array<array<string,string|bool>>
      */
     protected array $dimensions = [];
 
@@ -120,6 +121,32 @@ class IndexTaskBuilder extends TaskBuilder
     public function dimension(string $name, string $type = DataType::STRING): IndexTaskBuilder
     {
         $this->dimensions[] = ['name' => $name, 'type' => DataType::validate($type)];
+
+        return $this;
+    }
+
+    /**
+     * Add a multi-value dimension.
+     *
+     * @param string $name
+     * @param string $type
+     * @param string $multiValueHandling $type
+     * @param bool   $createBitmapIndex
+     *
+     * @return $this
+     */
+    public function multiValueDimension(
+        string $name,
+        string $type = DataType::STRING,
+        string $multiValueHandling = MultiValueHandling::SORTED_ARRAY,
+        bool $createBitmapIndex = true
+    ): IndexTaskBuilder {
+        $this->dimensions[] = [
+            'name'               => $name,
+            'type'               => DataType::validate($type),
+            'multiValueHandling' => MultiValueHandling::validate($multiValueHandling),
+            'createBitmapIndex'  => $createBitmapIndex,
+        ];
 
         return $this;
     }

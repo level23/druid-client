@@ -77,7 +77,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ## Todo's
 
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
-- Implement support for multi-value dimensions
 - Implement hadoop based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
 
@@ -113,6 +112,7 @@ for more information.
     - [QueryBuilder: Dimension Selections](#querybuilder-dimension-selections)
         - [select()](#select)
         - [lookup()](#lookup)
+        - [inlineLookup()](#inlinelookup)
     - [QueryBuilder: Metric Aggregations](#querybuilder-metric-aggregations)
         - [count()](#count)
         - [sum()](#sum)
@@ -851,6 +851,39 @@ Example:
 
 ```php
 $builder->lookup('lookupUsername', 'user_id', 'username', 'Unknown'); 
+```
+
+#### `inlineLookup()`
+
+This method allows you to lookup a dimension using a predefined list. 
+
+Lookup's are a handy way to transform an ID value into a user readable name, like transforming a `category_id` into the
+`category`, without having to store the category in your dataset.
+
+This method has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**        | **Example**                   | **Description**                                                                                                                                                                                                                                                      |
+|----------------|-----------------------|---------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array          | Required              | `$map`              | `[1 => "IT", 2 => "Finance"]` | The list with key => value items, where the dimensions value will be used to find the value in the list.                                                                                                                                                             |
+| string         | Required              | `$dimension`        | user_id                       | The dimension which you want to transform.                                                                                                                                                                                                                           |
+| string         | Optional              | `$as`               | username                      | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
+| bool or string | Optional              | `$keepMissingValue` | Unknown                       | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
+| bool           | Optional              | `$isOneToOne`       | true                          | Set to true if the key/value items are unique in the given map.                                                                                                                                                                                                      |
+
+Example:
+
+```php
+
+$departments = [
+    1 => 'Administration',
+    2 => 'Marketing',
+    3 => 'Shipping',
+    4 => 'IT',
+    5 => 'Accounting',
+    6 => 'Finance'
+];
+
+$builder->lookup($departments, 'department_id', 'department', 'Unknown'); 
 ```
 
 ## QueryBuilder: Metric Aggregations
@@ -3531,6 +3564,8 @@ $taskId = $client->index('myTableName', $inputSource)
     ->dimension('version', 'float')
     // You can also import spatial dimensions (x,y(,z)) coordinates
     ->spatialDimension('location', ['lat', 'long'])
+    // Import multi-value dimensions
+    ->multiValueDimension('tags', 'string')
     // Add the metrics which we want to ingest from our input source. (only when rollup is enabled!)
     ->sum('clicks', 'totalClicks', 'long')
     ->sum('visits', 'totalVisits', 'long')
@@ -3918,10 +3953,27 @@ The `csvFormat()` allows you to specify how your csv data is build.
 
 This method allows you to specify the following parameters:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**       | **Description**                                                                                           |
-|----------|-----------------------|--------------|-------------------|-----------------------------------------------------------------------------------------------------------|
-| array    | Required              | `$columns`   | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
-| string   | Required              | `$columns`   | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
+| **Type** | **Optional/Required** | **Argument**             | **Example**       | **Description**                                                                                           |
+|----------|-----------------------|--------------------------|-------------------|-----------------------------------------------------------------------------------------------------------|
+| array    | Required              | `$columns`               | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
+| string   | Optional              | `$listDelimiter`         | `"$"`             | A custom delimiter for multi-value dimensions.                                                            |
+| boolean  | Optional              | `$findColumnsFromHeader` | `true`            | If this is set, the task will find the column names from the header row.                                  |
+| int      | Optional              | `$skipHeaderRows`        | `2`               | If this is set, the task will skip the first skipHeaderRows rows.                                         |
+
+Note that skipHeaderRows will be applied before finding column names from the header. For example, if you set
+skipHeaderRows to 2 and findColumnsFromHeader to true, the task will skip the first two lines and then extract column
+information from the third line.
+
+Example:
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+$builder = $client->index('data', $inputSource)
+    ->csvFormat(['name', 'age'], null, true, 2)
+    //-> ....
+;
+```
 
 ## `tsvFormat()`
 

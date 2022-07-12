@@ -28,12 +28,15 @@ try {
         })
         ->join(function (QueryBuilder $queryBuilder) {
             $queryBuilder
+                ->select('name')
+                ->sum('hits')
                 ->from('anotherDataSource')
+                ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
                 ->where('a', '=', 'b');
-        }, 'r', 'r.name = name')
+        }, 'r', 'name == "r.name"')
         ->select('page', 'edited_page')
         ->select('namespace')
-        ->select('r.other')
+        ->select('r.hits', 'hits')
         ->count('edits')
         ->longSum('added')
         ->longSum('deleted')

@@ -27,17 +27,17 @@ class GroupByQuery implements QueryInterface
 
     protected string $granularity;
 
-    protected ?FilterInterface $filter;
+    protected ?FilterInterface $filter = null;
 
-    protected ?AggregationCollection $aggregations;
+    protected ?AggregationCollection $aggregations = null;
 
-    protected ?PostAggregationCollection $postAggregations;
+    protected ?PostAggregationCollection $postAggregations = null;
 
-    protected ?VirtualColumnCollection $virtualColumns;
+    protected ?VirtualColumnCollection $virtualColumns = null;
 
-    protected ?HavingFilterInterface $having;
+    protected ?HavingFilterInterface $having = null;
 
-    protected ?ContextInterface $context;
+    protected ?ContextInterface $context = null;
 
     protected ?Limit $limit = null;
 

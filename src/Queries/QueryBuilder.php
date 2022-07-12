@@ -432,11 +432,8 @@ class QueryBuilder
 
             if ($orderBy->count() > 0) {
                 $orderByItems = $orderBy->toArray();
-                $first        = reset($orderByItems);
-
-                if ($first === false) {
-                    return null;
-                }
+                /** @var string[] $first */
+                $first = reset($orderByItems);
 
                 if ($first['dimension'] == '__time' || ($dimension && $dimension == $first['dimension'])) {
                     return $first['direction'] == OrderByDirection::DESC;

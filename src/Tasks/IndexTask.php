@@ -33,7 +33,7 @@ class IndexTask implements TaskInterface
     protected ?AggregationCollection $aggregations;
 
     /**
-     * @var array<array<string,string>>
+     * @var array<array<string,string|bool>>
      */
     protected array $dimensions = [];
 
@@ -62,7 +62,7 @@ class IndexTask implements TaskInterface
      * @param \Level23\Druid\TuningConfig\TuningConfig|null              $tuningConfig
      * @param \Level23\Druid\Context\TaskContext|null                    $context
      * @param \Level23\Druid\Collections\AggregationCollection|null      $aggregations
-     * @param array<array<string,string>>                                $dimensions
+     * @param array<array<string,string|bool>>                           $dimensions
      * @param string|null                                                $taskId
      * @param \Level23\Druid\InputFormats\InputFormatInterface|null      $inputFormat
      * @param \Level23\Druid\Dimensions\TimestampSpec|null               $timestampSpec

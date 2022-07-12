@@ -6,7 +6,7 @@ namespace Level23\Druid\Types;
 use InvalidArgumentException;
 
 /**
- * Class FlattenFieldType
+ * Class JoinType
  *
  * @package Level23\Druid\Types
  */
@@ -23,7 +23,7 @@ final class JoinType extends Enum
      */
     public static function validate(string $joinType): string
     {
-        $joinType = strtolower($joinType);
+        $joinType = strtoupper($joinType);
         if (!JoinType::isValidValue($joinType)) {
             throw new InvalidArgumentException(
                 'The given join type is invalid: ' . $joinType . '. ' .

@@ -35,7 +35,7 @@ class JoinDataSource implements DataSourceInterface
         $this->right       = $right;
         $this->rightPrefix = $rightPrefix;
         $this->condition   = $condition;
-        $this->joinType    = JoinType::validate(strtoupper($joinType));
+        $this->joinType    = JoinType::validate($joinType);
     }
 
     /**

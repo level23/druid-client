@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Types\Granularity;
@@ -18,6 +19,7 @@ use Level23\Druid\Types\FlattenFieldType;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Dimensions\TimestampSpec;
 use Level23\Druid\InputFormats\FlattenSpec;
+use Level23\Druid\Types\MultiValueHandling;
 use Level23\Druid\Transforms\TransformBuilder;
 use Level23\Druid\Dimensions\SpatialDimension;
 use Level23\Druid\InputFormats\CsvInputFormat;
@@ -159,6 +161,64 @@ class IndexTaskBuilderTest extends TestCase
             $builder,
             $builder->spatialDimension('location', ['lat', 'long'])
         );
+    }
+
+    /**
+     * @testWith ["String", "array", true]
+     *           ["DOUBLE", "sorted_array", false]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @throws \ReflectionException
+     */
+    public function testMultiValueDimension(string $type, string $multiValueHandling, bool $createBitmapIndex): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'coordinates');
+
+        $this->assertEquals(
+            $builder,
+            $builder->multiValueDimension('position', $type, $multiValueHandling, $createBitmapIndex)
+        );
+
+        $this->assertEquals([
+            [
+                'name'               => 'position',
+                'type'               => DataType::validate($type),
+                'multiValueHandling' => MultiValueHandling::validate($multiValueHandling),
+                'createBitmapIndex'  => $createBitmapIndex,
+            ],
+        ], $this->getProperty($builder, 'dimensions'));
+    }
+
+    /**
+     * @testWith ["SORTED_ARRAY", false]
+     *           ["SORTED_SET", false]
+     *           ["ARRAY", false]
+     *           ["Array", false]
+     *           ["ArRaY", false]
+     *           ["LefT", true]
+     *           ["aray", true]
+     *           [" array ", true]
+     *           ["sortedSet", true]
+     *           ["sortedArray", true]
+     *
+     * @param string $value
+     * @param bool   $expectException
+     *
+     * @return void
+     */
+    public function testMultiValueHandling(string $value, bool $expectException): void
+    {
+        if ($expectException) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(
+                'The given MultiValueHandling type is invalid: ' . strtoupper($value) . '. ' .
+                'Allowed are: ' . implode(', ', MultiValueHandling::values())
+            );
+        }
+
+        $this->assertEquals(strtoupper($value), MultiValueHandling::validate($value));
     }
 
     /**

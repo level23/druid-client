@@ -118,7 +118,7 @@ trait HasDataSource
     public function union($dataSources): self
     {
         if (!$this->dataSource instanceof TableDataSource) {
-            throw new InvalidArgumentException('');
+            throw new InvalidArgumentException('We can only union an table dataSource! You currently are using a ' . get_class($this->dataSource));
         }
 
         $dataSources   = (array)$dataSources;

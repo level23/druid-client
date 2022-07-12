@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="../tests/bootstrap.php" colors="false" backupGlobals="false" backupStaticAttributes="false" verbose="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">../src</directory>
-    </include>
-    <exclude>
-      <file>src/autoload.php</file>
-    </exclude>
-  </coverage>
-  <testsuites>
-    <testsuite name="phpunit">
-      <directory>../tests/</directory>
-    </testsuite>
-  </testsuites>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="../tests/bootstrap.php" colors="false"
+         backupGlobals="false" backupStaticAttributes="false" verbose="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">../src</directory>
+        </include>
+        <exclude>
+            <file>../src/autoload.php</file>
+            <file>../src/DruidServiceProvider.php</file>
+            <file>../src/Facades/Druid.php</file>
+        </exclude>
+    </coverage>
+    <testsuites>
+        <testsuite name="phpunit">
+            <directory>../tests/</directory>
+            <exclude>../src/DruidServiceProvider.php</exclude>
+            <exclude>../src/Facades/Druid.php</exclude>
+        </testsuite>
+    </testsuites>
 </phpunit>

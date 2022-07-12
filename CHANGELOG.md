@@ -24,6 +24,10 @@
     - `cdf()`
     - `sketchSummary()`
 
+**v1.2.1**
+- Fixed issue where `whereFlags()` was not working correctly because it uses virtual columns, but select query's did not 
+  support virtual columns yet. This is now fixed.
+
 **v2.0**
 
 - Updated minimal supported PHP version to 7.4, which allows us to use property type hinting, short function syntax and more.
@@ -63,6 +67,8 @@
   The time between each check can be influenced by the `'polling_sleep_seconds'` config setting or
   the `DRUID_POLLING_SLEEP_SECONDS` .env setting for Laravel/Lumen applications.
 - Added support to join other DataSources.
+- Added support for `inlineLookup`
+- Added support for multi-value columns. Either by using one of the new `multiValueListSelect`, `multiValueRegexSelect`, `multiValuePrefixSelect` dimension selector filters. 
 
 ## Migrating to v2
 
