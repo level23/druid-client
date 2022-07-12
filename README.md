@@ -109,10 +109,20 @@ for more information.
         - [dimensions()](#dimensions)
         - [toArray()](#toarray)
         - [toJson()](#tojson)
+    - [QueryBuilder: Data Sources](#querybuilder-data-sources)
+        - [from()](#from)
+        - [join()](#join)
+        - [leftJoin()](#leftjoin)
+        - [innerJoin()](#innerjoin)
+        - [joinLookup()](#joinlookup)
+        - [union()](#union)
     - [QueryBuilder: Dimension Selections](#querybuilder-dimension-selections)
         - [select()](#select)
         - [lookup()](#lookup)
         - [inlineLookup()](#inlinelookup)
+        - [multiValueListSelect()](#multivaluelistselect)
+        - [multiValueRegexSelect()](#multivalueregexselect)
+        - [multiValuePrefixSelect()](#multivalueprefixselect)
     - [QueryBuilder: Metric Aggregations](#querybuilder-metric-aggregations)
         - [count()](#count)
         - [sum()](#sum)
@@ -760,6 +770,156 @@ The `toJson()` method has the following arguments:
 |--------------------|-----------------------|--------------|--------------------|---------------------------|
 | array/QueryContext | Optional              | `$context`   | ['priority' => 75] | Query context parameters. |
 
+## QueryBuilder: Data Sources
+
+By default, you will specify the dataSource where you want to select your data from with the
+query. For example:
+
+```php
+$builder = $client->query('wikipedia');
+```
+
+In this chapter we will explain how to change it dynamically, or, for example, join other dataSources.
+
+#### `from()`
+
+You can use this method to override / change the currently used dataSource (if any).
+
+You can supply a string, which will be interpreted as a druid dataSource table.
+You can also specify an object which implements the `DataSourceInterface`.
+
+This method has the following arguments:
+
+| **Type**                      | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
+|-------------------------------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
+| string or DataSourceInterface | Required              | `$dataSource` | hits        | The dataSource which you want to use to retrieve druid data from. |
+
+```php
+$builder = $client->query('hits_short');
+
+// For example, use a different dataSource if the given date is older than one week.
+if( Carbon::parse($date)->isBefore(Carbon::now()->subWeek()) ) {
+    $builder->from('hits_long');
+}
+```
+
+#### `join()`
+
+With this method you can join another dataSource. This is available since druid version 0.23.0.
+
+Please be aware that joins are executed as a subquery in Druid, which may have a substantial effect on the performance.
+
+See:
+
+- https://druid.apache.org/docs/latest/querying/datasource.html#join
+- https://druid.apache.org/docs/latest/querying/query-execution.html#join
+
+```php
+$builder = $client->query('users')
+    ->interval('now - 1 week', 'now')
+    ->join('departments', 'dep', 'dep.id = users.department_id')
+    ->select([ /*...*/ ]);
+```
+
+You can also specify a sub-query as a join. For example:
+
+```php
+$builder = $client->query('users')
+    ->interval('now - 1 week', 'now')
+    ->join(function(\Level23\Druid\Queries\QueryBuilder $subQuery) {
+        $subQuery->from('departments')
+            ->where('name', '!=', 'Staff');
+    }, 'dep', 'dep.id = users.department_id')
+    ->select([ /*...*/ ]);
+```
+
+You can also specify an other DataSource as value. For example, you can create a new `JoinDataSource` object and pass
+that as value. However, there are easy methods created for this (for example `joinLookup()`) so you probably
+do not have to use this.
+
+This method has the following arguments:
+
+| **Type**                                 | **Optional/Required** | **Argument**           | **Example**      | **Description**                                                                                      |
+|------------------------------------------|-----------------------|------------------------|------------------|------------------------------------------------------------------------------------------------------|
+| string or DataSourceInterface or Closure | Required              | `$dataSourceOrClosure` | countries        | The name of the dataSource which you want to join. You can also specify a Closure. Please see above. |
+| string                                   | Required              | `$as`                  | alias            | The alias name as this dataSource is accessable in your query.                                       |
+| Closure                                  | Required              | `$condition`           | alias.a = main.a | Here you can specify the condition of the join                                                       |
+| string                                   | Optional              | `$joinType`            | INNER            | The join type. This can either be INNER or LEFT.                                                     |
+
+#### `leftJoin()`
+
+This works the same as the `join()` method, but the joinType will always be LEFT.
+
+#### `innerJoin()`
+
+This works the same as the `join()` method, but the joinType will always be INNER.
+
+#### `joinLookup()`
+
+With this method you can join a lookup as a dataSource.
+
+Lookup datasources are key-value oriented and always have exactly two columns: k (the key) and v (the value),
+and both are always strings.
+
+Example:
+
+```php
+$builder = $client->query('users')
+    ->interval('now - 1 week', 'now')
+    ->join('departments', 'dep', 'users.department_id = dep.k')
+    ->select('dep.v', 'departmentName')
+    ->select('...')
+```
+
+See: https://druid.apache.org/docs/latest/querying/datasource.html#lookup
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**      | **Description**                                                |
+|----------|-----------------------|---------------|------------------|----------------------------------------------------------------|
+| string   | Required              | `$lookupName` | departments      | The name of the lookup which you want to join.                 |
+| string   | Required              | `$as`         | alias            | The alias name as this dataSource is accessable in your query. |
+| Closure  | Required              | `$condition`  | alias.a = main.a | Here you can specify the condition of the join                 |
+| string   | Optional              | `$joinType`   | INNER            | The join type. This can either be INNER or LEFT.               |
+
+#### `union()`
+
+Unions allow you to treat two or more tables as a single datasource. In SQL, this is done with the UNION ALL operator
+applied directly to tables, called a "table-level union". In native queries, this is done with a "union" datasource.
+
+With the native union datasource, the tables being unioned do not need to have identical schemas.
+If they do not fully match up, then columns that exist in one table but not another will be treated as
+if they contained all null values in the tables where they do not exist.
+
+In either case, features like expressions, column aliasing, JOIN, GROUP BY, ORDER BY, and so on cannot be
+used with table unions.
+
+See: https://druid.apache.org/docs/latest/querying/datasource.html#union
+
+Example:
+
+```php
+$builder = $client->query('hits_us')
+    ->union(['hits_eu', 'hits_as'], true);
+
+// This will result in a query on the dataSources: hits_us, hits_eu and hits_as.
+// This is because the "append" argument is set to true.
+
+$builder = $client->query('hits_us')
+    ->union(['hits_eu', 'hits_as'], false);
+
+// This will result in a query on the dataSources: hits_eu and hits_as.
+// This is because the "append" argument is set to false. It will overwrite the current dataSource.
+
+```
+
+This method has the following arguments:
+
+| **Type**        | **Optional/Required** | **Argument**   | **Example**            | **Description**                                                                                                                                      |
+|-----------------|-----------------------|----------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string or array | Required              | `$dataSources` | ["hits_eu", "hits_us"] | The name of the dataSources which you want to query. NOTE! The current dataSource is automatically added!                                            |
+| bool            | Optional              | `$append`      | true                   | This controls if the currently used dataSource should be added to this list or not. This only works if the current dataSource is a table dataSource. |
+
 ## QueryBuilder: Dimension Selections
 
 Dimensions are fields where you normally filter on, or _Group_ data by. Typical examples are: Country, Name, City, etc.
@@ -855,7 +1015,7 @@ $builder->lookup('lookupUsername', 'user_id', 'username', 'Unknown');
 
 #### `inlineLookup()`
 
-This method allows you to lookup a dimension using a predefined list. 
+This method allows you to lookup a dimension using a predefined list.
 
 Lookup's are a handy way to transform an ID value into a user readable name, like transforming a `category_id` into the
 `category`, without having to store the category in your dataset.
@@ -884,6 +1044,72 @@ $departments = [
 ];
 
 $builder->lookup($departments, 'department_id', 'department', 'Unknown'); 
+```
+
+#### `multiValueListSelect()`
+
+This dimension spec retains only the values that are present in the given list.
+
+See:
+
+- https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
+- https://druid.apache.org/docs/latest/querying/dimensionspecs.html#filtered-dimensionspecs
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                  |
+|----------|-----------------------|---------------|-----------------|----------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | tags            | The name of the dimension which contains multiple values.                        |
+| array    | Required              | `$values`     | ['a', 'b', 'c'] | Only use the values in the multi-value dimension which are present in this list. |
+| string   | Optional              | `$as`         | myTags          | The name where the result will be available by in the result set.                |
+| string   | Optional              | `$outputType` | string          | The data type of the dimension value.                                            |
+
+Example:
+
+```php
+$builder->multiValueListSelect('tags', ['a', 'b', 'c'], 'testTags', DataType::STRING); 
+```
+
+#### `multiValueRegexSelect()`
+
+This dimension spec retains only the values matching a regex.
+
+See:
+
+- https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
+- https://druid.apache.org/docs/latest/querying/dimensionspecs.html#filtered-dimensionspecs
+
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                              |
+|----------|-----------------------|---------------|-------------|------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | tags        | The name of the dimension which contains multiple values.                    |
+| string   | Required              | `$regex`      | "^ab"       | The java regex pattern for the values which should be used in the resultset. |
+| string   | Optional              | `$as`         | myTags      | The name where the result will be available by in the result set.            |
+| string   | Optional              | `$outputType` | string      | The data type of the dimension value.                                        |
+
+Example:
+
+```php
+$builder->multiValueRegexSelect('tags', '^test', 'testTags', DataType::STRING); 
+```
+
+#### `multiValuePrefixSelect()`
+
+This dimension spec retains only the values matching the given prefix.
+
+See:
+
+- https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
+- https://druid.apache.org/docs/latest/querying/dimensionspecs.html#filtered-dimensionspecs
+
+| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
+|----------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | tags        | The name of the dimension which contains multiple values.         |
+| string   | Required              | `$prefix`     | test        | Return all multi-value items which start with this given prefix.  |
+| string   | Optional              | `$as`         | myTags      | The name where the result will be available by in the result set. |
+| string   | Optional              | `$outputType` | string      | The data type of the dimension value.                             |
+
+Example:
+
+```php
+$builder->multiValuePrefixSelect('tags', 'test', 'testTags', DataType::STRING); 
 ```
 
 ## QueryBuilder: Metric Aggregations

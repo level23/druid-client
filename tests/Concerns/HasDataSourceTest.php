@@ -6,6 +6,7 @@ namespace Level23\Druid\Tests\Concerns;
 use Mockery;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\JoinType;
 use Level23\Druid\Queries\QueryBuilder;
@@ -13,6 +14,7 @@ use Level23\Druid\DataSources\JoinDataSource;
 use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\DataSources\UnionDataSource;
 use Level23\Druid\DataSources\InlineDataSource;
+use Level23\Druid\DataSources\LookupDataSource;
 
 class HasDataSourceTest extends TestCase
 {
@@ -115,10 +117,10 @@ class HasDataSourceTest extends TestCase
         /** @var JoinDataSource $dataSource */
         $dataSource = $this->getProperty($this->builder, 'dataSource');
 
-        $this->assertEquals(
-            $query->toArray(),
-            $dataSource->toArray()['right']['query']
-        );
+        /** @var string[] $right */
+        $right = $dataSource->toArray()['right'];
+
+        $this->assertEquals($query ? $query->toArray() : [], $right['query']);
 
         $this->assertInstanceOf(JoinDataSource::class, $dataSource);
     }
@@ -172,14 +174,26 @@ class HasDataSourceTest extends TestCase
         );
     }
 
-    public function testUnionWithIncorrectDataSource(): void
+    /**
+     * @testWith [true]
+     *           [false]
+     *
+     * @param bool $append
+     *
+     * @return void
+     */
+    public function testUnionWithIncorrectDataSource(bool $append): void
     {
         $this->builder->dataSource(new InlineDataSource([], []));
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('We can only union an table dataSource! You currently are using a Level23\Druid\DataSources\InlineDataSource');
-
-        $this->builder->union(['a', 'b']);
+        if ($append) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('We can only union an table dataSource! You currently are using a Level23\Druid\DataSources\InlineDataSource');
+        }
+        $this->assertEquals(
+            $this->builder,
+            $this->builder->union(['a', 'b'], $append)
+        );
     }
 
     public function testUnion(): void
@@ -192,5 +206,19 @@ class HasDataSourceTest extends TestCase
         $dataSource = $this->getProperty($this->builder, 'dataSource');
 
         $this->assertInstanceOf(UnionDataSource::class, $dataSource);
+    }
+
+    public function testJoinLookup(): void
+    {
+        $this->builder->shouldReceive('join')
+            ->once()
+            ->with(new IsInstanceOf(LookupDataSource::class), 'dep', 'users.department_id = dep.k', JoinType::INNER)
+            ->andReturnSelf();
+
+        $this->assertEquals(
+            $this->builder,
+            $this->builder
+                ->joinLookup('departments', 'dep', 'users.department_id = dep.k')
+        );
     }
 }

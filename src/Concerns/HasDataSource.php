@@ -12,6 +12,7 @@ use Level23\Druid\DataSources\JoinDataSource;
 use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\DataSources\QueryDataSource;
 use Level23\Druid\DataSources\UnionDataSource;
+use Level23\Druid\DataSources\LookupDataSource;
 use Level23\Druid\DataSources\DataSourceInterface;
 
 trait HasDataSource
@@ -80,6 +81,30 @@ trait HasDataSource
     }
 
     /**
+     * Join a lookup dataSource. Lookup datasources correspond to Druid's key-value lookup objects.
+     *
+     * Lookup datasources are key-value oriented and always have exactly two columns: k (the key) and v (the value),
+     * and both are always strings.
+     *
+     * @param string $lookupName The name of the lookup dataSource.
+     * @param string $as         The alias name as the dataSource will be used in the query.
+     * @param string $condition  The condition how the match will be made.
+     * @param string $joinType   The join type to use. This can be INNER or LEFT.
+     *
+     * @return self
+     */
+    public function joinLookup(
+        string $lookupName,
+        string $as,
+        string $condition,
+        string $joinType = JoinType::INNER
+    ): self {
+        $lookupDataSource = new LookupDataSource($lookupName);
+
+        return $this->join($lookupDataSource, $as, $condition, $joinType);
+    }
+
+    /**
      * @param string|DataSourceInterface|\Closure $dataSourceOrClosure
      * @param string                              $as
      * @param string                              $condition
@@ -111,18 +136,22 @@ trait HasDataSource
      * null values in the tables where they do not exist.
      *
      * @param string|string[] $dataSources
+     * @param bool            $append When true, we will append the current used dataSource in the union.
      *
      * @return $this
      * @see https://druid.apache.org/docs/latest/querying/datasource.html#union
      */
-    public function union($dataSources): self
+    public function union($dataSources, bool $append = true): self
     {
-        if (!$this->dataSource instanceof TableDataSource) {
-            throw new InvalidArgumentException('We can only union an table dataSource! You currently are using a ' . get_class($this->dataSource));
-        }
+        $dataSources = (array)$dataSources;
 
-        $dataSources   = (array)$dataSources;
-        $dataSources[] = $this->dataSource->dataSourceName;
+        if ($append) {
+            if (!$this->dataSource instanceof TableDataSource) {
+                throw new InvalidArgumentException('We can only union an table dataSource! You currently are using a ' . get_class($this->dataSource));
+            }
+
+            $dataSources[] = $this->dataSource->dataSourceName;
+        }
 
         $this->dataSource = new UnionDataSource($dataSources);
 

@@ -39,8 +39,6 @@ try {
         ->spatialDimension('Location', ['Latitude', 'Longitude'])
         ->segmentGranularity(Granularity::YEAR)
         ->queryGranularity(Granularity::YEAR);
-    //->toJson();
-    //->execute();
 
     $taskId = $builder->execute();
 
