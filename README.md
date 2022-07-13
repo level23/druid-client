@@ -96,6 +96,7 @@ for more information.
     - [DruidClient::cancelQuery()](#druidclientcancelquery)
     - [DruidClient::compact()](#druidclientcompact)
     - [DruidClient::reindex()](#druidclientreindex)
+    - [DruidClient::pollTaskStatus()](#druidclientpolltaskstatus)
     - [DruidClient::taskStatus()](#druidclienttaskstatus)
     - [DruidClient::metadata()](#druidclientmetadata)
     - [QueryBuilder: Generic Query Methods](#querybuilder-generic-query-methods)
@@ -3761,7 +3762,7 @@ while (true) {
 }
 
 // Or, simply use:
-// $status =$client->pollTaskStatus($taskId);
+// $status = $client->pollTaskStatus($taskId);
 
 echo "Final status: \n";
 print_r($status->data());
