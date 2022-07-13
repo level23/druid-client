@@ -81,14 +81,15 @@ If you are currently using druid-client version 1.*, you should check for these 
 1. The `IndexTaskBuilder` constructor now only accepts an InputSourceInterface as second parameter.
 2. The `IndexTaskBuilder` has no `fromDataSource()` and `setFromDataSource()` methods anymore. These where related to the
    IngestSegmentFirehose.
-3. IngestSegmentFirehose and FirehoseInterface are gone. You should now use the InputSource variant instead.
-4. We removed DRUID_VERSION and `'version'` from the config. This was only used for the [whereFlags()](README.md#whereflags) methods. 
+3. The IndexTask now got as 4th parameter a `TimestampSpec` which is required, which shuffles the parameter order. 
+4. IngestSegmentFirehose and FirehoseInterface are gone. You should now use the InputSource variant instead.
+5. We removed DRUID_VERSION and `'version'` from the config. This was only used for the [whereFlags()](README.md#whereflags) methods. 
    If you want to fall back to the old javascript behaviour, you can now use the 4th parameter `$useJavascript`. If you do not use
    the javascript variant, no changes are required.
-5. You can remove the `'version'` settings from your config, as the `DRUID_VERSION` from your .env if you are using this.
+6. You can remove the `'version'` settings from your config, as the `DRUID_VERSION` from your .env if you are using this.
    However, if you do not remove them it will not break.
-6. Removed deprecated `getPagingIdentifier()` from SelectQueryResponse class.
-7. All Query Types (`GroupByQuery`, `SelectQuery`, etc) now receive a `DataSourceInterface` object instead of a string
+7. Removed deprecated `getPagingIdentifier()` from SelectQueryResponse class.
+8. All Query Types (`GroupByQuery`, `SelectQuery`, etc) now receive a `DataSourceInterface` object instead of a string
    as dataSource. 
-8. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and is now public.
-9. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.
+9. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and is now public.
+10. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.

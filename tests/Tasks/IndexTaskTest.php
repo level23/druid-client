@@ -13,7 +13,6 @@ use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\InputFormats\CsvInputFormat;
 use Level23\Druid\Dimensions\SpatialDimension;
-use Level23\Druid\InputSources\HttpInputSource;
 use Level23\Druid\InputFormats\JsonInputFormat;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Collections\IntervalCollection;
@@ -84,10 +83,13 @@ class IndexTaskTest extends TestCase
 
         $inputFormat = new JsonInputFormat();
 
+        $timestampSpec = new TimestampSpec('timestamp', 'auto');
+
         $task = new IndexTask(
             $dataSource,
             $inputSource,
             $granularity,
+            $timestampSpec,
             $transformSpec,
             $tuningConfig,
             $taskContext,
@@ -95,12 +97,8 @@ class IndexTaskTest extends TestCase
             $dimensions,
             $taskId,
             $inputFormat,
-            null,
             $spatialDimensions
         );
-
-        $timestampSpec = new TimestampSpec('timestamp', 'auto');
-        $task->setTimestampSpec($timestampSpec);
 
         $this->assertFalse($this->getProperty($task, 'appendToExisting'));
         $this->assertEquals($inputFormat, $this->getProperty($task, 'inputFormat'));
@@ -167,20 +165,5 @@ class IndexTaskTest extends TestCase
         $expected['type']                     = 'index_parallel';
 
         $this->assertEquals($expected, $task->toArray());
-    }
-
-    public function testTaskWithoutTimestamp(): void
-    {
-        $task = new IndexTask(
-            'money',
-            new HttpInputSource(['http://127.0.0.1/data.json']),
-            new UniformGranularity('day', 'day', true, new IntervalCollection(
-                new Interval('now - 1 day', 'now')
-            ))
-        );
-
-        $this->expectExceptionMessage('You have to specify your timestamp column!');
-        $this->expectException(\InvalidArgumentException::class);
-        $task->toArray();
     }
 }

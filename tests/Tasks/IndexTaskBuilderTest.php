@@ -491,6 +491,7 @@ class IndexTaskBuilderTest extends TestCase
                     $givenDateSource,
                     $givenInputSource,
                     $granularity,
+                    $timestampSpec,
                     $transformSpec,
                     $tuningConfig,
                     $context,
@@ -498,12 +499,12 @@ class IndexTaskBuilderTest extends TestCase
                     $dimensions,
                     $taskId,
                     $inputFormat,
-                    $timestampSpec,
                     $spatialDimensions
                 ) use ($inputSource, $dataSource) {
                     $this->assertEquals($dataSource, $givenDateSource);
                     $this->assertEquals($inputSource, $givenInputSource);
                     $this->assertInstanceOf(GranularityInterface::class, $granularity);
+                    $this->assertInstanceOf(TimestampSpec::class, $timestampSpec);
                     $this->assertNull($transformSpec);
                     $this->assertNull($tuningConfig);
                     $this->assertInstanceOf(TaskContext::class, $context);
@@ -511,7 +512,6 @@ class IndexTaskBuilderTest extends TestCase
                     $this->assertIsArray($dimensions);
                     $this->assertNull($taskId);
                     $this->assertNull($inputFormat);
-                    $this->assertInstanceOf(TimestampSpec::class, $timestampSpec);
                     $this->assertInstanceOf(SpatialDimensionCollection::class, $spatialDimensions);
 
                     return true;

@@ -35,6 +35,7 @@ class LookupDimension implements DimensionInterface
      * @param string|array<int|string,string> $registeredLookupFunctionOrMap
      * @param string                          $outputName
      * @param bool|string                     $keepMissingValue
+     * @param bool                            $isOneToOne
      */
     public function __construct(
         string $dimension,

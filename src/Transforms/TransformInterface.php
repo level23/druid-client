@@ -10,5 +10,5 @@ interface TransformInterface
      *
      * @return array<mixed>
      */
-    public function toArray();
+    public function toArray(): array;
 }

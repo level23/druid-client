@@ -406,6 +406,7 @@ class IndexTaskBuilder extends TaskBuilder
             $this->dataSource,
             $this->inputSource,
             $granularity,
+            $this->timestampSpec,
             $this->transformSpec,
             $this->tuningConfig,
             $context,
@@ -413,7 +414,6 @@ class IndexTaskBuilder extends TaskBuilder
             $this->dimensions,
             $this->taskId,
             $this->inputFormat,
-            $this->timestampSpec,
             $this->spatialDimensions
         );
 

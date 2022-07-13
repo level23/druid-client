@@ -29,7 +29,8 @@ class CompactTaskBuilder extends TaskBuilder
      * Compaction tasks will exit with a failure status code, without doing anything, if the interval you specify has
      * no data segments loaded in it (or if the interval you specify is empty).
      *
-     * @param string $dataSource
+     * @param \Level23\Druid\DruidClient $druidClient
+     * @param string                     $dataSource
      */
     public function __construct(DruidClient $druidClient, string $dataSource)
     {

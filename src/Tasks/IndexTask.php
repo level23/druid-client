@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tasks;
 
-use InvalidArgumentException;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Dimensions\TimestampSpec;
@@ -48,7 +47,7 @@ class IndexTask implements TaskInterface
 
     protected ?InputFormatInterface $inputFormat;
 
-    protected ?TimestampSpec $timestampSpec;
+    protected TimestampSpec $timestampSpec;
 
     protected ?SpatialDimensionCollection $spatialDimensions = null;
 
@@ -58,6 +57,7 @@ class IndexTask implements TaskInterface
      * @param string                                                     $dateSource
      * @param \Level23\Druid\InputSources\InputSourceInterface           $inputSource
      * @param \Level23\Druid\Granularities\GranularityInterface          $granularity
+     * @param \Level23\Druid\Dimensions\TimestampSpec                    $timestampSpec
      * @param \Level23\Druid\Transforms\TransformSpec|null               $transformSpec
      * @param \Level23\Druid\TuningConfig\TuningConfig|null              $tuningConfig
      * @param \Level23\Druid\Context\TaskContext|null                    $context
@@ -65,13 +65,13 @@ class IndexTask implements TaskInterface
      * @param array<array<string,string|bool>>                           $dimensions
      * @param string|null                                                $taskId
      * @param \Level23\Druid\InputFormats\InputFormatInterface|null      $inputFormat
-     * @param \Level23\Druid\Dimensions\TimestampSpec|null               $timestampSpec
      * @param \Level23\Druid\Collections\SpatialDimensionCollection|null $spatialDimensions
      */
     public function __construct(
         string $dateSource,
         InputSourceInterface $inputSource,
         GranularityInterface $granularity,
+        TimestampSpec $timestampSpec,
         ?TransformSpec $transformSpec = null,
         ?TuningConfig $tuningConfig = null,
         ?TaskContext $context = null,
@@ -79,7 +79,6 @@ class IndexTask implements TaskInterface
         array $dimensions = [],
         ?string $taskId = null,
         ?InputFormatInterface $inputFormat = null,
-        ?TimestampSpec $timestampSpec = null,
         ?SpatialDimensionCollection $spatialDimensions = null
     ) {
         $this->tuningConfig      = $tuningConfig;
@@ -103,10 +102,6 @@ class IndexTask implements TaskInterface
      */
     public function toArray(): array
     {
-        if (empty($this->timestampSpec)) {
-            throw new InvalidArgumentException('You have to specify your timestamp column!');
-        }
-
         $result = [
             'type' => $this->parallel ? 'index_parallel' : 'index',
             'spec' => [
@@ -167,14 +162,6 @@ class IndexTask implements TaskInterface
     public function setParallel(bool $parallel): void
     {
         $this->parallel = $parallel;
-    }
-
-    /**
-     * @param \Level23\Druid\Dimensions\TimestampSpec $timestampSpec
-     */
-    public function setTimestampSpec(TimestampSpec $timestampSpec): void
-    {
-        $this->timestampSpec = $timestampSpec;
     }
 
     /**
