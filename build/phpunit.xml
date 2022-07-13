@@ -15,8 +15,6 @@
     <testsuites>
         <testsuite name="phpunit">
             <directory>../tests/</directory>
-            <exclude>../src/DruidServiceProvider.php</exclude>
-            <exclude>../src/Facades/Druid.php</exclude>
         </testsuite>
     </testsuites>
 </phpunit>

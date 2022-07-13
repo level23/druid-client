@@ -1,14 +1,11 @@
 parameters:
     level: max
     checkMissingIterableValueType: true
-    #reportUnmatchedIgnoredErrors: false
     ignoreErrors:
       - '#Cannot call method getName\(\) on ReflectionType\|null.#'
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
       - '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
       - '#expects class-string<Throwable>, string given.#'
-    #  - '#expects Level23\\Druid\\Interval\\Interval(Interface)?, Level23\\Druid\\Interval\\Interval\|null given.#'
-    #  - '#PHPDoc tag @throws with type (.*) is not subtype of Throwable#'
     excludePaths:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php
