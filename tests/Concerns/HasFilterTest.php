@@ -138,7 +138,7 @@ class HasFilterTest extends TestCase
             ],
             [
                 [],
-                []
+                [],
             ],
             [
                 [null],

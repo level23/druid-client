@@ -26,7 +26,7 @@ abstract class Enum
 
                 /** @var array<string,scalar> $values */
                 $values = $reflect->getConstants();
-                
+
                 self::$constCacheArray[$calledClass] = $values;
             } catch (ReflectionException $e) {
                 return [];

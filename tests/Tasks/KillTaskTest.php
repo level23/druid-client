@@ -29,17 +29,17 @@ class KillTaskTest extends TestCase
 
         $context = $withContext ? new TaskContext(['priority' => 75]) : null;
 
-        if( $markAsUnused === null ) {
+        if ($markAsUnused === null) {
             $killTask = new KillTask($dataSource, $interval, $taskId, $context);
         } else {
             $killTask = new KillTask($dataSource, $interval, $taskId, $context, $markAsUnused);
         }
 
         $expected = [
-            'type'       => 'kill',
-            'dataSource' => $dataSource,
-            'interval'   => $interval->getInterval(),
-            'markAsUnused' => $markAsUnused ?? false
+            'type'         => 'kill',
+            'dataSource'   => $dataSource,
+            'interval'     => $interval->getInterval(),
+            'markAsUnused' => $markAsUnused ?? false,
         ];
         if (!empty($taskId)) {
             $expected['id'] = $taskId;

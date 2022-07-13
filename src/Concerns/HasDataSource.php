@@ -126,7 +126,7 @@ trait HasDataSource
      */
     public function innerJoin($dataSourceOrClosure, string $as, string $condition): self
     {
-        return $this->join($dataSourceOrClosure, $as, $condition, JoinType::INNER);
+        return $this->join($dataSourceOrClosure, $as, $condition);
     }
 
     /**

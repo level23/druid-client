@@ -22,9 +22,9 @@ class Structure
     public array $metrics = [];
 
     /**
-     * @param string $dataSource
-     * @param array<string,string>  $dimensions
-     * @param array<string,string>  $metrics
+     * @param string               $dataSource
+     * @param array<string,string> $dimensions
+     * @param array<string,string> $metrics
      */
     public function __construct(string $dataSource, array $dimensions, array $metrics)
     {

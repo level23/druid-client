@@ -73,7 +73,7 @@ class GoogleCloudInputSourceTest extends TestCase
             'objects'  => [
                 ["bucket" => "foo", "path" => "foo/file1.json"],
                 ["bucket" => "bar", "path" => "bar/file2.json"],
-            ]
+            ],
         ], $azure->toArray());
     }
 

@@ -262,7 +262,7 @@ class HasDimensionsTest extends TestCase
     public function testMultiValueRegexSelect(string $outputType): void
     {
         $dimensionName = 'myMultiValDimension';
-        $regex        = "^(a|b)$";
+        $regex         = "^(a|b)$";
         $as            = 'baz';
 
         Mockery::mock('overload:' . Dimension::class)

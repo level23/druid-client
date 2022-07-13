@@ -17,8 +17,8 @@ class QueryResponseException extends Exception
      * DruidQueryException constructor.
      *
      * @param array<string,bool|string|int|array<mixed>> $query
-     * @param string                         $message
-     * @param \Throwable|null                $previous
+     * @param string                                     $message
+     * @param \Throwable|null                            $previous
      */
     public function __construct(array $query, string $message = "", Throwable $previous = null)
     {

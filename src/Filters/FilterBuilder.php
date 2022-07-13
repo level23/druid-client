@@ -17,6 +17,6 @@ class FilterBuilder
 
     public function __construct(?QueryBuilder $builder = null)
     {
-        $this->query  = $builder;
+        $this->query = $builder;
     }
 }

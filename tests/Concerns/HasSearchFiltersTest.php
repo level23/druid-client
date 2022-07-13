@@ -104,7 +104,7 @@ class HasSearchFiltersTest extends TestCase
      *           [{"0": "USA", "1": "America"}, false]
      *
      * @param array<int|string,string> $values
-     * @param bool  $caseSensitive
+     * @param bool                     $caseSensitive
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled

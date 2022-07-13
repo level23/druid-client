@@ -34,7 +34,7 @@ class AnyAggregatorTest extends TestCase
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('The given output type is invalid: '.$type.'. Allowed are: string,float,long,double');
+            $this->expectExceptionMessage('The given output type is invalid: ' . $type . '. Allowed are: string,float,long,double');
         }
 
         $aggregator = new AnyAggregator('abc', 'dim123', $type);

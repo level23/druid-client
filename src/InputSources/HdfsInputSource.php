@@ -17,8 +17,8 @@ class HdfsInputSource implements InputSourceInterface
      * HdfsInputSource constructor.
      *
      * @param string[]|string $paths HDFS paths. Can be either a JSON array or comma-separated string of paths. Wildcards
-     *                            like * are supported in these paths. Empty files located under one of the given paths
-     *                            will be skipped.
+     *                               like * are supported in these paths. Empty files located under one of the given paths
+     *                               will be skipped.
      */
     public function __construct($paths)
     {
@@ -31,7 +31,7 @@ class HdfsInputSource implements InputSourceInterface
     public function toArray(): array
     {
         return [
-            'type' => 'hdfs',
+            'type'  => 'hdfs',
             'paths' => $this->paths,
         ];
     }

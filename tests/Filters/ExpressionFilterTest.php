@@ -13,8 +13,8 @@ class ExpressionFilterTest extends TestCase
         $filter = new ExpressionFilter('(expression == 1)');
 
         $this->assertEquals([
-            'type' => 'expression',
-            'expression' => '(expression == 1)'
+            'type'       => 'expression',
+            'expression' => '(expression == 1)',
         ], $filter->toArray());
     }
 }

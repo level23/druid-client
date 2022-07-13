@@ -34,7 +34,10 @@ class CombineInputSource implements InputSourceInterface
     {
         return [
             'type'      => 'combining',
-            'delegates' => array_map(fn(InputSourceInterface $inputSource) => $inputSource->toArray(), $this->inputSources),
+            'delegates' => array_map(
+                fn(InputSourceInterface $inputSource) => $inputSource->toArray(),
+                $this->inputSources
+            ),
         ];
     }
 }

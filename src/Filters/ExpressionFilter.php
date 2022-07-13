@@ -17,7 +17,8 @@ class ExpressionFilter implements FilterInterface
     /**
      * @param string $expression
      */
-    public function __construct(string $expression) {
+    public function __construct(string $expression)
+    {
         $this->expression = $expression;
     }
 
@@ -29,8 +30,8 @@ class ExpressionFilter implements FilterInterface
     public function toArray(): array
     {
         return [
-            'type'      => 'expression',
-            'expression' => $this->expression
+            'type'       => 'expression',
+            'expression' => $this->expression,
         ];
     }
 }

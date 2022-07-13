@@ -39,7 +39,7 @@ class JsonInputFormatTest extends TestCase
         $input = new JsonInputFormat(null, ['ALLOW_COMMENTS' => true]);
 
         $this->assertEquals([
-            'type'                => 'json',
+            'type'        => 'json',
             'featureSpec' => ['ALLOW_COMMENTS' => true],
         ], $input->toArray());
     }

@@ -45,10 +45,10 @@ class InlineInputSource implements InputSourceInterface
     /**
      * Helper method to convert an array to a csv string.
      *
-     * @param array<array<string|int|float|bool|null>>  $data
-     * @param string $separator
-     * @param string $enclosure
-     * @param string $escape
+     * @param array<array<string|int|float|bool|null>> $data
+     * @param string                                   $separator
+     * @param string                                   $enclosure
+     * @param string                                   $escape
      *
      * @return string
      * @throws \Exception

@@ -95,9 +95,10 @@ class TaskResponse extends QueryResponse
      */
     public function getErrorMsg(): string
     {
-        if(isset($this->response['status']['errorMsg'])) {
-            return (string) $this->response['status']['errorMsg'];
+        if (isset($this->response['status']['errorMsg'])) {
+            return (string)$this->response['status']['errorMsg'];
         }
+
         return '';
     }
 }

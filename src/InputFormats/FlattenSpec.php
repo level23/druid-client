@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\InputFormats;
 
+use InvalidArgumentException;
 use Level23\Druid\Types\FlattenFieldType;
 
 class FlattenSpec
@@ -40,7 +41,7 @@ class FlattenSpec
         $type = FlattenFieldType::validate($flattenFieldType);
 
         if (($type == FlattenFieldType::JQ || $type == FlattenFieldType::PATH) && empty($expr)) {
-            throw new \InvalidArgumentException('For type JQ or PATH, you need to specify the expression!');
+            throw new InvalidArgumentException('For type JQ or PATH, you need to specify the expression!');
         }
         $field = [
             'type' => $type,

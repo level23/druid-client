@@ -25,8 +25,8 @@ abstract class CloudInputSource implements InputSourceInterface
     /**
      * S3InputSource constructor.
      *
-     * @param array<string> $uris
-     * @param array<string> $prefixes
+     * @param array<string>               $uris
+     * @param array<string>               $prefixes
      * @param array<array<string,string>> $objects
      */
     public function __construct(array $uris = [], array $prefixes = [], array $objects = [])

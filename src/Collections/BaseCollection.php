@@ -133,7 +133,7 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      *
      * @link  https://php.net/manual/en/arrayaccess.offsetunset.php
      *
-     * @param int $offset <p>
+     * @param int $offset   <p>
      *                      The offset to unset.
      *                      </p>
      *

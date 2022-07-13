@@ -39,7 +39,10 @@ class CascadeExtraction implements ExtractionInterface
     {
         return [
             'type'          => 'cascade',
-            'extractionFns' => array_map(fn(ExtractionInterface $extraction) => $extraction->toArray(), $this->extractions),
+            'extractionFns' => array_map(
+                fn(ExtractionInterface $extraction) => $extraction->toArray(),
+                $this->extractions
+            ),
         ];
     }
 }

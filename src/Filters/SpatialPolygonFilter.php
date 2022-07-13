@@ -25,7 +25,7 @@ class SpatialPolygonFilter implements FilterInterface
     /**
      * SpatialPolygonFilter constructor.
      *
-     * @param string       $dimension The dimension to filter on
+     * @param string  $dimension The dimension to filter on
      * @param float[] $abscissa  Horizontal coordinate for corners of the polygon
      * @param float[] $ordinate  Vertical coordinate for corners of the polygon
      */

@@ -16,7 +16,7 @@ class HttpInputSourceTest extends TestCase
         );
 
         $this->assertEquals([
-            'type'  => 'http',
+            'type' => 'http',
             'uris' => ["http://example.com/uri1", "http://example2.com/uri2"],
         ], $http->toArray());
 
@@ -28,7 +28,7 @@ class HttpInputSourceTest extends TestCase
 
         $this->assertEquals([
             'type'                       => 'http',
-            'uris'                      => ["http://example.com/uri1", "http://example2.com/uri2"],
+            'uris'                       => ["http://example.com/uri1", "http://example2.com/uri2"],
             'httpAuthenticationUsername' => 'Admin',
             'httpAuthenticationPassword' => 'Passwd',
         ], $http->toArray());
@@ -44,7 +44,7 @@ class HttpInputSourceTest extends TestCase
 
         $this->assertEquals([
             'type'                       => 'http',
-            'uris'                      => ["http://example.com/uri1", "http://example2.com/uri2"],
+            'uris'                       => ["http://example.com/uri1", "http://example2.com/uri2"],
             'httpAuthenticationUsername' => 'Admin',
             'httpAuthenticationPassword' => [
                 'type'     => 'environment',

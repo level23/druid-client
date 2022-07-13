@@ -65,8 +65,8 @@ class OrderByTest extends TestCase
         $orderBy = new OrderBy('name');
 
         $this->assertEquals([
-            'dimension' => 'name',
-            'direction' => 'ascending',
+            'dimension'      => 'name',
+            'direction'      => 'ascending',
             'dimensionOrder' => 'lexicographic',
         ], $orderBy->toArray());
     }

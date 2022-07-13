@@ -19,10 +19,10 @@ class QuantilesPostAggregatorTest extends TestCase
         );
 
         $this->assertEquals([
-            'type'     => 'quantilesDoublesSketchToQuantiles',
-            'name'     => 'percentile',
-            'field'    => $fieldAccess->toArray(),
-            'fractions' =>  [0.95, 1],
+            'type'      => 'quantilesDoublesSketchToQuantiles',
+            'name'      => 'percentile',
+            'field'     => $fieldAccess->toArray(),
+            'fractions' => [0.95, 1],
         ], $aggregator->toArray());
     }
 }

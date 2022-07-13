@@ -863,11 +863,11 @@ trait HasFilter
      * - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp
      *   or anything which can be parsed by DateTime::__construct
      *
-     * @param string                                $dimension  The dimension which you want to filter
+     * @param string                                                               $dimension  The dimension which you want to filter
      * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals  The interval which you want to match. See above for
-     *                                                          more info.
-     * @param \Closure|null                         $extraction Extraction function to extract a different value from
-     *                                                          the dimension.
+     *                                                                                         more info.
+     * @param \Closure|null                                                        $extraction Extraction function to extract a different value from
+     *                                                                                         the dimension.
      *
      * @return $this
      * @throws \Exception

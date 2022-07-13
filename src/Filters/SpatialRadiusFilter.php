@@ -22,9 +22,9 @@ class SpatialRadiusFilter implements FilterInterface
     /**
      * SpatialRadiusFilter constructor.
      *
-     * @param string $dimension The dimension to filter on
-     * @param float[]  $coords    Origin coordinates in the form [x, y, z, …]
-     * @param float  $radius    The float radius value
+     * @param string  $dimension The dimension to filter on
+     * @param float[] $coords    Origin coordinates in the form [x, y, z, …]
+     * @param float   $radius    The float radius value
      */
     public function __construct(
         string $dimension,

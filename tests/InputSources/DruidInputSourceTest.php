@@ -57,9 +57,9 @@ class DruidInputSourceTest extends TestCase
                                 'value'     => 'john',
                             ],
                             [
-                                'type' => 'expression',
-                                'expression' => 'bitwiseAnd("settings", 12) == 12'
-                            ]
+                                'type'       => 'expression',
+                                'expression' => 'bitwiseAnd("settings", 12) == 12',
+                            ],
                         ],
                     ],
                     [

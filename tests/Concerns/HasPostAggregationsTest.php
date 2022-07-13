@@ -364,12 +364,12 @@ class HasPostAggregationsTest extends TestCase
                     'fieldName' => 'sketchData',
                 ], $dimension->toArray());
                 $this->assertEquals('cdfResult', $outputName);
-                $this->assertEquals([1,2,3,4,5], $splitPoints);
+                $this->assertEquals([1, 2, 3, 4, 5], $splitPoints);
 
                 return true;
             });
 
-        $result = $this->builder->cdf('cdfResult', 'sketchData', [1,2,3,4,5]);
+        $result = $this->builder->cdf('cdfResult', 'sketchData', [1, 2, 3, 4, 5]);
 
         $this->assertEquals($this->builder, $result);
 
@@ -379,7 +379,7 @@ class HasPostAggregationsTest extends TestCase
         $this->builder->cdf('cdfResult', function (PostAggregationsBuilder $builder) {
             $builder->fieldAccess('sketchData');
             $builder->constant(3, 'Three');
-        }, [1,2,3,4,5]);
+        }, [1, 2, 3, 4, 5]);
     }
 
     /**
