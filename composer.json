@@ -44,7 +44,11 @@
   "config": {
     "preferred-install": "dist",
     "sort-packages": true,
-    "optimize-autoloader": true
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "infection/infection": true,
+      "infection/extension-installer": true
+    }
   },
   "minimum-stability": "stable",
   "prefer-stable": true,
