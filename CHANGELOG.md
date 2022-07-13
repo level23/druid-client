@@ -90,4 +90,5 @@ If you are currently using druid-client version 1.*, you should check for these 
 6. Removed deprecated `getPagingIdentifier()` from SelectQueryResponse class.
 7. All Query Types (`GroupByQuery`, `SelectQuery`, etc) now receive a `DataSourceInterface` object instead of a string
    as dataSource. 
-8. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and is now public. 
+8. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and is now public.
+9. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.
