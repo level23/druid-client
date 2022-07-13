@@ -51,11 +51,11 @@ class CompactTask implements TaskInterface
     public function __construct(
         string $dataSource,
         IntervalInterface $interval,
-        string $segmentGranularity = null,
-        TuningConfig $tuningConfig = null,
-        TaskContext $context = null,
-        int $targetCompactionSizeBytes = null,
-        string $taskId = null
+        ?string $segmentGranularity = null,
+        ?TuningConfig $tuningConfig = null,
+        ?TaskContext $context = null,
+        ?int $targetCompactionSizeBytes = null,
+        ?string $taskId = null
     ) {
         $this->dataSource                = $dataSource;
         $this->interval                  = $interval;

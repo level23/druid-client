@@ -313,7 +313,7 @@ class QueryBuilder
      */
     public function scan(
         $context = [],
-        int $rowBatchSize = null,
+        ?int $rowBatchSize = null,
         bool $legacy = false,
         string $resultFormat = ScanQueryResultFormat::NORMAL_LIST
     ): ScanQueryResponse {
@@ -425,7 +425,7 @@ class QueryBuilder
      *
      * @return bool|null
      */
-    protected function legacyIsOrderByDirectionDescending(string $dimension = null): ?bool
+    protected function legacyIsOrderByDirectionDescending(?string $dimension = null): ?bool
     {
         if ($this->limit) {
             $orderBy = $this->limit->getOrderByCollection();
@@ -554,7 +554,7 @@ class QueryBuilder
      */
     protected function buildScanQuery(
         $context = [],
-        int $rowBatchSize = null,
+        ?int $rowBatchSize = null,
         bool $legacy = false,
         string $resultFormat = ScanQueryResultFormat::NORMAL_LIST
     ): ScanQuery {

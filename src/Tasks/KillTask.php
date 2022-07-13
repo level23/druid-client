@@ -27,8 +27,8 @@ class KillTask implements TaskInterface
     public function __construct(
         string $dataSource,
         Interval $interval,
-        string $taskId = null,
-        TaskContext $context = null,
+        ?string $taskId = null,
+        ?TaskContext $context = null,
         bool $markAsUnused = false
     ) {
         $this->dataSource   = $dataSource;

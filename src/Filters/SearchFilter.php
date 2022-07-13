@@ -40,7 +40,7 @@ class SearchFilter implements FilterInterface
         string $dimension,
         $valueOrValues,
         bool $caseSensitive = false,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->extractionFunction = $extractionFunction;

@@ -43,8 +43,8 @@ class BoundFilter implements FilterInterface
         string $dimension,
         string $operator,
         string $value,
-        string $ordering = null,
-        ExtractionInterface $extractionFunction = null
+        ?string $ordering = null,
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->operator           = BoundOperator::validate($operator);

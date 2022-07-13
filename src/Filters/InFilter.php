@@ -23,7 +23,7 @@ class InFilter implements FilterInterface
      * @param string[]|int[]           $values
      * @param ExtractionInterface|null $extraction
      */
-    public function __construct(string $dimension, array $values, ExtractionInterface $extraction = null)
+    public function __construct(string $dimension, array $values, ?ExtractionInterface $extraction = null)
     {
         $this->values     = $values;
         $this->dimension  = $dimension;

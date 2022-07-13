@@ -45,8 +45,8 @@ class BetweenFilter implements FilterInterface
         string $dimension,
         $minValue,
         $maxValue,
-        string $ordering = null,
-        ExtractionInterface $extractionFunction = null
+        ?string $ordering = null,
+        ?ExtractionInterface $extractionFunction = null
     ) {
         if (!is_null($ordering)) {
             $ordering = SortingOrder::validate($ordering);

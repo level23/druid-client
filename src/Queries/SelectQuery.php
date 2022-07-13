@@ -71,7 +71,7 @@ class SelectQuery implements QueryInterface
         DataSourceInterface $dataSource,
         IntervalCollection $intervals,
         int $threshold,
-        DimensionCollection $dimensions = null,
+        ?DimensionCollection $dimensions = null,
         array $metrics = [],
         bool $descending = false
     ) {

@@ -43,7 +43,7 @@ class IntervalFilter implements FilterInterface
     public function __construct(
         string $dimension,
         array $intervals,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->intervals          = $intervals;
         $this->dimension          = $dimension;

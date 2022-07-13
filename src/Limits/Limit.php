@@ -14,7 +14,7 @@ class Limit implements LimitInterface
 
     protected ?int $offset;
 
-    public function __construct(int $limit = null, OrderByCollection $orderBy = null, int $offset = null)
+    public function __construct(?int $limit = null, ?OrderByCollection $orderBy = null, ?int $offset = null)
     {
         $this->limit   = $limit;
         $this->orderBy = $orderBy;

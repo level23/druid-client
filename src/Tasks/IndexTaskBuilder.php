@@ -218,7 +218,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @see https://github.com/FasterXML/jackson-core/wiki/JsonParser-Features
      */
-    public function jsonFormat(FlattenSpec $flattenSpec = null, array $features = null): self
+    public function jsonFormat(?FlattenSpec $flattenSpec = null, ?array $features = null): self
     {
         $this->inputFormat = new JsonInputFormat($flattenSpec, $features);
 
@@ -240,9 +240,9 @@ class IndexTaskBuilder extends TaskBuilder
      * @param int           $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function csvFormat(
-        array $columns = null,
-        string $listDelimiter = null,
-        bool $findColumnsFromHeader = null,
+        ?array $columns = null,
+        ?string $listDelimiter = null,
+        ?bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ): self {
         $this->inputFormat = new CsvInputFormat($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);
@@ -268,10 +268,10 @@ class IndexTaskBuilder extends TaskBuilder
      *                                                  rows.
      */
     public function tsvFormat(
-        array $columns = null,
-        string $delimiter = null,
-        string $listDelimiter = null,
-        bool $findColumnsFromHeader = null,
+        ?array $columns = null,
+        ?string $delimiter = null,
+        ?string $listDelimiter = null,
+        ?bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ): self {
         $this->inputFormat = new TsvInputFormat(
@@ -295,7 +295,7 @@ class IndexTaskBuilder extends TaskBuilder
      * @param bool|null        $binaryAsString Specifies if the binary orc column which is not logically marked as a
      *                                         string should be treated as a UTF-8 encoded string. Default is false.
      */
-    public function orcFormat(FlattenSpec $flattenSpec = null, bool $binaryAsString = null): self
+    public function orcFormat(?FlattenSpec $flattenSpec = null, ?bool $binaryAsString = null): self
     {
         $this->inputFormat = new OrcInputFormat($flattenSpec, $binaryAsString);
 
@@ -312,7 +312,7 @@ class IndexTaskBuilder extends TaskBuilder
      * @param bool|null        $binaryAsString Specifies if the bytes parquet column which is not logically marked as a
      *                                         string or enum type should be treated as a UTF-8 encoded string.
      */
-    public function parquetFormat(FlattenSpec $flattenSpec = null, bool $binaryAsString = null): self
+    public function parquetFormat(?FlattenSpec $flattenSpec = null, ?bool $binaryAsString = null): self
     {
         $this->inputFormat = new ParquetInputFormat($flattenSpec, $binaryAsString);
 
@@ -341,7 +341,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @see https://druid.apache.org/docs/latest/ingestion/data-formats.html#protobuf
      */
-    public function protobufFormat(array $protoBytesDecoder, FlattenSpec $flattenSpec = null): self
+    public function protobufFormat(array $protoBytesDecoder, ?FlattenSpec $flattenSpec = null): self
     {
         $this->inputFormat = new ProtobufInputFormat($protoBytesDecoder, $flattenSpec);
 

@@ -35,7 +35,7 @@ class RegexFilter implements FilterInterface
     public function __construct(
         string $dimension,
         string $pattern,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->pattern            = $pattern;
         $this->dimension          = $dimension;

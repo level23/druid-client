@@ -23,7 +23,7 @@ class SelectorFilter implements FilterInterface
     public function __construct(
         string $dimension,
         string $value,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->value              = $value;
         $this->dimension          = $dimension;

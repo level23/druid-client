@@ -33,7 +33,7 @@ class JavascriptFilter implements FilterInterface
     public function __construct(
         string $dimension,
         string $javascriptFunction,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->javascriptFunction = $javascriptFunction;

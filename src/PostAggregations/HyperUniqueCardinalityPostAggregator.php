@@ -15,7 +15,7 @@ class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
      * @param string      $fieldName  The name field value of the hyperUnique aggregator
      * @param string|null $outputName The output name
      */
-    public function __construct(string $fieldName, string $outputName = null)
+    public function __construct(string $fieldName, ?string $outputName = null)
     {
         $this->outputName = $outputName;
         $this->fieldName  = $fieldName;

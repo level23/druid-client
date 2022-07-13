@@ -36,7 +36,7 @@ class LikeFilter implements FilterInterface
         string $dimension,
         string $pattern,
         string $escapeCharacter = '\\',
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->pattern            = $pattern;

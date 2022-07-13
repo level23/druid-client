@@ -72,15 +72,15 @@ class IndexTask implements TaskInterface
         string $dateSource,
         InputSourceInterface $inputSource,
         GranularityInterface $granularity,
-        TransformSpec $transformSpec = null,
-        TuningConfig $tuningConfig = null,
-        TaskContext $context = null,
-        AggregationCollection $aggregations = null,
+        ?TransformSpec $transformSpec = null,
+        ?TuningConfig $tuningConfig = null,
+        ?TaskContext $context = null,
+        ?AggregationCollection $aggregations = null,
         array $dimensions = [],
-        string $taskId = null,
-        InputFormatInterface $inputFormat = null,
-        TimestampSpec $timestampSpec = null,
-        SpatialDimensionCollection $spatialDimensions = null
+        ?string $taskId = null,
+        ?InputFormatInterface $inputFormat = null,
+        ?TimestampSpec $timestampSpec = null,
+        ?SpatialDimensionCollection $spatialDimensions = null
     ) {
         $this->tuningConfig      = $tuningConfig;
         $this->context           = $context;

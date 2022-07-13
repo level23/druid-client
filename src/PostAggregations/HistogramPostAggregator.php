@@ -28,7 +28,7 @@ class HistogramPostAggregator implements PostAggregatorInterface
     public function __construct(
         PostAggregatorInterface $dimension,
         string $outputName,
-        array $splitPoints = null,
+        ?array $splitPoints = null,
         ?int $numBins = null
     ) {
         $this->outputName  = $outputName;

@@ -78,7 +78,7 @@ class DruidClient
      * @param array<string,string|int> $config The configuration for this client.
      * @param \GuzzleHttp\Client|null  $client
      */
-    public function __construct(array $config, GuzzleClient $client = null)
+    public function __construct(array $config, ?GuzzleClient $client = null)
     {
         $this->config = array_merge($this->config, $config);
 
