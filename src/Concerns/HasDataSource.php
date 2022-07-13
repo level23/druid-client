@@ -13,6 +13,7 @@ use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\DataSources\QueryDataSource;
 use Level23\Druid\DataSources\UnionDataSource;
 use Level23\Druid\DataSources\LookupDataSource;
+use Level23\Druid\DataSources\InlineDataSource;
 use Level23\Druid\DataSources\DataSourceInterface;
 
 trait HasDataSource
@@ -126,6 +127,24 @@ trait HasDataSource
     public function innerJoin($dataSourceOrClosure, string $as, string $condition): self
     {
         return $this->join($dataSourceOrClosure, $as, $condition, JoinType::INNER);
+    }
+
+    /**
+     * Inline datasources allow you to query a small amount of data that is embedded in the query itself.
+     * They are useful when you want to write a query on a small amount of data without loading it first.
+     * They are also useful as inputs into a join.
+     *
+     * Each row is an array that must be exactly as long as the list of columnNames. The first element in
+     * each row corresponds to the first column in columnNames, and so on.
+     *
+     * @param string[]        $columnNames
+     * @param array<scalar[]> $rows
+     */
+    public function fromInline(array $columnNames, array $rows): self
+    {
+        $this->dataSource = new InlineDataSource($columnNames, $rows);
+
+        return $this;
     }
 
     /**

@@ -93,7 +93,7 @@ class DruidClient
      *
      * @return \Level23\Druid\Queries\QueryBuilder
      */
-    public function query(string $dataSource, string $granularity = Granularity::ALL): QueryBuilder
+    public function query(string $dataSource = '', string $granularity = Granularity::ALL): QueryBuilder
     {
         return new QueryBuilder($this, $dataSource, $granularity);
     }

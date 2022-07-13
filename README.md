@@ -369,10 +369,13 @@ The query method has 2 parameters:
 
 | **Type** | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                                                                                                                                                                                                                                                                                                     |
 |----------|-----------------------|----------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to query.                                                                                                                                                                                                                                                                                                         |
+| string   | Optional              | `$dataSource`  | "wikipedia" | The name of the dataSource (table) which you want to query.                                                                                                                                                                                                                                                                                                         |
 | string   | Optional              | `$granularity` | "all"       | The granularity which you want to use for this query. You can think of this like an extra "group by" per time window. The results will be grouped by this time window. By default we will use "all", which will return the resultSet in 1 set. Valid values are: all, none, second, minute, fifteen_minute, thirty_minute, hour, day, week, month, quarter and year |
 
 The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
+
+When you do not specify the dataSource, you need to specify it later on your query builer. There are various methods 
+to do this. See [QueryBuilder: Data Sources](#querybuilder-data-sources)
 
 See the following chapters for more information about the query builder.
 
@@ -803,6 +806,34 @@ if( Carbon::parse($date)->isBefore(Carbon::now()->subWeek()) ) {
 }
 ```
 
+#### `fromInline()`
+
+Inline datasources allow you to query a small amount of data that is embedded in the query itself.
+They are useful when you want to write a query on a small amount of data without loading it first.
+They are also useful as inputs into a join.
+
+Each row is an array that must be exactly as long as the list of columnNames. The first element in
+each row corresponds to the first column in columnNames, and so on.
+
+See also: https://druid.apache.org/docs/latest/querying/datasource.html#inline
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**   | **Example**                                                  | **Description**                                                                                                 |
+|----------|-----------------------|----------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| array    | Required              | `$columnNames` | ["country", "city"]                                          | The column names of the data you will supply.                                                                   |
+| array    | Required              | `$rows`        | [ ["United States", "San Francisco"], ["Canada", "Calgary"]] | The rows of data which will be used. Each row has to have as much items as the number of names in $columnNames. |
+
+```php
+$builder = $client->query()->fromInline(
+    ["country", "city"]
+    [
+        ["United States", "San Francisco"], 
+        ["Canada", "Calgary"]
+    ]
+)->select(["country", "city"]); // etc. 
+```
+
 #### `join()`
 
 With this method you can join another dataSource. This is available since druid version 0.23.0.
@@ -835,7 +866,7 @@ $builder = $client->query('users')
 
 You can also specify an other DataSource as value. For example, you can create a new `JoinDataSource` object and pass
 that as value. However, there are easy methods created for this (for example `joinLookup()`) so you probably
-do not have to use this.
+do not have to use this. It might be usefull for whe you want to join with inline data (you can use the `InlineDataSource`)
 
 This method has the following arguments:
 

@@ -45,7 +45,7 @@
     - `orWhereSpatialPolygon()`
 - Added ExpressionFilter and the `whereExpression()` and `orWhereExpression()` methods.
 - Removed IngestSegmentFirehose and FirehoseInterface. These are now replaced by InputSources.
-- Added _a lot_ of [input sources](#input-sources) (used for index tasks):
+- Added _a lot_ of [input sources](README.md#input-sources) (used for index tasks):
     - Azure
     - Google Cloud
     - S3
@@ -55,7 +55,7 @@
     - Inline
     - SQL
     - Combine
-- Added [input formats](#input-formats) (used for index tasks):
+- Added [input formats](README.md#input-formats) (used for index tasks):
     - csv Format
     - tsv Format
     - json Format
@@ -66,9 +66,12 @@
 - Added `pollTaskStatus` in the client, which will poll until the status of a task is other than `RUNNING`.
   The time between each check can be influenced by the `'polling_sleep_seconds'` config setting or
   the `DRUID_POLLING_SLEEP_SECONDS` .env setting for Laravel/Lumen applications.
-- Added support to join other DataSources.
-- Added support for `inlineLookup`
-- Added support for multi-value columns. Either by using one of the new `multiValueListSelect`, `multiValueRegexSelect`, `multiValuePrefixSelect` dimension selector filters. 
+- Added support to join other DataSources. See: [Data Sources](README.md#querybuilder-data-sources)
+- Added support for `inlineLookup`. See [inlineLookup()](README.md#inlinelookup)
+- Added support for multi-value columns. Either by using one of the new [multiValueListSelect](README.md#multivaluelistselect), 
+  [multiValueRegexSelect](README.md#multivalueregexselect), and [multiValuePrefixSelect](README.md#multivalueprefixselect) dimension selector filters. 
+- The `$dataSource` parameter for the [query()](README.md#druidclientquery) method on the druid-client is now optional. You can specify later on the
+  query builder which dataSource you want to use.
 
 ## Migrating to v2
 

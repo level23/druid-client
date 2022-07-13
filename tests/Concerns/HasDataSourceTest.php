@@ -221,4 +221,34 @@ class HasDataSourceTest extends TestCase
                 ->joinLookup('departments', 'dep', 'users.department_id = dep.k')
         );
     }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testFromInline(): void
+    {
+        $names = ['country', 'city'];
+        $rows  = [
+            ["United States", "San Francisco"],
+            ["Canada", "Calgary"],
+        ];
+        $this->assertEquals(
+            $this->builder,
+            $this->builder->fromInline($names, $rows)
+        );
+
+        /** @var InlineDataSource $dataSource */
+        $dataSource = $this->getProperty($this->builder, 'dataSource');
+
+        $this->assertEquals(
+            [
+                'type'        => 'inline',
+                'columnNames' => $names,
+                'rows'        => $rows,
+            ],
+            $dataSource->toArray()
+        );
+
+        $this->assertInstanceOf(InlineDataSource::class, $dataSource);
+    }
 }
