@@ -457,8 +457,7 @@ Here we will describe some methods which are generic and can be used by (almost)
 #### `interval()`
 
 Because Druid is a TimeSeries database, you always need to specify between which times you want to query. With this
-method
-you can do just that.
+method you can do just that.
 
 The interval method is very flexible and supports various argument formats.
 
@@ -589,8 +588,7 @@ The `orderByDirection()` method has the following arguments:
 The `pagingIdentifier()` allows you to do paginating on the result set. This only works on SELECT queries.
 
 When you execute a select query, you will return a paging identifier. To request the next "page", use this paging
-identifier
-in your next request.
+identifier in your next request.
 
 Example:
 
@@ -729,8 +727,7 @@ The `dimensions()` method has the following arguments:
 #### `toArray()`
 
 The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will
-build
-the query and return the query as an array.
+build the query and return the query as an array.
 
 Example:
 
@@ -753,8 +750,7 @@ The `toArray()` method has the following arguments:
 #### `toJson()`
 
 The `toJson()` method will try to build the query. We will try to auto detect the best query type. After that, we will
-build
-the query and return the query as a JSON string.
+build the query and return the query as a JSON string.
 
 Example:
 
@@ -1197,8 +1193,7 @@ $builder->count('nrOfResults');
 The `sum()` aggregation computes the sum of values as a 64-bit, signed integer.
 
 **Note:** Alternatives are: `longSum()`, `doubleSum()` and `floatSum()`, which allow you to directly specify the output
-type by
-using the appropriate method name. These methods do not have the `$type` parameter.
+type by using the appropriate method name. These methods do not have the `$type` parameter.
 
 Example:
 
@@ -1220,8 +1215,7 @@ The `sum()` aggregation method has the following parameters:
 The `min()` aggregation computes the minimum of all metric values.
 
 **Note:** Alternatives are: `longMin()`, `doubleMin()` and `floatMin()`, which allow you to directly specify the output
-type by
-using the appropriate method name. These methods do not have the `$type` parameter.
+type by using the appropriate method name. These methods do not have the `$type` parameter.
 
 Example:
 
@@ -1243,8 +1237,7 @@ The `min()` aggregation method has the following parameters:
 The `max()` aggregation computes the maximum of all metric values.
 
 **Note:** Alternatives are: `longMax()`, `doubleMax()` and `floatMax()`, which allow you to directly specify the output
-type by
-using the appropriate method name. These methods do not have the `$type` parameter.
+type by using the appropriate method name. These methods do not have the `$type` parameter.
 
 Example:
 
@@ -1334,8 +1327,7 @@ The `any()` aggregation method has the following parameters:
 #### `javascript()`
 
 The `javascript()` aggregation computes an arbitrary JavaScript function over a set of columns (both metrics and
-dimensions
-are allowed). Your JavaScript functions are expected to return floating-point values.
+dimensions are allowed). Your JavaScript functions are expected to return floating-point values.
 
 **NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
 for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
@@ -1551,7 +1543,7 @@ The following `$operator` values are supported:
 | !=             | Check if the dimension is not equal to the given value.                                                                                                                                        |
 | <>             | Same as `!=`                                                                                                                                                                                   |
 | >              | Check if the dimension is greater than the given value.                                                                                                                                        |
-| > =            | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
+| >=             | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
 | <              | Check if the dimension is less than the given value.                                                                                                                                           |
 | <=             | Check if the dimension is less than or equal to the given value.                                                                                                                               |
 | like           | Check if the dimension matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character).                             |
@@ -1688,8 +1680,7 @@ The `whereColumn()` filter compares two dimensions with each other. Only records
 returned.
 
 You can supply the dimension name as a string, or you can build a more advanced dimension (with for example an
-extraction
-filter) using a Closure function. Example:
+extraction filter) using a Closure function. Example:
 
 ```php
 // Select records where "initials" is equal to the first character of "first_name".
@@ -2082,8 +2073,7 @@ The `timeParse()` extraction function has the following arguments:
 #### `timeFormat()` extraction
 
 The `timeFormat()` extraction function will format the dimension according to the given format string, time zone, and
-locale.
-The format should be given in Joda DateTimeFormat.
+locale. The format should be given in Joda DateTimeFormat.
 
 See: http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
 
@@ -2284,7 +2274,7 @@ The following `$operator` values are supported:
 | !=           | Check if the metric is not equal to the given value.                                                                                                            |
 | <>           | Same as `!=`                                                                                                                                                    |
 | >            | Check if the metric is greater than the given value.                                                                                                            |
-| > =          | Check if the metric is greater than or equal to the given value.                                                                                                |
+| >=           | Check if the metric is greater than or equal to the given value.                                                                                                |
 | <            | Check if the metric is less than the given value.                                                                                                               |
 | <=           | Check if the metric is less than or equal to the given value.                                                                                                   |
 | like         | Check if the metric matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character). |
@@ -2926,8 +2916,7 @@ There are a few different filters available:
 #### `searchContains()`
 
 The `searchContains()` method allows you to filter on dimensions where the dimension contains your given value. You can
-specify
-if the match should be case sensitive or not.
+specify if the match should be case-sensitive or not.
 
 Example:
 
@@ -3028,11 +3017,9 @@ The `QueryContext()` object contains context properties which apply to all queri
 **Response**
 
 The response of this method is dependent of the query which is executed. Each query has it's own response object.
-However,
-all query responses are extended of the `QueryResponse` object. Each query response has therefor a `$response->raw()`
-method
-which will return an array with the raw data returned by druid. There is also an `$response->data()` method which
-returns the data in a "normalized" way so that it can be directly used.
+However, all query responses are extended of the `QueryResponse` object. Each query response has therefor 
+a `$response->raw()` method which will return an array with the raw data returned by druid. There is also 
+an `$response->data()` method which returns the data in a "normalized" way so that it can be directly used.
 
 #### `groupBy()`
 
@@ -3061,11 +3048,9 @@ $result = $builder
 ```
 
 There are two different strategies to execute a GroupBy query. V2 which is the current default, and V1, which is the
-legacy
-strategy. When execute a query using the `groupBy()` method, the v2 strategy is used. If you want to use the v1
-strategy,
-you can make use of the method `groupByV1()`. This method works the same, only uses the v1 strategy to execute the
-query.
+legacy strategy. When execute a query using the `groupBy()` method, the v2 strategy is used. If you want to use the v1
+strategy,  you can make use of the method `groupByV1()`. This method works the same, only uses the v1 strategy to 
+execute the query.
 
 For more information about groupBy strategies see this page:
 https://druid.apache.org/docs/latest/querying/groupbyquery.html#implementation-details
@@ -3140,8 +3125,7 @@ The `topN()` method has the following arguments:
 **Context**
 
 The `topN()` method receives 1 parameter, the query context. The query context is either an array with key => value
-pairs,
-or an `TopNQueryContext` object. The context allows you to change the behaviour of the query execution.
+pairs, or an `TopNQueryContext` object. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3217,10 +3201,8 @@ The `selectQuery()` method has the following arguments:
 **Context**
 
 The `selectQuery()` method receives 1 parameter, the query context. The query context is either an array with key =>
-value pairs,
-or an `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific for this query
-type.
-The context allows you to change the behaviour of the query execution.
+value pairs, or an `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific 
+for this query type. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3282,8 +3264,7 @@ the `scan()` method has the following parameters:
 **Context**
 
 The first parameter of the `scan()` method is the query context. The query context is either an array with key => value
-pairs,
-or an `ScanQueryContext` object. The context allows you to change the behaviour of the query execution.
+pairs, or an `ScanQueryContext` object. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3377,8 +3358,7 @@ The `timeseries()` method has the following arguments:
 **Context**
 
 The `timeseries()` method receives 1 parameter, the query context. The query context is either an array with key =>
-value pairs,
-or an `TimeSeriesQueryContext` object.
+value pairs, or an `TimeSeriesQueryContext` object.
 The context allows you to change the behaviour of the query execution.
 
 Example:
@@ -3435,8 +3415,7 @@ The `search()` method has the following arguments:
 **Context**
 
 The `search()` method receives as first parameter the query context. The query context is either an array with key =>
-value pairs,
-or an `QueryContext` object. The context allows you to change the behaviour of the query execution.
+value pairs, or an `QueryContext` object. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3608,15 +3587,13 @@ In our experience, if data needs to be updated (rebuild), it is most of the time
 By keeping fresh data in smaller segments, we only need to rebuild 1 hour of data, instead for a whole month or such.
 
 We use for example hour segments for "today" and "yesterday", and we have some processes which will change this data
-into
-bigger segments after that.
+into bigger segments after that.
 
 Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
 
 **Note**: when you re-index data, druid will collect the data and put it in a new segment. The old segments are not
-deleted,
-but marked as unused. This is the same principle as laravel's soft-deletes. To permanently delete the unused segments
-you should use the `kill` task. See below for an example.
+deleted, but marked as unused. This is the same principle as laravel's soft-deletes. To permanently delete the unused 
+segments you should use the `kill` task. See below for an example.
 
 By default, we have added a check to make sure that you have selected a complete interval. This prevents a lot of
 issues. If you do _not_ want this, we have added a special context setting named `skipIntervalValidation`. When you set
