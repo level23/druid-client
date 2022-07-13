@@ -165,7 +165,7 @@ class HasDataSourceTest extends TestCase
         $tableDs = new TableDataSource('foobar');
         $this->builder->shouldReceive('join')
             ->once()
-            ->with($tableDs, 'baz', 'a = b', JoinType::INNER)
+            ->with($tableDs, 'baz', 'a = b')
             ->andReturnSelf();
 
         $this->assertEquals(
