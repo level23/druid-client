@@ -127,11 +127,11 @@ class DruidClient
     {
         $query = $druidQuery->toArray();
 
-        $this->log('Executing druid query', ['query' => $query]);
+        $this->log('Executing druid query: ' . var_export($query, true));
 
         $result = $this->executeRawRequest('post', $this->config('broker_url') . '/druid/v2', $query);
 
-        $this->log('Received druid response', ['response' => $result]);
+        $this->log('Received druid response: ' . var_export($result, true));
 
         return $result;
     }
@@ -149,7 +149,7 @@ class DruidClient
         /** @var array<string,array<mixed>|int|string> $payload */
         $payload = $task->toArray();
 
-        $this->log('Executing druid task', ['task' => $payload]);
+        $this->log('Executing druid task: '. var_export($payload, true));
 
         /** @var string[] $result */
         $result = $this->executeRawRequest(
@@ -158,7 +158,7 @@ class DruidClient
             $payload
         );
 
-        $this->log('Received task response', ['response' => $result]);
+        $this->log('Received task response: ' . var_export($result, true));
 
         return $result['task'];
     }
@@ -203,13 +203,9 @@ class DruidClient
             $configDelay   = intval($this->config('retry_delay_ms', 500));
             // Should we attempt a retry?
             if ($retries++ < $configRetries) {
-                $this->log(
-                    'Query failed due to a server exception. Doing a retry. Retry attempt ' . $retries . ' of ' . $configRetries,
-                    [
-                        'message' => $exception->getMessage(),
-                        'trace'   => $exception->getTraceAsString(),
-                    ]
-                );
+                $this->log('Query failed due to a server exception. Doing a retry. Retry attempt ' . $retries . ' of ' . $configRetries);
+                $this->log($exception->getMessage());
+                $this->log($exception->getTraceAsString());
 
                 if ($configDelay > 0) {
                     $this->log('Sleep for ' . $configDelay . ' ms');
