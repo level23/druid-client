@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid;
 
+use JsonException;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use Level23\Druid\Types\Granularity;
@@ -21,8 +22,6 @@ use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 use Level23\Druid\InputSources\InputSourceInterface;
 use function json_decode;
-use function json_last_error;
-use function json_last_error_msg;
 
 class DruidClient
 {
@@ -323,17 +322,12 @@ class DruidClient
     {
         $contents = $response->getBody()->getContents();
         try {
-            $row = json_decode($contents, true) ?: [];
-            if (JSON_ERROR_NONE !== json_last_error()) {
-                throw new InvalidArgumentException(
-                    'json_decode error: ' . json_last_error_msg()
-                );
-            }
+            $row = json_decode($contents, true, 512, JSON_THROW_ON_ERROR) ?: [];
 
             if (!is_array($row)) {
                 throw new InvalidArgumentException('We failed to parse response!');
             }
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException|JsonException $exception ) {
             $this->log('We failed to decode druid response. ');
             $this->log('Status code: ' . $response->getStatusCode());
             $this->log('Response body: ' . $contents);

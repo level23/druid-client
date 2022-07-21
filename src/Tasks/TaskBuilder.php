@@ -7,8 +7,6 @@ use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Interval\IntervalInterface;
 use function json_encode;
-use function json_last_error;
-use function json_last_error_msg;
 
 abstract class TaskBuilder
 {
@@ -89,17 +87,13 @@ abstract class TaskBuilder
      *
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \JsonException
      */
     public function toJson($context = []): string
     {
         $task = $this->buildTask($context);
 
-        $json = json_encode($task->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new InvalidArgumentException(
-                'json_encode error: ' . json_last_error_msg()
-            );
-        }
+        $json = json_encode($task->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         return (string)$json;
     }

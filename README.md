@@ -486,6 +486,8 @@ $builder->interval(1570643085, 1570729485);
 
 The start date should be before the end date. If not, an `InvalidArgumentException` will be thrown.
 
+You can call this method multiple times to select from various data sets.
+
 The `interval()` method has the following parameters:
 
 | **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                   |

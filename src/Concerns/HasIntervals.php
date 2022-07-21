@@ -13,7 +13,7 @@ trait HasIntervals
     protected array $intervals = [];
 
     /**
-     * Set the interval, e.g. the date where we want to select data from.
+     * Add the interval, e.g. the date where we want to select data from.
      *
      * You should specify the interval in string form like "$start/$stop" format, or give two parameters
      * where each parameter should be a DateTime object, unix timestamp or string accepted by DateTime::__construct.

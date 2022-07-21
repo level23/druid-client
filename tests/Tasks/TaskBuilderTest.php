@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Tasks;
 
 use Mockery;
+use JsonException;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Tests\TestCase;
@@ -89,8 +90,8 @@ class TaskBuilderTest extends TestCase
             ->with(['context' => 'here'])
             ->andReturn($task);
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('json_encode error:');
+        $this->expectException(JsonException::class);
+        $this->expectExceptionMessage('Inf and NaN cannot be JSON encoded');
 
         $builder->toJson(['context' => 'here']);
     }
