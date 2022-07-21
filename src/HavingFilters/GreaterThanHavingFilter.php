@@ -5,23 +5,17 @@ namespace Level23\Druid\HavingFilters;
 
 class GreaterThanHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $metric;
+    protected string $metric;
 
-    /**
-     * @var float|int
-     */
-    protected $value;
+    protected float $value;
 
     /**
      * GreaterThanHaving constructor.
      *
-     * @param string    $metric
-     * @param int|float $value
+     * @param string $metric
+     * @param float  $value
      */
-    public function __construct(string $metric, $value)
+    public function __construct(string $metric, float $value)
     {
         $this->metric = $metric;
         $this->value  = $value;
@@ -30,7 +24,7 @@ class GreaterThanHavingFilter implements HavingFilterInterface
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|float>
      */
     public function toArray(): array
     {

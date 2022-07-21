@@ -5,23 +5,24 @@ namespace Level23\Druid\Collections;
 
 use Level23\Druid\PostAggregations\PostAggregatorInterface;
 
+/**
+ * @extends \Level23\Druid\Collections\BaseCollection<PostAggregatorInterface>
+ */
 class PostAggregationCollection extends BaseCollection
 {
     public function __construct(PostAggregatorInterface ...$postAggregations)
     {
-        $this->items = $postAggregations;
+        $this->items = array_values($postAggregations);
     }
 
     /**
      * Return an array representation of our items
      *
-     * @return array
+     * @return array<array<string,string|array<mixed>>>
      */
     public function toArray(): array
     {
-        return array_map(function (PostAggregatorInterface $item) {
-            return $item->toArray();
-        }, $this->items);
+        return array_map(fn(PostAggregatorInterface $item) => $item->toArray(), $this->items);
     }
 
     /**

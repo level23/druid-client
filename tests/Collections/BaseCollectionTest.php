@@ -40,7 +40,8 @@ class BaseCollectionTest extends TestCase
         $this->assertEquals($collection->offsetGet(0), $item);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('We only accept instances of type');
+        $this->expectExceptionMessage('We only accept instances of type ' . $collection->getType());
+        // @phpstan-ignore-next-line
         $collection->add('hallo');
     }
 
@@ -87,6 +88,7 @@ class BaseCollectionTest extends TestCase
         $this->expectExceptionMessage('We only accept');
 
         $collection = new AggregationCollection();
+        // @phpstan-ignore-next-line
         $collection->offsetSet(1, 'hallo');
     }
 

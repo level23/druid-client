@@ -19,9 +19,9 @@ class RankPostAggregatorTest extends TestCase
         );
 
         $this->assertEquals([
-            'type'     => 'quantilesDoublesSketchToRank',
-            'name'     => 'rank',
-            'field'    => $fieldAccess->toArray(),
+            'type'  => 'quantilesDoublesSketchToRank',
+            'name'  => 'rank',
+            'field' => $fieldAccess->toArray(),
             'value' => 0.95,
         ], $aggregator->toArray());
     }

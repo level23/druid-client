@@ -5,110 +5,100 @@ namespace Level23\Druid\Tasks;
 
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Transforms\TransformSpec;
+use Level23\Druid\Dimensions\TimestampSpec;
 use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\InputSources\InputSourceInterface;
+use Level23\Druid\InputFormats\InputFormatInterface;
 use Level23\Druid\Granularities\GranularityInterface;
+use Level23\Druid\Collections\SpatialDimensionCollection;
 
 class IndexTask implements TaskInterface
 {
-    /**
-     * @var \Level23\Druid\TuningConfig\TuningConfig|null
-     */
-    protected $tuningConfig;
+    protected ?TuningConfig $tuningConfig;
+
+    protected ?TaskContext $context;
+
+    protected bool $appendToExisting = false;
+
+    protected InputSourceInterface $inputSource;
+
+    protected string $dateSource;
+
+    protected GranularityInterface $granularity;
+
+    protected ?TransformSpec $transformSpec;
+
+    protected ?AggregationCollection $aggregations;
 
     /**
-     * @var \Level23\Druid\Context\TaskContext|null
+     * @var array<array<string,string|bool>>
      */
-    protected $context;
+    protected array $dimensions = [];
 
     /**
-     * @var bool
-     */
-    protected $appendToExisting = false;
-
-    /**
-     * @var \Level23\Druid\InputSources\InputSourceInterface
-     */
-    protected $inputSource;
-
-    /**
-     * @var string
-     */
-    protected $dateSource;
-
-    /**
-     * @var \Level23\Druid\Granularities\GranularityInterface
-     */
-    protected $granularity;
-
-    /**
-     * @var \Level23\Druid\Transforms\TransformSpec|null
-     */
-    protected $transformSpec;
-
-    /**
-     * @var \Level23\Druid\Collections\AggregationCollection|null
-     */
-    protected $aggregations;
-
-    /**
-     * @var array
-     */
-    protected $dimensions;
-
-    /**
-     * Whether or not this task should be executed parallel.
+     * Whether this task should be executed parallel.
      *
      * @var bool
      */
-    protected $parallel = false;
+    protected bool $parallel = false;
 
-    /**
-     * @var string|null
-     */
-    protected $taskId;
+    protected ?string $taskId;
+
+    protected ?InputFormatInterface $inputFormat;
+
+    protected TimestampSpec $timestampSpec;
+
+    protected ?SpatialDimensionCollection $spatialDimensions = null;
 
     /**
      * IndexTask constructor.
      *
-     *
-     * @param string                                                $dateSource
-     * @param \Level23\Druid\InputSources\InputSourceInterface      $inputSource
-     * @param \Level23\Druid\Granularities\GranularityInterface     $granularity
-     * @param \Level23\Druid\Transforms\TransformSpec|null          $transformSpec
-     * @param \Level23\Druid\TuningConfig\TuningConfig|null         $tuningConfig
-     * @param \Level23\Druid\Context\TaskContext|null               $context
-     * @param \Level23\Druid\Collections\AggregationCollection|null $aggregations
-     * @param array                                                 $dimensions
-     * @param string|null                                           $taskId
+     * @param string                                                     $dateSource
+     * @param \Level23\Druid\InputSources\InputSourceInterface           $inputSource
+     * @param \Level23\Druid\Granularities\GranularityInterface          $granularity
+     * @param \Level23\Druid\Dimensions\TimestampSpec                    $timestampSpec
+     * @param \Level23\Druid\Transforms\TransformSpec|null               $transformSpec
+     * @param \Level23\Druid\TuningConfig\TuningConfig|null              $tuningConfig
+     * @param \Level23\Druid\Context\TaskContext|null                    $context
+     * @param \Level23\Druid\Collections\AggregationCollection|null      $aggregations
+     * @param array<array<string,string|bool>>                           $dimensions
+     * @param string|null                                                $taskId
+     * @param \Level23\Druid\InputFormats\InputFormatInterface|null      $inputFormat
+     * @param \Level23\Druid\Collections\SpatialDimensionCollection|null $spatialDimensions
      */
     public function __construct(
         string $dateSource,
         InputSourceInterface $inputSource,
         GranularityInterface $granularity,
-        TransformSpec $transformSpec = null,
-        TuningConfig $tuningConfig = null,
-        TaskContext $context = null,
-        AggregationCollection $aggregations = null,
+        TimestampSpec $timestampSpec,
+        ?TransformSpec $transformSpec = null,
+        ?TuningConfig $tuningConfig = null,
+        ?TaskContext $context = null,
+        ?AggregationCollection $aggregations = null,
         array $dimensions = [],
-        string $taskId = null
+        ?string $taskId = null,
+        ?InputFormatInterface $inputFormat = null,
+        ?SpatialDimensionCollection $spatialDimensions = null
     ) {
-        $this->tuningConfig  = $tuningConfig;
-        $this->context       = $context;
-        $this->inputSource   = $inputSource;
-        $this->dateSource    = $dateSource;
-        $this->granularity   = $granularity;
-        $this->transformSpec = $transformSpec;
-        $this->aggregations  = $aggregations;
-        $this->dimensions    = $dimensions;
-        $this->taskId        = $taskId;
+        $this->tuningConfig      = $tuningConfig;
+        $this->context           = $context;
+        $this->inputSource       = $inputSource;
+        $this->dateSource        = $dateSource;
+        $this->granularity       = $granularity;
+        $this->transformSpec     = $transformSpec;
+        $this->aggregations      = $aggregations;
+        $this->dimensions        = $dimensions;
+        $this->taskId            = $taskId;
+        $this->inputFormat       = $inputFormat;
+        $this->timestampSpec     = $timestampSpec;
+        $this->spatialDimensions = $spatialDimensions;
     }
 
     /**
      * Return the task in a format so that we can send it to druid.
      *
-     * @return array
+     * @return array<string,array<string,array<string,array<int|string,array<mixed>|bool|int|string>|bool|int|string|null>|bool|int|string>|string>
      */
     public function toArray(): array
     {
@@ -117,10 +107,7 @@ class IndexTask implements TaskInterface
             'spec' => [
                 'dataSchema' => [
                     'dataSource'      => $this->dateSource,
-                    'timestampSpec'   => [
-                        'column' => '__time',
-                        'format' => 'auto',
-                    ],
+                    'timestampSpec'   => $this->timestampSpec->toArray(),
                     'dimensionsSpec'  => [
                         'dimensions' => $this->dimensions,
                     ],
@@ -131,13 +118,16 @@ class IndexTask implements TaskInterface
                 'ioConfig'   => [
                     'type'             => $this->parallel ? 'index_parallel' : 'index',
                     'inputSource'      => $this->inputSource->toArray(),
-                    'inputFormat'      => [
-                        'type' => 'json',
-                    ],
+                    'inputFormat'      => $this->inputFormat ? $this->inputFormat->toArray() : null,
                     'appendToExisting' => $this->appendToExisting,
                 ],
             ],
         ];
+
+        // Add our spatial dimensions if supplied.
+        if (!empty($this->spatialDimensions)) {
+            $result['spec']['dataSchema']['dimensionsSpec']['spatialDimensions'] = $this->spatialDimensions->toArray();
+        }
 
         $context = $this->context ? $this->context->toArray() : [];
         if (count($context) > 0) {
@@ -165,12 +155,24 @@ class IndexTask implements TaskInterface
     }
 
     /**
-     * Whether or not this task should be executed parallel.
+     * Whether this task should be executed parallel.
      *
      * @param bool $parallel
      */
     public function setParallel(bool $parallel): void
     {
         $this->parallel = $parallel;
+    }
+
+    /**
+     * @param InputFormatInterface $inputFormat
+     *
+     * @return IndexTask
+     */
+    public function setInputFormat(InputFormatInterface $inputFormat): IndexTask
+    {
+        $this->inputFormat = $inputFormat;
+
+        return $this;
     }
 }

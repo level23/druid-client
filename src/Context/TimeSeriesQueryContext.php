@@ -14,7 +14,7 @@ class TimeSeriesQueryContext extends QueryContext implements ContextInterface
      *
      * @return $this;
      */
-    public function setSkipEmptyBuckets(bool $skipEmptyBuckets)
+    public function setSkipEmptyBuckets(bool $skipEmptyBuckets): self
     {
         $this->properties['skipEmptyBuckets'] = $skipEmptyBuckets;
 

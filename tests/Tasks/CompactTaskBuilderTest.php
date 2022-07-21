@@ -45,6 +45,9 @@ class CompactTaskBuilderTest extends TestCase
         );
     }
 
+    /**
+     * @return array<array<array<string,int>|null|string|TuningConfig|int|TaskContext>>
+     */
     public function buildTaskDataProvider(): array
     {
         $tuningConfig = new TuningConfig();
@@ -64,24 +67,24 @@ class CompactTaskBuilderTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      *
-     * @param array|TaskContext $context
-     * @param string|null       $interval
-     * @param string|null       $segmentGranularity
-     * @param TuningConfig|null $tuningConfig
-     * @param int|null          $targetCompactionSizeBytes
-     * @param string|null       $taskId
+     * @param array<string,string>|TaskContext $context
+     * @param string|null                      $interval
+     * @param string|null                      $segmentGranularity
+     * @param TuningConfig|null                $tuningConfig
+     * @param int|null                         $targetCompactionSizeBytes
+     * @param string|null                      $taskId
      *
      * @throws \Exception
      * @dataProvider        buildTaskDataProvider
      */
     public function testBuildTask(
         $context,
-        $interval,
-        $segmentGranularity,
-        $tuningConfig,
+        ?string $interval,
+        ?string $segmentGranularity,
+        ?TuningConfig $tuningConfig,
         int $targetCompactionSizeBytes = null,
         string $taskId = null
-    ) {
+    ): void {
         $dataSource = 'myThings';
         $client     = new DruidClient([]);
 

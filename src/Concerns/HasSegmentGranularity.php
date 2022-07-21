@@ -10,14 +10,14 @@ trait HasSegmentGranularity
     /**
      * @var null|string
      */
-    protected $segmentGranularity;
+    protected ?string $segmentGranularity = null;
 
     /**
      * @param string $segmentGranularity
      *
      * @return $this
      */
-    public function segmentGranularity($segmentGranularity)
+    public function segmentGranularity(string $segmentGranularity): self
     {
         $this->segmentGranularity = Granularity::validate($segmentGranularity);
 

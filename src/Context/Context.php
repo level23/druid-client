@@ -8,14 +8,14 @@ use InvalidArgumentException;
 abstract class Context
 {
     /**
-     * @var array
+     * @var array<string,string|int|bool>
      */
-    protected $properties = [];
+    protected array $properties = [];
 
     /**
      * Context constructor.
      *
-     * @param array $properties
+     * @param array<string,string|int|bool> $properties
      */
     public function __construct(array $properties = [])
     {
@@ -46,7 +46,7 @@ abstract class Context
     /**
      * Return the context as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|int|bool>
      */
     public function toArray(): array
     {

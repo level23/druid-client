@@ -9,84 +9,49 @@ use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 
 class TopNQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected DataSourceInterface $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var string
-     */
-    protected $granularity;
+    protected string $granularity;
 
-    /**
-     * @var \Level23\Druid\Dimensions\DimensionInterface
-     */
-    protected $dimension;
+    protected DimensionInterface $dimension;
 
-    /**
-     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
-     */
-    protected $virtualColumns;
+    protected ?VirtualColumnCollection $virtualColumns = null;
 
-    /**
-     * @var int
-     */
-    protected $threshold;
+    protected int $threshold;
 
-    /**
-     * @var string
-     */
-    protected $metric;
+    protected string $metric;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter = null;
 
-    /**
-     * @var \Level23\Druid\Collections\AggregationCollection|null
-     */
-    protected $aggregations;
+    protected ?AggregationCollection $aggregations = null;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    protected $postAggregations;
+    protected ?PostAggregationCollection $postAggregations = null;
 
-    /**
-     * @var \Level23\Druid\Context\ContextInterface|null
-     */
-    protected $context;
+    protected ?ContextInterface $context = null;
 
-    /**
-     * @var bool
-     */
-    protected $descending = true;
+    protected bool $descending = true;
 
     /**
      * TopNQuery constructor.
      *
-     * @param string             $dataSource
-     * @param IntervalCollection $intervals
-     * @param DimensionInterface $dimension
-     * @param int                $threshold
-     * @param string             $metric
-     * @param string             $granularity
+     * @param DataSourceInterface $dataSource
+     * @param IntervalCollection  $intervals
+     * @param DimensionInterface  $dimension
+     * @param int                 $threshold
+     * @param string              $metric
+     * @param string              $granularity
      */
     public function __construct(
-        string $dataSource,
+        DataSourceInterface $dataSource,
         IntervalCollection $intervals,
         DimensionInterface $dimension,
         int $threshold,
@@ -102,9 +67,9 @@ class TopNQuery implements QueryInterface
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|int|array<mixed>>
      */
     public function toArray(): array
     {
@@ -122,7 +87,7 @@ class TopNQuery implements QueryInterface
 
         $result = [
             'queryType'   => 'topN',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'intervals'   => $this->intervals->toArray(),
             'granularity' => $this->granularity,
             'dimension'   => $this->dimension->toArray(),
@@ -188,7 +153,7 @@ class TopNQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,array<mixed>|int|string> $response
      *
      * @return TopNQueryResponse
      */

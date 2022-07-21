@@ -8,7 +8,7 @@ class RegexSearchFilter implements SearchFilterInterface
     /**
      * @var string
      */
-    protected $pattern;
+    protected string $pattern;
 
     /**
      * RegexSearchFilter constructor.
@@ -23,7 +23,7 @@ class RegexSearchFilter implements SearchFilterInterface
     /**
      * Return the search filter so that it can be used in a search query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

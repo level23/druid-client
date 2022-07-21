@@ -5,15 +5,9 @@ namespace Level23\Druid\HavingFilters;
 
 class DimensionSelectorHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
     /**
      * LessThanHavingFilter constructor.
@@ -30,7 +24,7 @@ class DimensionSelectorHavingFilter implements HavingFilterInterface
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

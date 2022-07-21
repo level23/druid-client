@@ -8,22 +8,13 @@ use Level23\Druid\Collections\OrderByCollection;
 
 class Limit implements LimitInterface
 {
-    /**
-     * @var int|null
-     */
-    protected $limit;
+    protected ?int $limit;
 
-    /**
-     * @var \Level23\Druid\Collections\OrderByCollection|null
-     */
-    protected $orderBy;
+    protected ?OrderByCollection $orderBy;
 
-    /**
-     * @var int|null
-     */
-    protected $offset;
+    protected ?int $offset;
 
-    public function __construct(int $limit = null, OrderByCollection $orderBy = null, int $offset = null)
+    public function __construct(?int $limit = null, ?OrderByCollection $orderBy = null, ?int $offset = null)
     {
         $this->limit   = $limit;
         $this->orderBy = $orderBy;
@@ -33,7 +24,7 @@ class Limit implements LimitInterface
     /**
      * Return the limit in array format so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string>>|int>
      */
     public function toArray(): array
     {
@@ -64,7 +55,7 @@ class Limit implements LimitInterface
      *
      * @param \Level23\Druid\OrderBy\OrderByInterface $orderBy
      */
-    public function addOrderBy(OrderByInterface $orderBy)
+    public function addOrderBy(OrderByInterface $orderBy): void
     {
         if ($this->orderBy === null) {
             $this->orderBy = new OrderByCollection();

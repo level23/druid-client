@@ -5,7 +5,7 @@
             "src"
         ],
         "excludes": [
-            "*DruidService*"
+            "*DruidService*",
         ]
     },
     "phpUnit": {

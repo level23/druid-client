@@ -12,17 +12,11 @@ abstract class MethodAggregator implements AggregatorInterface
      *
      * @var string
      */
-    protected $type;
+    protected string $type;
 
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $metricName;
+    protected string $metricName;
 
     /**
      * constructor.
@@ -49,7 +43,7 @@ abstract class MethodAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

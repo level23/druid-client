@@ -7,20 +7,11 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 class JavaScriptPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection
-     */
-    protected $fields;
+    protected PostAggregationCollection $fields;
 
-    /**
-     * @var string
-     */
-    protected $javascriptFunction;
+    protected string $javascriptFunction;
 
     /**
      * JavaScriptPostAggregator constructor.
@@ -42,7 +33,7 @@ class JavaScriptPostAggregator implements PostAggregatorInterface
     /**
      * Return the post aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|array<mixed>>>>
      */
     public function toArray(): array
     {

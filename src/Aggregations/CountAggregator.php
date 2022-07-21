@@ -5,10 +5,7 @@ namespace Level23\Druid\Aggregations;
 
 class CountAggregator implements AggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
     /**
      * CountAggregator constructor.
@@ -23,7 +20,7 @@ class CountAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

@@ -5,25 +5,16 @@ namespace Level23\Druid\PostAggregations;
 
 class HistogramPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
+
+    protected PostAggregatorInterface $dimension;
 
     /**
-     * @var PostAggregatorInterface
+     * @var array<float>|null
      */
-    protected $dimension;
+    protected ?array $splitPoints = null;
 
-    /**
-     * @var array|null
-     */
-    protected $splitPoints;
-
-    /**
-     * @var int|null
-     */
-    protected $numBins;
+    protected ?int $numBins = null;
 
     /**
      * HistogramPostAggregator constructor.
@@ -31,13 +22,13 @@ class HistogramPostAggregator implements PostAggregatorInterface
      * @param PostAggregatorInterface $dimension     Post aggregator that refers to a DoublesSketch (fieldAccess or
      *                                               another post aggregator)
      * @param string                  $outputName
-     * @param array|null              $splitPoints   array of split points (optional)
+     * @param array<float>|null       $splitPoints   array of split points (optional)
      * @param int|null                $numBins       number of bins (optional, defaults to 10)
      */
     public function __construct(
         PostAggregatorInterface $dimension,
         string $outputName,
-        array $splitPoints = null,
+        ?array $splitPoints = null,
         ?int $numBins = null
     ) {
         $this->outputName  = $outputName;
@@ -49,7 +40,7 @@ class HistogramPostAggregator implements PostAggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|float[]|array<string,string|array<mixed>>|int>
      */
     public function toArray(): array
     {

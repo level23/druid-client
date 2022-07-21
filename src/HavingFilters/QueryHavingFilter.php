@@ -7,10 +7,7 @@ use Level23\Druid\Filters\FilterInterface;
 
 class QueryHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface
-     */
-    protected $filter;
+    protected FilterInterface $filter;
 
     public function __construct(FilterInterface $filter)
     {
@@ -20,7 +17,7 @@ class QueryHavingFilter implements HavingFilterInterface
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

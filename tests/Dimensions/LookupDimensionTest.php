@@ -27,6 +27,48 @@ class LookupDimensionTest extends TestCase
         ], $lookupDimension->toArray());
     }
 
+    /**
+     * @testWith [true, true]
+     *           [false, false]
+     *           [true, "-"]
+     *
+     * @param bool        $isOneToOne
+     * @param bool|string $keepMissingValue
+     *
+     * @return void
+     */
+    public function testDimensionWithArray(bool $isOneToOne, $keepMissingValue): void
+    {
+        $lookupDimension = new LookupDimension(
+            'number_id',
+            [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV'],
+            'number',
+            $keepMissingValue,
+            $isOneToOne
+        );
+
+        $this->assertEquals('number', $lookupDimension->getOutputName());
+        $this->assertEquals('number_id', $lookupDimension->getDimension());
+
+        $expected = [
+            'type'       => 'lookup',
+            'dimension'  => 'number_id',
+            'outputName' => 'number',
+            'lookup'     => [
+                'type'       => 'map',
+                'map'        => [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV'],
+                'isOneToOne' => $isOneToOne,
+            ],
+        ];
+
+        if ($keepMissingValue === true) {
+            $expected['retainMissingValue'] = true;
+        } elseif (is_string($keepMissingValue)) {
+            $expected['replaceMissingValueWith'] = $keepMissingValue;
+        }
+        $this->assertEquals($expected, $lookupDimension->toArray());
+    }
+
     public function testDimensionWithRetainMissingValue(): void
     {
         $lookupDimension = new LookupDimension(

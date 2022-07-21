@@ -6,14 +6,14 @@ namespace Level23\Druid\HavingFilters;
 class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingFilterInterface
 {
     /**
-     * @var array|\Level23\Druid\HavingFilters\HavingFilterInterface[]
+     * @var \Level23\Druid\HavingFilters\HavingFilterInterface[]
      */
-    protected $filters;
+    protected array $filters;
 
     /**
      * AndHavingFilter constructor.
      *
-     * @param array|\Level23\Druid\HavingFilters\HavingFilterInterface[] $filters
+     * @param \Level23\Druid\HavingFilters\HavingFilterInterface[] $filters
      */
     public function __construct(array $filters)
     {
@@ -23,15 +23,13 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|float|array<mixed>|bool>>>
      */
     public function toArray(): array
     {
         return [
             'type'        => 'and',
-            'havingSpecs' => array_map(function (HavingFilterInterface $filter) {
-                return $filter->toArray();
-            }, $this->filters),
+            'havingSpecs' => array_map(fn(HavingFilterInterface $filter) => $filter->toArray(), $this->filters),
         ];
     }
 
@@ -40,7 +38,7 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
      *
      * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
      */
-    public function addHavingFilter(HavingFilterInterface $having)
+    public function addHavingFilter(HavingFilterInterface $having): void
     {
         $this->filters[] = $having;
     }
@@ -48,7 +46,7 @@ class AndHavingFilter implements HavingFilterInterface, LogicalExpressionHavingF
     /**
      * Return all having filters which are used by this logical expression filter.
      *
-     * @return array
+     * @return \Level23\Druid\HavingFilters\HavingFilterInterface[]
      */
     public function getHavingFilters(): array
     {

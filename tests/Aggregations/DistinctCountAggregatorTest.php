@@ -8,6 +8,9 @@ use Level23\Druid\Aggregations\DistinctCountAggregator;
 
 class DistinctCountAggregatorTest extends TestCase
 {
+    /**
+     * @return array<array<string|int|null>>
+     */
     public function dataProvider(): array
     {
         return [

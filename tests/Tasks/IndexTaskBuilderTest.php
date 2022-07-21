@@ -4,50 +4,73 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Tasks;
 
 use Mockery;
-use Hamcrest\Type\IsArray;
 use InvalidArgumentException;
-use Hamcrest\Core\IsAnything;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Tasks\IndexTask;
 use Level23\Druid\Interval\Interval;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Tasks\IndexTaskBuilder;
+use Level23\Druid\Types\FlattenFieldType;
 use Level23\Druid\Transforms\TransformSpec;
+use Level23\Druid\Dimensions\TimestampSpec;
+use Level23\Druid\InputFormats\FlattenSpec;
+use Level23\Druid\Types\MultiValueHandling;
 use Level23\Druid\Transforms\TransformBuilder;
+use Level23\Druid\Dimensions\SpatialDimension;
+use Level23\Druid\InputFormats\CsvInputFormat;
+use Level23\Druid\InputFormats\TsvInputFormat;
+use Level23\Druid\InputFormats\OrcInputFormat;
+use Level23\Druid\InputSources\HttpInputSource;
+use Level23\Druid\InputFormats\JsonInputFormat;
 use Level23\Druid\InputSources\DruidInputSource;
+use Level23\Druid\InputSources\LocalInputSource;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\InputFormats\ParquetInputFormat;
 use Level23\Druid\Granularities\UniformGranularity;
+use Level23\Druid\InputFormats\ProtobufInputFormat;
 use Level23\Druid\Collections\AggregationCollection;
+use Level23\Druid\InputSources\InputSourceInterface;
+use Level23\Druid\InputFormats\InputFormatInterface;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 use Level23\Druid\Granularities\GranularityInterface;
+use Level23\Druid\Collections\SpatialDimensionCollection;
 
 class IndexTaskBuilderTest extends TestCase
 {
     /**
-     * @testWith ["Level23\\Druid\\InputSources\\DruidInputSource"]
-     *           []
-     * @param string|null $inputSourceType
+     * @testWith [true]
+     *           [false]
+     *
+     * @param bool $withInputSource
      *
      * @throws \ReflectionException
      */
-    public function testConstructor($inputSourceType = null): void
+    public function testConstructor(bool $withInputSource): void
     {
+        if ($withInputSource) {
+            $inputSource = new HttpInputSource(['http://127.0.0.1/file.json']);
+        } else {
+            $inputSource = null;
+        }
+
         $client     = new DruidClient([]);
         $dataSource = 'people';
-        $builder    = new IndexTaskBuilder($client, $dataSource, $inputSourceType);
+        $builder    = new IndexTaskBuilder($client, $dataSource, $inputSource);
 
         $this->assertEquals(
             false,
-            $this->getProperty($builder, 'append')
+            $this->getProperty($builder, 'appendToExisting')
         );
-        $this->assertEquals($builder, $builder->append());
+        $this->assertEquals($builder, $builder->appendToExisting());
 
         $this->assertEquals(
             true,
-            $this->getProperty($builder, 'append')
+            $this->getProperty($builder, 'appendToExisting')
         );
 
         $this->assertEquals(
@@ -71,8 +94,8 @@ class IndexTaskBuilderTest extends TestCase
         );
 
         $this->assertEquals(
-            $inputSourceType,
-            $this->getProperty($builder, 'inputSourceType')
+            $inputSource,
+            $this->getProperty($builder, 'inputSource')
         );
 
         $this->assertEquals(
@@ -95,36 +118,245 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testFromDataSource(): void
-    {
-        $client     = new DruidClient([]);
-        $dataSource = 'aliens';
-        $builder    = new IndexTaskBuilder($client, $dataSource);
-
-        $builder->fromDataSource('humans');
-
-        $this->assertEquals('humans', $this->getProperty($builder, 'fromDataSource'));
-
-        /** @noinspection PhpDeprecationInspection */
-        $builder->setFromDataSource('wikipedia');
-
-        $this->assertEquals('wikipedia', $this->getProperty($builder, 'fromDataSource'));
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
     public function testParallel(): void
     {
-        $client     = new DruidClient([]);
-        $dataSource = 'wikipedia';
-        $builder    = new IndexTaskBuilder($client, $dataSource);
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'wikipedia');
 
         $this->assertEquals(false, $this->getProperty($builder, 'parallel'));
 
         $builder->parallel();
 
         $this->assertEquals(true, $this->getProperty($builder, 'parallel'));
+    }
+
+    public function testAppend(): void
+    {
+        $client = new DruidClient([]);
+
+        $builder = Mockery::mock(IndexTaskBuilder::class, [$client, 'wikipedia']);
+        $builder->makePartial();
+
+        $builder->shouldReceive('appendToExisting')
+            ->once();
+
+        $builder->append();
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testSpatialDimension(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $spatialDimension = $this->getConstructorMock(SpatialDimension::class);
+        $spatialDimension->shouldReceive('__construct')
+            ->once()
+            ->with('location', ['lat', 'long']);
+
+        $this->assertEquals(
+            $builder,
+            $builder->spatialDimension('location', ['lat', 'long'])
+        );
+    }
+
+    /**
+     * @testWith ["String", "array", true]
+     *           ["DOUBLE", "sorted_array", false]
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @throws \ReflectionException
+     */
+    public function testMultiValueDimension(string $type, string $multiValueHandling, bool $createBitmapIndex): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'coordinates');
+
+        $this->assertEquals(
+            $builder,
+            $builder->multiValueDimension('position', $type, $multiValueHandling, $createBitmapIndex)
+        );
+
+        $this->assertEquals([
+            [
+                'name'               => 'position',
+                'type'               => DataType::validate($type),
+                'multiValueHandling' => MultiValueHandling::validate($multiValueHandling),
+                'createBitmapIndex'  => $createBitmapIndex,
+            ],
+        ], $this->getProperty($builder, 'dimensions'));
+    }
+
+    /**
+     * @testWith ["SORTED_ARRAY", false]
+     *           ["SORTED_SET", false]
+     *           ["ARRAY", false]
+     *           ["Array", false]
+     *           ["ArRaY", false]
+     *           ["LefT", true]
+     *           ["aray", true]
+     *           [" array ", true]
+     *           ["sortedSet", true]
+     *           ["sortedArray", true]
+     *
+     * @param string $value
+     * @param bool   $expectException
+     *
+     * @return void
+     */
+    public function testMultiValueHandling(string $value, bool $expectException): void
+    {
+        if ($expectException) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage(
+                'The given MultiValueHandling type is invalid: ' . strtoupper($value) . '. ' .
+                'Allowed are: ' . implode(', ', MultiValueHandling::values())
+            );
+        }
+
+        $this->assertEquals(strtoupper($value), MultiValueHandling::validate($value));
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testJsonFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $flattenSpec = new FlattenSpec(true);
+        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
+
+        $jsonInputFormat = $this->getConstructorMock(JsonInputFormat::class, InputFormatInterface::class);
+        $jsonInputFormat->shouldReceive('__construct')
+            ->once()
+            ->with($flattenSpec, ['ALLOW_COMMENTS' => true]);
+
+        $this->assertEquals(
+            $builder,
+            $builder->jsonFormat($flattenSpec, ['ALLOW_COMMENTS' => true])
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testOrcFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $flattenSpec = new FlattenSpec(true);
+        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
+
+        $jsonInputFormat = $this->getConstructorMock(OrcInputFormat::class, InputFormatInterface::class);
+        $jsonInputFormat->shouldReceive('__construct')
+            ->once()
+            ->with($flattenSpec, true);
+
+        $this->assertEquals(
+            $builder,
+            $builder->orcFormat($flattenSpec, true)
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testParquetFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $flattenSpec = new FlattenSpec(true);
+        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
+
+        $jsonInputFormat = $this->getConstructorMock(ParquetInputFormat::class, InputFormatInterface::class);
+        $jsonInputFormat->shouldReceive('__construct')
+            ->once()
+            ->with($flattenSpec, false);
+
+        $this->assertEquals(
+            $builder,
+            $builder->parquetFormat($flattenSpec, false)
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testProtobufFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $decoder = [
+            "type"             => "file",
+            "descriptor"       => "file:///tmp/metrics.desc",
+            "protoMessageType" => "Metrics",
+        ];
+
+        $flattenSpec = new FlattenSpec(true);
+        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
+
+        $jsonInputFormat = $this->getConstructorMock(ProtobufInputFormat::class, InputFormatInterface::class);
+        $jsonInputFormat->shouldReceive('__construct')
+            ->once()
+            ->with($decoder, $flattenSpec);
+
+        $this->assertEquals(
+            $builder,
+            $builder->protobufFormat($decoder, $flattenSpec)
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testCsvFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $jsonInputFormat = $this->getConstructorMock(CsvInputFormat::class, InputFormatInterface::class);
+        $jsonInputFormat->shouldReceive('__construct')
+            ->once()
+            ->with(['name', 'age'], '|', true, 2);
+
+        $this->assertEquals(
+            $builder,
+            $builder->csvFormat(['name', 'age'], '|', true, 2)
+        );
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testTsvFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $jsonInputFormat = $this->getConstructorMock(TsvInputFormat::class, InputFormatInterface::class);
+        $jsonInputFormat->shouldReceive('__construct')
+            ->once()
+            ->with(['name', 'age'], ',', '|', true, 2);
+
+        $this->assertEquals(
+            $builder,
+            $builder->tsvFormat(['name', 'age'], ',', '|', true, 2)
+        );
     }
 
     /**
@@ -147,7 +379,6 @@ class IndexTaskBuilderTest extends TestCase
             $counter++;
 
             if ($withTransform) {
-                /** @var TransformBuilder $builder */
                 $builder->transform('concat(foo, bar)', 'fooBar');
             }
         };
@@ -159,6 +390,7 @@ class IndexTaskBuilderTest extends TestCase
         $this->assertEquals(1, $counter);
 
         if ($withTransform) {
+            /** @var TransformSpec $transformSpec */
             $transformSpec = $this->getProperty($builder, 'transformSpec');
             $this->assertInstanceOf(
                 TransformSpec::class,
@@ -195,21 +427,25 @@ class IndexTaskBuilderTest extends TestCase
         ], $this->getProperty($builder, 'dimensions'));
     }
 
+    /**
+     * @return array<array<string|Interval|null|InputSourceInterface>>
+     */
     public function buildTaskDataProvider(): array
     {
         return [
-            ["day", "week", new Interval("12-02-2019/13-02-2019"), DruidInputSource::class],
-            ["day", "hour", new Interval("12-02-2019/13-02-2019"), DruidInputSource::class],
+            ["day", "week", new Interval("12-02-2019/13-02-2019"), new DruidInputSource('mySource')],
+            ["day", "hour", new Interval("12-02-2019/13-02-2019"), new HttpInputSource(['http://127.0.0.1/test.json'])],
             ["day", "day", new Interval("12-02-2019/13-02-2019"), null],
+            ["day", "day", new Interval("12-02-2019/13-02-2019"), new LocalInputSource(["/path/to/file.json"])],
 
         ];
     }
 
     /**
-     * @param string                           $queryGranularity
-     * @param string                           $segmentGranularity
-     * @param \Level23\Druid\Interval\Interval $interval
-     * @param string|null                      $inputSourceType
+     * @param string                                                $queryGranularity
+     * @param string                                                $segmentGranularity
+     * @param \Level23\Druid\Interval\Interval                      $interval
+     * @param \Level23\Druid\InputSources\InputSourceInterface|null $inputSource
      *
      * @throws \ReflectionException
      * @throws \Exception
@@ -223,41 +459,24 @@ class IndexTaskBuilderTest extends TestCase
         string $queryGranularity,
         string $segmentGranularity,
         Interval $interval,
-        ?string $inputSourceType
-    ) {
+        ?InputSourceInterface $inputSource
+    ): void {
         $context    = [];
         $client     = new DruidClient([]);
         $dataSource = 'farmers';
-        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource, $inputSourceType]);
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource, $inputSource]);
         $builder->makePartial();
 
-        $this->assertEquals(
-            $inputSourceType,
-            $this->getProperty($builder, 'inputSourceType')
-        );
-
-        switch ($inputSourceType) {
-            case DruidInputSource::class:
-
-                $builder->shouldAllowMockingProtectedMethods()
-                    ->shouldReceive('validateInterval')
-                    ->once()
-                    ->with($dataSource, new IsAnything());
-
-                break;
-
-            default:
-                $this->expectException(InvalidArgumentException::class);
-                $this->expectExceptionMessage('No InputSource known.');
-                break;
-        }
+        $this->assertEquals($inputSource, $this->getProperty($builder, 'inputSource'));
 
         $builder->queryGranularity($queryGranularity);
         $builder->segmentGranularity($segmentGranularity);
         $builder->interval($interval->getStart(), $interval->getStop());
         $builder->parallel();
+        $builder->appendToExisting();
+        $builder->timestamp('datetime', 'auto');
 
-        if ($inputSourceType) {
+        if ($inputSource) {
             $mock = new Mockery\Generator\MockConfigurationBuilder();
             $mock->setInstanceMock(true);
             $mock->setName(IndexTask::class);
@@ -268,24 +487,71 @@ class IndexTaskBuilderTest extends TestCase
             $indexTask
                 ->shouldReceive('__construct')
                 ->once()
-                ->with(
-                    $dataSource,
-                    new IsInstanceOf(DruidInputSource::class),
-                    new IsInstanceOf(GranularityInterface::class),
-                    null,
-                    null,
-                    new IsInstanceOf(TaskContext::class),
-                    new IsInstanceOf(AggregationCollection::class),
-                    new IsArray()
-                );
+                ->withArgs(function (
+                    $givenDateSource,
+                    $givenInputSource,
+                    $granularity,
+                    $timestampSpec,
+                    $transformSpec,
+                    $tuningConfig,
+                    $context,
+                    $aggregations,
+                    $dimensions,
+                    $taskId,
+                    $inputFormat,
+                    $spatialDimensions
+                ) use ($inputSource, $dataSource) {
+                    $this->assertEquals($dataSource, $givenDateSource);
+                    $this->assertEquals($inputSource, $givenInputSource);
+                    $this->assertInstanceOf(GranularityInterface::class, $granularity);
+                    $this->assertInstanceOf(TimestampSpec::class, $timestampSpec);
+                    $this->assertNull($transformSpec);
+                    $this->assertNull($tuningConfig);
+                    $this->assertInstanceOf(TaskContext::class, $context);
+                    $this->assertInstanceOf(AggregationCollection::class, $aggregations);
+                    $this->assertIsArray($dimensions);
+                    $this->assertNull($taskId);
+                    $this->assertNull($inputFormat);
+                    $this->assertInstanceOf(SpatialDimensionCollection::class, $spatialDimensions);
+
+                    return true;
+                });
 
             $indexTask->shouldReceive('setParallel')
                 ->once()
                 ->with(true);
+
+            $indexTask->shouldReceive('setAppendToExisting')
+                ->once()
+                ->with(true);
+        } else {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('No InputSource known. You have to supply an input source!');
         }
 
         /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testBuildTaskWithoutTimestampSpec(): void
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'farmers';
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource]);
+        $builder->makePartial();
+        $builder->queryGranularity(Granularity::HOUR);
+        $builder->segmentGranularity(Granularity::HOUR);
+        $builder->interval('now - 1 week/now');
+        $builder->inputSource(new HttpInputSource(['http://127.0.0.1/file.json']));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You have to specify an timestamp column!');
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
     public function testBuildTaskWithoutQueryGranularity(): void
@@ -332,8 +598,44 @@ class IndexTaskBuilderTest extends TestCase
         $this->expectExceptionMessage('You have to specify a segmentGranularity value!');
 
         $builder->queryGranularity('day');
+        $builder->timestamp('timestamp', 'auto');
         $builder->interval('12-02-2019', '13-02-2019');
         $builder->uniformGranularity();
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function testBuildTaskForDruidInputSourceWithoutInterval(): void
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'phones';
+        $builder    = Mockery::mock(IndexTaskBuilder::class, [$client, $dataSource]);
+        $builder->makePartial();
+
+        $inputSource = Mockery::mock(DruidInputSource::class, ['old_phones']);
+
+        $builder->queryGranularity('day');
+        $builder->segmentGranularity('day');
+        $builder->timestamp('timestamp', 'auto');
+        $builder->interval('12-02-2019', '13-02-2019');
+        $builder->inputSource($inputSource);
+
+        $inputSource->shouldReceive('getInterval')
+            ->once()
+            ->andReturnNull();
+
+        $inputSource->shouldReceive('setInterval')
+            ->once()
+            ->withArgs(function (Interval $interval) {
+                $this->assertEquals('12-02-2019', $interval->getStart()->format('d-m-Y'));
+                $this->assertEquals('13-02-2019', $interval->getStop()->format('d-m-Y'));
+
+                return true;
+            });
 
         /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
@@ -359,6 +661,7 @@ class IndexTaskBuilderTest extends TestCase
 
         $builder->queryGranularity('day');
         $builder->segmentGranularity('week');
+        $builder->timestamp('timestamp', 'auto');
         $builder->interval('12-02-2019', '13-02-2019');
 
         if ($granularityType == ArbitraryGranularity::class) {

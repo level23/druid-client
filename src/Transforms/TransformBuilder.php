@@ -12,7 +12,7 @@ class TransformBuilder
     /**
      * @var array|\Level23\Druid\Transforms\TransformInterface[]
      */
-    protected $transforms = [];
+    protected array $transforms = [];
 
     /**
      * Build a new transform.
@@ -24,9 +24,9 @@ class TransformBuilder
      * @param string $expression
      * @param string $as
      *
-     * @return $this
+     * @return self
      */
-    public function transform(string $expression, string $as)
+    public function transform(string $expression, string $as): self
     {
         $this->transforms[] = new ExpressionTransform($expression, $as);
 
@@ -36,7 +36,7 @@ class TransformBuilder
     /**
      * @return array|\Level23\Druid\Transforms\TransformInterface[]
      */
-    public function getTransforms()
+    public function getTransforms(): array
     {
         return $this->transforms;
     }

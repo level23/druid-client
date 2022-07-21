@@ -8,7 +8,7 @@ interface InputSourceInterface
     /**
      * Return the input source in a format so that we can send it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|bool|int>
      */
     public function toArray(): array;
 }

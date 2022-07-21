@@ -5,6 +5,9 @@ namespace Level23\Druid\Collections;
 
 use Level23\Druid\OrderBy\OrderByInterface;
 
+/**
+ * @extends \Level23\Druid\Collections\BaseCollection<OrderByInterface>
+ */
 class OrderByCollection extends BaseCollection
 {
     /**
@@ -14,19 +17,17 @@ class OrderByCollection extends BaseCollection
      */
     public function __construct(OrderByInterface ...$orderByColumns)
     {
-        $this->items = $orderByColumns;
+        $this->items = array_values($orderByColumns);
     }
 
     /**
      * Return an array representation of our items
      *
-     * @return array
+     * @return array<array<string,string>>
      */
     public function toArray(): array
     {
-        return array_map(function (OrderByInterface $item) {
-            return $item->toArray();
-        }, $this->items);
+        return array_map(fn(OrderByInterface $item) => $item->toArray(), $this->items);
     }
 
     /**

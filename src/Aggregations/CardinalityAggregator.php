@@ -7,25 +7,13 @@ use Level23\Druid\Collections\DimensionCollection;
 
 class CardinalityAggregator implements AggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var bool
-     */
-    protected $byRow;
+    protected bool $byRow;
 
-    /**
-     * @var bool
-     */
-    protected $round;
+    protected bool $round;
 
-    /**
-     * @var \Level23\Druid\Collections\DimensionCollection
-     */
-    protected $dimensions;
+    protected DimensionCollection $dimensions;
 
     /**
      * CardinalityAggregator constructor.
@@ -86,7 +74,7 @@ class CardinalityAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string|bool|array<int,array<mixed>>>
      */
     public function toArray(): array
     {

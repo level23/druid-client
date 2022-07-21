@@ -5,15 +5,9 @@ namespace Level23\Druid\Extractions;
 
 class JavascriptExtraction implements ExtractionInterface
 {
-    /**
-     * @var string
-     */
-    protected $javascript;
+    protected string $javascript;
 
-    /**
-     * @var bool
-     */
-    protected $injective;
+    protected bool $injective;
 
     /**
      * JavascriptExtraction constructor.
@@ -30,9 +24,9 @@ class JavascriptExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

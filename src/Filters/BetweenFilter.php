@@ -21,30 +21,15 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class BetweenFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var int|string
-     */
-    protected $minValue;
+    protected string $minValue;
 
-    /**
-     * @var int|string
-     */
-    protected $maxValue;
+    protected string $maxValue;
 
-    /**
-     * @var string|null
-     */
-    protected $ordering;
+    protected string $ordering;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * BetweenFilter constructor.
@@ -52,7 +37,7 @@ class BetweenFilter implements FilterInterface
      * @param string                   $dimension         The dimension to filter on
      * @param int|string               $minValue
      * @param int|string               $maxValue
-     * @param null|string              $ordering          Specifies the sorting order to use when comparing values
+     * @param null|string              $ordering          Specifies the sorting order using when comparing values
      *                                                    against the bound.
      * @param ExtractionInterface|null $extractionFunction
      */
@@ -60,8 +45,8 @@ class BetweenFilter implements FilterInterface
         string $dimension,
         $minValue,
         $maxValue,
-        string $ordering = null,
-        ExtractionInterface $extractionFunction = null
+        ?string $ordering = null,
+        ?ExtractionInterface $extractionFunction = null
     ) {
         if (!is_null($ordering)) {
             $ordering = SortingOrder::validate($ordering);
@@ -70,24 +55,24 @@ class BetweenFilter implements FilterInterface
         $this->dimension          = $dimension;
         $this->ordering           = $ordering ?: (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
         $this->extractionFunction = $extractionFunction;
-        $this->minValue           = $minValue;
-        $this->maxValue           = $maxValue;
+        $this->minValue           = (string)$minValue;
+        $this->maxValue           = (string)$maxValue;
     }
 
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|bool|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {
         $result = [
             'type'        => 'bound',
             'dimension'   => $this->dimension,
-            'ordering'    => (string)$this->ordering,
-            'lower'       => (string)$this->minValue,
+            'ordering'    => $this->ordering,
+            'lower'       => $this->minValue,
             'lowerStrict' => false,
-            'upper'       => (string)$this->maxValue,
+            'upper'       => $this->maxValue,
             'upperStrict' => true,
         ];
 

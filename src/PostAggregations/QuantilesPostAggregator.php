@@ -5,20 +5,14 @@ namespace Level23\Druid\PostAggregations;
 
 class QuantilesPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var PostAggregatorInterface
-     */
-    protected $dimension;
+    protected PostAggregatorInterface $dimension;
 
     /**
      * @var float[]
      */
-    protected $fractions;
+    protected array $fractions;
 
     /**
      * QuantilesPostAggregator constructor.
@@ -39,7 +33,7 @@ class QuantilesPostAggregator implements PostAggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|array<mixed>>|float[]>
      */
     public function toArray(): array
     {

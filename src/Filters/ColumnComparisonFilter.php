@@ -21,20 +21,11 @@ use Level23\Druid\Dimensions\DimensionInterface;
  */
 class ColumnComparisonFilter implements FilterInterface
 {
-    /**
-     * @var DimensionInterface
-     */
-    protected $dimensionA;
+    protected DimensionInterface $dimensionA;
 
-    /**
-     * @var DimensionInterface
-     */
-    protected $dimensionB;
+    protected DimensionInterface $dimensionB;
 
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
     /**
      * ColumnComparisonFilter constructor.
@@ -51,7 +42,7 @@ class ColumnComparisonFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|array<mixed>>>>
      */
     public function toArray(): array
     {

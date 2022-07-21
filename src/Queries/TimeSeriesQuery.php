@@ -7,6 +7,7 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\Responses\TimeSeriesQueryResponse;
 use Level23\Druid\Collections\VirtualColumnCollection;
@@ -14,55 +15,25 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 class TimeSeriesQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected DataSourceInterface $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var string
-     */
-    protected $granularity;
+    protected string $granularity;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter = null;
 
-    /**
-     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
-     */
-    protected $virtualColumns;
+    protected ?VirtualColumnCollection $virtualColumns = null;
 
-    /**
-     * @var \Level23\Druid\Collections\AggregationCollection|null
-     */
-    protected $aggregations;
+    protected ?AggregationCollection $aggregations = null;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection|null
-     */
-    protected $postAggregations;
+    protected ?PostAggregationCollection $postAggregations = null;
 
-    /**
-     * @var \Level23\Druid\Context\ContextInterface|null
-     */
-    protected $context;
+    protected ?ContextInterface $context = null;
 
-    /**
-     * @var bool
-     */
-    protected $descending = false;
+    protected bool $descending = false;
 
-    /**
-     * @var string
-     */
-    protected $timeOutputName = 'timestamp';
+    protected string $timeOutputName = 'timestamp';
 
     /**
      * Not documented (yet), but supported since 0.13.0
@@ -70,34 +41,37 @@ class TimeSeriesQuery implements QueryInterface
      * `explain plan for select floor(__time to day), count(*) from "dataSource" group by 1 limit 2;`
      *
      * @see https://github.com/apache/incubator-druid/pull/5931
-     * @var int
+     * @var int|null
      */
-    protected $limit;
+    protected ?int $limit = null;
 
     /**
      * TimeSeriesQuery constructor.
      *
-     * @param string             $dataSource
-     * @param IntervalCollection $intervals
-     * @param string             $granularity
+     * @param DataSourceInterface $dataSource
+     * @param IntervalCollection  $intervals
+     * @param string              $granularity
      */
-    public function __construct(string $dataSource, IntervalCollection $intervals, string $granularity = 'all')
-    {
+    public function __construct(
+        DataSourceInterface $dataSource,
+        IntervalCollection $intervals,
+        string $granularity = 'all'
+    ) {
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;
         $this->granularity = Granularity::validate($granularity);
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|bool|int>
      */
     public function toArray(): array
     {
         $result = [
             'queryType'   => 'timeseries',
-            'dataSource'  => $this->dataSource,
+            'dataSource'  => $this->dataSource->toArray(),
             'descending'  => $this->descending,
             'intervals'   => $this->intervals->toArray(),
             'granularity' => $this->granularity,
@@ -173,7 +147,7 @@ class TimeSeriesQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,array<mixed>|int|string> $response
      *
      * @return TimeSeriesQueryResponse
      */

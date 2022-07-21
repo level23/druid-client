@@ -5,6 +5,9 @@ namespace Level23\Druid\Collections;
 
 use Level23\Druid\Aggregations\AggregatorInterface;
 
+/**
+ * @extends \Level23\Druid\Collections\BaseCollection<AggregatorInterface>
+ */
 class AggregationCollection extends BaseCollection
 {
     /**
@@ -19,18 +22,16 @@ class AggregationCollection extends BaseCollection
 
     public function __construct(AggregatorInterface ...$aggregations)
     {
-        $this->items = $aggregations;
+        $this->items = array_values($aggregations);
     }
 
     /**
      * Return an array representation of our items
      *
-     * @return array
+     * @return array<int|string,array<string,string|bool|array<mixed>|int>>
      */
     public function toArray(): array
     {
-        return array_map(function (AggregatorInterface $item) {
-            return $item->toArray();
-        }, $this->items);
+        return array_map(fn(AggregatorInterface $item) => $item->toArray(), $this->items);
     }
 }

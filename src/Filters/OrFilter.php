@@ -6,9 +6,9 @@ namespace Level23\Druid\Filters;
 class OrFilter implements FilterInterface, LogicalExpressionFilterInterface
 {
     /**
-     * @var array|\Level23\Druid\Filters\FilterInterface[]
+     * @var \Level23\Druid\Filters\FilterInterface[]
      */
-    protected $filters;
+    protected array $filters;
 
     /**
      * AndFilter constructor.
@@ -23,7 +23,7 @@ class OrFilter implements FilterInterface, LogicalExpressionFilterInterface
     /**
      * @param \Level23\Druid\Filters\FilterInterface $filter
      */
-    public function addFilter(FilterInterface $filter)
+    public function addFilter(FilterInterface $filter): void
     {
         $this->filters[] = $filter;
     }
@@ -31,19 +31,13 @@ class OrFilter implements FilterInterface, LogicalExpressionFilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|int|bool|array<mixed>>>>
      */
     public function toArray(): array
     {
-        $fields = [];
-
-        foreach ($this->filters as $filter) {
-            $fields[] = $filter->toArray();
-        }
-
         return [
             'type'   => 'or',
-            'fields' => $fields,
+            'fields' => array_map(fn(FilterInterface $filter) => $filter->toArray(), $this->filters),
         ];
     }
 }

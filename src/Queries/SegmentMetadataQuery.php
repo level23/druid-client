@@ -4,36 +4,31 @@ declare(strict_types=1);
 namespace Level23\Druid\Queries;
 
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class SegmentMetadataQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected DataSourceInterface $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    public function __construct(string $dataSource, IntervalCollection $intervals)
+    public function __construct(DataSourceInterface $dataSource, IntervalCollection $intervals)
     {
         $this->dataSource = $dataSource;
         $this->intervals  = $intervals;
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,array<int|string,array<string>|string>|string>
      */
     public function toArray(): array
     {
         return [
             'queryType'  => 'segmentMetadata',
-            'dataSource' => $this->dataSource,
+            'dataSource' => $this->dataSource->toArray(),
             'intervals'  => $this->intervals->toArray(),
         ];
     }
@@ -41,7 +36,7 @@ class SegmentMetadataQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,array<mixed>|int|string> $response
      *
      * @return SegmentMetadataQueryResponse
      */

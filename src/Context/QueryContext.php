@@ -20,7 +20,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this;
      */
-    public function setTimeout(int $timeout)
+    public function setTimeout(int $timeout): self
     {
         $this->properties['timeout'] = $timeout;
 
@@ -32,9 +32,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param int $priority
      *
-     * @return $this;
+     * @return $this
      */
-    public function setPriority(int $priority)
+    public function setPriority(int $priority): self
     {
         $this->properties['priority'] = $priority;
 
@@ -46,9 +46,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param string $queryId
      *
-     * @return $this;
+     * @return $this
      */
-    public function setQueryId(string $queryId)
+    public function setQueryId(string $queryId): self
     {
         $this->properties['queryId'] = $queryId;
 
@@ -58,13 +58,13 @@ class QueryContext extends Context implements ContextInterface
     /**
      * Flag indicating whether to leverage the query cache for this query. When set to false, it disables reading from
      * the query cache for this query. When set to true, Apache Druid (incubating) uses druid.broker.cache.useCache or
-     * druid.historical.cache.useCache to determine whether or not to read from the query cache
+     * druid.historical.cache.useCache to determine whether to read from the query cache
      *
      * @param bool $useCache
      *
-     * @return $this;
+     * @return $this
      */
-    public function setUseCache(bool $useCache)
+    public function setUseCache(bool $useCache): self
     {
         $this->properties['useCache'] = $useCache;
 
@@ -74,14 +74,14 @@ class QueryContext extends Context implements ContextInterface
     /**
      * Flag indicating whether to save the results of the query to the query cache. Primarily used for debugging. When
      * set to false, it disables saving the results of this query to the query cache. When set to true, Druid uses
-     * druid.broker.cache.populateCache or druid.historical.cache.populateCache to determine whether or not to save the
+     * druid.broker.cache.populateCache or druid.historical.cache.populateCache to determine whether to save the
      * results of this query to the query cache
      *
      * @param bool $populateCache
      *
-     * @return $this;
+     * @return $this
      */
-    public function setPopulateCache(bool $populateCache)
+    public function setPopulateCache(bool $populateCache): self
     {
         $this->properties['populateCache'] = $populateCache;
 
@@ -91,13 +91,13 @@ class QueryContext extends Context implements ContextInterface
     /**
      * Flag indicating whether to leverage the result level cache for this query. When set to false, it disables
      * reading from the query cache for this query. When set to true, Druid uses druid.broker.cache.useResultLevelCache
-     * to determine whether or not to read from the result-level query cache
+     * to determine whether to read from the result-level query cache
      *
      * @param bool $useResultLevelCache
      *
-     * @return $this;
+     * @return $this
      */
-    public function setUseResultLevelCache(bool $useResultLevelCache)
+    public function setUseResultLevelCache(bool $useResultLevelCache): self
     {
         $this->properties['useResultLevelCache'] = $useResultLevelCache;
 
@@ -107,14 +107,14 @@ class QueryContext extends Context implements ContextInterface
     /**
      * Flag indicating whether to save the results of the query to the result level cache. Primarily used for
      * debugging. When set to false, it disables saving the results of this query to the query cache. When set to true,
-     * Druid uses druid.broker.cache.populateResultLevelCache to determine whether or not to save the results of this
+     * Druid uses druid.broker.cache.populateResultLevelCache to determine whether to save the results of this
      * query to the result-level query cache
      *
      * @param bool $populateResultLevelCache
      *
-     * @return $this;
+     * @return $this
      */
-    public function setPopulateResultLevelCache(bool $populateResultLevelCache)
+    public function setPopulateResultLevelCache(bool $populateResultLevelCache): self
     {
         $this->properties['populateResultLevelCache'] = $populateResultLevelCache;
 
@@ -127,9 +127,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param bool $bySegment
      *
-     * @return $this;
+     * @return $this
      */
-    public function setBySegment(bool $bySegment)
+    public function setBySegment(bool $bySegment): self
     {
         $this->properties['bySegment'] = $bySegment;
 
@@ -143,9 +143,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param bool $finalize
      *
-     * @return $this;
+     * @return $this
      */
-    public function setFinalize(bool $finalize)
+    public function setFinalize(bool $finalize): self
     {
         $this->properties['finalize'] = $finalize;
 
@@ -155,7 +155,7 @@ class QueryContext extends Context implements ContextInterface
     /**
      * At the Broker process level, long interval queries (of any type) may be broken into shorter interval queries to
      * parallelize merging more than normal. Broken up queries will use a larger share of cluster resources, but, if
-     * you use groupBy "v1, it may be able to complete faster as a result. Use ISO 8601 periods. For example, if this
+     * you use groupBy "v1", it may be able to complete faster as a result. Use ISO 8601 periods. For example, if this
      * property is set to P1M (one month), then a query covering a year would be broken into 12 smaller queries. The
      * broker uses its query processing executor service to initiate processing for query chunks, so make sure
      * "druid.processing.numThreads" is configured appropriately on the broker. groupBy queries do not support
@@ -164,9 +164,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param string $chunkPeriod
      *
-     * @return $this;
+     * @return $this
      */
-    public function setChunkPeriod(string $chunkPeriod)
+    public function setChunkPeriod(string $chunkPeriod): self
     {
         $this->properties['chunkPeriod'] = $chunkPeriod;
 
@@ -180,9 +180,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param int $maxScatterGatherBytes
      *
-     * @return $this;
+     * @return $this
      */
-    public function setMaxScatterGatherBytes(int $maxScatterGatherBytes)
+    public function setMaxScatterGatherBytes(int $maxScatterGatherBytes): self
     {
         $this->properties['maxScatterGatherBytes'] = $maxScatterGatherBytes;
 
@@ -196,9 +196,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param int $maxQueuedBytes
      *
-     * @return $this;
+     * @return $this
      */
-    public function setMaxQueuedBytes(int $maxQueuedBytes)
+    public function setMaxQueuedBytes(int $maxQueuedBytes): self
     {
         $this->properties['maxQueuedBytes'] = $maxQueuedBytes;
 
@@ -211,9 +211,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param bool $serializeDateTimeAsLong
      *
-     * @return $this;
+     * @return $this
      */
-    public function setSerializeDateTimeAsLong(bool $serializeDateTimeAsLong)
+    public function setSerializeDateTimeAsLong(bool $serializeDateTimeAsLong): self
     {
         $this->properties['serializeDateTimeAsLong'] = $serializeDateTimeAsLong;
 
@@ -225,9 +225,9 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param bool $serializeDateTimeAsLongInner
      *
-     * @return $this;
+     * @return $this
      */
-    public function setSerializeDateTimeAsLongInner(bool $serializeDateTimeAsLongInner)
+    public function setSerializeDateTimeAsLongInner(bool $serializeDateTimeAsLongInner): self
     {
         $this->properties['serializeDateTimeAsLongInner'] = $serializeDateTimeAsLongInner;
 
@@ -243,7 +243,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this
      */
-    public function setEnableParallelMerge(bool $enableParallelMerge)
+    public function setEnableParallelMerge(bool $enableParallelMerge): self
     {
         $this->properties['enableParallelMerge'] = $enableParallelMerge;
 
@@ -258,7 +258,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this
      */
-    public function setParallelMergeParallelism(int $parallelMergeParallelism)
+    public function setParallelMergeParallelism(int $parallelMergeParallelism): self
     {
         $this->properties['parallelMergeParallelism'] = $parallelMergeParallelism;
 
@@ -274,7 +274,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this
      */
-    public function setParallelMergeInitialYieldRows(int $parallelMergeInitialYieldRows)
+    public function setParallelMergeInitialYieldRows(int $parallelMergeInitialYieldRows): self
     {
         $this->properties['parallelMergeInitialYieldRows'] = $parallelMergeInitialYieldRows;
 
@@ -289,7 +289,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this
      */
-    public function setParallelMergeSmallBatchRows(int $parallelMergeSmallBatchRows)
+    public function setParallelMergeSmallBatchRows(int $parallelMergeSmallBatchRows): self
     {
         $this->properties['parallelMergeSmallBatchRows'] = $parallelMergeSmallBatchRows;
 
@@ -313,7 +313,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this
      */
-    public function setUseFilterCNF(bool $useFilterCNF)
+    public function setUseFilterCNF(bool $useFilterCNF): self
     {
         $this->properties['useFilterCNF'] = $useFilterCNF;
 
@@ -331,7 +331,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @return $this
      */
-    public function setSecondaryPartitionPruning(bool $secondaryPartitionPruning)
+    public function setSecondaryPartitionPruning(bool $secondaryPartitionPruning): self
     {
         $this->properties['secondaryPartitionPruning'] = $secondaryPartitionPruning;
 

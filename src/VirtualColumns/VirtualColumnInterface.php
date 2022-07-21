@@ -8,7 +8,7 @@ interface VirtualColumnInterface
     /**
      * Return the virtual column as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array;
 }

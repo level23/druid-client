@@ -5,30 +5,15 @@ namespace Level23\Druid\Extractions;
 
 class LookupExtraction implements ExtractionInterface
 {
-    /**
-     * @var string
-     */
-    protected $lookupName;
+    protected string $lookupName;
 
-    /**
-     * @var bool
-     */
-    protected $retainMissingValue;
+    protected bool $retainMissingValue;
 
-    /**
-     * @var string|null
-     */
-    protected $replaceMissingValueWith;
+    protected ?string $replaceMissingValueWith = null;
 
-    /**
-     * @var bool|null
-     */
-    protected $injective;
+    protected ?bool $injective = null;
 
-    /**
-     * @var bool|null
-     */
-    protected $optimize;
+    protected bool $optimize;
 
     /**
      * LookupExtraction constructor.
@@ -40,7 +25,7 @@ class LookupExtraction implements ExtractionInterface
      *                                         the missing values and replace them with the string value.
      * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
      *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           A property of injective can override the lookup's own sense of whether
+     * @param bool|null   $injective           A property of injective can override the lookups own sense of whether
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
      *
@@ -66,9 +51,9 @@ class LookupExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

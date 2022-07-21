@@ -11,6 +11,7 @@ use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
+use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
@@ -35,14 +36,13 @@ class ScanQueryTest extends TestCase
             new VirtualColumn("concat(first_name, ' ', last_name)", 'full_name')
         );
 
-        $query = new ScanQuery(
-            'wikipedia',
-            $intervals
-        );
+        $dataSource = new TableDataSource('wikipedia');
+
+        $query = new ScanQuery($dataSource, $intervals);
 
         $expected = [
             'queryType'    => 'scan',
-            'dataSource'   => 'wikipedia',
+            'dataSource'   => $dataSource->toArray(),
             'intervals'    => $intervals->toArray(),
             'resultFormat' => ScanQueryResultFormat::NORMAL_LIST,
             'columns'      => [],

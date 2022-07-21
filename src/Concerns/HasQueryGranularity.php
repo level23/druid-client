@@ -10,14 +10,14 @@ trait HasQueryGranularity
     /**
      * @var null|string
      */
-    protected $queryGranularity;
+    protected ?string $queryGranularity = null;
 
     /**
      * @param string $queryGranularity
      *
      * @return $this
      */
-    public function queryGranularity($queryGranularity)
+    public function queryGranularity(string $queryGranularity): self
     {
         $this->queryGranularity = Granularity::validate($queryGranularity);
 

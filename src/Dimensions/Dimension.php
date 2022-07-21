@@ -9,31 +9,19 @@ use Level23\Druid\Extractions\ExtractionInterface;
 
 class Dimension implements DimensionInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $outputType;
+    protected string $outputType;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * Dimension constructor.
      *
      * @param string                   $dimension
-     * @param string                   $outputName
+     * @param string|null              $outputName
      * @param string                   $outputType This can either be "long", "float" or "string"
      * @param ExtractionInterface|null $extractionFunction
      */
@@ -61,7 +49,7 @@ class Dimension implements DimensionInterface
     /**
      * Return the dimension as it should be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<mixed>>
      */
     public function toArray(): array
     {

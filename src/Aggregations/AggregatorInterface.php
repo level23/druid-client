@@ -8,7 +8,7 @@ interface AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool|array<mixed>|int>
      */
     public function toArray(): array;
 }

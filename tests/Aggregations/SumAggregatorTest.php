@@ -10,6 +10,9 @@ use Level23\Druid\Aggregations\SumAggregator;
 
 class SumAggregatorTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [
@@ -32,6 +35,7 @@ class SumAggregatorTest extends TestCase
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Incorrect type given: ' . strtolower($type) . '. This can either be "long", "float" or "double"');
         }
 
         $aggregator = new SumAggregator('abc', 'dim123', $type);

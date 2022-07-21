@@ -9,6 +9,7 @@ use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Collections\VirtualColumnCollection;
 
 /**
@@ -19,27 +20,18 @@ use Level23\Druid\Collections\VirtualColumnCollection;
  */
 class ScanQuery implements QueryInterface
 {
-    /**
-     * @var string
-     */
-    protected $dataSource;
+    protected DataSourceInterface $dataSource;
 
-    /**
-     * @var \Level23\Druid\Collections\IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
-    /**
-     * @var string
-     */
-    protected $resultFormat = ScanQueryResultFormat::NORMAL_LIST;
+    protected string $resultFormat = ScanQueryResultFormat::NORMAL_LIST;
 
     /**
      * How many rows buffered before return to client. Default is 20480
      *
      * @var int
      */
-    protected $batchSize;
+    protected int $batchSize;
 
     /**
      * Return results consistent with the legacy "scan-query" contrib extension. Defaults to the value set by
@@ -47,7 +39,7 @@ class ScanQuery implements QueryInterface
      *
      * @var bool
      */
-    protected $legacy;
+    protected bool $legacy;
 
     /**
      * The ordering of returned rows based on timestamp. "ascending", "descending" are supported. When not supplied,
@@ -56,94 +48,85 @@ class ScanQuery implements QueryInterface
      *
      * @var string
      */
-    protected $order;
+    protected string $order;
 
     /**
      * How many rows to return. If not specified, all rows will be returned.
      *
      * @var int
      */
-    protected $limit;
+    protected int $limit;
 
     /**
      * Skip this many rows when returning results.
      *
      * @var int
      */
-    protected $offset;
+    protected int $offset;
 
-    /**
-     * @var \Level23\Druid\Context\QueryContext|null
-     */
-    protected $context;
+    protected ?QueryContext $context;
 
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface|null
-     */
-    protected $filter;
+    protected ?FilterInterface $filter;
 
     /**
      * A String array of dimensions and metrics to scan. If left empty, all dimensions and metrics are returned.
      *
      * @var array|string[]
      */
-    protected $columns = [];
+    protected array $columns = [];
 
-    /**
-     * @var \Level23\Druid\Collections\VirtualColumnCollection|null
-     */
-    protected $virtualColumns;
+    protected ?VirtualColumnCollection $virtualColumns;
 
-    public function __construct(string $dataSource, IntervalCollection $intervals)
+    public function __construct(DataSourceInterface $dataSource, IntervalCollection $intervals)
     {
         $this->dataSource = $dataSource;
         $this->intervals  = $intervals;
     }
 
     /**
-     * Return the query in array format so we can fire it to druid.
+     * Return the query in array format, so we can fire it to druid.
      *
-     * @return array
+     * @return array<string,string|array<mixed>|int|bool>
      */
     public function toArray(): array
     {
         $result = [
             'queryType'    => 'scan',
-            'dataSource'   => $this->dataSource,
+            'dataSource'   => $this->dataSource->toArray(),
             'intervals'    => $this->intervals->toArray(),
             'resultFormat' => $this->resultFormat,
             'columns'      => $this->columns,
         ];
 
-        if ($this->virtualColumns) {
+        if (isset($this->virtualColumns)) {
             $result['virtualColumns'] = $this->virtualColumns->toArray();
         }
 
-        if ($this->filter) {
+        if (isset($this->filter)) {
             $result['filter'] = $this->filter->toArray();
         }
 
-        if ($this->batchSize !== null) {
+        if (isset($this->batchSize)) {
             $result['batchSize'] = $this->batchSize;
         }
 
-        if ($this->limit !== null) {
+        if (isset($this->limit)) {
             $result['limit'] = $this->limit;
         }
 
-        if ($this->offset !== null) {
+        if (isset($this->offset)) {
             $result['offset'] = $this->offset;
         }
 
-        if ($this->legacy !== null) {
+        if (isset($this->legacy)) {
             $result['legacy'] = $this->legacy;
         }
 
-        if ($this->context) {
+        if (isset($this->context)) {
             $result['context'] = $this->context->toArray();
         }
 
-        if ($this->order) {
+        if (isset($this->order)) {
             $result['order'] = $this->order;
         }
 
@@ -153,7 +136,7 @@ class ScanQuery implements QueryInterface
     /**
      * Parse the response into something we can return to the user.
      *
-     * @param array $response
+     * @param array<string|int,string|int|array<mixed>> $response
      *
      * @return ScanQueryResponse
      */

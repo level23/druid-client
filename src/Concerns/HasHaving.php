@@ -20,20 +20,17 @@ use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
 
 trait HasHaving
 {
-    /**
-     * @var HavingFilterInterface|null
-     */
-    protected $having;
+    protected ?HavingFilterInterface $having = null;
 
     /**
      * Build our "having" part of the query.
      *
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like'
      *
-     * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|null|int                      $operator
-     * @param string|null|int                      $value
-     * @param string                               $boolean
+     * @param string|HavingFilterInterface|FilterInterface|Closure $havingOrMetricOrClosure
+     * @param string|null|float                                    $operator
+     * @param string|null|float                                    $value
+     * @param string                                               $boolean
      *
      * @return $this
      */
@@ -41,8 +38,8 @@ trait HasHaving
         $havingOrMetricOrClosure,
         $operator = null,
         $value = null,
-        $boolean = 'and'
-    ) {
+        string $boolean = 'and'
+    ): self {
         $having = null;
 
         if ($value === null && $operator !== null) {
@@ -83,7 +80,7 @@ trait HasHaving
             $having = $havingOrMetricOrClosure;
         } elseif ($havingOrMetricOrClosure instanceof Closure) {
 
-            // lets create a bew builder object where the user can mess around with
+            // let's create a bew builder object where the user can mess around with
             $obj = new HavingBuilder();
 
             // call the user function
@@ -106,12 +103,12 @@ trait HasHaving
      * Add a having filter
      *
      * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|null                          $operator
-     * @param string|null                          $value
+     * @param string|float|null                    $operator
+     * @param string|float|null                    $value
      *
      * @return $this
      */
-    public function orHaving($havingOrMetricOrClosure, $operator = null, $value = null)
+    public function orHaving($havingOrMetricOrClosure, $operator = null, $value = null): self
     {
         return $this->having($havingOrMetricOrClosure, $operator, $value, 'or');
     }

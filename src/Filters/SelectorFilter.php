@@ -7,20 +7,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
 
 class SelectorFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $value;
+    protected string $value;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * InFilter constructor.
@@ -32,7 +23,7 @@ class SelectorFilter implements FilterInterface
     public function __construct(
         string $dimension,
         string $value,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->value              = $value;
         $this->dimension          = $dimension;
@@ -42,7 +33,7 @@ class SelectorFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

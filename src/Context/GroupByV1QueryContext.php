@@ -30,6 +30,9 @@ namespace Level23\Druid\Context;
  */
 class GroupByV1QueryContext extends QueryContext implements ContextInterface
 {
+    /**
+     * @param array<string,string|int|bool> $properties
+     */
     public function __construct(array $properties)
     {
         parent::__construct($properties);
@@ -42,9 +45,9 @@ class GroupByV1QueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $groupByIsSingleThreaded
      *
-     * @return $this;
+     * @return $this
      */
-    public function setGroupByIsSingleThreaded(bool $groupByIsSingleThreaded)
+    public function setGroupByIsSingleThreaded(bool $groupByIsSingleThreaded): self
     {
         $this->properties['groupByIsSingleThreaded'] = $groupByIsSingleThreaded;
 
@@ -56,9 +59,9 @@ class GroupByV1QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $maxIntermediateRows
      *
-     * @return $this;
+     * @return $this
      */
-    public function setMaxIntermediateRows(int $maxIntermediateRows)
+    public function setMaxIntermediateRows(int $maxIntermediateRows): self
     {
         $this->properties['maxIntermediateRows'] = $maxIntermediateRows;
 
@@ -70,9 +73,9 @@ class GroupByV1QueryContext extends QueryContext implements ContextInterface
      *
      * @param int $maxResults
      *
-     * @return $this;
+     * @return $this
      */
-    public function setMaxResults(int $maxResults)
+    public function setMaxResults(int $maxResults): self
     {
         $this->properties['maxResults'] = $maxResults;
 
@@ -84,9 +87,9 @@ class GroupByV1QueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $useOffheap
      *
-     * @return $this;
+     * @return $this
      */
-    public function setUseOffheap(bool $useOffheap)
+    public function setUseOffheap(bool $useOffheap): self
     {
         $this->properties['useOffheap'] = $useOffheap;
 

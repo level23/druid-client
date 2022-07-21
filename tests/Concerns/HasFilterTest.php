@@ -32,11 +32,15 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Filters\JavascriptFilter;
 use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Filters\ExpressionFilter;
 use Level23\Druid\Dimensions\DimensionBuilder;
+use Level23\Druid\Filters\SpatialRadiusFilter;
 use Level23\Druid\VirtualColumns\VirtualColumn;
+use Level23\Druid\Filters\SpatialPolygonFilter;
 use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Filters\ColumnComparisonFilter;
 use Level23\Druid\Extractions\SubstringExtraction;
+use Level23\Druid\Filters\SpatialRectangularFilter;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
 
 class HasFilterTest extends TestCase
@@ -44,7 +48,7 @@ class HasFilterTest extends TestCase
     /**
      * @var \Level23\Druid\DruidClient
      */
-    protected $client;
+    protected DruidClient $client;
 
     /**
      * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
@@ -54,10 +58,13 @@ class HasFilterTest extends TestCase
     public function setUp(): void
     {
         $this->client  = new DruidClient([]);
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
     }
 
+    /**
+     * @return array<array<string|int|float|bool|null|string[]>>
+     */
     public function whereDataProvider(): array
     {
         return [
@@ -70,6 +77,8 @@ class HasFilterTest extends TestCase
             ['name', '<>', 'John', 'AND'],
             ['age', '>', '18', 'and'],
             ['age', '>=', 18, 'and'],
+            ['age', '>=', 18.5, 'and'],
+            ['age', '=', true, 'and'],
             ['age', '<', '18', 'and'],
             ['age', '<=', '18', 'and'],
             ['name', 'LiKE', 'John%', 'and'],
@@ -85,6 +94,9 @@ class HasFilterTest extends TestCase
         ];
     }
 
+    /**
+     * @return  array<int,array<int,array<int,mixed>|string>>
+     */
     public function normalizeIntervalsDataProvider(): array
     {
         return [
@@ -125,7 +137,21 @@ class HasFilterTest extends TestCase
                 [new Interval('19-02-2019 00:00:00', '20-02-2019 00:00:00')],
             ],
             [
+                [],
+                [],
+            ],
+            [
                 [null],
+                [],
+                InvalidArgumentException::class,
+            ],
+            [
+                ['/'],
+                [],
+                InvalidArgumentException::class,
+            ],
+            [
+                ['', '', ''],
                 [],
                 InvalidArgumentException::class,
             ],
@@ -143,9 +169,9 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @param array  $given
-     * @param array  $expected
-     * @param string $expectException
+     * @param array<null|int|string|DateTime|array<string>> $given
+     * @param array<Interval>                               $expected
+     * @param string                                        $expectException
      *
      * @dataProvider normalizeIntervalsDataProvider
      */
@@ -153,6 +179,12 @@ class HasFilterTest extends TestCase
     {
         if (!empty($expectException)) {
             $this->expectException($expectException);
+
+            //            $item = $given[0];
+            //            if (is_string($item)) {
+            //                $item = explode('/', $item);
+            //            }
+            $this->expectExceptionMessage('Invalid type given in the interval array. We cannot process ');
         }
         /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->normalizeIntervals($given);
@@ -167,21 +199,16 @@ class HasFilterTest extends TestCase
      */
     protected function getFilterMock(string $class)
     {
-        $builder = new Mockery\Generator\MockConfigurationBuilder();
-        $builder->setInstanceMock(true);
-        $builder->setName($class);
-        $builder->addTarget(FilterInterface::class);
-
-        return Mockery::mock($builder);
+        return $this->getConstructorMock($class, FilterInterface::class);
     }
 
     /**
      * @dataProvider        whereDataProvider
      *
-     * @param string $field
-     * @param string $operator
-     * @param mixed  $value
-     * @param string $boolean
+     * @param string                     $field
+     * @param string                     $operator
+     * @param string|int|float|bool|null $value
+     * @param string                     $boolean
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -189,7 +216,7 @@ class HasFilterTest extends TestCase
      */
     public function testWhere(string $field, string $operator, $value, string $boolean): void
     {
-        if ($value === null && $operator !== null) {
+        if ($value === null) {
             $testingValue    = $operator;
             $testingOperator = '=';
         } else {
@@ -281,6 +308,52 @@ class HasFilterTest extends TestCase
         }
     }
 
+    /**
+     * @testWith ["search"]
+     *           ["SeArCh"]
+     *           ["="]
+     *           ["!="]
+     *           ["not search"]
+     *           ["not SeArCH"]
+     *
+     * @param string $operator
+     *
+     * @return void
+     */
+    public function testWhereWithArrayValue(string $operator): void
+    {
+        $operator = strtolower($operator);
+        if (!in_array($operator, ['search', 'not search'])) {
+            $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Given $value is invalid in combination with operator ' . $operator);
+        }
+
+        $result = $this->builder->where('field', $operator, ['value1', 'value2']);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @testWith ["search"]
+     *           ["not search"]
+     *
+     * @param string $operator
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereSearchWithInt(string $operator): void
+    {
+        $search = $this->getFilterMock(SearchFilter::class);
+        $search->shouldReceive('__construct')
+            ->once()
+            ->with('field', '12', false, null);
+
+        $result = $this->builder->where('field', $operator, 12);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
     public function testWhereMultipleAnd(): void
     {
         $this->builder->where('name', '!=', 'John', null, 'AnD');
@@ -290,7 +363,9 @@ class HasFilterTest extends TestCase
         $filter = $this->builder->getFilter();
         if ($filter instanceof LogicalExpressionFilterInterface) {
             $this->assertEquals(AndFilter::class, get_class($filter));
-            $this->assertCount(3, $filter->toArray()['fields']);
+            /** @var array<string,array<scalar>> $records */
+            $records = $filter->toArray();
+            $this->assertCount(3, $records['fields']);
         }
     }
 
@@ -303,7 +378,9 @@ class HasFilterTest extends TestCase
         $filter = $this->builder->getFilter();
         if ($filter instanceof LogicalExpressionFilterInterface) {
             $this->assertEquals(OrFilter::class, get_class($filter));
-            $this->assertCount(3, $filter->toArray()['fields']);
+            /** @var array<string,array<scalar>> $records */
+            $records = $filter->toArray();
+            $this->assertCount(3, $records['fields']);
         }
     }
 
@@ -366,6 +443,7 @@ class HasFilterTest extends TestCase
 
         if ($filter instanceof AndFilter) {
 
+            /** @var array<string,array<scalar>> $filters */
             $filters = $filter->toArray();
 
             $this->assertCount(3, $filters['fields']);
@@ -532,12 +610,54 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * Test the whereExpression method.
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereExpression(): void
+    {
+        $this->client = new DruidClient([]);
+
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
+        $this->builder->makePartial();
+        $this->builder->shouldAllowMockingProtectedMethods();
+
+        $this->getFilterMock(ExpressionFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('(field == 1)');
+
+        $this->builder->shouldReceive('addAndFilter')
+            ->once();
+
+        $response = $this->builder->whereExpression('(field == 1)', 'AnD');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * Test the orWhereExpression method.
+     */
+    public function testOrWhereExpression(): void
+    {
+        $this->builder->shouldReceive('whereExpression')
+            ->with('(field == 1)', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereExpression('(field == 1)');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * Test the orWhereFlags method.
      */
     public function testOrWhereFlags(): void
     {
         $this->builder->shouldReceive('whereFlags')
-            ->with('flags', 32, 'or')
+            ->with('flags', 32, 'or', false)
             ->once()
             ->andReturn($this->builder);
 
@@ -618,57 +738,74 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * Test the whereFlags filter
-     * @testWith ["0.18.0"]
-     *           ["0.21.1"]
-     *           [null]
-     */
-    public function testWhereFlags(string $version = null): void
+    public function testWhereFlagsWithJavascript(): void
     {
         $extractionBuilder = Mockery::mock(ExtractionBuilder::class);
 
-        $this->client = new DruidClient(['version' => $version]);
+        $this->client = new DruidClient([]);
 
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
 
-        if (!empty($version) && version_compare($version, '0.20.2', '>=')) {
-            $this->builder->shouldReceive('virtualColumn')
-                ->once()
-                ->with('bitwiseAnd("flags", 33)', 'v0', DataType::LONG)
-                ->andReturn($this->builder);
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use (
+                $extractionBuilder
+            ) {
+                $this->assertEquals('flags', $dimension);
+                $this->assertEquals('=', $operator);
+                $this->assertEquals(33, $flags);
+                $this->assertInstanceOf(Closure::class, $extractionClosure);
+                $this->assertEquals('and', $boolean);
 
-            $this->builder->shouldReceive('where')
-                ->once()
-                ->with('v0', '=', 33, null, 'and')
-                ->andReturn($this->builder);
-        } else {
-            $this->builder->shouldReceive('where')
-                ->once()
-                ->withArgs(function ($dimension, $operator, $flags, $extractionClosure, $boolean) use (
-                    $extractionBuilder
-                ) {
-                    $this->assertEquals('flags', $dimension);
-                    $this->assertEquals('=', $operator);
-                    $this->assertEquals(33, $flags);
-                    $this->assertInstanceOf(Closure::class, $extractionClosure);
-                    $this->assertEquals('and', $boolean);
+                $extractionBuilder->shouldReceive('javascript')
+                    ->once()
+                    ->withArgs(function ($js) use ($flags) {
+                        $this->assertEquals(trim('
+                    function(dimensionValue) { 
+                        var givenValue = ' . $flags . '; 
+                        var hi = 0x80000000; 
+                        var low = 0x7fffffff; 
+                        var hi1 = ~~(dimensionValue / hi); 
+                        var hi2 = ~~(givenValue / hi); 
+                        var low1 = dimensionValue & low; 
+                        var low2 = givenValue & low; 
+                        var h = hi1 & hi2; 
+                        var l = low1 & low2; 
+                        return (h*hi + l); 
+                    }
+                '), trim($js));
 
-                    $extractionBuilder->shouldReceive('javascript')
-                        ->once()
-                        ->withArgs(function ($js) {
-                            $this->assertStringStartsWith('function(dimensionValue) {', trim($js));
+                        return true;
+                    });
 
-                            return true;
-                        });
+                $extractionClosure($extractionBuilder);
 
-                    $extractionClosure($extractionBuilder);
+                return true;
+            })
+            ->andReturn($this->builder);
 
-                    return true;
-                })
-                ->andReturn($this->builder);
-        }
+        $response = $this->builder->whereFlags('flags', 33, 'and', true);
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    public function testWhereFlagsWithoutJavascript(): void
+    {
+        $this->client = new DruidClient([]);
+
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
+        $this->builder->makePartial();
+
+        $this->builder->shouldReceive('virtualColumn')
+            ->once()
+            ->with('bitwiseAnd("flags", 33)', 'v0', DataType::LONG)
+            ->andReturn($this->builder);
+
+        $this->builder->shouldReceive('where')
+            ->once()
+            ->with('v0', '=', 33, null, 'and')
+            ->andReturn($this->builder);
 
         $response = $this->builder->whereFlags('flags', 33);
 
@@ -678,11 +815,11 @@ class HasFilterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testFlagsInFilterBuilder()
+    public function testFlagsInFilterBuilder(): void
     {
         $this->client = new DruidClient(['version' => '0.20.2']);
 
-        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'http://']);
+        $this->builder = Mockery::mock(QueryBuilder::class, [$this->client, 'https://']);
         $this->builder->makePartial();
 
         $response = $this->builder->where(function (FilterBuilder $filterBuilder) {
@@ -711,6 +848,7 @@ class HasFilterTest extends TestCase
             ],
         ], $filter ? $filter->toArray() : []);
 
+        /** @var array<VirtualColumn> $virtualColumns */
         $virtualColumns = $this->getProperty($this->builder, 'virtualColumns');
         $this->assertIsArray($virtualColumns);
         $this->assertTrue(sizeof($virtualColumns) == 2);
@@ -761,23 +899,28 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
+    /**
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     *
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testWhereFlagsInTaskBuilder()
     {
-        $this->expectException(\BadFunctionCallException::class);
-        $this->expectExceptionMessage('The whereFlags() method is only available in queries!');
-
         $client = Mockery::mock(DruidClient::class);
         $client->makePartial();
-
-        $client->shouldReceive('config')
-            ->once()
-            ->with('version')
-            ->andReturn('0.21.0');
 
         $metaDataBuilder = Mockery::mock(MetadataBuilder::class);
         $metaDataBuilder->shouldReceive('structure')
             ->once()
             ->andReturn(new Structure('something', [], []));
+
+        $this->getFilterMock(ExpressionFilter::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with('bitwiseAnd("flags", 128) == 128');
 
         $client->shouldReceive('metadata')
             ->once()
@@ -918,13 +1061,15 @@ class HasFilterTest extends TestCase
                 $this->assertNull($extraction);
             });
 
-        $response = $this->builder->whereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->whereInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $this->assertEquals($this->builder, $response);
     }
 
     /**
      * Test the orWhereInterval method.
+     *
+     * @throws \Exception
      */
     public function testOrWhereInterval(): void
     {
@@ -935,9 +1080,129 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->orWhereInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->orWhereInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $this->assertEquals($this->builder, $response);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testWhereSpatialRectangular(): void
+    {
+        $filter = $this->getFilterMock(SpatialRectangularFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], [49.5, 52.5]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addAndFilter')
+            ->once();
+
+        $this->builder->whereSpatialRectangular('location', [48.0, 51.0], [49.5, 52.5]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testWhereSpatialRadius(): void
+    {
+        $filter = $this->getFilterMock(SpatialRadiusFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], 0.5);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addAndFilter')
+            ->once();
+
+        $this->builder->whereSpatialRadius('location', [48.0, 51.0], 0.5);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testWhereSpatialPolygon(): void
+    {
+        $filter = $this->getFilterMock(SpatialPolygonFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [1, 2], [3, 4]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addAndFilter')
+            ->once();
+
+        $this->builder->whereSpatialPolygon('location', [1, 2], [3, 4]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testOrWhereSpatialPolygon(): void
+    {
+        $filter = $this->getFilterMock(SpatialPolygonFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [1, 2], [3, 4]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addOrFilter')
+            ->once();
+
+        $this->builder->orWhereSpatialPolygon('location', [1, 2], [3, 4]);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testOrWhereSpatialRadius(): void
+    {
+        $filter = $this->getFilterMock(SpatialRadiusFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], 0.5);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addOrFilter')
+            ->once();
+
+        $this->builder->orWhereSpatialRadius('location', [48.0, 51.0], 0.5);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     * @return void
+     */
+    public function testOrWhereSpatialRectangular(): void
+    {
+        $filter = $this->getFilterMock(SpatialRectangularFilter::class);
+        $filter->shouldReceive('__construct')
+            ->once()
+            ->with('location', [48.0, 51.0], [49.5, 52.5]);
+
+        $this->builder->shouldAllowMockingProtectedMethods();
+        $this->builder
+            ->shouldReceive('addOrFilter')
+            ->once();
+
+        $this->builder->orWhereSpatialRectangular('location', [48.0, 51.0], [49.5, 52.5]);
     }
 
     /**
@@ -965,7 +1230,7 @@ class HasFilterTest extends TestCase
             ->with(new IsInstanceOf(IntervalFilter::class));
 
         /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -980,7 +1245,7 @@ class HasFilterTest extends TestCase
         $this->builder->where('foo', '=', 'bar');
 
         /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()], null);
+        $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()]);
 
         $filter = $response->getFilter();
 
@@ -1059,7 +1324,7 @@ class HasFilterTest extends TestCase
         $counter = 0;
         $this->builder->whereIn('user_id', ['bob', 'john'], function (ExtractionBuilder $builder) use (&$counter) {
             $counter++;
-            $builder->lookup('username', false);
+            $builder->lookup('username');
         });
 
         $this->assertEquals(1, $counter);

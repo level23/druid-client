@@ -12,24 +12,20 @@
     {
       "name": "Teye Heimans",
       "email": "teye@level23.nl"
-    },
-    {
-      "name": "Marc van der Meulen",
-      "email": "marc@level23.nl"
     }
   ],
   "license": "Apache-2.0",
   "type": "library",
   "require": {
-    "php": "^7.2|^8.0",
+    "php": "^7.4|^8.0",
     "ext-json": "*",
     "guzzlehttp/guzzle": "^6.2|^7.0"
   },
   "require-dev": {
-    "illuminate/support": "~5.0",
+    "infection/infection": "^0.26.6",
     "mockery/mockery": "^1.2",
     "php-coveralls/php-coveralls": "^2.1",
-    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan": "^1.0",
     "phpunit/phpunit": "^8|^9"
   },
   "suggest": {
@@ -48,7 +44,11 @@
   "config": {
     "preferred-install": "dist",
     "sort-packages": true,
-    "optimize-autoloader": true
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "infection/infection": true,
+      "infection/extension-installer": true
+    }
   },
   "minimum-stability": "stable",
   "prefer-stable": true,

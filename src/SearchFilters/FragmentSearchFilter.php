@@ -6,20 +6,17 @@ namespace Level23\Druid\SearchFilters;
 class FragmentSearchFilter implements SearchFilterInterface
 {
     /**
-     * @var array
+     * @var string[]
      */
-    protected $values;
+    protected array $values;
 
-    /**
-     * @var bool
-     */
-    protected $caseSensitive;
+    protected bool $caseSensitive;
 
     /**
      * FragmentSearchFilter constructor.
      *
-     * @param array $values
-     * @param bool  $caseSensitive
+     * @param string[] $values
+     * @param bool     $caseSensitive
      */
     public function __construct(array $values, bool $caseSensitive = false)
     {
@@ -30,7 +27,7 @@ class FragmentSearchFilter implements SearchFilterInterface
     /**
      * Return the search filter so that it can be used in a search query.
      *
-     * @return array
+     * @return array<string,string|bool|string[]>
      */
     public function toArray(): array
     {

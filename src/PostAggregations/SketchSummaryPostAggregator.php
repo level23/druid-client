@@ -5,15 +5,9 @@ namespace Level23\Druid\PostAggregations;
 
 class SketchSummaryPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var PostAggregatorInterface
-     */
-    protected $dimension;
+    protected PostAggregatorInterface $dimension;
 
     /**
      * QuantilePostAggregator constructor.
@@ -31,7 +25,7 @@ class SketchSummaryPostAggregator implements PostAggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|array<mixed>>>
      */
     public function toArray(): array
     {

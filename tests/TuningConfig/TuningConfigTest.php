@@ -82,7 +82,7 @@ class TuningConfigTest extends TestCase
         $this->assertEquals(1, $data['something']);
     }
 
-    protected function getRandomWord()
+    protected function getRandomWord(): string
     {
         $characters   = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $randomString = '';

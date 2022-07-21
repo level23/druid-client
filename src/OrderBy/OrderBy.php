@@ -8,20 +8,11 @@ use Level23\Druid\Types\OrderByDirection;
 
 class OrderBy implements OrderByInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $direction;
+    protected string $direction;
 
-    /**
-     * @var string
-     */
-    protected $dimensionOrder;
+    protected string $dimensionOrder;
 
     /**
      * OrderBy constructor.
@@ -43,7 +34,7 @@ class OrderBy implements OrderByInterface
     /**
      * Return the order by in array format so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

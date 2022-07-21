@@ -29,7 +29,7 @@ class UniformGranularityTest extends TestCase
         string $queryGranularity,
         bool $rollup,
         bool $expectException = false
-    ) {
+    ): void {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
         }

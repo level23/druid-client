@@ -11,19 +11,19 @@ interface LimitInterface
     /**
      * Return the limit in array format so that it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string>>|int>
      */
     public function toArray(): array;
 
     /**
      * @param int $limit
      */
-    public function setLimit(int $limit);
+    public function setLimit(int $limit): void;
 
     /**
      * @param int $offset
      */
-    public function setOffset(int $offset);
+    public function setOffset(int $offset): void;
 
     /**
      * Get the limit which is currently configured.
@@ -51,5 +51,5 @@ interface LimitInterface
      *
      * @param \Level23\Druid\OrderBy\OrderByInterface $orderBy
      */
-    public function addOrderBy(OrderByInterface $orderBy);
+    public function addOrderBy(OrderByInterface $orderBy): void;
 }

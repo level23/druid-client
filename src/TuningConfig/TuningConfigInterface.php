@@ -8,7 +8,7 @@ interface TuningConfigInterface
     /**
      * Return the tuning config as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|int|bool|array<string,string|int>>
      */
     public function toArray(): array;
 }

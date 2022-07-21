@@ -8,9 +8,9 @@ interface DimensionInterface
     const OUTPUT_TYPE_STRING = "string";
 
     /**
-     * Get the dimension in array format so we can use it for a druid query.
+     * Get the dimension in array format, so we can use it for a druid query.
      *
-     * @return array
+     * @return array<string,string|array<mixed>>
      */
     public function toArray(): array;
 

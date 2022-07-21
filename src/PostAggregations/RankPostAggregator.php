@@ -5,20 +5,11 @@ namespace Level23\Druid\PostAggregations;
 
 class RankPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var PostAggregatorInterface
-     */
-    protected $dimension;
+    protected PostAggregatorInterface $dimension;
 
-    /**
-     * @var float|int
-     */
-    protected $value;
+    protected float $value;
 
     /**
      * QuantilePostAggregator constructor.
@@ -26,10 +17,10 @@ class RankPostAggregator implements PostAggregatorInterface
      * @param PostAggregatorInterface $dimension    Post aggregator that refers to a DoublesSketch (fieldAccess or
      *                                              another post aggregator)
      * @param string                  $outputName   The name as it will be used in our result.
-     * @param float|int               $value        This returns an approximation to the rank of a given value that is
+     * @param float                   $value        This returns an approximation to the rank of a given value that is
      *                                              the fraction of the distribution less than that value.
      */
-    public function __construct(PostAggregatorInterface $dimension, string $outputName, $value)
+    public function __construct(PostAggregatorInterface $dimension, string $outputName, float $value)
     {
         $this->outputName = $outputName;
         $this->dimension  = $dimension;
@@ -39,7 +30,7 @@ class RankPostAggregator implements PostAggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|array<mixed>>|float>
      */
     public function toArray(): array
     {

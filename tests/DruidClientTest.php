@@ -26,19 +26,19 @@ use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use GuzzleHttp\Exception\BadResponseException;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\InputSources\DruidInputSource;
+use Level23\Druid\InputSources\LocalInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class DruidClientTest extends TestCase
 {
     /**
-     * @param array                   $config
      * @param \GuzzleHttp\Client|null $guzzle
      *
      * @return \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
-    protected function mockDruidClient(array $config = [], GuzzleClient $guzzle = null)
+    protected function mockDruidClient(GuzzleClient $guzzle = null)
     {
-        $guzzle = $guzzle ?: new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+        $guzzle = $guzzle ?: new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         return Mockery::mock(DruidClient::class, [['retries' => 0], $guzzle]);
     }
@@ -77,7 +77,7 @@ class DruidClientTest extends TestCase
      */
     public function testSetGuzzleClient(): void
     {
-        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+        $guzzle = new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         $client = new DruidClient([]);
         $client->setGuzzleClient($guzzle);
@@ -123,16 +123,36 @@ class DruidClientTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
+    public function testIndex(): void
+    {
+        $client = new DruidClient([]);
+
+        $inputSource = new LocalInputSource(['/path/to/file.json']);
+
+        $builder = Mockery::mock('overload:' . IndexTaskBuilder::class);
+        $builder->shouldReceive('__construct')
+            ->once()
+            ->with($client, 'someDataSource', $inputSource);
+
+        $client->index('someDataSource', $inputSource);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testCompact(): void
     {
         $client = new DruidClient([]);
 
+        $dataSource = 'wikipedia';
+
         $builder = Mockery::mock('overload:' . CompactTaskBuilder::class);
         $builder->shouldReceive('__construct')
             ->once()
-            ->with($client, 'someDataSource');
+            ->with($client, $dataSource);
 
-        $client->compact('someDataSource');
+        $client->compact($dataSource);
     }
 
     /**
@@ -152,7 +172,7 @@ class DruidClientTest extends TestCase
     }
 
     /**
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
@@ -181,9 +201,10 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client, $dataSource, DruidInputSource::class);
 
-        $indexTaskBuilder->shouldReceive('fromDataSource')
-            ->with($dataSource)
-            ->once();
+        $indexTaskBuilder->shouldReceive('timestamp')
+            ->once()
+            ->with('__time', 'auto')
+            ->andReturn($indexTaskBuilder);
 
         $indexTaskBuilder->shouldReceive('dimension')
             ->with('name', 'string')
@@ -207,7 +228,7 @@ class DruidClientTest extends TestCase
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testExecuteTask(): void
     {
@@ -255,11 +276,11 @@ class DruidClientTest extends TestCase
      * @testWith [{}, {}]
      *           [{"status": {"id":"abcd"}}, {"id":"abcd"}]
      *
-     * @param array $executeRequestResponse
-     * @param array $expectedResponse
+     * @param array<string,array<string,string>> $executeRequestResponse
+     * @param array<string,string>               $expectedResponse
      *
      * @return void
-     * @throws \Exception
+     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
     public function testTaskStatus(array $executeRequestResponse, array $expectedResponse): void
     {
@@ -270,9 +291,9 @@ class DruidClientTest extends TestCase
             ->shouldReceive('config')
             ->once()
             ->with('overlord_url')
-            ->andReturn('http://overlord.test');
+            ->andReturn('https://overlord.test');
 
-        $url = 'http://overlord.test/druid/indexer/v1/task/' . urlencode('abcd1234') . '/status';
+        $url = 'https://overlord.test/druid/indexer/v1/task/' . urlencode('abcd1234') . '/status';
 
         $client->shouldReceive('executeRawRequest')
             ->once()
@@ -283,6 +304,32 @@ class DruidClientTest extends TestCase
 
         $this->assertInstanceOf(TaskResponse::class, $response);
         $this->assertEquals($expectedResponse['id'] ?? '', $response->getId());
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function testPollTaskStatus(): void
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $client->shouldReceive('taskStatus')
+            ->with('task-1234')
+            ->andReturn(
+                new TaskResponse(['status' => ['status' => 'RUNNING']]),
+                new TaskResponse(['status' => ['status' => 'SUCCESS']])
+            );
+
+        $client->shouldReceive('config')
+            ->with('polling_sleep_seconds')
+            ->andReturn(0);
+
+        $response = $client->pollTaskStatus('task-1234');
+
+        $this->assertInstanceOf(TaskResponse::class, $response);
+
+        $this->assertEquals('SUCCESS', $response->getStatus());
     }
 
     public function testLogHandler(): void
@@ -302,7 +349,7 @@ class DruidClientTest extends TestCase
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testExecuteDruidQuery(): void
     {
@@ -361,7 +408,7 @@ class DruidClientTest extends TestCase
 
     public function testConfig(): void
     {
-        $routerUrl = 'http://router.url.here';
+        $routerUrl = 'https://router.url.here';
         $client    = new DruidClient(['pieter' => 'okay', 'router_url' => $routerUrl]);
 
         $this->assertEquals('okay', $client->config('pieter'));
@@ -375,6 +422,9 @@ class DruidClientTest extends TestCase
         $this->assertEquals($routerUrl, $client->config('broker_url'));
     }
 
+    /**
+     * @return array<array<string|bool|\Closure>>
+     */
     public function executeRawRequestDataProvider(): array
     {
         $response = [
@@ -498,25 +548,24 @@ class DruidClientTest extends TestCase
     /**
      * @dataProvider executeRawRequestDataProvider
      *
-     * @param string   $method
-     * @param callable $responseFunction
-     * @param mixed    $expectException
-     * @param bool     $is204
+     * @param string      $method
+     * @param callable    $responseFunction
+     * @param bool|string $expectException
+     * @param bool        $is204
      *
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testExecuteRawRequest(
         string $method,
         callable $responseFunction,
         $expectException,
-        $is204 = false
-    ) {
-        if ($expectException) {
-            $this->expectException($expectException);
+        bool $is204 = false
+    ): void {
+        if ($expectException && is_string($expectException)) {
+            $this->expectException((string)$expectException);
         }
 
-
-        $url  = 'http://test.dev/v2/task';
+        $url  = 'https://test.dev/v2/task';
         $data = ['payload' => 'here'];
 
         /** @var GuzzleClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface $guzzle */
@@ -526,21 +575,17 @@ class DruidClientTest extends TestCase
             ->with($url, (strtolower($method) == 'post' ? ['json' => $data] : ['query' => $data]))
             ->andReturnUsing($responseFunction);
 
-        $client = $this->mockDruidClient([], $guzzle);
+        $client = $this->mockDruidClient($guzzle);
         $client->makePartial();
 
-
         $expectedResponse = [];
-        if (!$is204 && (!$expectException || $expectException instanceof ResponseInterface)) {
+        if (!$is204 && !$expectException) {
 
             $client->shouldAllowMockingProtectedMethods()
                 ->shouldReceive('parseResponse')
                 ->once()
                 ->andReturnUsing(function (ResponseInterface $input) use (&$expectedResponse) {
-                    $response         = json_decode($input->getBody()->getContents(), true) ?: [];
-                    $expectedResponse = $response;
-
-                    return $expectedResponse;
+                    return $expectedResponse = json_decode($input->getBody()->getContents(), true) ?: [];
                 });
         }
 
@@ -553,9 +598,9 @@ class DruidClientTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function testCancelQuery()
+    public function testCancelQuery(): void
     {
-        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+        $guzzle = new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         $client = Mockery::mock(DruidClient::class, [
             [],
@@ -586,11 +631,11 @@ class DruidClientTest extends TestCase
      * @param int $retries
      * @param int $delay
      *
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
     public function testExecuteRawRequestWithRetries(int $retries, int $delay): void
     {
-        $guzzle = new GuzzleClient(['base_uri' => 'http://httpbin.org']);
+        $guzzle = new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         $client = Mockery::mock(DruidClient::class, [
             ['retries' => $retries, 'retry_delay_ms' => $delay],
@@ -598,7 +643,7 @@ class DruidClientTest extends TestCase
         ]);
         $client->makePartial();
 
-        $url  = 'http://test.dev/v2/task';
+        $url  = 'https://test.dev/v2/task';
         $data = ['payload' => 'here'];
 
         $guzzle = Mockery::mock(GuzzleClient::class);

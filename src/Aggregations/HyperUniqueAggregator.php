@@ -11,25 +11,13 @@ namespace Level23\Druid\Aggregations;
  */
 class HyperUniqueAggregator implements AggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $metricName;
+    protected string $metricName;
 
-    /**
-     * @var bool
-     */
-    protected $isInputHyperUnique;
+    protected bool $isInputHyperUnique;
 
-    /**
-     * @var bool
-     */
-    protected $round;
+    protected bool $round;
 
     /**
      * HyperUniqueAggregator constructor.
@@ -54,7 +42,7 @@ class HyperUniqueAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

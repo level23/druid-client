@@ -16,20 +16,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class RegexFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $pattern;
+    protected string $pattern;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * RegexFilter constructor.
@@ -44,7 +35,7 @@ class RegexFilter implements FilterInterface
     public function __construct(
         string $dimension,
         string $pattern,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->pattern            = $pattern;
         $this->dimension          = $dimension;
@@ -54,7 +45,7 @@ class RegexFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

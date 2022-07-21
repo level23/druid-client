@@ -5,25 +5,21 @@ namespace Level23\Druid\Dimensions;
 
 class LookupDimension implements DimensionInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
+
+    protected string $outputName;
 
     /**
-     * @var string
+     * @var string|array<int|string,string>
      */
-    protected $outputName;
-
-    /**
-     * @var string
-     */
-    protected $registeredLookupFunction;
+    protected $registeredLookupFunctionOrMap;
 
     /**
      * @var bool|string
      */
     protected $keepMissingValue;
+
+    protected bool $isOneToOne;
 
     /**
      * DefaultDimension constructor.
@@ -35,27 +31,30 @@ class LookupDimension implements DimensionInterface
      * it to a string it wil replace the missing value with that string. It defaults to false
      * which will ignore the value.
      *
-     * @param string      $dimension
-     * @param string      $registeredLookupFunction
-     * @param string      $outputName
-     * @param bool|string $keepMissingValue
+     * @param string                          $dimension
+     * @param string|array<int|string,string> $registeredLookupFunctionOrMap
+     * @param string                          $outputName
+     * @param bool|string                     $keepMissingValue
+     * @param bool                            $isOneToOne
      */
     public function __construct(
         string $dimension,
-        string $registeredLookupFunction,
+        $registeredLookupFunctionOrMap,
         string $outputName = '',
-        $keepMissingValue = false
+        $keepMissingValue = false,
+        bool $isOneToOne = false
     ) {
-        $this->dimension                = $dimension;
-        $this->outputName               = $outputName ?: $dimension;
-        $this->registeredLookupFunction = $registeredLookupFunction;
-        $this->keepMissingValue         = $keepMissingValue;
+        $this->dimension                     = $dimension;
+        $this->outputName                    = $outputName ?: $dimension;
+        $this->registeredLookupFunctionOrMap = $registeredLookupFunctionOrMap;
+        $this->keepMissingValue              = $keepMissingValue;
+        $this->isOneToOne                    = $isOneToOne;
     }
 
     /**
      * Return the dimension as it should be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool|array<string,string|bool|string[]>>
      */
     public function toArray(): array
     {
@@ -63,8 +62,17 @@ class LookupDimension implements DimensionInterface
             'type'       => 'lookup',
             'dimension'  => $this->dimension,
             'outputName' => $this->outputName,
-            'name'       => $this->registeredLookupFunction,
         ];
+
+        if (is_string($this->registeredLookupFunctionOrMap)) {
+            $result['name'] = $this->registeredLookupFunctionOrMap;
+        } elseif (is_array($this->registeredLookupFunctionOrMap)) {
+            $result['lookup'] = [
+                'type'       => 'map',
+                'map'        => $this->registeredLookupFunctionOrMap,
+                'isOneToOne' => $this->isOneToOne,
+            ];
+        }
 
         if ($this->keepMissingValue === true) {
             $result['retainMissingValue'] = true;

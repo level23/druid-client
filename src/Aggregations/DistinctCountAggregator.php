@@ -5,26 +5,20 @@ namespace Level23\Druid\Aggregations;
 
 class DistinctCountAggregator implements AggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
     /**
      * Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain.
      * Higher size means higher accuracy but more space to store sketches.
-     * Note that after you index with a particular size, druid will persist sketch in segments and you will
+     * Note that after you index with a particular size, druid will persist sketch in segments, and you will
      * use size greater or equal to that at query time. See the DataSketches site for details.
      * In general, We recommend just sticking to default size.
      *
      * @var int
      */
-    protected $size = 16384;
+    protected int $size = 16384;
 
     /**
      * CountAggregator constructor.
@@ -43,7 +37,7 @@ class DistinctCountAggregator implements AggregatorInterface
     /**
      * Return the aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string, string|bool|int>
      */
     public function toArray(): array
     {

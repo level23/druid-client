@@ -12,14 +12,14 @@ use Level23\Druid\Types\OrderByDirection;
 trait HasLimit
 {
     /**
-     * @var \Level23\Druid\Limits\LimitInterface|null
+     * @var \Level23\Druid\Limits\Limit|null
      */
-    protected $limit;
+    protected ?Limit $limit = null;
 
     /**
      * @var string|null
      */
-    protected $direction;
+    protected ?string $direction = null;
 
     /**
      * We can only order by fields if there is a limit specified (....., I know... ).
@@ -28,7 +28,7 @@ trait HasLimit
      *
      * @var int
      */
-    public static $DEFAULT_MAX_LIMIT = 999999;
+    public static int $DEFAULT_MAX_LIMIT = 999999;
 
     /**
      * Limit out result by N records.
@@ -39,7 +39,7 @@ trait HasLimit
      *
      * @return $this
      */
-    public function limit(int $limit, int $offset = null)
+    public function limit(int $limit, int $offset = null): self
     {
         if ($this->limit instanceof LimitInterface) {
             $this->limit->setLimit($limit);
@@ -68,7 +68,7 @@ trait HasLimit
         string $dimensionOrMetric,
         string $direction = OrderByDirection::ASC,
         string $sortingOrder = SortingOrder::LEXICOGRAPHIC
-    ) {
+    ): self {
         $order = new OrderBy($dimensionOrMetric, $direction, $sortingOrder);
 
         if (!$this->limit) {
@@ -88,7 +88,7 @@ trait HasLimit
      *
      * @return $this
      */
-    public function orderByDirection(string $direction = OrderByDirection::DESC)
+    public function orderByDirection(string $direction = OrderByDirection::DESC): self
     {
         $this->direction = OrderByDirection::validate($direction);
 

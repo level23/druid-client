@@ -8,7 +8,7 @@ class OrHavingFilter extends AndHavingFilter
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|float|array<mixed>|bool>>>
      */
     public function toArray(): array
     {

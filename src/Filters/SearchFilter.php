@@ -14,34 +14,25 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class SearchFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
+
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
-
-    /**
-     * @var string|array
+     * @var string|string[]
      */
     protected $value;
 
-    /**
-     * @var bool
-     */
-    protected $caseSensitive;
+    protected bool $caseSensitive;
 
     /**
      * SearchFilter constructor.
      *
-     * When an array of values are given, we expect the dimension value contains all
-     * of the values specified in this search query spec.
+     * When an array of values is given, we expect the dimension value contains all
+     * the values specified in this search query spec.
      *
      * @param string                   $dimension
-     * @param string|string[]|array    $valueOrValues
+     * @param string|string[]          $valueOrValues
      * @param bool                     $caseSensitive
      * @param ExtractionInterface|null $extractionFunction
      */
@@ -49,7 +40,7 @@ class SearchFilter implements FilterInterface
         string $dimension,
         $valueOrValues,
         bool $caseSensitive = false,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->extractionFunction = $extractionFunction;
@@ -60,7 +51,7 @@ class SearchFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

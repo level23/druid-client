@@ -8,20 +8,11 @@ use Level23\Druid\Collections\PostAggregationCollection;
 
 abstract class MethodPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string
-     */
-    protected $outputName;
+    protected string $outputName;
 
-    /**
-     * @var \Level23\Druid\Collections\PostAggregationCollection
-     */
-    protected $fields;
+    protected PostAggregationCollection $fields;
 
-    /**
-     * @var string
-     */
-    protected $type;
+    protected string $type;
 
     /**
      *  constructor.
@@ -46,7 +37,7 @@ abstract class MethodPostAggregator implements PostAggregatorInterface
     /**
      * Return the post aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<array<string,string|array<mixed>>>>
      */
     public function toArray(): array
     {

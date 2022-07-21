@@ -17,20 +17,11 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class JavascriptFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $javascriptFunction;
+    protected string $javascriptFunction;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * JavascriptFilter constructor.
@@ -42,7 +33,7 @@ class JavascriptFilter implements FilterInterface
     public function __construct(
         string $dimension,
         string $javascriptFunction,
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->javascriptFunction = $javascriptFunction;
@@ -52,7 +43,7 @@ class JavascriptFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

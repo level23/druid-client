@@ -12,10 +12,7 @@ namespace Level23\Druid\Extractions;
  */
 class PartialExtraction implements ExtractionInterface
 {
-    /**
-     * @var string
-     */
-    protected $regularExpression;
+    protected string $regularExpression;
 
     /**
      * PartialExtraction constructor.
@@ -30,17 +27,15 @@ class PartialExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {
-        $response = [
+        return [
             'type' => 'partial',
             'expr' => $this->regularExpression,
         ];
-
-        return $response;
     }
 }

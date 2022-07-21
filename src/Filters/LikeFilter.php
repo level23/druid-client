@@ -15,25 +15,13 @@ use Level23\Druid\Extractions\ExtractionInterface;
  */
 class LikeFilter implements FilterInterface
 {
-    /**
-     * @var string
-     */
-    protected $dimension;
+    protected string $dimension;
 
-    /**
-     * @var string
-     */
-    protected $pattern;
+    protected string $pattern;
 
-    /**
-     * @var string
-     */
-    protected $escapeCharacter;
+    protected string $escapeCharacter;
 
-    /**
-     * @var \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    protected $extractionFunction;
+    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * LikeFilter constructor.
@@ -48,7 +36,7 @@ class LikeFilter implements FilterInterface
         string $dimension,
         string $pattern,
         string $escapeCharacter = '\\',
-        ExtractionInterface $extractionFunction = null
+        ?ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension          = $dimension;
         $this->pattern            = $pattern;
@@ -59,7 +47,7 @@ class LikeFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

@@ -8,20 +8,11 @@ use Level23\Druid\Collections\IntervalCollection;
 
 abstract class AbstractGranularity
 {
-    /**
-     * @var string
-     */
-    protected $queryGranularity;
+    protected string $queryGranularity;
 
-    /**
-     * @var bool
-     */
-    protected $rollup;
+    protected bool $rollup;
 
-    /**
-     * @var IntervalCollection
-     */
-    protected $intervals;
+    protected IntervalCollection $intervals;
 
     /**
      * UniformGranularity constructor.

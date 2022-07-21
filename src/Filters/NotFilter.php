@@ -5,10 +5,7 @@ namespace Level23\Druid\Filters;
 
 class NotFilter implements FilterInterface
 {
-    /**
-     * @var \Level23\Druid\Filters\FilterInterface
-     */
-    protected $filter;
+    protected FilterInterface $filter;
 
     /**
      * NotFilter constructor.
@@ -17,14 +14,13 @@ class NotFilter implements FilterInterface
      */
     public function __construct(FilterInterface $filter)
     {
-
         $this->filter = $filter;
     }
 
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {

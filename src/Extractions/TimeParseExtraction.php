@@ -16,20 +16,11 @@ namespace Level23\Druid\Extractions;
  */
 class TimeParseExtraction implements ExtractionInterface
 {
-    /**
-     * @var string
-     */
-    protected $inputFormat;
+    protected string $inputFormat;
 
-    /**
-     * @var string
-     */
-    protected $outputFormat;
+    protected string $outputFormat;
 
-    /**
-     * @var bool
-     */
-    protected $jodaFormat;
+    protected bool $jodaFormat;
 
     /**
      * TimeParseExtraction constructor.
@@ -56,9 +47,9 @@ class TimeParseExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|bool>
      */
     public function toArray(): array
     {

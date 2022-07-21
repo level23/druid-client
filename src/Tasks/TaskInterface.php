@@ -8,7 +8,7 @@ interface TaskInterface
     /**
      * Return the task in a format so that we can send it to druid.
      *
-     * @return array
+     * @return array<string,mixed>
      */
     public function toArray(): array;
 }

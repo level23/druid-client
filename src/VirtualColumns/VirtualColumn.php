@@ -7,20 +7,11 @@ use Level23\Druid\Types\DataType;
 
 class VirtualColumn implements VirtualColumnInterface
 {
-    /**
-     * @var string
-     */
-    protected $name;
+    protected string $name;
 
-    /**
-     * @var string
-     */
-    protected $expression;
+    protected string $expression;
 
-    /**
-     * @var string
-     */
-    protected $outputType;
+    protected string $outputType;
 
     /**
      * VirtualColumn constructor.
@@ -31,7 +22,7 @@ class VirtualColumn implements VirtualColumnInterface
      *
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function __construct(string $expression, string $as, $outputType = 'float')
+    public function __construct(string $expression, string $as, string $outputType = 'float')
     {
         $this->name       = $as;
         $this->expression = $expression;
@@ -41,7 +32,7 @@ class VirtualColumn implements VirtualColumnInterface
     /**
      * Return the virtual column as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

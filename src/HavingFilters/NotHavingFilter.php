@@ -5,17 +5,14 @@ namespace Level23\Druid\HavingFilters;
 
 class NotHavingFilter implements HavingFilterInterface
 {
-    /**
-     * @var \Level23\Druid\HavingFilters\HavingFilterInterface
-     */
-    protected $filter;
+    protected HavingFilterInterface $filter;
 
     /**
      * NotHavingFilter constructor.
      *
      * @param HavingFilterInterface $filter
      */
-    public function __construct($filter)
+    public function __construct(HavingFilterInterface $filter)
     {
         $this->filter = $filter;
     }
@@ -23,7 +20,7 @@ class NotHavingFilter implements HavingFilterInterface
     /**
      * Return the having filter as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|array<string,string|float|array<mixed>|bool>>
      */
     public function toArray(): array
     {

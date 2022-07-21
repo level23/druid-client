@@ -12,7 +12,7 @@ trait HasVirtualColumns
     /**
      * @var array|\Level23\Druid\VirtualColumns\VirtualColumnInterface[]
      */
-    protected $virtualColumns = [];
+    protected array $virtualColumns = [];
 
     /**
      * Create a virtual column.
@@ -34,7 +34,7 @@ trait HasVirtualColumns
      * @return $this
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function virtualColumn(string $expression, string $as, $outputType = DataType::STRING)
+    public function virtualColumn(string $expression, string $as, string $outputType = DataType::STRING): self
     {
         $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
 

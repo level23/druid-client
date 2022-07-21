@@ -8,7 +8,7 @@ interface ContextInterface
     /**
      * Return the context as it can be used in the druid query.
      *
-     * @return array
+     * @return array<string,string|int|bool>
      */
     public function toArray(): array;
 }

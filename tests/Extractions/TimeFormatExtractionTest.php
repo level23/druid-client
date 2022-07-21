@@ -8,6 +8,9 @@ use Level23\Druid\Extractions\TimeFormatExtraction;
 
 class TimeFormatExtractionTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [
@@ -35,7 +38,7 @@ class TimeFormatExtractionTest extends TestCase
         string $locale = null,
         string $timezone = null,
         bool $asMillis = null
-    ) {
+    ): void {
         $extraction = new TimeFormatExtraction(
             $format,
             $granularity,

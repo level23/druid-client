@@ -5,15 +5,9 @@ namespace Level23\Druid\PostAggregations;
 
 class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
 {
-    /**
-     * @var string|null
-     */
-    protected $outputName;
+    protected ?string $outputName;
 
-    /**
-     * @var string
-     */
-    protected $fieldName;
+    protected string $fieldName;
 
     /**
      * HyperUniqueCardinalityPostAggregator constructor.
@@ -21,7 +15,7 @@ class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
      * @param string      $fieldName  The name field value of the hyperUnique aggregator
      * @param string|null $outputName The output name
      */
-    public function __construct(string $fieldName, string $outputName = null)
+    public function __construct(string $fieldName, ?string $outputName = null)
     {
         $this->outputName = $outputName;
         $this->fieldName  = $fieldName;
@@ -30,7 +24,7 @@ class HyperUniqueCardinalityPostAggregator implements PostAggregatorInterface
     /**
      * Return the post aggregator as it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string>
      */
     public function toArray(): array
     {

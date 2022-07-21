@@ -9,6 +9,9 @@ use Level23\Druid\Extractions\LookupExtraction;
 
 class SearchFilterTest extends TestCase
 {
+    /**
+     * @return array<array<string|string[]|bool|null>>
+     */
     public function dataProvider(): array
     {
         return [
@@ -23,9 +26,9 @@ class SearchFilterTest extends TestCase
     /**
      * @dataProvider dataProvider
      *
-     * @param string       $dimension
-     * @param string|array $valueOrValues
-     * @param bool         $caseSensitive
+     * @param string          $dimension
+     * @param string|string[] $valueOrValues
+     * @param bool            $caseSensitive
      */
     public function testFilter(string $dimension, $valueOrValues, ?bool $caseSensitive): void
     {

@@ -24,7 +24,7 @@ final class ArithmeticFunction extends Enum
      * @return string
      * @throws InvalidArgumentException
      */
-    public static function validate($function)
+    public static function validate(string $function): string
     {
         $function = strtolower($function);
         if (!ArithmeticFunction::isValidValue($function)) {

@@ -25,7 +25,7 @@ trait HasExtractions
     /**
      * @var ExtractionInterface|null
      */
-    protected $extraction;
+    protected ?ExtractionInterface $extraction = null;
 
     /**
      * @param string      $lookupName
@@ -35,7 +35,7 @@ trait HasExtractions
      *                                         the missing values and replace them with the string value.
      * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
      *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           This can override the lookup's own sense of whether
+     * @param bool|null   $injective           This can override the lookups own sense of whether
      *                                         or not it is injective. If left unspecified, Druid will use the
      *                                         registered cluster-wide lookup configuration.
      *
@@ -46,27 +46,29 @@ trait HasExtractions
         $keepMissingValue = false,
         bool $optimize = true,
         bool $injective = null
-    ) {
+    ): self {
         $this->addExtraction(new LookupExtraction($lookupName, $keepMissingValue, $optimize, $injective));
 
         return $this;
     }
 
     /**
-     * @param array       $map                 A map with items. The key is the value of the given dimension. It will
-     *                                         be replaced by the value.
-     * @param bool|string $keepMissingValue    When true, we will keep values which are not known in the lookup
-     *                                         function. The original value will be kept. If false, the missing items
-     *                                         will not be kept in the result set. If this is a string, we will keep
-     *                                         the missing values and replace them with the string value.
-     * @param bool        $optimize            When set to true, we allow the optimization layer (which will run on the
-     *                                         broker) to rewrite the extraction filter if needed.
-     * @param bool|null   $injective           Whether or not this list is injective. Injective lookups should include
-     *                                         all possible keys that may show up in your dataset, and should also map
-     *                                         all keys to unique values. This matters because non-injective lookups
-     *                                         may map different keys to the same value, which must be accounted for
-     *                                         during aggregation, lest query results contain two result values that
-     *                                         should have been aggregated into one.
+     * @param array<string,string> $map              A map with items. The key is the value of the given dimension. It
+     *                                               will be replaced by the value.
+     * @param bool|string          $keepMissingValue When true, we will keep values which are not known in the lookup
+     *                                               function. The original value will be kept. If false, the missing
+     *                                               items will not be kept in the result set. If this is a string, we
+     *                                               will keep the missing values and replace them with the string
+     *                                               value.
+     * @param bool                 $optimize         When set to true, we allow the optimization layer (which will run
+     *                                               on the broker) to rewrite the extraction filter if needed.
+     * @param bool|null            $injective        Whether this list is injective. Injective lookups should include
+     *                                               all possible keys that may show up in your dataset, and should
+     *                                               also map all keys to unique values. This matters because
+     *                                               non-injective lookups may map different keys to the same value,
+     *                                               which must be accounted for during aggregation, lest query results
+     *                                               contain two result values that should have been aggregated into
+     *                                               one.
      *
      * @return $this
      */
@@ -75,7 +77,7 @@ trait HasExtractions
         $keepMissingValue = false,
         bool $optimize = true,
         bool $injective = null
-    ) {
+    ): self {
         $this->addExtraction(new InlineLookupExtraction($map, $keepMissingValue, $optimize, $injective));
 
         return $this;
@@ -93,7 +95,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function format(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING)
+    public function format(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING): self
     {
         $this->addExtraction(new StringFormatExtraction($sprintfExpression, $nullHandling));
 
@@ -108,7 +110,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function upper(string $locale = null)
+    public function upper(string $locale = null): self
     {
         $this->addExtraction(new UpperExtraction($locale));
 
@@ -123,7 +125,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function lower(string $locale = null)
+    public function lower(string $locale = null): self
     {
         $this->addExtraction(new LowerExtraction($locale));
 
@@ -152,7 +154,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function timeParse(string $inputFormat, string $outputFormat, bool $jodaFormat = true)
+    public function timeParse(string $inputFormat, string $outputFormat, bool $jodaFormat = true): self
     {
         $this->addExtraction(new TimeParseExtraction($inputFormat, $outputFormat, $jodaFormat));
 
@@ -165,7 +167,7 @@ trait HasExtractions
      * @return $this
      * @see http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
      */
-    public function partial(string $regularExpression)
+    public function partial(string $regularExpression): self
     {
         $this->addExtraction(new PartialExtraction($regularExpression));
 
@@ -185,7 +187,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function regex(string $regexp, int $groupToExtract = 1, $keepMissingValue = true)
+    public function regex(string $regexp, int $groupToExtract = 1, $keepMissingValue = true): self
     {
         $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $keepMissingValue));
 
@@ -195,12 +197,12 @@ trait HasExtractions
     /**
      * SearchQueryExtraction
      *
-     * @param string|array $valueOrValues
-     * @param bool         $caseSensitive
+     * @param string|string[] $valueOrValues
+     * @param bool            $caseSensitive
      *
      * @return $this
      */
-    public function searchQuery($valueOrValues, bool $caseSensitive = false)
+    public function searchQuery($valueOrValues, bool $caseSensitive = false): self
     {
         $this->addExtraction(new SearchQueryExtraction($valueOrValues, $caseSensitive));
 
@@ -213,7 +215,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function substring(int $index, ?int $length = null)
+    public function substring(int $index, ?int $length = null): self
     {
         $this->addExtraction(new SubstringExtraction($index, $length));
 
@@ -226,10 +228,10 @@ trait HasExtractions
      * @param string|null $format         date time format for the resulting dimension value, in Joda Time
      *                                    DateTimeFormat, or null to use the default ISO8601 format.
      * @param string|null $granularity    granularity to apply before formatting, or omit to not apply any granularity.
-     * @param string|null $locale         locale (language and country) to use, given as a IETF BCP 47 language tag,
+     * @param string|null $locale         locale (language and country) to use, given as an IETF BCP 47 language tag,
      *                                    e.g. en-US, en-GB, fr-FR, fr-CA, etc.
      * @param string|null $timeZone       time zone to use in IANA tz database format, e.g. Europe/Berlin (this can
-     *                                    possibly be different than the aggregation time-zone)
+     *                                    possibly be different from the aggregation time-zone)
      * @param bool|null   $asMilliseconds boolean value, set to true to treat input strings as millis rather than
      *                                    ISO8601 strings. Additionally, if format is null or not specified, output
      *                                    will be in millis rather than ISO8601.
@@ -242,7 +244,7 @@ trait HasExtractions
         string $locale = null,
         string $timeZone = null,
         bool $asMilliseconds = null
-    ) {
+    ): self {
         $this->addExtraction(new TimeFormatExtraction($format, $granularity, $locale, $timeZone, $asMilliseconds));
 
         return $this;
@@ -258,7 +260,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function javascript(string $javascript, bool $injective = false)
+    public function javascript(string $javascript, bool $injective = false): self
     {
         $this->addExtraction(new JavascriptExtraction($javascript, $injective));
 
@@ -267,10 +269,10 @@ trait HasExtractions
 
     /**
      * Bucket extraction function is used to bucket numerical values in each range of the given size by converting them
-     * to the same base value. Non numeric values are converted to null.
+     * to the same base value. Non-numeric values are converted to null.
      *
      * The following extraction function creates buckets of 5 starting from 2. In this case, values in the range of [2,
-     * 7) will be converted to 2, values in [7, 12) will be converted to 7, etc.
+     * 7] will be converted to 2, values in [7, 12] will be converted to 7, etc.
      *
      * ```
      * bucket(5, 2);
@@ -281,7 +283,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function bucket(int $size = 1, int $offset = 0)
+    public function bucket(int $size = 1, int $offset = 0): self
     {
         $this->addExtraction(new BucketExtraction($size, $offset));
 
@@ -293,7 +295,7 @@ trait HasExtractions
      *
      * @param \Level23\Druid\Extractions\ExtractionInterface $extraction
      */
-    protected function addExtraction(ExtractionInterface $extraction)
+    protected function addExtraction(ExtractionInterface $extraction): void
     {
         if ($this->extraction === null) {
             $this->extraction = $extraction;

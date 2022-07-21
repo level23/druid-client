@@ -63,7 +63,7 @@ class HasAggregationsTest extends TestCase
         $this->builder->makePartial();
     }
 
-    protected function filteredAggregatorTest(?\Closure $givenClosureOrNull)
+    protected function filteredAggregatorTest(?\Closure $givenClosureOrNull): void
     {
         $this->builder->shouldAllowMockingProtectedMethods()
             ->shouldReceive('buildFilteredAggregation')

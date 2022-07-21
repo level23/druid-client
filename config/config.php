@@ -52,9 +52,7 @@ return [
     'retry_delay_ms'  => env('DRUID_RETRY_DELAY_MS', 500),
 
     /**
-     * Supply the druid version which you are sending your queries to.
-     * Based on this druid version, we can enable / disable certain new features if your
-     * server supports this.
+     * Amount of time in seconds to wait till we try and poll a task status again.
      */
-    'version'         => env('DRUID_VERSION'),
+    'polling_sleep_seconds' => env('DRUID_POLLING_SLEEP_SECONDS', 2),
 ];

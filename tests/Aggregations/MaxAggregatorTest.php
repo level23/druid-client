@@ -10,6 +10,9 @@ use Level23\Druid\Aggregations\MaxAggregator;
 
 class MaxAggregatorTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [
@@ -30,6 +33,7 @@ class MaxAggregatorTest extends TestCase
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
+            $this->expectExceptionMessage('Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"');
         }
 
         $aggregator = new MaxAggregator('abc', 'dim123', $type);

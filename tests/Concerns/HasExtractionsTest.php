@@ -103,7 +103,7 @@ class HasExtractionsTest extends TestCase
             ->with(1, 0);
 
         $builder  = new ExtractionBuilder();
-        $response = $builder->bucket(1, 0);
+        $response = $builder->bucket();
 
         $this->assertEquals($builder, $response);
 
@@ -217,7 +217,7 @@ class HasExtractionsTest extends TestCase
             ->with(2, null);
 
         $builder  = new ExtractionBuilder();
-        $response = $builder->substring(2, null);
+        $response = $builder->substring(2);
         $this->assertEquals($builder, $response);
         $this->assertInstanceOf(SubstringExtraction::class, $builder->getExtraction());
     }
@@ -268,6 +268,7 @@ class HasExtractionsTest extends TestCase
         $this->assertInstanceOf(CascadeExtraction::class, $extraction);
 
         if ($extraction instanceof CascadeExtraction) {
+            /** @var array<string,array<mixed>> $array */
             $array = $extraction->toArray();
             $this->assertCount(2, $array['extractionFns']);
         }
@@ -278,6 +279,7 @@ class HasExtractionsTest extends TestCase
         $this->assertInstanceOf(CascadeExtraction::class, $extraction);
 
         if ($extraction instanceof CascadeExtraction) {
+            /** @var array<string,array<mixed>> $array */
             $array = $extraction->toArray();
             $this->assertCount(3, $array['extractionFns']);
         }

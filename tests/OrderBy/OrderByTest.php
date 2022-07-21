@@ -11,6 +11,9 @@ use Level23\Druid\Types\OrderByDirection;
 
 class OrderByTest extends TestCase
 {
+    /**
+     * @return array<array<string|bool>>
+     */
     public function dataProvider(): array
     {
         return [
@@ -62,8 +65,8 @@ class OrderByTest extends TestCase
         $orderBy = new OrderBy('name');
 
         $this->assertEquals([
-            'dimension' => 'name',
-            'direction' => 'ascending',
+            'dimension'      => 'name',
+            'direction'      => 'ascending',
             'dimensionOrder' => 'lexicographic',
         ], $orderBy->toArray());
     }

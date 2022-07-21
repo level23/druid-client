@@ -5,25 +5,13 @@ namespace Level23\Druid\Extractions;
 
 class RegexExtraction implements ExtractionInterface
 {
-    /**
-     * @var string
-     */
-    protected $regexp;
+    protected string $regexp;
 
-    /**
-     * @var int
-     */
-    protected $groupToExtract;
+    protected int $groupToExtract;
 
-    /**
-     * @var bool
-     */
-    protected $replaceMissingValue;
+    protected bool $replaceMissingValue;
 
-    /**
-     * @var string|null
-     */
-    protected $replaceMissingValueWith;
+    protected ?string $replaceMissingValueWith;
 
     /**
      * RegexExtraction constructor.
@@ -48,9 +36,9 @@ class RegexExtraction implements ExtractionInterface
     }
 
     /**
-     * Return the Extraction Function so it can be used in a druid query.
+     * Return the Extraction Function, so it can be used in a druid query.
      *
-     * @return array
+     * @return array<string,string|int|bool|null>
      */
     public function toArray(): array
     {

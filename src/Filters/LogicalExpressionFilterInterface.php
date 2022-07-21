@@ -10,5 +10,5 @@ interface LogicalExpressionFilterInterface
      *
      * @param \Level23\Druid\Filters\FilterInterface $filter
      */
-    public function addFilter(FilterInterface $filter);
+    public function addFilter(FilterInterface $filter): void;
 }
