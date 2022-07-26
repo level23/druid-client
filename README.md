@@ -1545,7 +1545,7 @@ The following `$operator` values are supported:
 | !=             | Check if the dimension is not equal to the given value.                                                                                                                                        |
 | <>             | Same as `!=`                                                                                                                                                                                   |
 | >              | Check if the dimension is greater than the given value.                                                                                                                                        |
-| > =             | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
+| >=             | Check if the dimension is greater than or equal to the given value.                                                                                                                            |
 | <              | Check if the dimension is less than the given value.                                                                                                                                           |
 | <=             | Check if the dimension is less than or equal to the given value.                                                                                                                               |
 | like           | Check if the dimension matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character).                             |
@@ -2276,7 +2276,7 @@ The following `$operator` values are supported:
 | !=           | Check if the metric is not equal to the given value.                                                                                                            |
 | <>           | Same as `!=`                                                                                                                                                    |
 | >            | Check if the metric is greater than the given value.                                                                                                            |
-| > =           | Check if the metric is greater than or equal to the given value.                                                                                                |
+| >=           | Check if the metric is greater than or equal to the given value.                                                                                                |
 | <            | Check if the metric is less than the given value.                                                                                                               |
 | <=           | Check if the metric is less than or equal to the given value.                                                                                                   |
 | like         | Check if the metric matches a SQL LIKE expression. Special characters supported are "%" (matches any number of characters) and "_" (matches any one character). |
