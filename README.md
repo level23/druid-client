@@ -375,7 +375,7 @@ The query method has 2 parameters:
 
 The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
 
-When you do not specify the dataSource, you need to specify it later on your query builer. There are various methods 
+When you do not specify the dataSource, you need to specify it later on your query builer. There are various methods
 to do this. See [QueryBuilder: Data Sources](#querybuilder-data-sources)
 
 See the following chapters for more information about the query builder.
@@ -3019,8 +3019,8 @@ The `QueryContext()` object contains context properties which apply to all queri
 **Response**
 
 The response of this method is dependent of the query which is executed. Each query has it's own response object.
-However, all query responses are extended of the `QueryResponse` object. Each query response has therefor 
-a `$response->raw()` method which will return an array with the raw data returned by druid. There is also 
+However, all query responses are extended of the `QueryResponse` object. Each query response has therefor
+a `$response->raw()` method which will return an array with the raw data returned by druid. There is also
 an `$response->data()` method which returns the data in a "normalized" way so that it can be directly used.
 
 #### `groupBy()`
@@ -3051,7 +3051,7 @@ $result = $builder
 
 There are two different strategies to execute a GroupBy query. V2 which is the current default, and V1, which is the
 legacy strategy. When execute a query using the `groupBy()` method, the v2 strategy is used. If you want to use the v1
-strategy,  you can make use of the method `groupByV1()`. This method works the same, only uses the v1 strategy to 
+strategy, you can make use of the method `groupByV1()`. This method works the same, only uses the v1 strategy to
 execute the query.
 
 For more information about groupBy strategies see this page:
@@ -3203,7 +3203,7 @@ The `selectQuery()` method has the following arguments:
 **Context**
 
 The `selectQuery()` method receives 1 parameter, the query context. The query context is either an array with key =>
-value pairs, or an `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific 
+value pairs, or an `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific
 for this query type. The context allows you to change the behaviour of the query execution.
 
 Example:
@@ -3594,7 +3594,7 @@ into bigger segments after that.
 Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
 
 **Note**: when you re-index data, druid will collect the data and put it in a new segment. The old segments are not
-deleted, but marked as unused. This is the same principle as laravel's soft-deletes. To permanently delete the unused 
+deleted, but marked as unused. This is the same principle as laravel's soft-deletes. To permanently delete the unused
 segments you should use the `kill` task. See below for an example.
 
 By default, we have added a check to make sure that you have selected a complete interval. This prevents a lot of
@@ -4214,10 +4214,173 @@ $builder = $client->index('data', $inputSource)
 
 ## `tsvFormat()`
 
+The `tsvFormat()` allows you to specify how your tsv data is build.
+
+This method allows you to specify the following parameters:
+
+| **Type** | **Optional/Required** | **Argument**             | **Example**       | **Description**                                                                                           |
+|----------|-----------------------|--------------------------|-------------------|-----------------------------------------------------------------------------------------------------------|
+| array    | Required              | `$columns`               | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
+| string   | Optional              | `$delimiter`             | `"\t"`            | A custom delimiter for data values (default is a tab `\t`).                                               |
+| string   | Optional              | `$listDelimiter`         | `"$"`             | A custom delimiter for multi-value dimensions.                                                            |
+| boolean  | Optional              | `$findColumnsFromHeader` | `true`            | If this is set, the task will find the column names from the header row.                                  |
+| int      | Optional              | `$skipHeaderRows`        | `2`               | If this is set, the task will skip the first skipHeaderRows rows.                                         |
+
+Be sure to change the delimiter to the appropriate delimiter for your data. Like CSV, you must specify the columns
+and which subset of the columns you want indexed.
+
+Note that skipHeaderRows will be applied before finding column names from the header. For example, if you set
+skipHeaderRows to 2 and findColumnsFromHeader to true, the task will skip the first two lines and then extract column
+information from the third line.
+
+Example:
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+$builder = $client->index('data', $inputSource)
+    ->tsvFormat(['name', 'age'], "|", null, true, 2)
+    //-> ....
+;
+```
+
 ## `jsonFormat()`
+
+The `jsonFormat()` allows you to specify how the data is formatted.
+
+See also:
+
+- https://github.com/FasterXML/jackson-core/wiki/JsonParser-Features
+- https://druid.apache.org/docs/latest/ingestion/data-formats.html#flattenspec
+
+This method allows you to specify the following parameters:
+
+| **Type**    | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                   |
+|-------------|-----------------------|----------------|-------------|-----------------------------------------------------------------------------------|
+| FlattenSpec | Optional              | `$flattenSpec` | (see below) | Specifies flattening configuration for nested JSON data. See below for more info. |
+| array       | Optional              | `$features`    | `"\t"`      | List the features which apply for this json input format.                         |
+
+The flattenSpec object bridges the gap between potentially nested input data, such as JSON or Avro, and Druid's flat data model.
+It is an object within the inputFormat object.
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+// Here we define how our fields are "read" from the input source. 
+$spec = new FlattenSpec(true);
+$spec->field(FlattenFieldType::ROOT, 'baz');
+$spec->field(FlattenFieldType::JQ, 'foo_bar', '$.foo.bar');
+$spec->field(FlattenFieldType::PATH, 'first_food', '.thing.food[1]');
+
+$builder = $client->index('data', $inputSource)
+    ->jsonFormat($spec, ['ALLOW_SINGLE_QUOTES' => true, 'ALLOW_UNQUOTED_FIELD_NAMES' => true])
+    //-> ....
+;
+```
 
 ## `orcFormat()`
 
+The `orcFormat()` allows you to specify the ORC input format. However, to make use of this input source, you should have
+added the `druid-orc-extensions` to druid.
+
+See:
+
+- https://druid.apache.org/docs/latest/development/extensions-core/orc.html
+- https://druid.apache.org/docs/latest/ingestion/data-formats.html#flattenspec
+
+This method allows you to specify the following parameters:
+
+| **Type**    | **Optional/Required** | **Argument**      | **Example** | **Description**                                                                                                                             |
+|-------------|-----------------------|-------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| FlattenSpec | Optional              | `$flattenSpec`    | (see below) | Specifies flattening configuration for nested JSON data. See below for more info.                                                           |
+| boolean     | Optional              | `$binaryAsString` | `true`      | Specifies if the binary orc column which is not logically marked as a string should be treated as a UTF-8 encoded string. Default is false. |
+
+The flattenSpec object bridges the gap between potentially nested input data, and Druid's flat data model.
+It is an object within the inputFormat object.
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+// Here we define how our fields are "read" from the input source. 
+$spec = new FlattenSpec(true);
+$spec->field(FlattenFieldType::ROOT, 'baz');
+$spec->field(FlattenFieldType::JQ, 'foo_bar', '$.foo.bar');
+$spec->field(FlattenFieldType::PATH, 'first_food', '.thing.food[1]');
+
+$builder = $client->index('data', $inputSource)
+    ->orcFormat($spec, true)
+    //-> ....
+;
+```
+
 ## `parquetFormat()`
 
+The `parquetFormat()` allows you to specify the Parquet input format. However, to make use of this input source, you should have
+added the `druid-parquet-extensions` to druid.
+
+See:
+
+- https://druid.apache.org/docs/latest/development/extensions-core/parquet.html
+- https://druid.apache.org/docs/latest/ingestion/data-formats.html#flattenspec
+
+This method allows you to specify the following parameters:
+
+| **Type**    | **Optional/Required** | **Argument**      | **Example** | **Description**                                                                                                                                             |
+|-------------|-----------------------|-------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| FlattenSpec | Optional              | `$flattenSpec`    | (see below) | Specifies flattening configuration for nested JSON data. See below for more info.                                                                           |
+| boolean     | Optional              | `$binaryAsString` | `true`      | Specifies if the bytes parquet column which is not logically marked as a string or enum type should be treated as a UTF-8 encoded string. Default is false. |
+
+The flattenSpec object bridges the gap between potentially nested input data, and Druid's flat data model.
+It is an object within the inputFormat object.
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+// Here we define how our fields are "read" from the input source. 
+$spec = new FlattenSpec(true);
+$spec->field(FlattenFieldType::ROOT, 'baz');
+$spec->field(FlattenFieldType::PATH, 'nested', '$.path.to.nested');
+
+$builder = $client->index('data', $inputSource)
+    ->parquetFormat($spec, true)
+    //-> ....
+;
+```
+
 ## `protobufFormat()`
+
+The `parquetFormat()` allows you to specify the Protobuf input format. However, to make use of this input source, you should have
+added the `druid-protobuf-extensions` to druid.
+
+See:
+
+- https://druid.apache.org/docs/latest/development/extensions-core/protobuf.html
+- https://druid.apache.org/docs/latest/ingestion/data-formats.html#flattenspec
+
+This method allows you to specify the following parameters:
+
+| **Type**    | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                   |
+|-------------|-----------------------|----------------------|-------------|-----------------------------------------------------------------------------------|
+| array       | Optional              | `$protoBytesDecoder` | (see below) | Specifies how to decode bytes to Protobuf record.                                 |
+| FlattenSpec | Optional              | `$flattenSpec`       | (see below) | Specifies flattening configuration for nested JSON data. See below for more info. |
+
+The flattenSpec object bridges the gap between potentially nested input data, and Druid's flat data model.
+It is an object within the inputFormat object.
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+// Here we define how our fields are "read" from the input source. 
+$spec = new FlattenSpec(true);
+$spec->field(FlattenFieldType::ROOT, 'baz');
+$spec->field(FlattenFieldType::PATH, 'someRecord_subInt', '$.someRecord.subInt');
+
+$builder = $client->index('data', $inputSource)
+    ->protobufFormat([
+        "type" => "file",
+        "descriptor" => "file:///tmp/metrics.desc",
+        "protoMessageType" => "Metrics"
+    ], $spec)
+    //-> ....
+;
+```

@@ -15,27 +15,18 @@ use Level23\Druid\Types\Granularity;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Tasks\IndexTaskBuilder;
-use Level23\Druid\Types\FlattenFieldType;
 use Level23\Druid\Transforms\TransformSpec;
 use Level23\Druid\Dimensions\TimestampSpec;
-use Level23\Druid\InputFormats\FlattenSpec;
 use Level23\Druid\Types\MultiValueHandling;
 use Level23\Druid\Transforms\TransformBuilder;
 use Level23\Druid\Dimensions\SpatialDimension;
-use Level23\Druid\InputFormats\CsvInputFormat;
-use Level23\Druid\InputFormats\TsvInputFormat;
-use Level23\Druid\InputFormats\OrcInputFormat;
 use Level23\Druid\InputSources\HttpInputSource;
-use Level23\Druid\InputFormats\JsonInputFormat;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\InputSources\LocalInputSource;
 use Level23\Druid\Collections\IntervalCollection;
-use Level23\Druid\InputFormats\ParquetInputFormat;
 use Level23\Druid\Granularities\UniformGranularity;
-use Level23\Druid\InputFormats\ProtobufInputFormat;
 use Level23\Druid\Collections\AggregationCollection;
 use Level23\Druid\InputSources\InputSourceInterface;
-use Level23\Druid\InputFormats\InputFormatInterface;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 use Level23\Druid\Granularities\GranularityInterface;
 use Level23\Druid\Collections\SpatialDimensionCollection;
@@ -219,144 +210,6 @@ class IndexTaskBuilderTest extends TestCase
         }
 
         $this->assertEquals(strtoupper($value), MultiValueHandling::validate($value));
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testJsonFormat(): void
-    {
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'animals');
-
-        $flattenSpec = new FlattenSpec(true);
-        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
-
-        $jsonInputFormat = $this->getConstructorMock(JsonInputFormat::class, InputFormatInterface::class);
-        $jsonInputFormat->shouldReceive('__construct')
-            ->once()
-            ->with($flattenSpec, ['ALLOW_COMMENTS' => true]);
-
-        $this->assertEquals(
-            $builder,
-            $builder->jsonFormat($flattenSpec, ['ALLOW_COMMENTS' => true])
-        );
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testOrcFormat(): void
-    {
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'animals');
-
-        $flattenSpec = new FlattenSpec(true);
-        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
-
-        $jsonInputFormat = $this->getConstructorMock(OrcInputFormat::class, InputFormatInterface::class);
-        $jsonInputFormat->shouldReceive('__construct')
-            ->once()
-            ->with($flattenSpec, true);
-
-        $this->assertEquals(
-            $builder,
-            $builder->orcFormat($flattenSpec, true)
-        );
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testParquetFormat(): void
-    {
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'animals');
-
-        $flattenSpec = new FlattenSpec(true);
-        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
-
-        $jsonInputFormat = $this->getConstructorMock(ParquetInputFormat::class, InputFormatInterface::class);
-        $jsonInputFormat->shouldReceive('__construct')
-            ->once()
-            ->with($flattenSpec, false);
-
-        $this->assertEquals(
-            $builder,
-            $builder->parquetFormat($flattenSpec, false)
-        );
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testProtobufFormat(): void
-    {
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'animals');
-
-        $decoder = [
-            "type"             => "file",
-            "descriptor"       => "file:///tmp/metrics.desc",
-            "protoMessageType" => "Metrics",
-        ];
-
-        $flattenSpec = new FlattenSpec(true);
-        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
-
-        $jsonInputFormat = $this->getConstructorMock(ProtobufInputFormat::class, InputFormatInterface::class);
-        $jsonInputFormat->shouldReceive('__construct')
-            ->once()
-            ->with($decoder, $flattenSpec);
-
-        $this->assertEquals(
-            $builder,
-            $builder->protobufFormat($decoder, $flattenSpec)
-        );
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testCsvFormat(): void
-    {
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'animals');
-
-        $jsonInputFormat = $this->getConstructorMock(CsvInputFormat::class, InputFormatInterface::class);
-        $jsonInputFormat->shouldReceive('__construct')
-            ->once()
-            ->with(['name', 'age'], '|', true, 2);
-
-        $this->assertEquals(
-            $builder,
-            $builder->csvFormat(['name', 'age'], '|', true, 2)
-        );
-    }
-
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testTsvFormat(): void
-    {
-        $client  = new DruidClient([]);
-        $builder = new IndexTaskBuilder($client, 'animals');
-
-        $jsonInputFormat = $this->getConstructorMock(TsvInputFormat::class, InputFormatInterface::class);
-        $jsonInputFormat->shouldReceive('__construct')
-            ->once()
-            ->with(['name', 'age'], ',', '|', true, 2);
-
-        $this->assertEquals(
-            $builder,
-            $builder->tsvFormat(['name', 'age'], ',', '|', true, 2)
-        );
     }
 
     /**
