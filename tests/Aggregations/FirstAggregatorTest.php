@@ -19,7 +19,8 @@ class FirstAggregatorTest extends TestCase
             [DataType::LONG],
             [DataType::DOUBLE],
             [DataType::FLOAT],
-            [DataType::STRING, true],
+            [DataType::STRING],
+            ["object", true],
         ];
     }
 
@@ -33,7 +34,7 @@ class FirstAggregatorTest extends TestCase
     {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"');
+            $this->expectExceptionMessage('The given output type is invalid: object. Allowed are: string,float,long,double');
         }
 
         $aggregator = new FirstAggregator('abc', 'dim123', $type);
