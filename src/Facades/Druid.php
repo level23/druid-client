@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array executeRawRequest(string $method, string $url, array $data = [])
  * @method static \Level23\Druid\DruidClient setLogger(\Psr\Log\LoggerInterface $logger)
  * @method static \Level23\Druid\DruidClient setGuzzleClient(\GuzzleHttp\Client $client)
- * @method static mixed function config(string $key, $default = null)
+ * @method static mixed config(string $key, $default = null)
  * @method static \Level23\Druid\Metadata\MetadataBuilder metadata()
  * @method static \Level23\Druid\Responses\TaskResponse taskStatus(string $taskId)
  * @method static \Level23\Druid\Responses\TaskResponse pollTaskStatus(string $taskId)
