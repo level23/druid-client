@@ -217,6 +217,7 @@ for more information.
     - [Reindex/compact data/kill](#reindex--compact-data--kill)
         - [compact()](#compact)
         - [reindex()](#reindex)
+        - [kill()](#kill)
     - [Importing data using a batch index job](#importing-data-using-a-batch-index-job)
     - [Input Sources](#input-sources)
         - [AzureInputSource](#azureinputsource)
