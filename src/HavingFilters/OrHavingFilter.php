@@ -3,8 +3,23 @@ declare(strict_types=1);
 
 namespace Level23\Druid\HavingFilters;
 
-class OrHavingFilter extends AndHavingFilter
+class OrHavingFilter implements HavingFilterInterface, LogicalExpressionHavingFilterInterface
 {
+    /**
+     * @var \Level23\Druid\HavingFilters\HavingFilterInterface[]
+     */
+    protected array $filters;
+
+    /**
+     * AndHavingFilter constructor.
+     *
+     * @param \Level23\Druid\HavingFilters\HavingFilterInterface[] $filters
+     */
+    public function __construct(array $filters)
+    {
+        $this->filters = $filters;
+    }
+
     /**
      * Return the having filter as it can be used in a druid query.
      *
@@ -12,10 +27,29 @@ class OrHavingFilter extends AndHavingFilter
      */
     public function toArray(): array
     {
-        $result = parent::toArray();
+        return [
+            'type'        => 'or',
+            'havingSpecs' => array_map(fn(HavingFilterInterface $filter) => $filter->toArray(), $this->filters),
+        ];
+    }
 
-        $result['type'] = 'or';
+    /**
+     * Add an extra filter to our logical expression filter.
+     *
+     * @param \Level23\Druid\HavingFilters\HavingFilterInterface $having
+     */
+    public function addHavingFilter(HavingFilterInterface $having): void
+    {
+        $this->filters[] = $having;
+    }
 
-        return $result;
+    /**
+     * Return all having filters which are used by this logical expression filter.
+     *
+     * @return \Level23\Druid\HavingFilters\HavingFilterInterface[]
+     */
+    public function getHavingFilters(): array
+    {
+        return $this->filters;
     }
 }

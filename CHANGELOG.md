@@ -93,3 +93,13 @@ If you are currently using druid-client version 1.*, you should check for these 
    as dataSource. 
 9. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and it is now public.
 10. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.
+
+
+**v2.0.1**
+- Updated input format documentation. Moved Input Formats to its own Concern trait to keep code base clean.
+- Fixed first and last aggregator, as these also support the string types.
+- Added missing link (kill) in documentation
+- Add method documentation to facade (phpdoc) for better code completion.
+
+**v2.0.2**
+- Bugfix for multiple greaterThan having filters. 
