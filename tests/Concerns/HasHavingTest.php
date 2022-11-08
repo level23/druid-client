@@ -241,6 +241,61 @@ class HasHavingTest extends TestCase
         }
     }
 
+    /**
+     * Test multiple having Greater Than filters.
+     *
+     * @return void
+     */
+    public function testHavingMultipleGreaterThan(): void
+    {
+        $this->builder->having('a', '>=', 12);
+        $this->builder->having('b', '>=', 8);
+
+        $having = $this->builder->getHaving();
+
+        if (!$having instanceof HavingFilterInterface) {
+            $this->fail('HavingFilterInterface is expected!');
+        }
+
+        $this->assertEquals([
+            'type'        => 'and',
+            'havingSpecs' => [
+                [
+                    'type'        => 'or',
+                    'havingSpecs' => [
+                        [
+                            'type'        => 'greaterThan',
+                            'aggregation' => 'a',
+                            'value'       => 12.0,
+                        ],
+                        [
+                            'type'        => 'equalTo',
+                            'aggregation' => 'a',
+                            'value'       => 12.0,
+                        ],
+                    ],
+                ],
+                [
+                    'type'        => 'or',
+                    'havingSpecs' => [
+                        [
+                            'type'        => 'greaterThan',
+                            'aggregation' => 'b',
+                            'value'       => 8.0,
+                        ],
+                        [
+                            'type'        => 'equalTo',
+                            'aggregation' => 'b',
+                            'value'       => 8.0,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+            $having->toArray()
+        );
+    }
+
     public function testHavingMultipleAnd(): void
     {
         $this->builder->having('name', '!=', 'John', 'AnD');
