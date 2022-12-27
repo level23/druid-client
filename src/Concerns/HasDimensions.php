@@ -33,15 +33,19 @@ trait HasDimensions
      * Select a dimension from our statistics. Possible use a lookup function to find the
      * real data which we want to use.
      *
-     * @param string[]|\ArrayObject<int|string,string>|string|DimensionInterface $dimension
-     * @param string                                                             $as          When dimensions is a
-     *                                                                                        string (the dimension),
-     *                                                                                        you can specify the alias
-     *                                                                                        output name here.
-     * @param \Closure|null                                                      $extraction
-     * @param string                                                             $outputType  This can either be
-     *                                                                                        "long",
-     *                                                                                        "float" or "string"
+     * @param array<int,string>|\ArrayObject<int|string,string>|string|DimensionInterface $dimension
+     * @param string                                                                      $as         When dimensions
+     *                                                                                                is a string (the
+     *                                                                                                dimension), you
+     *                                                                                                can specify the
+     *                                                                                                alias output name
+     *                                                                                                here.
+     * @param \Closure|null                                                               $extraction
+     * @param string                                                                      $outputType This can either
+     *                                                                                                be
+     *                                                                                                "long",
+     *                                                                                                "float" or
+     *                                                                                                "string"
      *
      * @return self
      */
@@ -237,7 +241,7 @@ trait HasDimensions
     /**
      * Add a dimension or a set of dimensions to our dimension list.
      *
-     * @param DimensionInterface|string|string[]|ArrayObject<int|string,string> $dimension
+     * @param DimensionInterface|string|array<int,string>|ArrayObject<int|string,string> $dimension
      */
     protected function addDimension($dimension): void
     {

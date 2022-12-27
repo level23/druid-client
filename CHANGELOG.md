@@ -103,3 +103,6 @@ If you are currently using druid-client version 1.*, you should check for these 
 
 **v2.0.2**
 - Bugfix for multiple greaterThan having filters. 
+
+**v2.0.3**
+- Changed some phpdoc annotation to keep PHPStan happy.
