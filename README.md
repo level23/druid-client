@@ -2455,7 +2455,7 @@ Find the circle area based on the formula radius x radius x pi.
 $builder
     ->select('radius')
     ->multiply('area', function(PostAggregationsBuilder $builder){
-        $builder->multipli('r2', ['radius', 'radius']);
+        $builder->multiply('r2', ['radius', 'radius']);
         $builder->constant('3.141592654', 'pi');
     });
 ```
