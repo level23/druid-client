@@ -81,7 +81,7 @@ class TaskBuilderTest extends TestCase
         $task = Mockery::mock(CompactTask::class, ['animals', new Interval('12-02-2019', '13-02-2019')]);
 
         $task->shouldReceive('toArray')
-            ->andReturn([INF => INF]);
+            ->andThrows(JsonException::class, 'Inf and NaN cannot be JSON encoded');
 
         $builder
             ->shouldAllowMockingProtectedMethods()
