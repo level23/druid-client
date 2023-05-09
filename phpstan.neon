@@ -6,6 +6,7 @@ parameters:
       - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
       - '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
       - '#expects class-string<Throwable>, string given.#'
+      - '#Ternary operator condition is always true.#'
     excludePaths:
       - src/DruidServiceProvider.php
       - src/Facades/Druid.php

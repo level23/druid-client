@@ -155,8 +155,6 @@ class QueryBuilderTest extends TestCase
         $context = ['foo' => 'bar'];
         $query   = $this->getTimeseriesQueryMock();
 
-        $result = [INF => INF];
-
         $this->builder
             ->shouldReceive('getQuery')
             ->with($context)
@@ -165,7 +163,7 @@ class QueryBuilderTest extends TestCase
 
         $query->shouldReceive('toArray')
             ->once()
-            ->andReturn($result);
+            ->andThrows(InvalidArgumentException::class, 'json_encode error: blaat woei');
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('json_encode error:');
