@@ -252,11 +252,11 @@ class DruidClient
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @param \Psr\Log\LoggerInterface|null $logger
      *
      * @return DruidClient
      */
-    public function setLogger(LoggerInterface $logger): DruidClient
+    public function setLogger(?LoggerInterface $logger = null): DruidClient
     {
         $this->logger = $logger;
 
