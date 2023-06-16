@@ -1,13 +1,6 @@
 <?php
 declare(strict_types=1);
 
-/** @noinspection PhpUnusedParameterInspection */
-/** @noinspection PhpUndefinedNamespaceInspection */
-/** @noinspection PhpUndefinedMethodInspection */
-/** @noinspection PhpUndefinedFunctionInspection */
-/** @noinspection PhpUndefinedFieldInspection */
-/** @noinspection PhpUndefinedClassInspection */
-
 namespace Level23\Druid;
 
 use Illuminate\Support\ServiceProvider;
@@ -25,7 +18,7 @@ class DruidServiceProvider extends ServiceProvider
     /**
      * Register the application services.
      */
-    public function register()
+    public function register(): void
     {
         $this->registerDruidClient();
     }
@@ -33,9 +26,9 @@ class DruidServiceProvider extends ServiceProvider
     /**
      * Publish and merge the config
      */
-    protected function setupConfig()
+    protected function setupConfig(): void
     {
-        $source = realpath(__DIR__ . '/../config/config.php');
+        $source = (string)realpath(__DIR__ . '/../config/config.php');
 
         if ($this->app instanceof LaravelApplication) {
             $this->publishes([$source => config_path('druid.php')]);
@@ -51,13 +44,13 @@ class DruidServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function registerDruidClient()
+    protected function registerDruidClient(): void
     {
         $this->setupConfig();
 
         $this->app->singleton(DruidClient::class, function () {
-            $client = new DruidClient($this->app['config']['druid']);
-            $client->setLogger($this->app['log']);
+            $client = new DruidClient($this->app['config']['druid']); // @phpstan-ignore-line
+            $client->setLogger($this->app['log']); // @phpstan-ignore-line
 
             return $client;
         });

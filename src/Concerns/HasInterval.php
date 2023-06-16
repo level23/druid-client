@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
+use DateTimeInterface;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Interval\IntervalInterface;
 
@@ -23,7 +24,7 @@ trait HasInterval
      *
      * ```php
      * // Select an interval with string values. Anything which can be parsed by the DateTime object
-     * // can be given. Also "yesterday" or "now" is valid.
+     * // can be given. Also, "yesterday" or "now" is valid.
      * interval('2019-12-23', '2019-12-24');
      *
      * // When a string is given which contains a slash, we will split it for you and parse it as "begin/end".
@@ -42,15 +43,15 @@ trait HasInterval
      * interval(1570643085, 1570729485);
      * ```
      *
-     * @param \DateTimeInterface|string|int      $start DateTime object, unix timestamp or string accepted by
+     * @param \DateTimeInterface|int|string      $start DateTime object, unix timestamp or string accepted by
      *                                                  DateTime::__construct
-     * @param \DateTimeInterface|string|int|null $stop  DateTime object, unix timestamp or string accepted by
+     * @param \DateTimeInterface|int|string|null $stop  DateTime object, unix timestamp or string accepted by
      *                                                  DateTime::__construct
      *
      * @return $this
      * @throws \Exception
      */
-    public function interval($start, $stop = null): self
+    public function interval(DateTimeInterface|int|string $start, DateTimeInterface|int|string $stop = null): self
     {
         $this->interval = new Interval($start, $stop);
 

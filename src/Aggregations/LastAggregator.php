@@ -10,14 +10,14 @@ class LastAggregator extends MethodAggregator
     /**
      * constructor.
      *
-     * @param string $metricName
-     * @param string $outputName                            When not given, we will use the same name as the metric.
-     * @param string $type                                  The type of field. This can either be "long", "float",
-     *                                                      "double" or "string"
+     * @param string          $metricName
+     * @param string          $outputName When not given, we will use the same name as the metric.
+     * @param string|DataType $type       The type of field. This can either be "long", "float", "double" or "string"
+     *
      */
-    public function __construct(string $metricName, string $outputName = '', string $type = 'long')
+    public function __construct(string $metricName, string $outputName = '', string|DataType $type = DataType::LONG)
     {
-        $this->type       = DataType::validate($type);
+        $this->type       = is_string($type) ? DataType::from(strtolower($type)) : $type;
         $this->metricName = $metricName;
         $this->outputName = $outputName ?: $metricName;
     }

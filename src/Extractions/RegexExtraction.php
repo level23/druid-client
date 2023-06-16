@@ -27,7 +27,7 @@ class RegexExtraction implements ExtractionInterface
     public function __construct(
         string $regexp,
         int $groupToExtract = 1,
-        $keepMissingValue = false
+        bool|string $keepMissingValue = false
     ) {
         $this->regexp                  = $regexp;
         $this->groupToExtract          = $groupToExtract;

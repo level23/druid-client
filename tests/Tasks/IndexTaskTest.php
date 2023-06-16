@@ -119,9 +119,9 @@ class IndexTaskTest extends TestCase
                         'dimensions' => $dimensions,
                     ],
 
-                    'metricsSpec'     => ($aggregations ? $aggregations->toArray() : null),
+                    'metricsSpec'     => ($aggregations?->toArray()),
                     'granularitySpec' => $granularity->toArray(),
-                    'transformSpec'   => ($transformSpec ? $transformSpec->toArray() : null),
+                    'transformSpec'   => ($transformSpec?->toArray()),
                 ],
                 'ioConfig'   => [
                     'type'             => 'index',

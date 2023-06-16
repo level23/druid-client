@@ -4,9 +4,11 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests;
 
 use Mockery;
+use ValueError;
+use Mockery\MockInterface;
 use Psr\Log\LoggerInterface;
-use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tasks\IndexTask;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Metadata\Structure;
@@ -34,9 +36,9 @@ class DruidClientTest extends TestCase
     /**
      * @param \GuzzleHttp\Client|null $guzzle
      *
-     * @return \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface|\Level23\Druid\DruidClient
      */
-    protected function mockDruidClient(GuzzleClient $guzzle = null)
+    protected function mockDruidClient(GuzzleClient $guzzle = null): LegacyMockInterface|MockInterface|DruidClient
     {
         $guzzle = $guzzle ?: new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
@@ -45,8 +47,8 @@ class DruidClientTest extends TestCase
 
     public function testInvalidGranularity(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The given granularity is invalid');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('"wrong" is not a valid backing value for enum Level23\Druid\Types\Granularity');
 
         $client = new DruidClient([]);
         $client->query('hits', 'wrong');
@@ -425,7 +427,7 @@ class DruidClientTest extends TestCase
     /**
      * @return array<array<string|bool|\Closure>>
      */
-    public function executeRawRequestDataProvider(): array
+    public static function executeRawRequestDataProvider(): array
     {
         $response = [
             'event' => [
@@ -558,11 +560,11 @@ class DruidClientTest extends TestCase
     public function testExecuteRawRequest(
         string $method,
         callable $responseFunction,
-        $expectException,
+        bool|string $expectException,
         bool $is204 = false
     ): void {
         if ($expectException && is_string($expectException)) {
-            $this->expectException((string)$expectException);
+            $this->expectException($expectException);
         }
 
         $url  = 'https://test.dev/v2/task';

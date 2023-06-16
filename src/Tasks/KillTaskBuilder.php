@@ -66,7 +66,7 @@ class KillTaskBuilder extends TaskBuilder
     /**
      * @inheritDoc
      */
-    protected function buildTask($context): TaskInterface
+    protected function buildTask(array|TaskContext $context): TaskInterface
     {
         if ($this->interval === null) {
             throw new InvalidArgumentException('You have to specify an interval!');

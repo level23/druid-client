@@ -18,14 +18,14 @@ class KillTaskBuilderTest extends TestCase
         $client  = new DruidClient([]);
         $builder = new KillTaskBuilder($client, "wikipedia");
 
-        $this->assertEquals(false, $this->getProperty($builder, "markAsUnused"));
+        $this->assertFalse($this->getProperty($builder, "markAsUnused"));
         $this->assertEquals("wikipedia", $this->getProperty($builder, "dataSource"));
 
-        $this->assertEquals($builder, $builder->markAsUnused(true));
-        $this->assertEquals(true, $this->getProperty($builder, "markAsUnused"));
+        $this->assertEquals($builder, $builder->markAsUnused());
+        $this->assertTrue($this->getProperty($builder, "markAsUnused"));
 
         $this->assertEquals($builder, $builder->markAsUnused(false));
-        $this->assertEquals(false, $this->getProperty($builder, "markAsUnused"));
+        $this->assertFalse($this->getProperty($builder, "markAsUnused"));
     }
 
     /**
@@ -40,6 +40,7 @@ class KillTaskBuilderTest extends TestCase
      * @param bool|null   $markAsUnused
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
      */
     public function testBuildTask(?string $taskId, ?bool $markAsUnused): void
     {

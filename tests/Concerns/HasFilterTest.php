@@ -7,10 +7,13 @@ use Mockery;
 use Closure;
 use DateTime;
 use Exception;
+use TypeError;
 use Hamcrest\Core\IsEqual;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\InFilter;
@@ -50,10 +53,7 @@ class HasFilterTest extends TestCase
      */
     protected DruidClient $client;
 
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -65,7 +65,7 @@ class HasFilterTest extends TestCase
     /**
      * @return array<array<string|int|float|bool|null|string[]>>
      */
-    public function whereDataProvider(): array
+    public static function whereDataProvider(): array
     {
         return [
             ['name', '=', 'John', 'and'],
@@ -97,7 +97,7 @@ class HasFilterTest extends TestCase
     /**
      * @return  array<int,array<int,array<int,mixed>|string>>
      */
-    public function normalizeIntervalsDataProvider(): array
+    public static function normalizeIntervalsDataProvider(): array
     {
         return [
             [
@@ -173,6 +173,7 @@ class HasFilterTest extends TestCase
      * @param array<Interval>                               $expected
      * @param string                                        $expectException
      *
+     * @throws \Exception
      * @dataProvider normalizeIntervalsDataProvider
      */
     public function testNormalizeIntervals(array $given, array $expected, string $expectException = ""): void
@@ -186,7 +187,6 @@ class HasFilterTest extends TestCase
             //            }
             $this->expectExceptionMessage('Invalid type given in the interval array. We cannot process ');
         }
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->normalizeIntervals($given);
 
         $this->assertEquals($expected, $response);
@@ -195,9 +195,9 @@ class HasFilterTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getFilterMock(string $class)
+    protected function getFilterMock(string $class): LegacyMockInterface|MockInterface
     {
         return $this->getConstructorMock($class, FilterInterface::class);
     }
@@ -205,17 +205,21 @@ class HasFilterTest extends TestCase
     /**
      * @dataProvider        whereDataProvider
      *
-     * @param string                     $field
-     * @param string                     $operator
-     * @param string|int|float|bool|null $value
-     * @param string                     $boolean
+     * @param string                              $field
+     * @param string                              $operator
+     * @param float|bool|int|string|null|string[] $value
+     * @param string                              $boolean
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      * @throws \Exception
      */
-    public function testWhere(string $field, string $operator, $value, string $boolean): void
-    {
+    public function testWhere(
+        string $field,
+        string $operator,
+        float|bool|int|string|null|array $value,
+        string $boolean
+    ): void {
         if ($value === null) {
             $testingValue    = $operator;
             $testingOperator = '=';
@@ -225,9 +229,9 @@ class HasFilterTest extends TestCase
         }
 
         $not = false;
-        if ($operator == '!=' || $operator == '<>' || substr($testingOperator, 0, 3) == 'not') {
+        if ($operator == '!=' || $operator == '<>' || str_starts_with($testingOperator, 'not')) {
 
-            if (substr($testingOperator, 0, 3) == 'not') {
+            if (str_starts_with($testingOperator, 'not')) {
                 $testingOperator = substr($testingOperator, 4);
             }
             $not = true;
@@ -246,7 +250,8 @@ class HasFilterTest extends TestCase
                 $class = BoundFilter::class;
                 $this->getFilterMock(BoundFilter::class)
                     ->shouldReceive('__construct')
-                    ->with($field, $testingOperator, (string)$testingValue, null, null)
+                    ->with($field, $testingOperator, is_scalar($testingValue) ? (string)$testingValue : null, null,
+                        null)
                     ->once();
                 break;
 
@@ -254,7 +259,7 @@ class HasFilterTest extends TestCase
                 $class = LikeFilter::class;
                 $this->getFilterMock(LikeFilter::class)
                     ->shouldReceive('__construct')
-                    ->with($field, (string)$testingValue, '\\', null)
+                    ->with($field, is_scalar($testingValue) ? (string)$testingValue : null, '\\', null)
                     ->once();
                 break;
 
@@ -396,7 +401,7 @@ class HasFilterTest extends TestCase
      */
     public function testWhereInvalidArguments(?string $field, ?string $operator, ?string $value): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
 
         $this->builder->where($field, $operator, $value);
     }
@@ -506,74 +511,6 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * Test the orWhereNotBetween method.
-     */
-    public function testOrWhereNotBetween(): void
-    {
-        $this->builder->where('foobar', '=', 'baz');
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->orWhereNotBetween('age', 18, 22, null, 'numeric');
-
-        $filter = $response->getFilter();
-
-        $this->assertInstanceOf(FilterInterface::class, $filter);
-        $this->assertEquals([
-            'type'   => 'or',
-            'fields' => [
-                [
-                    'type'      => 'selector',
-                    'dimension' => 'foobar',
-                    'value'     => 'baz',
-                ],
-                [
-                    'type'  => 'not',
-                    'field' =>
-                        [
-                            'type'        => 'bound',
-                            'dimension'   => 'age',
-                            'ordering'    => 'numeric',
-                            'lower'       => '18',
-                            'lowerStrict' => false,
-                            'upper'       => '22',
-                            'upperStrict' => true,
-                        ],
-                ],
-            ],
-        ], $filter ? $filter->toArray() : []);
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * Test the whereNotBetween
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testWhereNotBetween(): void
-    {
-        $this->getFilterMock(BetweenFilter::class)
-            ->shouldReceive('__construct')
-            ->once()
-            ->with('age', 16, 18, null, null);
-
-        $this->getFilterMock(NotFilter::class)
-            ->shouldReceive('__construct')
-            ->once()
-            ->with(new IsInstanceOf(BetweenFilter::class));
-
-        $this->builder->shouldReceive('where')
-            ->once()
-            ->andReturn($this->builder);
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->whereNotBetween('age', 16, 18);
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
      * Test the whereColumn
      *
      * @runInSeparateProcess
@@ -628,7 +565,9 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('(field == 1)');
 
-        $this->builder->shouldReceive('addAndFilter')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('addAndFilter')
             ->once();
 
         $response = $this->builder->whereExpression('(field == 1)', 'AnD');
@@ -707,33 +646,6 @@ class HasFilterTest extends TestCase
                 ],
             ],
         ], $filter ? $filter->toArray() : []);
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * Test the whereNotColumn
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testWhereNotColumn(): void
-    {
-        $this->getFilterMock(ColumnComparisonFilter::class)
-            ->shouldReceive('__construct')
-            ->once()
-            ->with(
-                new IsEqual(new Dimension('dimensionA')),
-                new IsEqual(new Dimension('dimensionB'))
-            );
-
-        $this->getFilterMock(NotFilter::class)
-            ->shouldReceive('__construct')
-            ->once()
-            ->with(new IsInstanceOf(ColumnComparisonFilter::class));
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->whereNotColumn('dimensionA', 'dimensionB');
 
         $this->assertEquals($this->builder, $response);
     }
@@ -854,7 +766,6 @@ class HasFilterTest extends TestCase
         $this->assertTrue(sizeof($virtualColumns) == 2);
 
         $this->assertInstanceOf(VirtualColumn::class, $virtualColumns[0]);
-        /** @var VirtualColumn $virtualColumn */
         $virtualColumn = $virtualColumns[0];
 
         $this->assertEquals([
@@ -864,7 +775,6 @@ class HasFilterTest extends TestCase
             'outputType' => 'long',
         ], $virtualColumn->toArray());
 
-        /** @var VirtualColumn $virtualColumn */
         $virtualColumn = $virtualColumns[1];
 
         $this->assertEquals([
@@ -1007,42 +917,6 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * Test the orWhereNotIn method.
-     */
-    public function testOrWhereNotIn(): void
-    {
-        $this->builder->where('foo', '=', 'bar');
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->orWhereNotIn('country_iso', ['nl', 'be']);
-
-        $filter = $response->getFilter();
-
-        $this->assertInstanceOf(FilterInterface::class, $filter);
-
-        $this->assertEquals([
-            'type'   => 'or',
-            'fields' => [
-                [
-                    'type'      => 'selector',
-                    'dimension' => 'foo',
-                    'value'     => 'bar',
-                ],
-                [
-                    'type'  => 'not',
-                    'field' => [
-                        'type'      => 'in',
-                        'dimension' => 'country_iso',
-                        'values'    => ['nl', 'be',],
-                    ],
-                ],
-            ],
-        ], $filter ? $filter->toArray() : []);
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
      * @throws \Exception
      * @runInSeparateProcess
      * @preserveGlobalState disabled
@@ -1097,8 +971,8 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('location', [48.0, 51.0], [49.5, 52.5]);
 
-        $this->builder->shouldAllowMockingProtectedMethods();
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('addAndFilter')
             ->once();
 
@@ -1117,8 +991,8 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('location', [48.0, 51.0], 0.5);
 
-        $this->builder->shouldAllowMockingProtectedMethods();
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('addAndFilter')
             ->once();
 
@@ -1137,8 +1011,8 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('location', [1, 2], [3, 4]);
 
-        $this->builder->shouldAllowMockingProtectedMethods();
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('addAndFilter')
             ->once();
 
@@ -1157,8 +1031,8 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('location', [1, 2], [3, 4]);
 
-        $this->builder->shouldAllowMockingProtectedMethods();
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('addOrFilter')
             ->once();
 
@@ -1177,8 +1051,8 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('location', [48.0, 51.0], 0.5);
 
-        $this->builder->shouldAllowMockingProtectedMethods();
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('addOrFilter')
             ->once();
 
@@ -1197,83 +1071,12 @@ class HasFilterTest extends TestCase
             ->once()
             ->with('location', [48.0, 51.0], [49.5, 52.5]);
 
-        $this->builder->shouldAllowMockingProtectedMethods();
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('addOrFilter')
             ->once();
 
         $this->builder->orWhereSpatialRectangular('location', [48.0, 51.0], [49.5, 52.5]);
-    }
-
-    /**
-     * @throws \Exception
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testWhereNotInterval(): void
-    {
-        $interval = new Interval('now', 'tomorrow');
-
-        $filter = $this->getFilterMock(IntervalFilter::class);
-        $filter->shouldReceive('__construct')
-            ->once()
-            ->andReturnUsing(function ($dimension, $intervals, $extraction) use ($interval) {
-                $this->assertEquals('__time', $dimension);
-                $this->assertIsArray($intervals);
-                $this->assertEquals($interval, $intervals[0]);
-                $this->assertNull($extraction);
-            });
-
-        $this->getFilterMock(NotFilter::class)
-            ->shouldReceive('__construct')
-            ->once()
-            ->with(new IsInstanceOf(IntervalFilter::class));
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->whereNotInterval('__time', [$interval->getStart(), $interval->getStop()]);
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * Test the orWhereNotInterval method.
-     */
-    public function testOrWhereNotInterval(): void
-    {
-        $interval = new Interval('2021-04-01T06:45:26.000Z/2021-04-02T00:00:00.000Z');
-
-        $this->builder->where('foo', '=', 'bar');
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->orWhereNotInterval('__time', [$interval->getStart(), $interval->getStop()]);
-
-        $filter = $response->getFilter();
-
-        $this->assertInstanceOf(FilterInterface::class, $filter);
-
-        $this->assertEquals([
-            'type'   => 'or',
-            'fields' => [
-                [
-                    'type'      => 'selector',
-                    'dimension' => 'foo',
-                    'value'     => 'bar',
-                ],
-                [
-                    'type'  => 'not',
-                    'field' =>
-                        [
-                            'type'      => 'interval',
-                            'dimension' => '__time',
-                            'intervals' => [
-                                '2021-04-01T06:45:26.000Z/2021-04-02T00:00:00.000Z',
-                            ],
-                        ],
-                ],
-            ],
-        ], $filter ? $filter->toArray() : []);
-
-        $this->assertEquals($this->builder, $response);
     }
 
     /**
@@ -1287,34 +1090,6 @@ class HasFilterTest extends TestCase
             ->andReturn($this->builder);
 
         $response = $this->builder->orWhere('name', '=', 'John');
-
-        $this->assertEquals($this->builder, $response);
-    }
-
-    /**
-     * Test the whereNotIn
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
-    public function testWhereNotIn(): void
-    {
-        $in = $this->getFilterMock(InFilter::class);
-        $in->shouldReceive('__construct')
-            ->once()
-            ->with('age', [16, 17, 18], null);
-
-        $not = $this->getFilterMock(NotFilter::class);
-        $not->shouldReceive('__construct')
-            ->once()
-            ->with(new IsInstanceOf(InFilter::class));
-
-        $this->builder->shouldReceive('where')
-            ->once()
-            ->andReturn($this->builder);
-
-        /** @noinspection PhpDeprecationInspection */
-        $response = $this->builder->whereNotIn('age', [16, 17, 18]);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -1352,7 +1127,6 @@ class HasFilterTest extends TestCase
             $this->expectExceptionMessage('Your dimension builder should select 1 dimension');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder
             ->shouldAllowMockingProtectedMethods()
             ->columnCompareDimension(function (DimensionBuilder $dimensionBuilder) use ($dimension, $withMoreThenOne) {
@@ -1371,7 +1145,6 @@ class HasFilterTest extends TestCase
      */
     public function testColumnCompareDimensionWithString(): void
     {
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->columnCompareDimension('hi');
 
         $this->assertEquals(new Dimension('hi'), $response);

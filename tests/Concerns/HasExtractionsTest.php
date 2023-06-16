@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
+use Mockery\MockInterface;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\RegexExtraction;
@@ -28,9 +30,9 @@ class HasExtractionsTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getExtractionMock(string $class)
+    protected function getExtractionMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);

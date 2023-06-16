@@ -20,7 +20,7 @@ class ContextTest extends TestCase
     /**
      * @return array<array<array<string,string>|string>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [GroupByV1QueryContext::class, ['groupByStrategy' => 'v1']],
@@ -50,7 +50,7 @@ class ContextTest extends TestCase
         $properties = [];
 
         foreach ($methods as $method) {
-            if (substr($method, 0, 3) != 'set') {
+            if (!str_starts_with($method, 'set')) {
                 continue;
             }
 
@@ -111,6 +111,8 @@ class ContextTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid value');
+
+        /** @noinspection PhpParamsInspection */
         // @phpstan-ignore-next-line
         new GroupByV2QueryContext(['priority' => ['oops']]);
     }

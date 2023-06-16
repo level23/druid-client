@@ -23,7 +23,7 @@ class TuningConfigTest extends TestCase
         $properties = [];
 
         foreach ($methods as $method) {
-            if (substr($method, 0, 3) != 'set') {
+            if (!str_starts_with($method, 'set')) {
                 continue;
             }
 

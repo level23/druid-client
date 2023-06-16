@@ -5,8 +5,10 @@ namespace Level23\Druid\Tests\Tasks;
 
 use Mockery;
 use JsonException;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
@@ -16,10 +18,7 @@ use Level23\Druid\Metadata\MetadataBuilder;
 
 class TaskBuilderTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     */
-    protected $client;
+    protected DruidClient|MockInterface|LegacyMockInterface $client;
 
     protected function setUp(): void
     {
@@ -65,7 +64,7 @@ class TaskBuilderTest extends TestCase
             ->with($task)
             ->andReturn('myTaskId');
 
-        $response = $builder->execute([]);
+        $response = $builder->execute();
 
         $this->assertEquals('myTaskId', $response);
     }
@@ -97,6 +96,7 @@ class TaskBuilderTest extends TestCase
     }
 
     /**
+     * @throws \JsonException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function testToJson(): void
@@ -149,7 +149,7 @@ class TaskBuilderTest extends TestCase
     /**
      * @return array<array<string|bool|array<string,array<string,int>>>>
      */
-    public function validateIntervalDataProvider(): array
+    public static function validateIntervalDataProvider(): array
     {
         return [
             [
@@ -206,6 +206,8 @@ class TaskBuilderTest extends TestCase
      *
      * @param bool                            $expectsValid
      *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      * @dataProvider validateIntervalDataProvider
      */
@@ -232,7 +234,6 @@ class TaskBuilderTest extends TestCase
             $this->expectExceptionMessage('Error, invalid interval given.');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->validateInterval(
             $dataSource,
             new Interval($givenInterval)

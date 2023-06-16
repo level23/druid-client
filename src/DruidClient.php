@@ -88,11 +88,11 @@ class DruidClient
      * Create a new query using the druid query builder.
      *
      * @param string $dataSource
-     * @param string $granularity
+     * @param string|Granularity $granularity
      *
      * @return \Level23\Druid\Queries\QueryBuilder
      */
-    public function query(string $dataSource = '', string $granularity = Granularity::ALL): QueryBuilder
+    public function query(string $dataSource = '', string|Granularity $granularity = Granularity::ALL): QueryBuilder
     {
         return new QueryBuilder($this, $dataSource, $granularity);
     }
@@ -280,12 +280,12 @@ class DruidClient
     /**
      * Get the value of the config key
      *
-     * @param string $key
-     * @param mixed  $default
+     * @param string     $key
+     * @param mixed|null $default
      *
      * @return mixed|null
      */
-    public function config(string $key, $default = null)
+    public function config(string $key, mixed $default = null): mixed
     {
         // when the broker, coordinator or overlord url is empty, then use the router url.
         $routerFallback = in_array($key, ['broker_url', 'coordinator_url', 'overlord_url']);
@@ -351,9 +351,7 @@ class DruidClient
      */
     protected function log(string $message, array $context = []): void
     {
-        if ($this->logger) {
-            $this->logger->debug($message, $context);
-        }
+        $this->logger?->debug($message, $context);
     }
 
     /**

@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/level23/druid-client.svg?branch=master)](https://travis-ci.org/level23/druid-client)
 [![Coverage Status](https://coveralls.io/repos/github/level23/druid-client/badge.svg?branch=master)](https://coveralls.io/github/level23/druid-client?branch=master)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg)](https://php.net/)
 [![Packagist Version](https://img.shields.io/packagist/v/level23/druid-client.svg)](https://packagist.org/packages/level23/druid-client)
 [![Total Downloads](https://img.shields.io/packagist/dt/level23/druid-client.svg)](https://packagist.org/packages/level23/druid-client)
 [![Quality Score](https://img.shields.io/scrutinizer/quality/g/level23/druid-client)](https://scrutinizer-ci.com/g/level23/druid-client)
@@ -16,12 +15,13 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 ## Requirements
 
-This package only requires Guzzle from version 6.2 or higher.
+This package only requires Guzzle as dependency. The PHP and Guzzle version requirements are listed below.
 
-Since version 2.0, this package requires PHP 7.4 or higher.
-Version 1.* requires PHP version 7.2 or higher.
-
-Both versions are compatible with PHP 8.
+| Druid Client Version | PHP Requirements                        | Guzzle Requirements |
+|----------------------|-----------------------------------------|---------------------|
+| 3.* (current)        | PHP 8.2 or higher                       | Version 7.0         |
+| 2.*                  | PHP 7.4, 8.0, 8.1 and 8.2.              | Version 6.2 or 7.*  |
+| 1.*                  | PHP version 7.2, 7.4, 8.0, 8.1 and 8.2. | Version 6.2 or 7.*  |
 
 ## Installation
 
@@ -31,16 +31,15 @@ To install this package, you can use composer:
 composer require level23/druid-client
 ```
 
-You can also download it as a ZIP file and include it in your project, as long as you have guzzle also in your project.
+You can also download it as a ZIP file and include it in your project, as long as you have Guzzle also in your project.
 
 ## Laravel/Lumen support.
 
-This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, but its not required.
+This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, but it's not required.
 
 #### Laravel
 
-For Laravel 5.6+ the package will be auto discovered. For Laravel <= 5.5 you should add the service provider
-`Level23\Druid\DruidServiceProvider::class` in the file `config/app.php`.
+For Laravel the package will be auto discovered. 
 
 #### Lumen
 
@@ -54,7 +53,7 @@ $app->register(Level23\Druid\DruidServiceProvider::class);
 
 #### Laravel/Lumen Configuration:
 
-You should also define the correct endpoint url's in your `.env` in your Laravel/Lumen project:
+You should also define the correct endpoint URL's in your `.env` in your Laravel/Lumen project:
 
 ```
 DRUID_BROKER_URL=http://broker.url:8082
@@ -67,7 +66,7 @@ DRUID_CONNECT_TIMEOUT=10
 DRUID_POLLING_SLEEP_SECONDS=2
 ```
 
-If you are using a Druid Router process, you can also just set the router url, which then will used for the broker,
+If you are using a Druid Router process, you can also just set the router url, which then will be used for the broker,
 overlord and the coordinator:
 
 ```
@@ -214,6 +213,7 @@ for more information.
         - [intervals](#metadata-intervals)
         - [interval](#metadata-interval)
         - [structure](#metadata-structure)
+        - [timeBoundary](#metadata-timeboundary)
     - [Reindex/compact data/kill](#reindex--compact-data--kill)
         - [compact()](#compact)
         - [reindex()](#reindex)
@@ -266,9 +266,9 @@ $response = $client->query('traffic-hits', Granularity::ALL)
     // Alternative way to select a dimension with a different output name. 
     // If you want, you can select multiple dimensions at once.
     ->select(['mccmnc' => 'carrierCode'])
-    // Select a dimension, but change it's value using a lookup function.
+    // Select a dimension, but change its value using a lookup function.
     ->lookup('carrier_title', 'mccmnc', 'carrierName', 'Unknown')
-    // Select a dimension, but change it's value by using an extraction function. Multiple functions are available,
+    // Select a dimension, but change its value by using an extraction function. Multiple functions are available,
     // like timeFormat, upper, lower, substring, lookup, regexp, etc.
     ->select('__time', 'dateTime', function(ExtractionBuilder $builder) {
         $builder->timeFormat('yyyy-MM-dd HH:00:00');
@@ -288,7 +288,7 @@ $response = $client->query('traffic-hits', Granularity::ALL)
     // When no operator is given, we assume an equals (=)
     ->where('browser', 'Yandex.Browser')
     ->orWhere('browser_version', '17.4.0')
-    // Where filters using Closure's are supported.
+    // Where filters using Closures are supported.
     ->orWhere(function (FilterBuilder $builder) {
         $builder->where('browser_version', '17.5.0');
         $builder->where('browser_version', '17.6.0');
@@ -332,7 +332,7 @@ Example of using a custom guzzle client:
 
 ```php
 
-// Create a custom guzzle client which uses an http proxy.
+// Create a custom guzzle client which uses a http proxy.
 $guzzleClient = new GuzzleHttp\Client([
     'proxy' => 'tcp://localhost:8125',
     'timeout' => 30,
@@ -376,14 +376,14 @@ The query method has 2 parameters:
 
 The QueryBuilder allows you to select dimensions, aggregate metric data, apply filters and having filters, etc.
 
-When you do not specify the dataSource, you need to specify it later on your query builer. There are various methods
+When you do not specify the dataSource, you need to specify it later on your query builder. There are various methods
 to do this. See [QueryBuilder: Data Sources](#querybuilder-data-sources)
 
 See the following chapters for more information about the query builder.
 
 #### `DruidClient::cancelQuery()`
 
-The `cancelQuery()` method gives you the ability to cancel a query. To cancel a query, you must know it's unique
+The `cancelQuery()` method gives you the ability to cancel a query. To cancel a query, you must know its unique
 identifier.
 When you execute a query, you can specify the unique identifier yourself in the query context.
 
@@ -417,7 +417,7 @@ The query method has 1 parameter:
 |----------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
 | string   | Required              | `$identifier` | "myqueryid" | The unique query identifier which was given in the query context. |
 
-If the cancellation fails, the method will throw an exception. Otherwise it will not return any result.
+If the cancellation fails, the method will throw an exception. Otherwise, it will not return any result.
 
 See also:
 https://druid.apache.org/docs/latest/querying/querying.html#query-cancellation
@@ -466,13 +466,13 @@ All these examples are valid:
 
 ```php
 // Select an interval with string values. Anything which can be parsed by the DateTime object
-// can be given. Also "yesterday" or "now" is valid.
+// can be given. Also, "yesterday" or "now" is valid.
 $builder->interval('2019-12-23', '2019-12-24');
 
 // When a string is given which contains a slash, we will split it for you and parse it as "begin/end".
 $builder->interval('yesterday/now');
 
-// An "raw" interval as druid uses them is also allowed
+// A "raw" interval as druid uses them is also allowed
 $builder->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
 
 // You can also give DateTime objects
@@ -556,7 +556,8 @@ Please note: this method differs per query type. Please read below how this meth
 **GroupBy Query**
 
 You can call this method multiple times, adding an order-by to the query.
-The GroupBy Query only allows ordering the result if there a limit is given. If you do not supply a limit, we will use
+The GroupBy Query only allows ordering the result if there is a limit is given. If you do not supply a limit, we will
+use
 a default limit of `999999`.
 
 **TopN Query**
@@ -612,7 +613,7 @@ $response1 = $builder->selectQuery();
 $response2 = $builder->selectQuery($context);
 ```
 
-An paging identifier is an array and looks something like this:
+A paging identifier is an array and looks something like this:
 
 ```array (
   'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-26T18:30:14.418Z' => 10,
@@ -729,7 +730,7 @@ The `dimensions()` method has the following arguments:
 
 #### `toArray()`
 
-The `toArray()` method will try to build the query. We will try to auto detect the best query type. After that, we will
+The `toArray()` method will try to build the query. We will try to auto-detect the best query type. After that, we will
 build the query and return the query as an array.
 
 Example:
@@ -752,7 +753,7 @@ The `toArray()` method has the following arguments:
 
 #### `toJson()`
 
-The `toJson()` method will try to build the query. We will try to auto detect the best query type. After that, we will
+The `toJson()` method will try to build the query. We will try to auto-detect the best query type. After that, we will
 build the query and return the query as a JSON string.
 
 Example:
@@ -793,9 +794,9 @@ You can also specify an object which implements the `DataSourceInterface`.
 
 This method has the following arguments:
 
-| **Type**                      | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
-|-------------------------------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
-| string or DataSourceInterface | Required              | `$dataSource` | hits        | The dataSource which you want to use to retrieve druid data from. |
+| **Type**                   | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
+|----------------------------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
+| string/DataSourceInterface | Required              | `$dataSource` | hits        | The dataSource which you want to use to retrieve druid data from. |
 
 ```php
 $builder = $client->query('hits_short');
@@ -864,18 +865,19 @@ $builder = $client->query('users')
     ->select([ /*...*/ ]);
 ```
 
-You can also specify an other DataSource as value. For example, you can create a new `JoinDataSource` object and pass
+You can also specify another DataSource as value. For example, you can create a new `JoinDataSource` object and pass
 that as value. However, there are easy methods created for this (for example `joinLookup()`) so you probably
-do not have to use this. It might be usefull for whe you want to join with inline data (you can use the `InlineDataSource`)
+do not have to use this. It might be usefully for whe you want to join with inline data (you can use
+the `InlineDataSource`)
 
 This method has the following arguments:
 
-| **Type**                                 | **Optional/Required** | **Argument**           | **Example**      | **Description**                                                                                      |
-|------------------------------------------|-----------------------|------------------------|------------------|------------------------------------------------------------------------------------------------------|
-| string or DataSourceInterface or Closure | Required              | `$dataSourceOrClosure` | countries        | The name of the dataSource which you want to join. You can also specify a Closure. Please see above. |
-| string                                   | Required              | `$as`                  | alias            | The alias name as this dataSource is accessable in your query.                                       |
-| Closure                                  | Required              | `$condition`           | alias.a = main.a | Here you can specify the condition of the join                                                       |
-| string                                   | Optional              | `$joinType`            | INNER            | The join type. This can either be INNER or LEFT.                                                     |
+| **Type**                           | **Optional/Required** | **Argument**           | **Example**      | **Description**                                                                                      |
+|------------------------------------|-----------------------|------------------------|------------------|------------------------------------------------------------------------------------------------------|
+| string/DataSourceInterface/Closure | Required              | `$dataSourceOrClosure` | countries        | The name of the dataSource which you want to join. You can also specify a Closure. Please see above. |
+| string                             | Required              | `$as`                  | alias            | The alias name as this dataSource is accessible in your query.                                       |
+| Closure                            | Required              | `$condition`           | alias.a = main.a | Here you can specify the condition of the join                                                       |
+| string                             | Optional              | `$joinType`            | INNER            | The join type. This can either be INNER or LEFT.                                                     |
 
 #### `leftJoin()`
 
@@ -909,7 +911,7 @@ This method has the following arguments:
 | **Type** | **Optional/Required** | **Argument**  | **Example**      | **Description**                                                |
 |----------|-----------------------|---------------|------------------|----------------------------------------------------------------|
 | string   | Required              | `$lookupName` | departments      | The name of the lookup which you want to join.                 |
-| string   | Required              | `$as`         | alias            | The alias name as this dataSource is accessable in your query. |
+| string   | Required              | `$as`         | alias            | The alias name as this dataSource is accessible in your query. |
 | Closure  | Required              | `$condition`  | alias.a = main.a | Here you can specify the condition of the join                 |
 | string   | Optional              | `$joinType`   | INNER            | The join type. This can either be INNER or LEFT.               |
 
@@ -1012,31 +1014,31 @@ $builder->select("locale", "language", function(ExtractionBuilder $extraction) {
 
 See the chapter __Extractions__ for all available extractions.
 
-**Change the output type of a dimension:**
+**Change the output type of the dimension:**
 
 ```php 
-$builder->select('age', null, null, 'long');
+$builder->select('age', null, null, DataType::LONG);
 ```
 
 #### `lookup()`
 
-This method allows you to lookup a dimension using a registered lookup function. See more about registered lookup
+This method allows you to look up a dimension using a registered lookup function. See more about registered lookup
 functions on these pages:
 
 * https://druid.apache.org/docs/latest/querying/lookups.html
 * https://druid.apache.org/docs/latest/development/extensions-core/lookups-cached-global.html
 
-Lookup's are a handy way to transform an ID value into a user readable name, like transforming a `user_id` into the
+Lookups are a handy way to transform an ID value into a user readable name, like transforming a `user_id` into the
 `username`, without having to store the username in your dataset.
 
 This method has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**        | **Example**    | **Description**                                                                                                                                                                                                                                                      |
-|----------------|-----------------------|---------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string         | Required              | `$lookupFunction`   | username_by_id | The name of the lookup function which you want to use for this dimension.                                                                                                                                                                                            |
-| string         | Required              | `$dimension`        | user_id        | The dimension which you want to transform.                                                                                                                                                                                                                           |
-| string         | Optional              | `$as`               | username       | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
-| bool or string | Optional              | `$keepMissingValue` | Unknown        | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
+| **Type**    | **Optional/Required** | **Argument**        | **Example**    | **Description**                                                                                                                                                                                                                                                      |
+|-------------|-----------------------|---------------------|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string      | Required              | `$lookupFunction`   | username_by_id | The name of the lookup function which you want to use for this dimension.                                                                                                                                                                                            |
+| string      | Required              | `$dimension`        | user_id        | The dimension which you want to transform.                                                                                                                                                                                                                           |
+| string      | Optional              | `$as`               | username       | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
+| bool/string | Optional              | `$keepMissingValue` | Unknown        | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
 
 Example:
 
@@ -1046,20 +1048,20 @@ $builder->lookup('lookupUsername', 'user_id', 'username', 'Unknown');
 
 #### `inlineLookup()`
 
-This method allows you to lookup a dimension using a predefined list.
+This method allows you to look up a dimension using a predefined list.
 
-Lookup's are a handy way to transform an ID value into a user readable name, like transforming a `category_id` into the
+Lookups are a handy way to transform an ID value into a user readable name, like transforming a `category_id` into the
 `category`, without having to store the category in your dataset.
 
 This method has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**        | **Example**                   | **Description**                                                                                                                                                                                                                                                      |
-|----------------|-----------------------|---------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| array          | Required              | `$map`              | `[1 => "IT", 2 => "Finance"]` | The list with key => value items, where the dimensions value will be used to find the value in the list.                                                                                                                                                             |
-| string         | Required              | `$dimension`        | user_id                       | The dimension which you want to transform.                                                                                                                                                                                                                           |
-| string         | Optional              | `$as`               | username                      | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
-| bool or string | Optional              | `$keepMissingValue` | Unknown                       | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
-| bool           | Optional              | `$isOneToOne`       | true                          | Set to true if the key/value items are unique in the given map.                                                                                                                                                                                                      |
+| **Type**    | **Optional/Required** | **Argument**        | **Example**                   | **Description**                                                                                                                                                                                                                                                      |
+|-------------|-----------------------|---------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array       | Required              | `$map`              | `[1 => "IT", 2 => "Finance"]` | The list with key => value items, where the dimensions value will be used to find the value in the list.                                                                                                                                                             |
+| string      | Required              | `$dimension`        | user_id                       | The dimension which you want to transform.                                                                                                                                                                                                                           |
+| string      | Optional              | `$as`               | username                      | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
+| bool/string | Optional              | `$keepMissingValue` | Unknown                       | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
+| bool        | Optional              | `$isOneToOne`       | true                          | Set to true if the key/value items are unique in the given map.                                                                                                                                                                                                      |
 
 Example:
 
@@ -1086,12 +1088,12 @@ See:
 - https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
 - https://druid.apache.org/docs/latest/querying/dimensionspecs.html#filtered-dimensionspecs
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                  |
-|----------|-----------------------|---------------|-----------------|----------------------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | tags            | The name of the dimension which contains multiple values.                        |
-| array    | Required              | `$values`     | ['a', 'b', 'c'] | Only use the values in the multi-value dimension which are present in this list. |
-| string   | Optional              | `$as`         | myTags          | The name where the result will be available by in the result set.                |
-| string   | Optional              | `$outputType` | string          | The data type of the dimension value.                                            |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**      | **Description**                                                                  |
+|-----------------|-----------------------|---------------|------------------|----------------------------------------------------------------------------------|
+| string          | Required              | `$dimension`  | tags             | The name of the dimension which contains multiple values.                        |
+| array           | Required              | `$values`     | ['a', 'b', 'c']  | Only use the values in the multi-value dimension which are present in this list. |
+| string          | Optional              | `$as`         | myTags           | The name where the result will be available by in the result set.                |
+| string/DataType | Optional              | `$outputType` | DataType::STRING | The data type of the dimension value.                                            |
 
 Example:
 
@@ -1108,12 +1110,12 @@ See:
 - https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
 - https://druid.apache.org/docs/latest/querying/dimensionspecs.html#filtered-dimensionspecs
 
-| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                              |
-|----------|-----------------------|---------------|-------------|------------------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | tags        | The name of the dimension which contains multiple values.                    |
-| string   | Required              | `$regex`      | "^ab"       | The java regex pattern for the values which should be used in the resultset. |
-| string   | Optional              | `$as`         | myTags      | The name where the result will be available by in the result set.            |
-| string   | Optional              | `$outputType` | string      | The data type of the dimension value.                                        |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**      | **Description**                                                              |
+|-----------------|-----------------------|---------------|------------------|------------------------------------------------------------------------------|
+| string          | Required              | `$dimension`  | tags             | The name of the dimension which contains multiple values.                    |
+| string          | Required              | `$regex`      | "^ab"            | The java regex pattern for the values which should be used in the resultset. |
+| string          | Optional              | `$as`         | myTags           | The name where the result will be available by in the result set.            |
+| string/DataType | Optional              | `$outputType` | DataType::STRING | The data type of the dimension value.                                        |
 
 Example:
 
@@ -1130,12 +1132,12 @@ See:
 - https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
 - https://druid.apache.org/docs/latest/querying/dimensionspecs.html#filtered-dimensionspecs
 
-| **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
-|----------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | tags        | The name of the dimension which contains multiple values.         |
-| string   | Required              | `$prefix`     | test        | Return all multi-value items which start with this given prefix.  |
-| string   | Optional              | `$as`         | myTags      | The name where the result will be available by in the result set. |
-| string   | Optional              | `$outputType` | string      | The data type of the dimension value.                             |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**      | **Description**                                                   |
+|-----------------|-----------------------|---------------|------------------|-------------------------------------------------------------------|
+| string          | Required              | `$dimension`  | tags             | The name of the dimension which contains multiple values.         |
+| string          | Required              | `$prefix`     | test             | Return all multi-value items which start with this given prefix.  |
+| string          | Optional              | `$as`         | myTags           | The name where the result will be available by in the result set. |
+| string/DataType | Optional              | `$outputType` | DataType::STRING | The data type of the dimension value.                             |
 
 Example:
 
@@ -1156,8 +1158,8 @@ Metrics are fields which you normally aggregate, like summing the values of this
 
 To aggregate a metric, you can use one of the methods below.
 
-All of the metrics support a filter selection. If this is given, the metric aggregation will only be applied to the
-records where the filters match.
+All the metrics aggregations do support a filter selection. If this is given, the metric aggregation will only be
+applied to the records where the filters match.
 
 Example:
 
@@ -1206,12 +1208,12 @@ $builder->sum('views', 'totalViews');
 
 The `sum()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                       |
-|----------|-----------------------|------------------|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`        | "views"                                      | The metric which you want to sum                                                                                      |
-| string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                      |
-| string   | Optional              | `$type`          | "long"                                       | The output type of the sum. This can either be long, float or double.                                                 |
-| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only sum the records which match with the given filter. |
+| **Type**        | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                       |
+|-----------------|-----------------------|------------------|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$metric`        | "views"                                      | The metric which you want to sum                                                                                      |
+| string          | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                      |
+| string/DataType | Optional              | `$type`          | DataType::LONG                               | The output type of the sum. This can either be long, float or double. See also the DataType enum                      |
+| Closure         | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only sum the records which match with the given filter. |
 
 #### `min()`
 
@@ -1228,12 +1230,12 @@ $builder->min('age', 'minAge');
 
 The `min()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
-|----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the minimum value of.                                                                                     |
-| string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
-| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be long, float or double.                                                                                       |
-| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only calculate the minimum value of the records which match with the given filter. |
+| **Type**        | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
+|-----------------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the minimum value of.                                                                                     |
+| string          | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
+| string/DataType | Optional              | `$type`          | DataType::LONG                               | The output type. This can either be long, float or double. See also the DataType enum                                                            |
+| Closure         | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only calculate the minimum value of the records which match with the given filter. |
 
 #### `max()`
 
@@ -1250,12 +1252,12 @@ $builder->max('age', 'maxAge');
 
 The `max()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
-|----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the maximum value of.                                                                                     |
-| string   | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
-| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be long, float or double.                                                                                       |
-| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only calculate the maximum value of the records which match with the given filter. |
+| **Type**        | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                  |
+|-----------------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$metric`        | "views"                                      | The metric which you want to calculate the maximum value of.                                                                                     |
+| string          | Optional              | `$as`            | "totalViews"                                 | The name which will be used in the output result                                                                                                 |
+| string/DataType | Optional              | `$type`          | DataType::LONG                               | The output type. This can either be long, float or double. See also the DataType enum                                                            |
+| Closure         | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only calculate the maximum value of the records which match with the given filter. |
 
 #### `first()`
 
@@ -1272,12 +1274,12 @@ $builder->first('device');
 
 The `first()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                              |
-|----------|-----------------------|------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`        | "device"                                     | The metric which you want to compute the first value of.                                                                                     |
-| string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                             |
-| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be string, long, float or double.                                                                           |
-| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the first value of the records which match with the given filter. |
+| **Type**        | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                              |
+|-----------------|-----------------------|------------------|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$metric`        | "device"                                     | The metric which you want to compute the first value of.                                                                                     |
+| string          | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                             |
+| string/DataType | Optional              | `$type`          | DataType::LONG                               | The output type. This can either be string, long, float or double. See also the DataType enum.                                               |
+| Closure         | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the first value of the records which match with the given filter. |
 
 #### `last()`
 
@@ -1297,12 +1299,12 @@ $builder->last('email');
 
 The `last()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                             |
-|----------|-----------------------|------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`        | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
-| string   | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                            |
-| string   | Optional              | `$type`          | "long"                                       | The output type. This can either be string, long, float or double.                                                                          |
-| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
+| **Type**        | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                             |
+|-----------------|-----------------------|------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$metric`        | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
+| string          | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                            |
+| string/DataType | Optional              | `$type`          | DataType::LONG                               | The output type. This can either be string, long, float or double. See also the DataType enum.                                              |
+| Closure         | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
 
 #### `any()`
 
@@ -1319,13 +1321,13 @@ $builder->any('price');
 
 The `any()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**      | **Example**                                  | **Description**                                                                                                                             |
-|----------|-----------------------|-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$metric`         | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
-| string   | Optional              | `$as`             | "anyDevice"                                  | The name which will be used in the output result                                                                                            |
-| string   | Optional              | `$type`           | "string"                                     | The output type. This can either be string, long, float or double.                                                                          |
-| int      | Optional              | `$maxStringBytes` | 2048                                         | Then the type is string, you can specify here the max bytes of the string. Defaults to 1024.                                                |
-| Closure  | Optional              | `$filterBuilder`  | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
+| **Type**        | **Optional/Required** | **Argument**      | **Example**                                  | **Description**                                                                                                                             |
+|-----------------|-----------------------|-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$metric`         | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
+| string          | Optional              | `$as`             | "anyDevice"                                  | The name which will be used in the output result                                                                                            |
+| string/DataType | Optional              | `$type`           | DataType::STRING                             | The output type. This can either be string, long, float or double. See DataType enum                                                        |
+| int             | Optional              | `$maxStringBytes` | 2048                                         | Then the type is string, you can specify here the max bytes of the string. Defaults to 1024.                                                |
+| Closure         | Optional              | `$filterBuilder`  | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
 
 #### `javascript()`
 
@@ -1479,12 +1481,12 @@ $builder->distinctCount('category_id', 'categoryCount');
 
 The `distinctCount()` aggregation method has the following parameters:
 
-| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                                |
-|----------|-----------------------|------------------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimension`     | "category_id"                                | The dimension where you want to count the distinct values from.                                                                                                                |
-| string   | Optional              | `$as`            | "categoryCount"                              | The name which will be used in the output result                                                                                                                               |
-| int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches.  |
-| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                        |
+| **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                                                               |
+|----------|-----------------------|------------------|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`     | "category_id"                                | The dimension where you want to count the distinct values from.                                                                                                               |
+| string   | Optional              | `$as`            | "categoryCount"                              | The name which will be used in the output result                                                                                                                              |
+| int      | Optional              | `$size`          | 16384                                        | Must be a power of 2. Internally, size refers to the maximum number of entries sketch object will retain. Higher size means higher accuracy but more space to store sketches. |
+| Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter.                                                       |
 
 #### `doublesSketch()`
 
@@ -1522,7 +1524,7 @@ The `doublesSketch()` aggregation method has the following parameters:
 
 ## QueryBuilder: Filters
 
-With filters you can filter on certain values. The following filters are available:
+With filters, you can filter on certain values. The following filters are available:
 
 #### `where()`
 
@@ -1566,7 +1568,7 @@ For example:
 
 ```php
 
-// Build a groupby query.
+// Build a group-by query.
 $builder = $client->query('wikipedia')
     // Filter on all names starting with "jo"    
     ->where('name', '=', 'jo', function (ExtractionBuilder $extractionBuilder) {
@@ -1725,7 +1727,7 @@ This method has the following arguments:
 The `$intervals` array can contain the following:
 
 - an `Interval` object
-- an raw interval string as used in druid. For example: "2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"
+- a raw interval string as used in druid. For example: "2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"
 - an interval string, separating the start and the stop with a / (for example "12-02-2019/13-02-2019")
 - an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp or
   anything which can be parsed by DateTime::__construct
@@ -1747,9 +1749,9 @@ Same as `whereInterval()`, but now we will join previous added filters with a `o
 This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND
 comparison.
 
-Support for 64 bit integers are supported.
+Support for 64-bit integers are supported.
 
-Druid has support for bitwise flags since version 0.20.2. Before that, we have build our own variant, but then
+Druid has support for bitwise flags since version 0.20.2. Before that, we have built our own variant, but then
 javascript support is required. To make use of the javascript variant, you should pass `true` as the 4th parameter
 of this method.
 
@@ -1935,7 +1937,7 @@ Example:
 ```php
 // Match any country like %Nether%
 $builder->where('country_id', 'like', '%Nether%', function (ExtractionBuilder $extractionBuilder) {
-    // Extract the country name by it's id by using this lookup function. 
+    // Extract the country name by its id by using this lookup function. 
     $extractionBuilder->lookup('country_name_by_id');
 });
 ```
@@ -1946,8 +1948,8 @@ The `lookup()` extraction function has the following arguments:
 |-------------|-----------------------|---------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string      | Required              | `$lookupName`       | "country_name_by_id"   | The name of the registered lookup function to transform the dimension value to another value.                                                                                                                                                                                                                   |
 | bool/string | Optional              | `$keepMissingValue` | `false` or `"Unknown"` | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                        |
-| bool        | Optional              | `$optimize`         | `true`                 | When set to true, we allow the optimization layer (which will run on thebroker) to rewrite the extraction filter if needed.                                                                                                                                                                                     |
-| bool/null   | Optional              | `$injective`        | `true`                 | This can override the lookup's own sense of whether or not it is injective. If left unspecified, Druid will use the registered cluster-wide lookup configuration. In general, you should set this property for any lookup that is naturally one-to-one, to allow Druid to run your queries as fast as possible. |
+| bool        | Optional              | `$optimize`         | `true`                 | When set to true, we allow the optimization layer (which will run on the broker) to rewrite the extraction filter if needed.                                                                                                                                                                                    |
+| bool/null   | Optional              | `$injective`        | `true`                 | This can override the look-ups own sense of whether or not it is injective. If left unspecified, Druid will use the registered cluster-wide lookup configuration. In general, you should set this property for any lookup that is naturally one-to-one, to allow Druid to run your queries as fast as possible. |
 
 #### `inlineLookup()` extraction
 
@@ -1968,7 +1970,7 @@ The `inlineLookup()` extraction function has the following arguments:
 |-------------|-----------------------|---------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array       | Required              | `$map`              | ["y" => "Yes", "n" => "No"] | An array with key => value items which will be used as lookup map.                                                                                                                                                                                                                                                                                                                                      |
 | bool/string | Optional              | `$keepMissingValue` | `false` or `"Unknown"`      | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                                                                                                                |
-| bool        | Optional              | `$optimize`         | `true`                      | When set to true, we allow the optimization layer (which will run on thebroker) to rewrite the extraction filter if needed.                                                                                                                                                                                                                                                                             |
+| bool        | Optional              | `$optimize`         | `true`                      | When set to true, we allow the optimization layer (which will run on the broker) to rewrite the extraction filter if needed.                                                                                                                                                                                                                                                                            |
 | bool/null   | Optional              | `$injective`        | `true`                      | Whether or not this list is injective. Injective lookups should include all possible keys that may show up in your dataset, and should also map all keys to unique values. This matters because non-injective lookups may map different keys to the same value, which must be accounted for during aggregation, lest query results contain two result values that should have been aggregated into one. |
 
 #### `format()` extraction
@@ -1987,10 +1989,10 @@ $builder->select('number', 'myBigNumber', function(ExtractionBuilder $extraction
 
 The `format()` extraction function has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**         | **Example**   | **Description**                                                                                                                                  |
-|----------|-----------------------|----------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$sprintfExpression` | "%02d"        | The format string which will be used to format the dimensions value.                                                                             |
-| string   | Optional              | `$nullHandling`      | "emptyString" | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. |
+| **Type**            | **Optional/Required** | **Argument**         | **Example**                | **Description**                                                                                                                                                                  |
+|---------------------|-----------------------|----------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string              | Required              | `$sprintfExpression` | "%02d"                     | The format string which will be used to format the dimensions value.                                                                                                             |
+| string/NullHandling | Optional              | `$nullHandling`      | NullHandling::EMPTY_STRING | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. See also the NullHandling enum. |
 
 #### `upper()` extraction
 
@@ -2051,8 +2053,7 @@ See:
 * SimpleDateFormat: http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html
 
 **Note**: if you are working with the `__time` dimension, you should consider using the `timeFormat()` extraction
-function instead
-instead, which works on time value directly as opposed to string values.
+function instead, which works on time value directly as opposed to string values.
 
 If a value cannot be parsed using the provided timeFormat, it will be returned as-is.
 
@@ -2095,13 +2096,13 @@ $builder->select('__time', 'time', function(ExtractionBuilder $extraction) {
 
 The `timeFormat()` extraction function has the following arguments:
 
-| **Type**    | **Optional/Required** | **Argument**      | **Example**   | **Description**                                                                                                                                                                      |
-|-------------|-----------------------|-------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string/null | Optional              | `$format`         | dd-MM-yyyy    | Date time format for the resulting dimension value, in Joda TimeDateTimeFormat, or null to use the default ISO8601 format.                                                           |
-| string/null | Optional              | `$granularity`    | day           | Granularity to apply before formatting, or omit to not apply any granularity.                                                                                                        |
-| string/null | Optional              | `$locale`         | en-GB         | Locale (language and country) to use, given as a IETF BCP 47 language tag, e.g. en-US, en-GB, fr-FR, fr-CA, etc.                                                                     |
-| string/null | Optional              | `$timeZone`       | Europe/Berlin | time zone to use in IANA tz database format, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)                                                      |
-| bool/null   | Optional              | `$asMilliseconds` | `true`        | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
+| **Type**                | **Optional/Required** | **Argument**      | **Example**      | **Description**                                                                                                                                                                      |
+|-------------------------|-----------------------|-------------------|------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/null             | Optional              | `$format`         | dd-MM-yyyy       | Date time format for the resulting dimension value, in Joda TimeDateTimeFormat, or null to use the default ISO8601 format.                                                           |
+| string/Granularity/null | Optional              | `$granularity`    | Granularity::DAY | Granularity to apply before formatting, or omit to not apply any granularity.                                                                                                        |
+| string/null             | Optional              | `$locale`         | en-GB            | Locale (language and country) to use, given as a IETF BCP 47 language tag, e.g. en-US, en-GB, fr-FR, fr-CA, etc.                                                                     |
+| string/null             | Optional              | `$timeZone`       | Europe/Berlin    | time zone to use in IANA tz database format, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)                                                      |
+| bool/null               | Optional              | `$asMilliseconds` | `true`           | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
 
 #### `regex()` extraction
 
@@ -2112,7 +2113,7 @@ Example:
 
 ```php
 // Zipcodes
-$builder->select('day', 'day', function(ExtractionBuilder $extraction) {
+$builder->select('day', Granularity::DAY, function(ExtractionBuilder $extraction) {
     // Transform 'Monday', 'Tuesday', 'Wednesday' into 'Mon', 'Tue', 'Wed'.
     $extraction->regex('(\\w\\w\\w).*');
 });
@@ -2160,7 +2161,7 @@ Example:
 ```php
 // Zipcodes
 $builder->select('page', 'page', function(ExtractionBuilder $extraction) {
-    // Filter out all pages containing the word "talk" (case insensitive)
+    // Filter out all pages containing the word "talk" (case-insensitive)
     $extraction->searchQuery('talk', false);
 });
 ``` 
@@ -2229,7 +2230,7 @@ The `javascript()` extraction function has the following arguments:
 #### `bucket()` extraction
 
 The `bucket()` extraction function is used to bucket numerical values in each range of the given size by converting
-them to the same base value. Non numeric values are converted to null.
+them to the same base value. Non-numeric values are converted to null.
 
 Example:
 
@@ -2258,7 +2259,7 @@ Below are all the having methods explained.
 
 #### `having()`
 
-The `having()` filter is very simular to the `where()` filter. It is very flexible.
+The `having()` filter is very similar to the `where()` filter. It is very flexible.
 
 This method has the following arguments:
 
@@ -2368,11 +2369,11 @@ $builder->virtualColumn('if(promo_id > 0, reward + 2, 0)', 'rewardWithPromoterPa
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**              | **Description**                                                                                                         |
-|----------|-----------------------|---------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$expression` | if( dimension > 0, 2, 1) | The expression which you want to use to create this virtual column.                                                     |
-| string   | Required              | `$as`         | "myVirtualColumn"        | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function. |
-| string   | Optional              | `$type`       | "string"                 | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.         |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**              | **Description**                                                                                                                              |
+|-----------------|-----------------------|---------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$expression` | if( dimension > 0, 2, 1) | The expression which you want to use to create this virtual column.                                                                          |
+| string          | Required              | `$as`         | "myVirtualColumn"        | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.                      |
+| string/DataType | Optional              | `$type`       | DataType::STRING         | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.  See also the DataType enum. |
 
 #### `selectVirtual()`
 
@@ -2391,11 +2392,11 @@ $builder->selectVirtual(
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**              | **Description**                                                                                                         |
-|----------|-----------------------|---------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$expression` | if( dimension > 0, 2, 1) | The expression which you want to use to create this virtual column.                                                     |
-| string   | Required              | `$as`         | "myVirtualColumn"        | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function. |
-| string   | Optional              | `$type`       | "string"                 | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.         |
+| **Type**        | **Optional/Required** | **Argument**  | **Example**              | **Description**                                                                                                                              |
+|-----------------|-----------------------|---------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$expression` | if( dimension > 0, 2, 1) | The expression which you want to use to create this virtual column.                                                                          |
+| string          | Required              | `$as`         | "myVirtualColumn"        | The name of the virtual column created. You can use this name in a dimension (select it) or in an aggregation function.                      |
+| string/DataType | Optional              | `$type`       | DataType::STRING         | The output type of this virtual column. Possible values are: string, float, long and double. Default is string.  See also the DataType enum. |
 
 ## QueryBuilder: Post Aggregations
 
@@ -2403,7 +2404,7 @@ Post aggregations are aggregations which are executed after the result is fetche
 
 #### `fieldAccess()`
 
-The `fieldAccess()` post aggregator method is not really a aggregation method itself, but you need it to access fields
+The `fieldAccess()` post aggregator method is not really an aggregation method itself, but you need it to access fields
 which are used
 in the other post aggregations.
 
@@ -2421,7 +2422,7 @@ $builder
     });
 ```
 
-However, we you can also use this shorthand, which will be converted to `fieldAccess` methods:
+However, you can also use this shorthand, which will be converted to `fieldAccess` methods:
 
 ```php
 $builder
@@ -2449,7 +2450,7 @@ function.
 
 For example, when you want to calculate the area of a circle based on the radius, you can use a formula like below:
 
-Find the circle area based on the formula radius x radius x pi.
+Find the circle area based on the formula `(radius x radius x pi)`.
 
 ```php
 $builder
@@ -2462,10 +2463,10 @@ $builder
 
 The `constant()` post aggregator has the following arguments:
 
-| **Type**  | **Optional/Required** | **Argument**    | **Example** | **Description**                          |
-|-----------|-----------------------|-----------------|-------------|------------------------------------------|
-| int/float | Required              | `$numericValue` | 3.14        | This will be our static value            |
-| string    | Required              | `$as`           | pi          | The output name as how we can access it  |
+| **Type**  | **Optional/Required** | **Argument**    | **Example** | **Description**                         |
+|-----------|-----------------------|-----------------|-------------|-----------------------------------------|
+| int/float | Required              | `$numericValue` | 3.14        | This will be our static value           |
+| string    | Required              | `$as`           | pi          | The output name as how we can access it |
 
 #### `divide()`
 
@@ -2941,9 +2942,8 @@ The `searchContains()` method has the following arguments:
 
 #### `searchFragment()`
 
-The `searchFragment()` method allows you to filter on dimensions where the dimension contains ALL of the given string
-values.
-You can specify if the match should be case sensitive or not.
+The `searchFragment()` method allows you to filter on dimensions where the dimension contains ALL the given string
+values. You can specify if the match should be case-sensitive or not.
 
 Example:
 
@@ -3019,7 +3019,7 @@ The `QueryContext()` object contains context properties which apply to all queri
 
 **Response**
 
-The response of this method is dependent of the query which is executed. Each query has it's own response object.
+The response of this method is dependent of the query which is executed. Each query has its own response object.
 However, all query responses are extended of the `QueryResponse` object. Each query response has therefor
 a `$response->raw()` method which will return an array with the raw data returned by druid. There is also
 an `$response->data()` method which returns the data in a "normalized" way so that it can be directly used.
@@ -3110,7 +3110,7 @@ For more information about topN queries, see this page: https://druid.apache.org
 Example:
 
 ```php
-$response = $client->query('wikipedia', 'all')
+$response = $client->query('wikipedia', Granularity::ALL)
     ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
     ->select('channel')
     ->count('edited')
@@ -3133,7 +3133,7 @@ pairs, or an `TopNQueryContext` object. The context allows you to change the beh
 Example:
 
 ```php
-$builder = $client->query('wikipedia', 'all')
+$builder = $client->query('wikipedia', Granularity::ALL)
     ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
     ->select('channel')
     ->count('edited')
@@ -3156,7 +3156,7 @@ The `$response->data()` method returns the data as an array in a "normalized" wa
 
 #### `selectQuery()`
 
-The `selectQuery()` method will execute your query as an select query. It's important to not mix up this method with the
+The `selectQuery()` method will execute your query as a select query. It's important to not mix up this method with the
 `select()` method, which will select dimensions for your query.
 
 The `selectQuery()` returns raw druid data. It does not allow you to aggregate metrics. It _does_ support pagination.
@@ -3410,10 +3410,10 @@ $response = $builder->search([], SortingOrder::STRLEN);
 
 The `search()` method has the following arguments:
 
-| **Type**           | **Optional/Required** | **Argument**    | **Example**            | **Description**                                           |
-|--------------------|-----------------------|-----------------|------------------------|-----------------------------------------------------------|
-| array/QueryContext | Optional              | `$context`      | ['priority' => 75]     | Query context parameters. See below for more information. |
-| string             | Optional              | `$sortingOrder` | `SortingOrder::STRLEN` | This defines how the sorting is executed.                 |
+| **Type**            | **Optional/Required** | **Argument**    | **Example**            | **Description**                                           |
+|---------------------|-----------------------|-----------------|------------------------|-----------------------------------------------------------|
+| array/QueryContext  | Optional              | `$context`      | ['priority' => 75]     | Query context parameters. See below for more information. |
+| string/SortingOrder | Optional              | `$sortingOrder` | `SortingOrder::STRLEN` | This defines how the sorting is executed.                 |
 
 **Context**
 
@@ -3448,7 +3448,7 @@ Below we have described the most common used methods.
 
 #### `metadata()->intervals()`
 
-This method returns all intervals for the given `$dataSource`.
+The `intervals()` method returns all intervals for the given `$dataSource`.
 
 Example:
 
@@ -3456,7 +3456,7 @@ Example:
 $intervals = $client->metadata()->intervals('wikipedia');
 ```
 
-The `intervals()` method has 1 parameters:
+The `intervals()` method has 1 parameter:
 
 | **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                   |
 |----------|-----------------------|---------------|-------------|-----------------------------------------------------------------------------------|
@@ -3582,11 +3582,57 @@ Level23\Druid\Metadata\Structure Object
 )
 ``` 
 
+#### `metadata()->timeBoundary()`
+
+The `timeBoundary()` method returns the time boundary for the given dataSource.
+It finds the first and/or last occurrence of a record in the given dataSource.
+
+Optionally, you can also apply a filter. For example, to only see when the first and/or last occurrence
+was for a record where a specific condition was met.
+
+The return type varies per given $bound. If TimeBound::BOTH was given (or null, which is the same),
+we will return an array with the minTime and maxTime:
+
+```
+array(
+ 'minTime' => \DateTime object,
+ 'maxTime' => \DateTime object
+)
+```
+
+If only one time was requested with either TimeBound::MIN_TIME or TimeBound::MAX_TIME, we will return
+a DateTime object.
+
+The `timeBoundary()` method has the following parameters:
+
+| **Type**                   | **Optional/Required** | **Argument**     | **Example**         | **Description**                                                                                                                                                          |
+|----------------------------|-----------------------|------------------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/DataSourceInterface | Required              | `$dataSource`    | "wikipedia"         | The name of the dataSource (table) where you want the boundary from. This can also be a DataSource object.                                                               |
+| null/ string/TimeBound     | Optional              | `$bound`         | TimeBound::BOTH     | Set to TimeBound::MAX_TIME or TimeBound::MIN_TIME ( or "maxTime"/"minTime") to return only the latest or earliest timestamp. Default to returning both if not set (null) |
+| Closure                    | Optional              | `$filterBuilder` | See below           | A closure which receives a FilterBuilder. When given, we will get the bound(s) for the records which match with the given filter.                                        |
+| Context                    | Optional              | `$context`       | ['timeout' => 1000] | Query context parameters.                                                                                                                                                |
+
+Example:
+
+```php
+// Example of only retrieving the MAX time
+$response = $client->metadata()->timeBoundary('wikipedia', TimeBound::MAX_TIME, function(FilterBuilder $builder) {
+    $builder->where('channel', '!=', '#vi.wikipedia');
+});
+
+echo $response->format('d-m-Y H:i:s');
+
+// Example of only retrieving BOTH times
+$response = $client->metadata()->timeBoundary('wikipedia', TimeBound::BOTH);
+
+echo $response['minTime']->format('d-m-Y H:i:s') .' / '. $response['maxTime']->format('d-m-Y H:i:s');
+``` 
+
 ## Reindex / compact data / kill
 
 Druid stores data in segments. When you want to update some data, you have to rebuild the _whole_ segment.
 Therefore, we use smaller segments when the data is still "fresh".
-In our experience, if data needs to be updated (rebuild), it is most of the times fresh data.
+In our experience, if data needs to be updated (rebuild), it is most of the time fresh data.
 By keeping fresh data in smaller segments, we only need to rebuild 1 hour of data, instead for a whole month or such.
 
 We use for example hour segments for "today" and "yesterday", and we have some processes which will change this data
@@ -3595,7 +3641,7 @@ into bigger segments after that.
 Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
 
 **Note**: when you re-index data, druid will collect the data and put it in a new segment. The old segments are not
-deleted, but marked as unused. This is the same principle as laravel's soft-deletes. To permanently delete the unused
+deleted, but marked as unused. This is the same principle as Laravel soft-deletes. To permanently delete the unused
 segments you should use the `kill` task. See below for an example.
 
 By default, we have added a check to make sure that you have selected a complete interval. This prevents a lot of
@@ -3658,7 +3704,7 @@ required data.
 
 #### `reindex()`
 
-With the `reindex()` method you can re-index data which is already in a druid dataSource. You can do a bit more then
+With the `reindex()` method you can re-index data which is already in a druid dataSource. You can do a bit more than
 with the `compact()` method.
 
 For example, you can filter or transform existing data or change the query granularity:
@@ -3701,7 +3747,7 @@ print_r($status->data());
 ```
 
 The `reindex` method will return a `IndexTaskBuilder` object which allows you to specify the rest of the
-required data. By default we will use a `DruidInputSource` to ingest data from an existing data source.
+required data. By default, we will use a `DruidInputSource` to ingest data from an existing data source.
 
 If you want you can change the data source where the data is read from using the `fromDataSource()` method.
 
@@ -3710,7 +3756,7 @@ If you want you can change the data source where the data is read from using the
 #### `kill()`
 
 The `kill()` method will return a `KillTaskBuilder` object. This allows you to specify the interval and optionally
-the task Id for your task. You can then execute it.
+the task ID for your task. You can then execute it.
 
 The kill task will delete all __unused__ segments which match with your given interval. If you often re-index your data
 you probably want to also use this task a lot, otherwise you will also store all old versions of your data.
@@ -3753,7 +3799,7 @@ print_r($status->data());
 When you want to manually import data into druid, you can do this with a simple `index` task.
 When you want to import data, you will have to specify an input source. The input source is where the data is read from.
 
-There are various input sources, for example an Local file, an HTTP endpoint or data retrieved from an SQL source.
+There are various input sources, for example a Local file, an HTTP endpoint or data retrieved from an SQL source.
 Below we will describe all available input sources, but first we will explain how an index task is created.
 
 The `$client->index(...)` method returns an `IndexTaskBuilder` object, which allows you to specify your index task.
@@ -3787,7 +3833,7 @@ $taskId = $client->index('myTableName', $inputSource)
     ->segmentGranularity(Granularity::WEEK)
     // We want to be able to query at minimum level of HOUR data.
     ->queryGranularity(Granularity::HOUR)
-    // Process the input source parallel (like multi-threaded instead of 1 thread).
+    // Process the input source parallel (like multithreaded instead of 1 thread).
     ->parallel()
     // By default, an INDEX task will OVERWRITE _segments_. If you want to APPEND, use this: 
     ->appendToExisting()    
@@ -4077,11 +4123,11 @@ The DruidInputSource reads data directly from existing druid segments.
 
 The constructor allows you to specify the following parameters:
 
-| **Type**          | **Optional/Required** | **Argument**  | **Example**                          | **Description**                                                                                                       |
-|-------------------|-----------------------|---------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| array             | Required              | `$dataSource` | `["/bar/foo", "/foo/bar"]`           | The datasource where you want to read data from.                                                                      |
-| IntervalInterface | Optional              | `$inteval`    | `new Interval('now - 1 day', 'now')` | The interval which will be used for eading data from your datasource. Only records within this interval will be read. |
-| FilterInterface   | Optional              | `$filter`     | (See below)                          | A filter which will be used to select records which will be read. Only records matching this filter will be used.     |
+| **Type**          | **Optional/Required** | **Argument**  | **Example**                          | **Description**                                                                                                        |
+|-------------------|-----------------------|---------------|--------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| array             | Required              | `$dataSource` | `["/bar/foo", "/foo/bar"]`           | The datasource where you want to read data from.                                                                       |
+| IntervalInterface | Optional              | `$inteval`    | `new Interval('now - 1 day', 'now')` | The interval which will be used for reading data from your datasource. Only records within this interval will be read. |
+| FilterInterface   | Optional              | `$filter`     | (See below)                          | A filter which will be used to select records which will be read. Only records matching this filter will be used.      |
 
 Example:
 
@@ -4261,7 +4307,8 @@ This method allows you to specify the following parameters:
 | FlattenSpec | Optional              | `$flattenSpec` | (see below) | Specifies flattening configuration for nested JSON data. See below for more info. |
 | array       | Optional              | `$features`    | `"\t"`      | List the features which apply for this json input format.                         |
 
-The flattenSpec object bridges the gap between potentially nested input data, such as JSON or Avro, and Druid's flat data model.
+The flattenSpec object bridges the gap between potentially nested input data, such as JSON or Avro, and Druid's flat
+data model.
 It is an object within the inputFormat object.
 
 ```php
@@ -4316,7 +4363,8 @@ $builder = $client->index('data', $inputSource)
 
 ## `parquetFormat()`
 
-The `parquetFormat()` allows you to specify the Parquet input format. However, to make use of this input source, you should have
+The `parquetFormat()` allows you to specify the Parquet input format. However, to make use of this input source, you
+should have
 added the `druid-parquet-extensions` to druid.
 
 See:
@@ -4350,7 +4398,8 @@ $builder = $client->index('data', $inputSource)
 
 ## `protobufFormat()`
 
-The `parquetFormat()` allows you to specify the Protobuf input format. However, to make use of this input source, you should have
+The `parquetFormat()` allows you to specify the Protobuf input format. However, to make use of this input source, you
+should have
 added the `druid-protobuf-extensions` to druid.
 
 See:

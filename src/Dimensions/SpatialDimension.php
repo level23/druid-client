@@ -14,7 +14,7 @@ class SpatialDimension
 
     /**
      * @param string   $dimension The name of the spatial dimension. A spatial dimension may be constructed from
-     *                            multiple other dimensions or it may already exist as part of an event. If a spatial
+     *                            multiple other dimensions, or it may already exist as part of an event. If a spatial
      *                            dimension already exists, it must be an array of coordinate values.
      * @param string[] $dims      A list of dimension names that comprise a spatial dimension.
      */

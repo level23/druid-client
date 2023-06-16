@@ -8,7 +8,7 @@ class ScanQueryResponse extends QueryResponse
     /**
      * Return the data in a "normalized" way, so we can easily iterate over it
      *
-     * @return array<string|int|array<mixed>>
+     * @return array<int,string|int|array<mixed>>
      */
     public function data(): array
     {

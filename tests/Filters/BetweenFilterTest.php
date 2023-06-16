@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Filters;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BetweenFilter;
@@ -12,8 +12,8 @@ use Level23\Druid\Extractions\LookupExtraction;
 class BetweenFilterTest extends TestCase
 {
     /**
-     * @param string|int  $minValue
-     * @param string|int  $maxValue
+     * @param int|string  $minValue
+     * @param int|string  $maxValue
      * @param string|null $ordering
      * @param bool        $expectException
      *
@@ -22,10 +22,10 @@ class BetweenFilterTest extends TestCase
      *           ["john", "doe", "alphanumeric"]
      *           ["john", "doe", "something", true]
      */
-    public function testFilter($minValue, $maxValue, $ordering = null, bool $expectException = false): void
+    public function testFilter(int|string $minValue, int|string $maxValue, string $ordering = null, bool $expectException = false): void
     {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
         }
         $filter = new BetweenFilter('age', $minValue, $maxValue, $ordering);
 
@@ -38,7 +38,7 @@ class BetweenFilterTest extends TestCase
         $expected = [
             'type'        => 'bound',
             'dimension'   => 'age',
-            'ordering'    => (string)$ordering,
+            'ordering'    => (is_string($ordering) ? SortingOrder::from($ordering) : $ordering)->value,
             'lower'       => (string)$minValue,
             'lowerStrict' => false,
             'upper'       => (string)$maxValue,

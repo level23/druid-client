@@ -11,16 +11,16 @@ class HdfsInputSource implements InputSourceInterface
      *
      * @var string[]|string
      */
-    protected $paths;
+    protected string|array $paths;
 
     /**
      * HdfsInputSource constructor.
      *
-     * @param string[]|string $paths HDFS paths. Can be either a JSON array or comma-separated string of paths. Wildcards
+     * @param string|string[] $paths HDFS paths. Can be either a JSON array or comma-separated string of paths. Wildcards
      *                               like * are supported in these paths. Empty files located under one of the given paths
      *                               will be skipped.
      */
-    public function __construct($paths)
+    public function __construct(array|string $paths)
     {
         $this->paths = $paths;
     }

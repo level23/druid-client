@@ -13,7 +13,7 @@ class Dimension implements DimensionInterface
 
     protected string $outputName;
 
-    protected string $outputType;
+    protected DataType $outputType;
 
     protected ?ExtractionInterface $extractionFunction;
 
@@ -22,27 +22,31 @@ class Dimension implements DimensionInterface
      *
      * @param string                   $dimension
      * @param string|null              $outputName
-     * @param string                   $outputType This can either be "long", "float" or "string"
+     * @param string|DataType          $outputType This can either be "long", "float" or "string"
      * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $outputName = null,
-        string $outputType = DataType::STRING,
+        string|DataType $outputType = DataType::STRING,
         ExtractionInterface $extractionFunction = null
     ) {
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;
 
-        $outputType = !empty($outputType) ? strtolower($outputType) : DataType::STRING;
+        if( empty($outputType)) {
+            $outputType = DataType::STRING;
+        } else {
+            $outputType = is_string($outputType) ? DataType::from(strtolower($outputType)) : $outputType;
+        }
 
-        if (!in_array($outputType, ['string', 'long', 'float'])) {
+        if (!in_array($outputType, [DataType::STRING, DataType::LONG, DataType::FLOAT])) {
             throw new InvalidArgumentException(
-                'Incorrect type given: ' . $outputType . '. This can either be "long", "float" or "string"'
+                'Incorrect type given: ' . $outputType->value . '. This can either be "long", "float" or "string"'
             );
         }
 
-        $this->outputType         = DataType::validate($outputType);
+        $this->outputType         = $outputType;
         $this->extractionFunction = $extractionFunction;
     }
 
@@ -56,7 +60,7 @@ class Dimension implements DimensionInterface
         $result = [
             'type'       => ($this->extractionFunction ? 'extraction' : 'default'),
             'dimension'  => $this->dimension,
-            'outputType' => $this->outputType,
+            'outputType' => $this->outputType->value,
             'outputName' => $this->outputName,
         ];
 

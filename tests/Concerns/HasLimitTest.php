@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
-use InvalidArgumentException;
+use ValueError;
+use Mockery\MockInterface;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Limits\Limit;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
@@ -18,15 +20,9 @@ use Level23\Druid\Collections\OrderByCollection;
 
 class HasLimitTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
+    protected DruidClient $client;
 
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -38,9 +34,9 @@ class HasLimitTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getLimitMock(string $class)
+    protected function getLimitMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -114,8 +110,8 @@ class HasLimitTest extends TestCase
 
     public function testIncorrectOrderByDirect(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid order by direction given:');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('"d" is not a valid backing value for enum Level23\Druid\Types\OrderByDirection');
 
         $this->builder->orderBy('name', 'd');
     }

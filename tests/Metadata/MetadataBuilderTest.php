@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Metadata;
 
 use Mockery;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Metadata\Structure;
 use GuzzleHttp\Client as GuzzleClient;
@@ -16,10 +18,7 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class MetadataBuilderTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     */
-    protected $client;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $client;
 
     protected function setUp(): void
     {
@@ -98,7 +97,7 @@ class MetadataBuilderTest extends TestCase
     /**
      * @return array<array<array<int|string,array<string,array<string,array<int|string,array<scalar>|int|string>>|int|string>>|Structure|string|null>>.
      */
-    public function structureDataProvider(): array
+    public static function structureDataProvider(): array
     {
         $dataSource = 'myDataSource';
 
@@ -278,6 +277,9 @@ class MetadataBuilderTest extends TestCase
      * @testWith [[{"columns": {"__time": {"type":"LONG"}}}]]
      *
      * @param array<string,array<string,array<string,string>>> $segmentMetadataResponse
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function testGetColumnsForInterval(array $segmentMetadataResponse): void
     {
@@ -303,7 +305,6 @@ class MetadataBuilderTest extends TestCase
             ->once()
             ->andReturn($responseObj);
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $metadataBuilder
             ->shouldAllowMockingProtectedMethods()
             ->getColumnsForInterval($dataSource, $interval);
@@ -321,6 +322,8 @@ class MetadataBuilderTest extends TestCase
      *
      * @param string $dataSource
      * @param string $shortHand
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
     public function testGetIntervalByShorthand(string $dataSource, string $shortHand): void
     {
@@ -343,7 +346,6 @@ class MetadataBuilderTest extends TestCase
                 ->andReturn($intervals);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $metadataBuilder
             ->shouldAllowMockingProtectedMethods()
             ->getIntervalByShorthand($dataSource, $shortHand);

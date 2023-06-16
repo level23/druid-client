@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tasks;
 
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\TuningConfig\TuningConfig;
 use Level23\Druid\Interval\IntervalInterface;
@@ -14,7 +15,7 @@ class CompactTask implements TaskInterface
 
     protected IntervalInterface $interval;
 
-    protected ?string $segmentGranularity;
+    protected ?Granularity $segmentGranularity;
 
     protected ?TuningConfigInterface $tuningConfig;
 
@@ -42,7 +43,7 @@ class CompactTask implements TaskInterface
      *
      * @param string                                        $dataSource
      * @param \Level23\Druid\Interval\IntervalInterface     $interval
-     * @param string|null                                   $segmentGranularity
+     * @param string|Granularity|null                       $segmentGranularity
      * @param \Level23\Druid\TuningConfig\TuningConfig|null $tuningConfig
      * @param \Level23\Druid\Context\TaskContext|null       $context
      * @param int|null                                      $targetCompactionSizeBytes
@@ -51,7 +52,7 @@ class CompactTask implements TaskInterface
     public function __construct(
         string $dataSource,
         IntervalInterface $interval,
-        ?string $segmentGranularity = null,
+        string|Granularity $segmentGranularity = null,
         ?TuningConfig $tuningConfig = null,
         ?TaskContext $context = null,
         ?int $targetCompactionSizeBytes = null,
@@ -59,7 +60,7 @@ class CompactTask implements TaskInterface
     ) {
         $this->dataSource                = $dataSource;
         $this->interval                  = $interval;
-        $this->segmentGranularity        = $segmentGranularity;
+        $this->segmentGranularity        = is_string($segmentGranularity) ? Granularity::from(strtolower($segmentGranularity)) : $segmentGranularity;
         $this->tuningConfig              = $tuningConfig;
         $this->context                   = $context;
         $this->targetCompactionSizeBytes = $targetCompactionSizeBytes;
@@ -94,7 +95,7 @@ class CompactTask implements TaskInterface
         }
 
         if ($this->segmentGranularity) {
-            $result['segmentGranularity'] = $this->segmentGranularity;
+            $result['segmentGranularity'] = $this->segmentGranularity->value;
         }
 
         if ($this->tuningConfig instanceof TuningConfig) {

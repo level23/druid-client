@@ -44,8 +44,8 @@ class LimitTest extends TestCase
             'columns' => [
                 [
                     'dimension'      => 'name',
-                    'direction'      => OrderByDirection::DESC,
-                    'dimensionOrder' => SortingOrder::NUMERIC,
+                    'direction'      => OrderByDirection::DESC->value,
+                    'dimensionOrder' => SortingOrder::NUMERIC->value,
                 ],
             ],
         ], $limit->toArray());

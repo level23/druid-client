@@ -15,27 +15,27 @@ class JoinDataSource implements DataSourceInterface
 
     protected string $condition;
 
-    protected string $joinType;
+    protected JoinType $joinType;
 
     /**
      * @param \Level23\Druid\DataSources\DataSourceInterface $left
      * @param \Level23\Druid\DataSources\DataSourceInterface $right
      * @param string                                         $rightPrefix
      * @param string                                         $condition
-     * @param string                                         $joinType
+     * @param string|JoinType                                         $joinType
      */
     public function __construct(
         DataSourceInterface $left,
         DataSourceInterface $right,
         string $rightPrefix,
         string $condition,
-        string $joinType
+        string|JoinType $joinType
     ) {
         $this->left        = $left;
         $this->right       = $right;
         $this->rightPrefix = $rightPrefix;
         $this->condition   = $condition;
-        $this->joinType    = JoinType::validate($joinType);
+        $this->joinType    = is_string($joinType) ? JoinType::from(strtoupper($joinType)) : $joinType;
     }
 
     /**
@@ -51,7 +51,7 @@ class JoinDataSource implements DataSourceInterface
             'right'       => $this->right->toArray(),
             'rightPrefix' => $this->rightPrefix,
             'condition'   => $this->condition,
-            'joinType'    => $this->joinType,
+            'joinType'    => $this->joinType->value,
         ];
     }
 }

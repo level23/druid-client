@@ -31,10 +31,10 @@ class InlineLookupExtraction implements ExtractionInterface
      * @param bool                 $optimize         When set to true, we allow the optimization layer (which will run
      *                                               on the broker) to rewrite the extraction filter if needed.
      * @param bool|null            $injective        A property of injective can override the lookups own sense of
-     *                                               whether or not it is injective. If left unspecified, Druid will
+     *                                               whether it is injective. If left unspecified, Druid will
      *                                               use the registered cluster-wide lookup configuration.
      */
-    public function __construct(array $map, $keepMissingValue = false, bool $optimize = true, bool $injective = null)
+    public function __construct(array $map, bool|string $keepMissingValue = false, bool $optimize = true, bool $injective = null)
     {
         $this->map       = $map;
         $this->optimize  = $optimize;
@@ -43,7 +43,7 @@ class InlineLookupExtraction implements ExtractionInterface
         if (is_string($keepMissingValue)) {
             $this->replaceMissingValueWith = $keepMissingValue;
         } else {
-            $this->retainMissingValue = (bool)$keepMissingValue;
+            $this->retainMissingValue = $keepMissingValue;
         }
     }
 

@@ -4,11 +4,15 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
+use Closure;
+use TypeError;
 use Hamcrest\Core\IsEqual;
-use InvalidArgumentException;
+use Mockery\MockInterface;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Filters\FilterBuilder;
@@ -33,15 +37,10 @@ use Level23\Druid\Aggregations\DoublesSketchAggregator;
 
 class HasAggregationsTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
+    protected DruidClient $client;
 
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $builder;
+
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function testGetAggregations(): void
     {
@@ -63,7 +62,7 @@ class HasAggregationsTest extends TestCase
         $this->builder->makePartial();
     }
 
-    protected function filteredAggregatorTest(?\Closure $givenClosureOrNull): void
+    protected function filteredAggregatorTest(?Closure $givenClosureOrNull): void
     {
         $this->builder->shouldAllowMockingProtectedMethods()
             ->shouldReceive('buildFilteredAggregation')
@@ -194,9 +193,10 @@ class HasAggregationsTest extends TestCase
 
     public function testCardinalityWithInvalidValue(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('You should supply a Closure function or an array.');
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('must be of type Closure|array');
 
+        /** @noinspection PhpParamsInspection */
         $this->builder->cardinality('distinct_last_name_first_char', 'hi');
     }
 
@@ -217,7 +217,7 @@ class HasAggregationsTest extends TestCase
                 false);
 
         $response = $this->builder->cardinality(
-            'distinct_last_name', ['last_name'], true, false
+            'distinct_last_name', ['last_name'], true
         );
 
         $this->assertEquals($this->builder, $response);
@@ -265,7 +265,6 @@ class HasAggregationsTest extends TestCase
             $builder->where($filter);
         };
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->buildFilteredAggregation(
             $aggregation,
             $closure
@@ -296,7 +295,6 @@ class HasAggregationsTest extends TestCase
             // @note: nothing happens here. By design.
         };
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->buildFilteredAggregation(
             $aggregation,
             $closure
@@ -309,9 +307,9 @@ class HasAggregationsTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getAggregationMock(string $class)
+    protected function getAggregationMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -366,7 +364,7 @@ class HasAggregationsTest extends TestCase
     {
         $this->getAggregationMock(SumAggregator::class)
             ->shouldReceive('__construct')
-            ->with('messages', '', 'long')
+            ->with('messages', '', DataType::LONG)
             ->once();
 
         $response = $this->builder->sum('messages');
@@ -376,7 +374,7 @@ class HasAggregationsTest extends TestCase
     public function testLongSum(): void
     {
         $this->builder->shouldReceive('sum')
-            ->with('messages', '', 'long', null)
+            ->with('messages', '', DataType::LONG, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -387,7 +385,7 @@ class HasAggregationsTest extends TestCase
     public function testDoubleSum(): void
     {
         $this->builder->shouldReceive('sum')
-            ->with('messages', '', 'double', null)
+            ->with('messages', '', DataType::DOUBLE, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -398,7 +396,7 @@ class HasAggregationsTest extends TestCase
     public function testFloatSum(): void
     {
         $this->builder->shouldReceive('sum')
-            ->with('messages', '', 'float', null)
+            ->with('messages', '', DataType::FLOAT, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -488,7 +486,7 @@ class HasAggregationsTest extends TestCase
     {
         $this->getAggregationMock(MinAggregator::class)
             ->shouldReceive('__construct')
-            ->with('age', '', 'long')
+            ->with('age', '', DataType::LONG)
             ->once();
 
         $this->filteredAggregatorTest(null);
@@ -500,7 +498,7 @@ class HasAggregationsTest extends TestCase
     public function testLongMin(): void
     {
         $this->builder->shouldReceive('min')
-            ->with('age', '', 'long', null)
+            ->with('age', '', DataType::LONG, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -511,7 +509,7 @@ class HasAggregationsTest extends TestCase
     public function testDoubleMin(): void
     {
         $this->builder->shouldReceive('min')
-            ->with('age', '', 'double', null)
+            ->with('age', '', DataType::DOUBLE, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -522,7 +520,7 @@ class HasAggregationsTest extends TestCase
     public function testFloatMin(): void
     {
         $this->builder->shouldReceive('min')
-            ->with('age', '', 'float', null)
+            ->with('age', '', DataType::FLOAT, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -558,7 +556,7 @@ class HasAggregationsTest extends TestCase
     {
         $this->getAggregationMock(MaxAggregator::class)
             ->shouldReceive('__construct')
-            ->with('age', '', 'long')
+            ->with('age', '', DataType::LONG)
             ->once();
 
         $this->filteredAggregatorTest(null);
@@ -570,7 +568,7 @@ class HasAggregationsTest extends TestCase
     public function testLongMax(): void
     {
         $this->builder->shouldReceive('max')
-            ->with('age', '', 'long', null)
+            ->with('age', '', DataType::LONG, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -581,7 +579,7 @@ class HasAggregationsTest extends TestCase
     public function testDoubleMax(): void
     {
         $this->builder->shouldReceive('max')
-            ->with('age', '', 'double', null)
+            ->with('age', '', DataType::DOUBLE, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -592,7 +590,7 @@ class HasAggregationsTest extends TestCase
     public function testFloatMax(): void
     {
         $this->builder->shouldReceive('max')
-            ->with('age', '', 'float', null)
+            ->with('age', '', DataType::FLOAT, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -628,7 +626,7 @@ class HasAggregationsTest extends TestCase
     {
         $this->getAggregationMock(FirstAggregator::class)
             ->shouldReceive('__construct')
-            ->with('age', '', 'long')
+            ->with('age', '', DataType::LONG)
             ->once();
 
         $this->filteredAggregatorTest(null);
@@ -665,7 +663,7 @@ class HasAggregationsTest extends TestCase
     {
         $this->getAggregationMock(AnyAggregator::class)
             ->shouldReceive('__construct')
-            ->with('age', '', 'long', null)
+            ->with('age', '', DataType::LONG, null)
             ->once();
 
         $this->filteredAggregatorTest(null);
@@ -677,7 +675,7 @@ class HasAggregationsTest extends TestCase
     public function testLongAny(): void
     {
         $this->builder->shouldReceive('any')
-            ->with('age', '', 'long', null, null)
+            ->with('age', '', DataType::LONG, null, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -688,7 +686,7 @@ class HasAggregationsTest extends TestCase
     public function testDoubleAny(): void
     {
         $this->builder->shouldReceive('any')
-            ->with('age', '', 'double', null, null)
+            ->with('age', '', DataType::DOUBLE, null, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -699,7 +697,7 @@ class HasAggregationsTest extends TestCase
     public function testStringAny(): void
     {
         $this->builder->shouldReceive('any')
-            ->with('age', '', 'string', null, null)
+            ->with('age', '', DataType::STRING, null, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -710,7 +708,7 @@ class HasAggregationsTest extends TestCase
     public function testFloatAny(): void
     {
         $this->builder->shouldReceive('any')
-            ->with('age', '', 'float', null, null)
+            ->with('age', '', DataType::FLOAT, null, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -721,7 +719,7 @@ class HasAggregationsTest extends TestCase
     public function testLongFirst(): void
     {
         $this->builder->shouldReceive('first')
-            ->with('age', '', 'long', null)
+            ->with('age', '', DataType::LONG, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -732,7 +730,7 @@ class HasAggregationsTest extends TestCase
     public function testFloatFirst(): void
     {
         $this->builder->shouldReceive('first')
-            ->with('age', '', 'float', null)
+            ->with('age', '', DataType::FLOAT, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -743,7 +741,7 @@ class HasAggregationsTest extends TestCase
     public function testDoubleFirst(): void
     {
         $this->builder->shouldReceive('first')
-            ->with('age', '', 'double', null)
+            ->with('age', '', DataType::DOUBLE, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -754,7 +752,7 @@ class HasAggregationsTest extends TestCase
     public function testStringFirst(): void
     {
         $this->builder->shouldReceive('first')
-            ->with('age', '', 'string', null)
+            ->with('age', '', DataType::STRING, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -790,7 +788,7 @@ class HasAggregationsTest extends TestCase
     {
         $this->getAggregationMock(LastAggregator::class)
             ->shouldReceive('__construct')
-            ->with('age', '', 'long')
+            ->with('age', '', DataType::LONG)
             ->once();
 
         $this->filteredAggregatorTest(null);
@@ -802,7 +800,7 @@ class HasAggregationsTest extends TestCase
     public function testLongLast(): void
     {
         $this->builder->shouldReceive('last')
-            ->with('age', '', 'long', null)
+            ->with('age', '', DataType::LONG, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -813,7 +811,7 @@ class HasAggregationsTest extends TestCase
     public function testFloatLast(): void
     {
         $this->builder->shouldReceive('last')
-            ->with('age', '', 'float', null)
+            ->with('age', '', DataType::FLOAT, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -824,7 +822,7 @@ class HasAggregationsTest extends TestCase
     public function testDoubleLast(): void
     {
         $this->builder->shouldReceive('last')
-            ->with('age', '', 'double', null)
+            ->with('age', '', DataType::DOUBLE, null)
             ->once()
             ->andReturn($this->builder);
 
@@ -835,7 +833,7 @@ class HasAggregationsTest extends TestCase
     public function testStringLast(): void
     {
         $this->builder->shouldReceive('last')
-            ->with('age', '', 'string', null)
+            ->with('age', '', DataType::STRING, null)
             ->once()
             ->andReturn($this->builder);
 

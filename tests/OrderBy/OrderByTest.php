@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\OrderBy;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
@@ -12,9 +12,9 @@ use Level23\Druid\Types\OrderByDirection;
 class OrderByTest extends TestCase
 {
     /**
-     * @return array<array<string|bool>>
+     * @return array<array<string|bool|OrderByDirection|SortingOrder>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['name', OrderByDirection::DESC, SortingOrder::NUMERIC],
@@ -30,23 +30,23 @@ class OrderByTest extends TestCase
      * @dataProvider dataProvider
      *
      * @param string $dimension
-     * @param string $direction
-     * @param string $sorting
+     * @param string|OrderByDirection $direction
+     * @param string|SortingOrder $sorting
      * @param bool   $expectException
      */
     public function testOrderBy(
         string $dimension,
-        string $direction,
-        string $sorting,
+        string|OrderByDirection $direction,
+        string|SortingOrder $sorting,
         bool $expectException = false
     ): void {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
         }
 
         $orderBy = new OrderBy($dimension, $direction, $sorting);
 
-        $expectedDirection = ($direction == 'desc' || $direction == 'descending')
+        $expectedDirection = ($direction == 'desc' || $direction == 'descending' || $direction == OrderByDirection::DESC)
             ? OrderByDirection::DESC
             : OrderByDirection::ASC;
 
@@ -55,8 +55,8 @@ class OrderByTest extends TestCase
 
         $this->assertEquals([
             'dimension'      => $dimension,
-            'direction'      => $expectedDirection,
-            'dimensionOrder' => $sorting,
+            'direction'      => $expectedDirection->value,
+            'dimensionOrder' => (is_string($sorting) ? SortingOrder::from($sorting) : $sorting)->value,
         ], $orderBy->toArray());
     }
 

@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Tasks;
 
 use Mockery;
+use ValueError;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Tasks\IndexTask;
@@ -53,24 +56,20 @@ class IndexTaskBuilderTest extends TestCase
         $dataSource = 'people';
         $builder    = new IndexTaskBuilder($client, $dataSource, $inputSource);
 
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->getProperty($builder, 'appendToExisting')
         );
         $this->assertEquals($builder, $builder->appendToExisting());
 
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->getProperty($builder, 'appendToExisting')
         );
 
-        $this->assertEquals(
-            false,
+        $this->assertFalse(
             $this->getProperty($builder, 'rollup')
         );
         $this->assertEquals($builder, $builder->rollup());
-        $this->assertEquals(
-            true,
+        $this->assertTrue(
             $this->getProperty($builder, 'rollup')
         );
 
@@ -114,24 +113,11 @@ class IndexTaskBuilderTest extends TestCase
         $client  = new DruidClient([]);
         $builder = new IndexTaskBuilder($client, 'wikipedia');
 
-        $this->assertEquals(false, $this->getProperty($builder, 'parallel'));
+        $this->assertFalse($this->getProperty($builder, 'parallel'));
 
         $builder->parallel();
 
-        $this->assertEquals(true, $this->getProperty($builder, 'parallel'));
-    }
-
-    public function testAppend(): void
-    {
-        $client = new DruidClient([]);
-
-        $builder = Mockery::mock(IndexTaskBuilder::class, [$client, 'wikipedia']);
-        $builder->makePartial();
-
-        $builder->shouldReceive('appendToExisting')
-            ->once();
-
-        $builder->append();
+        $this->assertTrue($this->getProperty($builder, 'parallel'));
     }
 
     /**
@@ -175,8 +161,8 @@ class IndexTaskBuilderTest extends TestCase
         $this->assertEquals([
             [
                 'name'               => 'position',
-                'type'               => DataType::validate($type),
-                'multiValueHandling' => MultiValueHandling::validate($multiValueHandling),
+                'type'               => DataType::from(strtolower($type))->value,
+                'multiValueHandling' => MultiValueHandling::from(strtoupper($multiValueHandling))->value,
                 'createBitmapIndex'  => $createBitmapIndex,
             ],
         ], $this->getProperty($builder, 'dimensions'));
@@ -202,14 +188,14 @@ class IndexTaskBuilderTest extends TestCase
     public function testMultiValueHandling(string $value, bool $expectException): void
     {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
             $this->expectExceptionMessage(
-                'The given MultiValueHandling type is invalid: ' . strtoupper($value) . '. ' .
-                'Allowed are: ' . implode(', ', MultiValueHandling::values())
+                '"' . strtoupper($value) . '" is not a valid backing value for enum Level23\Druid\Types\MultiValueHandling'
+
             );
         }
 
-        $this->assertEquals(strtoupper($value), MultiValueHandling::validate($value));
+        $this->assertEquals(strtoupper($value), MultiValueHandling::from(strtoupper($value))->value);
     }
 
     /**
@@ -283,7 +269,7 @@ class IndexTaskBuilderTest extends TestCase
     /**
      * @return array<array<string|Interval|null|InputSourceInterface>>
      */
-    public function buildTaskDataProvider(): array
+    public static function buildTaskDataProvider(): array
     {
         return [
             ["day", "week", new Interval("12-02-2019/13-02-2019"), new DruidInputSource('mySource')],
@@ -382,7 +368,6 @@ class IndexTaskBuilderTest extends TestCase
             $this->expectExceptionMessage('No InputSource known. You have to supply an input source!');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
     }
 
@@ -403,7 +388,6 @@ class IndexTaskBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify an timestamp column!');
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
@@ -417,7 +401,6 @@ class IndexTaskBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify a queryGranularity value!');
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
@@ -433,7 +416,6 @@ class IndexTaskBuilderTest extends TestCase
 
         $builder->queryGranularity('day');
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
@@ -455,7 +437,6 @@ class IndexTaskBuilderTest extends TestCase
         $builder->interval('12-02-2019', '13-02-2019');
         $builder->uniformGranularity();
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
@@ -490,7 +471,6 @@ class IndexTaskBuilderTest extends TestCase
                 return true;
             });
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
@@ -523,7 +503,7 @@ class IndexTaskBuilderTest extends TestCase
             $this->getGranularityMock(ArbitraryGranularity::class)
                 ->shouldReceive('__construct')
                 ->with(
-                    'day',
+                    Granularity::DAY,
                     false,
                     new IsInstanceOf(IntervalCollection::class)
                 );
@@ -533,8 +513,8 @@ class IndexTaskBuilderTest extends TestCase
             $this->getGranularityMock(UniformGranularity::class)
                 ->shouldReceive('__construct')
                 ->with(
-                    'week',
-                    'day',
+                    Granularity::WEEK,
+                    Granularity::DAY,
                     false,
                     new IsInstanceOf(IntervalCollection::class)
                 );
@@ -543,16 +523,15 @@ class IndexTaskBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('No InputSource known.');
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $builder->shouldAllowMockingProtectedMethods()->buildTask([]);
     }
 
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getGranularityMock(string $class)
+    protected function getGranularityMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);

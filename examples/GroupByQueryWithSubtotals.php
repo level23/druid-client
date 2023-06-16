@@ -9,9 +9,7 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
-use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Context\GroupByV2QueryContext;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);

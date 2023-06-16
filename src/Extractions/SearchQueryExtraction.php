@@ -13,7 +13,7 @@ class SearchQueryExtraction implements ExtractionInterface
     /**
      * @var string|string[]
      */
-    protected $valueOrValues;
+    protected string|array $valueOrValues;
 
     protected bool $caseSensitive;
 
@@ -23,7 +23,7 @@ class SearchQueryExtraction implements ExtractionInterface
      * @param string|string[] $valueOrValues
      * @param bool            $caseSensitive
      */
-    public function __construct($valueOrValues, bool $caseSensitive = false)
+    public function __construct(array|string $valueOrValues, bool $caseSensitive = false)
     {
         $this->valueOrValues = $valueOrValues;
         $this->caseSensitive = $caseSensitive;

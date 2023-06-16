@@ -13,14 +13,14 @@ class StringFormatExtraction implements ExtractionInterface
     protected string $sprintfExpression;
 
     /**
-     * @var string
+     * @var NullHandling
      */
-    protected string $nullHandling;
+    protected NullHandling $nullHandling;
 
-    public function __construct(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING)
+    public function __construct(string $sprintfExpression, string|NullHandling $nullHandling = NullHandling::NULL_STRING)
     {
         $this->sprintfExpression = $sprintfExpression;
-        $this->nullHandling      = NullHandling::validate($nullHandling);
+        $this->nullHandling      = is_string($nullHandling) ? NullHandling::from($nullHandling) : $nullHandling;
     }
 
     /**
@@ -33,7 +33,7 @@ class StringFormatExtraction implements ExtractionInterface
         return [
             'name'         => 'stringFormat',
             'format'       => $this->sprintfExpression,
-            'nullHandling' => $this->nullHandling,
+            'nullHandling' => $this->nullHandling->value,
         ];
     }
 }

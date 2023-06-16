@@ -25,7 +25,7 @@ class GroupByQuery implements QueryInterface
 
     protected DimensionCollection $dimensions;
 
-    protected string $granularity;
+    protected Granularity $granularity;
 
     protected ?FilterInterface $filter = null;
 
@@ -54,19 +54,19 @@ class GroupByQuery implements QueryInterface
      * @param DataSourceInterface                                   $dataSource
      * @param \Level23\Druid\Collections\DimensionCollection        $dimensions
      * @param \Level23\Druid\Collections\IntervalCollection         $intervals
-     * @param null|array<AggregatorInterface>|AggregationCollection $aggregations
-     * @param string                                                $granularity
+     * @param AggregationCollection|array<AggregatorInterface>|null $aggregations
+     * @param string|Granularity                                    $granularity
      */
     public function __construct(
         DataSourceInterface $dataSource,
         DimensionCollection $dimensions,
         IntervalCollection $intervals,
-        $aggregations = null,
-        string $granularity = 'all'
+        array|AggregationCollection $aggregations = null,
+        string|Granularity $granularity = 'all'
     ) {
         $this->dataSource  = $dataSource;
         $this->dimensions  = $dimensions;
-        $this->granularity = Granularity::validate($granularity);
+        $this->granularity = is_string($granularity) ? Granularity::from(strtolower($granularity)) : $granularity;
         $this->intervals   = $intervals;
 
         if ($aggregations) {
@@ -86,7 +86,7 @@ class GroupByQuery implements QueryInterface
             'dataSource'  => $this->dataSource->toArray(),
             'intervals'   => $this->intervals->toArray(),
             'dimensions'  => $this->dimensions->toArray(),
-            'granularity' => $this->granularity,
+            'granularity' => $this->granularity->value,
         ];
 
         if ($this->filter) {
@@ -135,7 +135,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Collections\AggregationCollection|array<AggregatorInterface> $aggregations
      */
-    public function setAggregations($aggregations): void
+    public function setAggregations(array|AggregationCollection $aggregations): void
     {
         if (is_array($aggregations)) {
             $aggregations = new AggregationCollection(...$aggregations);
@@ -147,7 +147,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Collections\PostAggregationCollection|array<PostAggregatorInterface> $postAggregations
      */
-    public function setPostAggregations($postAggregations): void
+    public function setPostAggregations(PostAggregationCollection|array $postAggregations): void
     {
         if (is_array($postAggregations)) {
             $postAggregations = new PostAggregationCollection(...$postAggregations);
@@ -175,7 +175,7 @@ class GroupByQuery implements QueryInterface
     /**
      * @param \Level23\Druid\Limits\Limit|int $limit
      */
-    public function setLimit($limit): void
+    public function setLimit(Limit|int $limit): void
     {
         if ($limit instanceof LimitInterface) {
             $this->limit = $limit;

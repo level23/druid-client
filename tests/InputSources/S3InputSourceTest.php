@@ -90,7 +90,7 @@ class S3InputSourceTest extends TestCase
     public function testWithoutArguments(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectDeprecationMessage('You have to specify either $uris, $prefixes or $objects');
+        $this->expectExceptionMessage('You have to specify either $uris, $prefixes or $objects');
 
         new S3InputSource();
     }

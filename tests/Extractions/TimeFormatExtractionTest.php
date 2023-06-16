@@ -11,7 +11,7 @@ class TimeFormatExtractionTest extends TestCase
     /**
      * @return array<array<string|bool>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [],

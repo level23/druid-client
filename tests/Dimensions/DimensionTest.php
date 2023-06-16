@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Dimensions;
 
+use ValueError;
 use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Dimensions\Dimension;
@@ -14,7 +15,7 @@ class DimensionTest extends TestCase
     /**
      * @return array<array<string|null|bool|RegexExtraction>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         $extraction = new RegexExtraction("^([a-z]+)$");
 
@@ -23,8 +24,7 @@ class DimensionTest extends TestCase
             ["name", "__time", "string", null, false],
             ["name", null, "STRING", null, false],
             ["name", "full_name", "double", null, true],
-            ["name", "full_name", "whatever", null, true],
-            ["name", "full_name", "whatever", null, true],
+            ["name", "full_name", "whatever", null, false, true],
             ["name", "full_name", "", null, false],
             ["name", "full_name", "", $extraction, false],
         ];
@@ -38,16 +38,23 @@ class DimensionTest extends TestCase
      * @param string                   $type
      * @param ExtractionInterface|null $extractionFunction
      * @param bool                     $expectException
+     * @param bool                     $valueError
      */
     public function testDimension(
         string $dimension,
         ?string $outputName,
         string $type,
         ?ExtractionInterface $extractionFunction,
-        bool $expectException
+        bool $expectException,
+        bool $valueError = false
     ): void {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
+        }
+
+        if($valueError) {
+            $this->expectException(ValueError::class);
+            $this->expectExceptionMessage('is not a valid backing value for enum Level23\Druid\Types\DataType');
         }
 
         if (!empty($type) || $extractionFunction !== null) {

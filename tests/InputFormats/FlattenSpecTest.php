@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\InputFormats;
 
+use ValueError;
 use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\FlattenFieldType;
@@ -52,8 +53,8 @@ class FlattenSpecTest extends TestCase
     {
         $spec = new FlattenSpec();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The given flatten field type is invalid: wrong. Allowed are: root, path, jq');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('"wrong" is not a valid backing value for enum Level23\Druid\Types\FlattenFieldType');
 
         $spec->field('wrong', 'field');
     }

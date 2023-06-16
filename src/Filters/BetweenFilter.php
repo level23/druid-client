@@ -27,7 +27,7 @@ class BetweenFilter implements FilterInterface
 
     protected string $maxValue;
 
-    protected string $ordering;
+    protected SortingOrder $ordering;
 
     protected ?ExtractionInterface $extractionFunction;
 
@@ -37,23 +37,23 @@ class BetweenFilter implements FilterInterface
      * @param string                   $dimension         The dimension to filter on
      * @param int|string               $minValue
      * @param int|string               $maxValue
-     * @param null|string              $ordering          Specifies the sorting order using when comparing values
+     * @param null|string|SortingOrder $ordering          Specifies the sorting order using when comparing values
      *                                                    against the bound.
      * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
-        $minValue,
-        $maxValue,
-        ?string $ordering = null,
+        int|string $minValue,
+        int|string $maxValue,
+        string|SortingOrder $ordering = null,
         ?ExtractionInterface $extractionFunction = null
     ) {
-        if (!is_null($ordering)) {
-            $ordering = SortingOrder::validate($ordering);
+        if (is_string($ordering)) {
+            $ordering = SortingOrder::from(strtolower($ordering));
         }
 
         $this->dimension          = $dimension;
-        $this->ordering           = $ordering ?: (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
+        $this->ordering           = $ordering ?? (is_numeric($minValue) && is_numeric($maxValue) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
         $this->extractionFunction = $extractionFunction;
         $this->minValue           = (string)$minValue;
         $this->maxValue           = (string)$maxValue;
@@ -69,7 +69,7 @@ class BetweenFilter implements FilterInterface
         $result = [
             'type'        => 'bound',
             'dimension'   => $this->dimension,
-            'ordering'    => $this->ordering,
+            'ordering'    => $this->ordering->value,
             'lower'       => $this->minValue,
             'lowerStrict' => false,
             'upper'       => $this->maxValue,

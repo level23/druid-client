@@ -106,7 +106,7 @@ trait HasPostAggregations
      * druid.extensions.loadList=["druid-datasketches"]
      *
      * @param string         $as             The name which will be used in the output
-     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     * @param Closure|string $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
      *                                       another post aggregator). When a string is given, we assume that it refers
      *                                       to another field in the query. If you give a closure, it will receive an
      *                                       instance of the PostAggregationsBuilder. With this builder you can build
@@ -116,7 +116,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function quantile(string $as, $fieldOrClosure, float $fraction): self
+    public function quantile(string $as, Closure|string $fieldOrClosure, float $fraction): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
@@ -141,7 +141,7 @@ trait HasPostAggregations
      * druid.extensions.loadList=["druid-datasketches"]
      *
      * @param string         $as             The name which will be used in the output
-     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     * @param Closure|string $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
      *                                       another post aggregator). When a string is given, we assume that it refers
      *                                       to another field in the query. If you give a closure, it will receive an
      *                                       instance of the PostAggregationsBuilder. With this builder you can build
@@ -151,7 +151,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function quantiles(string $as, $fieldOrClosure, array $fractions): self
+    public function quantiles(string $as, Closure|string $fieldOrClosure, array $fractions): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
@@ -179,7 +179,7 @@ trait HasPostAggregations
      * druid.extensions.loadList=["druid-datasketches"]
      *
      * @param string                $as             The name which will be used in the output
-     * @param string|Closure        $fieldOrClosure Field which will be used that refers to a DoublesSketch
+     * @param Closure|string        $fieldOrClosure Field which will be used that refers to a DoublesSketch
      *                                              (fieldAccess or another post aggregator). When a string is given,
      *                                              we assume that it refers to another field in the query. If you give
      *                                              a closure, it will receive an instance of the
@@ -190,7 +190,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function histogram(string $as, $fieldOrClosure, ?array $splitPoints = null, ?int $numBins = null): self
+    public function histogram(string $as, Closure|string $fieldOrClosure, ?array $splitPoints = null, ?int $numBins = null): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
@@ -216,7 +216,7 @@ trait HasPostAggregations
      * druid.extensions.loadList=["druid-datasketches"]
      *
      * @param string         $as             The name which will be used in the output
-     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     * @param Closure|string $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
      *                                       another post aggregator). When a string is given, we assume that it refers
      *                                       to another field in the query. If you give a closure, it will receive an
      *                                       instance of the PostAggregationsBuilder. With this builder you can build
@@ -226,7 +226,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function rank(string $as, $fieldOrClosure, $value): self
+    public function rank(string $as, Closure|string $fieldOrClosure, float|int $value): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
@@ -254,7 +254,7 @@ trait HasPostAggregations
      * druid.extensions.loadList=["druid-datasketches"]
      *
      * @param string         $as             The name which will be used in the output
-     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     * @param Closure|string $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
      *                                       another post aggregator). When a string is given, we assume that it refers
      *                                       to another field in the query. If you give a closure, it will receive an
      *                                       instance of the PostAggregationsBuilder. With this builder you can build
@@ -263,7 +263,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function cdf(string $as, $fieldOrClosure, array $splitPoints): self
+    public function cdf(string $as, Closure|string $fieldOrClosure, array $splitPoints): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
@@ -288,7 +288,7 @@ trait HasPostAggregations
      * druid.extensions.loadList=["druid-datasketches"]
      *
      * @param string         $as             The name which will be used in the output
-     * @param string|Closure $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
+     * @param Closure|string $fieldOrClosure Field which will be used that refers to a DoublesSketch  (fieldAccess or
      *                                       another post aggregator). When a string is given, we assume that it refers
      *                                       to another field in the query. If you give a closure, it will receive an
      *                                       instance of the PostAggregationsBuilder. With this builder you can build
@@ -296,7 +296,7 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function sketchSummary(string $as, $fieldOrClosure): self
+    public function sketchSummary(string $as, Closure|string $fieldOrClosure): self
     {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
@@ -441,12 +441,12 @@ trait HasPostAggregations
     /**
      * The constant post-aggregator always returns the specified value.
      *
-     * @param int|float $numericValue This will be our static value
+     * @param float|int $numericValue This will be our static value
      * @param string    $as           The output name as how we can access it
      *
      * @return $this
      */
-    public function constant($numericValue, string $as): self
+    public function constant(float|int $numericValue, string $as): self
     {
         $this->postAggregations[] = new ConstantPostAggregator($as, $numericValue);
 

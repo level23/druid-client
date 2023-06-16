@@ -19,7 +19,7 @@ namespace Level23\Druid\Context;
  * "v1", a legacy engine, generates per-segment results on data processes (Historical, realtime, MiddleManager)
  * using a map which is partially on-heap (dimension keys and the map itself) and partially off-heap (the
  * aggregated values). Data processes then merge the per-segment results using Druid's indexing mechanism. This
- * merging is multi-threaded by default, but can optionally be single-threaded. The Broker merges the final result
+ * merging is multithreaded by default, but can optionally be single-threaded. The Broker merges the final result
  * set using Druid's indexing mechanism again. The broker merging is always single-threaded. Because the Broker
  * merges results using the indexing mechanism, it must materialize the full result set before returning any
  * results. On both the data processes and the Broker, the merging index is fully on-heap by default, but it can

@@ -5,6 +5,7 @@ namespace Level23\Druid\Tests\Concerns;
 
 use Level23\Druid\DruidClient;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 
 class HasQueryGranularityTest extends TestCase
@@ -21,7 +22,7 @@ class HasQueryGranularityTest extends TestCase
         $this->assertEquals($builder, $result);
 
         $this->assertEquals(
-            'week',
+            Granularity::WEEK,
             $this->getProperty($builder, 'queryGranularity')
         );
     }

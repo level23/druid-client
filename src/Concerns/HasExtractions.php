@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\RegexExtraction;
 use Level23\Druid\Extractions\UpperExtraction;
@@ -43,7 +44,7 @@ trait HasExtractions
      */
     public function lookup(
         string $lookupName,
-        $keepMissingValue = false,
+        bool|string $keepMissingValue = false,
         bool $optimize = true,
         bool $injective = null
     ): self {
@@ -74,7 +75,7 @@ trait HasExtractions
      */
     public function inlineLookup(
         array $map,
-        $keepMissingValue = false,
+        bool|string $keepMissingValue = false,
         bool $optimize = true,
         bool $injective = null
     ): self {
@@ -90,12 +91,12 @@ trait HasExtractions
      * "[%s]" as format string.
      *
      * @param string $sprintfExpression
-     * @param string $nullHandling Can be one of nullString, emptyString or returnNull. With "[%s]" format, each
+     * @param string|NullHandling $nullHandling Can be one of nullString, emptyString or returnNull. With "[%s]" format, each
      *                             configuration will result [null], [], null. Default is nullString.
      *
      * @return $this
      */
-    public function format(string $sprintfExpression, string $nullHandling = NullHandling::NULL_STRING): self
+    public function format(string $sprintfExpression, string|NullHandling $nullHandling = NullHandling::NULL_STRING): self
     {
         $this->addExtraction(new StringFormatExtraction($sprintfExpression, $nullHandling));
 
@@ -187,7 +188,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function regex(string $regexp, int $groupToExtract = 1, $keepMissingValue = true): self
+    public function regex(string $regexp, int $groupToExtract = 1, bool|string $keepMissingValue = true): self
     {
         $this->addExtraction(new RegexExtraction($regexp, $groupToExtract, $keepMissingValue));
 
@@ -202,7 +203,7 @@ trait HasExtractions
      *
      * @return $this
      */
-    public function searchQuery($valueOrValues, bool $caseSensitive = false): self
+    public function searchQuery(array|string $valueOrValues, bool $caseSensitive = false): self
     {
         $this->addExtraction(new SearchQueryExtraction($valueOrValues, $caseSensitive));
 
@@ -227,7 +228,7 @@ trait HasExtractions
      *
      * @param string|null $format         date time format for the resulting dimension value, in Joda Time
      *                                    DateTimeFormat, or null to use the default ISO8601 format.
-     * @param string|null $granularity    granularity to apply before formatting, or omit to not apply any granularity.
+     * @param string|Granularity|null $granularity    granularity to apply before formatting, or omit to not apply any granularity.
      * @param string|null $locale         locale (language and country) to use, given as an IETF BCP 47 language tag,
      *                                    e.g. en-US, en-GB, fr-FR, fr-CA, etc.
      * @param string|null $timeZone       time zone to use in IANA tz database format, e.g. Europe/Berlin (this can
@@ -240,7 +241,7 @@ trait HasExtractions
      */
     public function timeFormat(
         string $format = null,
-        string $granularity = null,
+        string|Granularity $granularity = null,
         string $locale = null,
         string $timeZone = null,
         bool $asMilliseconds = null

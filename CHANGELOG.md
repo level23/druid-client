@@ -1,9 +1,24 @@
 ## Changelog
 
+**v2.0**
+ - Changed minimum PHP version to 8.2.
+ - Added typehints where possible.
+ - Replaced types with Enums.
+ - Removed deprecated methods from Query builder:
+   - `whereNotColumn()`
+   - `whereNotBetween()`
+   - `orWhereNotBetween()`
+   - `whereNotIn()`
+   - `orWhereNotIn()`
+   - `whereNotInterval()`
+   - `orWhereNotInterval()`
+ - Removed deprecated method `append()` in task builder. Now use appendToExisting instead.
+ - Added [timeBoundary()](README.md#metadata-timeboundary)
+
 **v1.1.1**
 
 - OrderBy now defaults to `asc` direction
-- `limit()` now supports an offset. See [limit()](#limit)
+- `limit()` now supports an offset. See [limit()](README.md#limit)
 - Added `version` configuration option, which lets the query builder know which version of druid you are running.
 - [whereFlags()](README.md#whereflags) now uses native bitwise and operator if it is supported by your used version.
 - Added more query context and TuningConfig properties. We now also allow unknown properties to be set, in case of a new

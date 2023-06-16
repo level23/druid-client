@@ -11,22 +11,22 @@ class VirtualColumn implements VirtualColumnInterface
 
     protected string $expression;
 
-    protected string $outputType;
+    protected DataType $outputType;
 
     /**
      * VirtualColumn constructor.
      *
      * @param string $expression An druid expression
      * @param string $as
-     * @param string $outputType
+     * @param string|DataType $outputType
      *
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function __construct(string $expression, string $as, string $outputType = 'float')
+    public function __construct(string $expression, string $as, string|DataType $outputType = DataType::FLOAT)
     {
         $this->name       = $as;
         $this->expression = $expression;
-        $this->outputType = DataType::validate($outputType);
+        $this->outputType = is_string($outputType) ? DataType::from(strtolower($outputType)) : $outputType;
     }
 
     /**
@@ -40,7 +40,7 @@ class VirtualColumn implements VirtualColumnInterface
             'type'       => 'expression',
             'name'       => $this->name,
             'expression' => $this->expression,
-            'outputType' => $this->outputType,
+            'outputType' => $this->outputType->value,
         ];
     }
 }

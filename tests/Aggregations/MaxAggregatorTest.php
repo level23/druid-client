@@ -11,14 +11,15 @@ use Level23\Druid\Aggregations\MaxAggregator;
 class MaxAggregatorTest extends TestCase
 {
     /**
-     * @return array<array<string|bool>>
+     * @return array<array<string|bool|DataType>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [DataType::LONG],
             [DataType::DOUBLE],
             [DataType::FLOAT],
+            [DataType::FLOAT->value],
             [DataType::STRING, true],
         ];
     }
@@ -26,20 +27,21 @@ class MaxAggregatorTest extends TestCase
     /**
      * @dataProvider  dataProvider
      *
-     * @param string $type
-     * @param bool   $expectException
+     * @param string|\Level23\Druid\Types\DataType $type
+     * @param bool                                 $expectException
      */
-    public function testAggregator(string $type, bool $expectException = false): void
+    public function testAggregator(string|DataType $type, bool $expectException = false): void
     {
+        $strVal = is_string($type) ? $type : $type->value;
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"');
+            $this->expectExceptionMessage('Incorrect type given: ' . $strVal . '. This can either be "long", "float" or "double"');
         }
 
         $aggregator = new MaxAggregator('abc', 'dim123', $type);
 
         $this->assertEquals([
-            'type'      => $type . 'Max',
+            'type'      => $strVal . 'Max',
             'name'      => 'dim123',
             'fieldName' => 'abc',
         ], $aggregator->toArray());

@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Queries;
 
 use Mockery;
+use ValueError;
 use Hamcrest\Core\IsEqual;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Queries\TopNQuery;
 use Level23\Druid\Queries\ScanQuery;
@@ -56,15 +59,9 @@ use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
 class QueryBuilderTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $client;
+    protected DruidClient|MockInterface|LegacyMockInterface $client;
 
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -79,6 +76,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     public function testExecute(): void
     {
@@ -147,7 +145,7 @@ class QueryBuilderTest extends TestCase
         $response = $this->builder->granularity('year');
         $this->assertEquals($this->builder, $response);
 
-        $this->assertEquals('year', $this->getProperty($this->builder, 'granularity'));
+        $this->assertEquals(Granularity::YEAR, $this->getProperty($this->builder, 'granularity'));
     }
 
     public function testToJsonWithFailure(): void
@@ -240,6 +238,7 @@ class QueryBuilderTest extends TestCase
         $timeSeriesResponse = new TimeSeriesQueryResponse([], 'timestamp');
 
         $this->builder
+            ->shouldAllowMockingProtectedMethods()
             ->shouldReceive('buildTimeSeriesQuery')
             ->with($context)
             ->once()
@@ -273,7 +272,9 @@ class QueryBuilderTest extends TestCase
         $result       = ['event' => ['result' => 'here']];
         $topNResponse = new TopNQueryResponse([]);
 
-        $this->builder->shouldReceive('buildTopNQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildTopNQuery')
             ->with($context)
             ->once()
             ->andReturn($query);
@@ -312,7 +313,9 @@ class QueryBuilderTest extends TestCase
         $result       = ['event' => ['result' => 'here']];
         $scanResponse = new ScanQueryResponse([]);
 
-        $this->builder->shouldReceive('buildScanQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildScanQuery')
             ->with($context, $rowBatchSize, $legacy, $resultFormat)
             ->once()
             ->andReturn($query);
@@ -358,7 +361,9 @@ class QueryBuilderTest extends TestCase
         $result         = ['event' => ['result' => 'here']];
         $selectResponse = new SelectQueryResponse([]);
 
-        $this->builder->shouldReceive('buildSelectQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildSelectQuery')
             ->with($context)
             ->once()
             ->andReturn($query);
@@ -456,14 +461,13 @@ class QueryBuilderTest extends TestCase
             $this->builder->orderBy($orderBy, 'asc');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTopNQuery());
     }
 
     /**
      * @return array<int,array<int,array<int|string,string>|bool|Dimension>>
      */
-    public function isTimeSeriesQueryDataProvider(): array
+    public static function isTimeSeriesQueryDataProvider(): array
     {
         return [
             [['__time' => 'hour'], true],
@@ -476,14 +480,13 @@ class QueryBuilderTest extends TestCase
     /**
      * @dataProvider isTimeSeriesQueryDataProvider
      *
-     * @param array<int|string,string>|Dimension $dimension
+     * @param Dimension|array<int|string,string> $dimension
      * @param bool                               $expected
      */
-    public function testIsTimeSeriesQuery($dimension, bool $expected): void
+    public function testIsTimeSeriesQuery(array|Dimension $dimension, bool $expected): void
     {
         $this->builder->select($dimension);
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
     }
 
@@ -510,7 +513,6 @@ class QueryBuilderTest extends TestCase
             $this->builder->sum('pages');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isSelectQuery());
     }
 
@@ -526,7 +528,6 @@ class QueryBuilderTest extends TestCase
             $this->builder->searchContains('wikipedia');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals($withSearchFilter, $this->builder->shouldAllowMockingProtectedMethods()->isSearchQuery());
     }
 
@@ -554,7 +555,6 @@ class QueryBuilderTest extends TestCase
             $this->builder->sum('pages');
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isScanQuery());
     }
 
@@ -592,7 +592,6 @@ class QueryBuilderTest extends TestCase
             $expected = false;
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->assertEquals($expected,
             $this->builder->shouldAllowMockingProtectedMethods()->isDimensionsListScanCompliant());
     }
@@ -609,7 +608,9 @@ class QueryBuilderTest extends TestCase
         $result       = [['event' => ['result' => 'here']]];
         $parsedResult = new GroupByQueryResponse($result);
 
-        $this->builder->shouldReceive('buildGroupByQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildGroupByQuery')
             ->with($context, 'v1')
             ->once()
             ->andReturn($query);
@@ -643,7 +644,9 @@ class QueryBuilderTest extends TestCase
         $parsedResult = new GroupByQueryResponse($result);
 
         $this->builder->interval('now - 1 week/now');
-        $this->builder->shouldReceive('buildGroupByQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildGroupByQuery')
             ->with($context)
             ->once()
             ->andReturn($query);
@@ -675,7 +678,9 @@ class QueryBuilderTest extends TestCase
         $result       = [['event' => ['result' => 'here']]];
         $parsedResult = new SearchQueryResponse($result);
 
-        $this->builder->shouldReceive('buildSearchQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildSearchQuery')
             ->with($context, SortingOrder::STRLEN)
             ->once()
             ->andReturn($query);
@@ -738,13 +743,17 @@ class QueryBuilderTest extends TestCase
 
         $this->builder->interval('12-02-2015', '13-02-2015');
 
-        $this->builder->shouldReceive('isScanQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('isScanQuery')
             ->once()
             ->andReturn($isScanQuery);
 
         if ($isScanQuery) {
             $scanQuery = $this->getScanQueryMock();
-            $this->builder->shouldReceive('buildScanQuery')
+            $this->builder
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('buildScanQuery')
                 ->once()
                 ->with($context)
                 ->andReturn($scanQuery);
@@ -756,13 +765,17 @@ class QueryBuilderTest extends TestCase
             return;
         }
 
-        $this->builder->shouldReceive('isTimeSeriesQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('isTimeSeriesQuery')
             ->once()
             ->andReturn($isTimeSeries);
 
         if ($isTimeSeries) {
             $timeseries = $this->getTimeseriesQueryMock();
-            $this->builder->shouldReceive('buildTimeSeriesQuery')
+            $this->builder
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('buildTimeSeriesQuery')
                 ->once()
                 ->with($context)
                 ->andReturn($timeseries);
@@ -774,13 +787,17 @@ class QueryBuilderTest extends TestCase
             return;
         }
 
-        $this->builder->shouldReceive('isTopNQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('isTopNQuery')
             ->once()
             ->andReturn($isTopNQuery);
 
         if ($isTopNQuery) {
             $topN = $this->getTopNQueryMock();
-            $this->builder->shouldReceive('buildTopNQuery')
+            $this->builder
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('buildTopNQuery')
                 ->once()
                 ->with($context)
                 ->andReturn($topN);
@@ -792,13 +809,17 @@ class QueryBuilderTest extends TestCase
             return;
         }
 
-        $this->builder->shouldReceive('isSelectQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('isSelectQuery')
             ->once()
             ->andReturn($isSelectQuery);
 
         if ($isSelectQuery) {
             $selectQuery = $this->getSelectQueryMock();
-            $this->builder->shouldReceive('buildSelectQuery')
+            $this->builder
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('buildSelectQuery')
                 ->once()
                 ->with($context)
                 ->andReturn($selectQuery);
@@ -810,13 +831,17 @@ class QueryBuilderTest extends TestCase
             return;
         }
 
-        $this->builder->shouldReceive('isSearchQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('isSearchQuery')
             ->once()
             ->andReturn($isSearchQuery);
 
         if ($isSearchQuery) {
             $searchQuery = $this->getSearchQueryMock();
-            $this->builder->shouldReceive('buildSearchQuery')
+            $this->builder
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('buildSearchQuery')
                 ->once()
                 ->with($context)
                 ->andReturn($searchQuery);
@@ -830,7 +855,9 @@ class QueryBuilderTest extends TestCase
 
         $groupBy = $this->getGroupByQueryMock();
 
-        $this->builder->shouldReceive('buildGroupByQuery')
+        $this->builder
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('buildGroupByQuery')
             ->once()
             ->with($context)
             ->andReturn($groupBy);
@@ -845,8 +872,7 @@ class QueryBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
 
-        /** @noinspection PhpUndefinedMethodInspection */
-        $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery([]);
+        $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery();
     }
 
     /**
@@ -930,7 +956,7 @@ class QueryBuilderTest extends TestCase
 
                 $this->assertEquals(new TableDataSource($dataSource), $givenDataSource);
                 $this->assertInstanceOf(IntervalCollection::class, $intervals);
-                $this->assertEquals('day', $granularity);
+                $this->assertEquals(Granularity::DAY, $granularity);
 
                 return true;
             });
@@ -978,7 +1004,9 @@ class QueryBuilderTest extends TestCase
         }
 
         if ($useLegacyOrderBy) {
-            $this->builder->shouldReceive('legacyIsOrderByDirectionDescending')
+            $this->builder
+                ->shouldAllowMockingProtectedMethods()
+                ->shouldReceive('legacyIsOrderByDirectionDescending')
                 ->once()
                 ->with($timeAlias)
                 ->andReturn(($direction == 'desc'));
@@ -992,7 +1020,6 @@ class QueryBuilderTest extends TestCase
             $context = new TimeSeriesQueryContext($context);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildTimeSeriesQuery($context);
     }
 
@@ -1006,7 +1033,7 @@ class QueryBuilderTest extends TestCase
         $this->expectExceptionMessage('You should specify a limit to make use of a top query');
 
         $this->builder->interval('10-02-2019/11-02-2019');
-        $this->builder->topN([]);
+        $this->builder->topN();
     }
 
     /**
@@ -1017,7 +1044,7 @@ class QueryBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
 
-        $this->builder->topN([]);
+        $this->builder->topN();
     }
 
     /**
@@ -1029,7 +1056,7 @@ class QueryBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
 
-        $this->builder->selectQuery([]);
+        $this->builder->selectQuery();
     }
 
     /**
@@ -1043,7 +1070,7 @@ class QueryBuilderTest extends TestCase
 
         $this->builder->interval('12-02-2019/13-02-2019');
 
-        $this->builder->selectQuery([]);
+        $this->builder->selectQuery();
     }
 
     /**
@@ -1054,7 +1081,7 @@ class QueryBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
 
-        $this->builder->search([]);
+        $this->builder->search();
     }
 
     /**
@@ -1067,7 +1094,7 @@ class QueryBuilderTest extends TestCase
         $this->expectExceptionMessage('You have to specify a search filter!');
 
         $this->builder->interval('12-02-2019/13-02-2019');
-        $this->builder->search([]);
+        $this->builder->search();
     }
 
     /**
@@ -1128,7 +1155,7 @@ class QueryBuilderTest extends TestCase
                 $granularity
             ) {
                 $this->assertEquals(new TableDataSource('wikipedia'), $givenDataSource);
-                $this->assertEquals($granularity, $givenGranularity);
+                $this->assertEquals(Granularity::from($granularity), $givenGranularity);
                 $this->assertInstanceOf(IntervalCollection::class, $intervals);
                 $this->assertEquals($filter, $givenFilter);
 
@@ -1167,7 +1194,6 @@ class QueryBuilderTest extends TestCase
             $context = new QueryContext($context);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildSearchQuery($context, $sortingOrder);
     }
 
@@ -1224,7 +1250,7 @@ class QueryBuilderTest extends TestCase
         if ($withOrderBy && $useLegacyOrderBy) {
             $this->builder->orderBy('__time', $orderByDirection);
 
-            if (OrderByDirection::validate($orderByDirection) == OrderByDirection::DESC) {
+            if (OrderByDirection::make($orderByDirection) == OrderByDirection::DESC) {
                 $descending = true;
             }
         }
@@ -1232,7 +1258,7 @@ class QueryBuilderTest extends TestCase
         if ($withOrderBy && !$useLegacyOrderBy) {
             $this->builder->orderByDirection($orderByDirection);
 
-            if (OrderByDirection::validate($orderByDirection) == OrderByDirection::DESC) {
+            if (OrderByDirection::make($orderByDirection) == OrderByDirection::DESC) {
                 $descending = true;
             }
         }
@@ -1275,7 +1301,6 @@ class QueryBuilderTest extends TestCase
             $context = new QueryContext($context);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildSelectQuery($context);
     }
 
@@ -1287,7 +1312,7 @@ class QueryBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
 
-        $this->builder->scan([]);
+        $this->builder->scan();
     }
 
     /**
@@ -1296,8 +1321,8 @@ class QueryBuilderTest extends TestCase
      */
     public function testBuildScanQueryWithIncorrectResultFormatType(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid scanQuery resultFormat given');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('"none" is not a valid backing value for enum Level23\Druid\Types\ScanQueryResultFormat');
 
         $this->builder->interval('12-02-2019/13-02-2019');
         $this->builder->scan([], 10, true, 'none');
@@ -1314,14 +1339,14 @@ class QueryBuilderTest extends TestCase
 
         $this->builder->interval('12-02-2019/13-02-2019');
         $this->builder->lookup('country', 'iso');
-        $this->builder->scan([]);
+        $this->builder->scan();
     }
 
     /**
-     * @testWith [true, false, true, {}, true, 10, 20, null, false, "list", "", true, true]
+     * @testWith [false, false, true, {}, false, 12, 12, 0, true, "compactedList", "__time", false, true]
+     *           [true, false, true, {}, true, 10, 20, null, false, "list", "", true, true]
      *           [false, true, false, {}, false, 50, null, 10, true, "compactedList", "channel", false, true]
      *           [true, false, false, {"maxRowsQueuedForOrdering":5}, true, 1, 1, 200, false, "list", "__time", true, true]
-     *           [false, false, true, {}, false, 12, 12, 0, true, "compactedList", "__time", false, true]
      *           [true, false, false, {"maxRowsQueuedForOrdering":5}, false, 0, 0, 200, false, "list", "__time", true, false]
      *           [false, false, true, {}, false, 12, null, 0, true, "compactedList", "__time", false, false]
      *
@@ -1457,7 +1482,6 @@ class QueryBuilderTest extends TestCase
             $context = new ScanQueryContext($context);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildScanQuery(
             $context,
             $rowBatchSize,
@@ -1477,7 +1501,7 @@ class QueryBuilderTest extends TestCase
         $this->builder->interval('10-02-2019/11-02-2019');
         $this->builder->limit(10);
 
-        $this->builder->topN([]);
+        $this->builder->topN();
     }
 
     /**
@@ -1547,7 +1571,7 @@ class QueryBuilderTest extends TestCase
                 new IsInstanceOf(DimensionInterface::class),
                 15,
                 'suppliers',
-                $withGranularity ? 'day' : 'all'
+                $withGranularity ? Granularity::DAY : Granularity::ALL
             );
 
         if ($context) {
@@ -1588,7 +1612,6 @@ class QueryBuilderTest extends TestCase
             $context = new TopNQueryContext($context);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildTopNQuery($context);
     }
 
@@ -1597,8 +1620,7 @@ class QueryBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify at least one interval');
 
-        /** @noinspection PhpUndefinedMethodInspection */
-        $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery([]);
+        $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery();
     }
 
     /**
@@ -1682,7 +1704,7 @@ class QueryBuilderTest extends TestCase
                 new IsInstanceOf(DimensionCollection::class),
                 new IsInstanceOf(IntervalCollection::class),
                 new IsInstanceOf(AggregationCollection::class),
-                'week'
+                Granularity::WEEK
             );
 
         $query->shouldReceive('setContext')
@@ -1725,14 +1747,13 @@ class QueryBuilderTest extends TestCase
                 ->with($subtotals);
         }
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery($context, $version);
     }
 
     /**
-     * @return \Level23\Druid\Queries\TimeSeriesQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
-    protected function getTimeseriesQueryMock()
+    protected function getTimeseriesQueryMock(): LegacyMockInterface|MockInterface
     {
         return Mockery::mock(
             TimeSeriesQuery::class,
@@ -1741,10 +1762,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return \Level23\Druid\Queries\ScanQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     * @throws \Exception
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
-    protected function getScanQueryMock()
+    protected function getScanQueryMock(): LegacyMockInterface|MockInterface
     {
         return Mockery::mock(
             ScanQuery::class,
@@ -1756,10 +1776,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return \Level23\Druid\Queries\GroupByQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     * @throws \Exception
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
-    protected function getGroupByQueryMock()
+    protected function getGroupByQueryMock(): LegacyMockInterface|MockInterface
     {
         return Mockery::mock(
             GroupByQuery::class,
@@ -1772,10 +1791,10 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return \Level23\Druid\Queries\GroupByQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      * @throws \Exception
      */
-    protected function getSearchQueryMock()
+    protected function getSearchQueryMock(): LegacyMockInterface|MockInterface
     {
         return Mockery::mock(
             SearchQuery::class,
@@ -1789,10 +1808,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return \Level23\Druid\Queries\TopNQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     * @throws \Exception
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
-    protected function getTopNQueryMock()
+    protected function getTopNQueryMock(): LegacyMockInterface|MockInterface
     {
         return Mockery::mock(
             TopNQuery::class,
@@ -1807,10 +1825,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return \Level23\Druid\Queries\SelectQuery|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     * @throws \Exception
+     * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface
      */
-    protected function getSelectQueryMock()
+    protected function getSelectQueryMock(): LegacyMockInterface|MockInterface
     {
         return Mockery::mock(
             SelectQuery::class,

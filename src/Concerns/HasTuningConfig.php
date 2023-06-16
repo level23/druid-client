@@ -19,7 +19,7 @@ trait HasTuningConfig
      *
      * @return $this
      */
-    public function tuningConfig($tuningConfig): self
+    public function tuningConfig(array|TuningConfig $tuningConfig): self
     {
         if (!$tuningConfig instanceof TuningConfig) {
             $tuningConfig = new TuningConfig($tuningConfig);

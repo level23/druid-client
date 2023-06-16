@@ -95,14 +95,17 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Add a dimension.
      *
-     * @param string $name
-     * @param string $type
+     * @param string          $name
+     * @param string|DataType $type
      *
      * @return $this
      */
-    public function dimension(string $name, string $type = DataType::STRING): IndexTaskBuilder
+    public function dimension(string $name, string|DataType $type = DataType::STRING): IndexTaskBuilder
     {
-        $this->dimensions[] = ['name' => $name, 'type' => DataType::validate($type)];
+        $this->dimensions[] = [
+            'name' => $name,
+            'type' => (is_string($type) ? DataType::from(strtolower($type)) : $type)->value,
+        ];
 
         return $this;
     }
@@ -110,23 +113,23 @@ class IndexTaskBuilder extends TaskBuilder
     /**
      * Add a multi-value dimension.
      *
-     * @param string $name
-     * @param string $type
-     * @param string $multiValueHandling $type
-     * @param bool   $createBitmapIndex
+     * @param string                    $name
+     * @param string|DataType           $type
+     * @param string|MultiValueHandling $multiValueHandling $type
+     * @param bool                      $createBitmapIndex
      *
      * @return $this
      */
     public function multiValueDimension(
         string $name,
-        string $type = DataType::STRING,
-        string $multiValueHandling = MultiValueHandling::SORTED_ARRAY,
+        string|DataType $type = DataType::STRING,
+        string|MultiValueHandling $multiValueHandling = MultiValueHandling::SORTED_ARRAY,
         bool $createBitmapIndex = true
     ): IndexTaskBuilder {
         $this->dimensions[] = [
             'name'               => $name,
-            'type'               => DataType::validate($type),
-            'multiValueHandling' => MultiValueHandling::validate($multiValueHandling),
+            'type'               => (is_string($type) ? DataType::from(strtolower($type)) : $type)->value,
+            'multiValueHandling' => (is_string($multiValueHandling) ? MultiValueHandling::from(strtoupper($multiValueHandling)) : $multiValueHandling)->value,
             'createBitmapIndex'  => $createBitmapIndex,
         ];
 
@@ -144,20 +147,6 @@ class IndexTaskBuilder extends TaskBuilder
     public function spatialDimension(string $name, array $dims): IndexTaskBuilder
     {
         $this->spatialDimensions->add(new SpatialDimension($name, $dims));
-
-        return $this;
-    }
-
-    /**
-     * Enable append mode. When this is set, we will add the data retrieved from the firehose to the segments, instead
-     * of overwriting the data in the segments.
-     *
-     * @return $this
-     * @deprecated Use appendToExisting() instead.
-     */
-    public function append(): IndexTaskBuilder
-    {
-        $this->appendToExisting();
 
         return $this;
     }
@@ -195,7 +184,7 @@ class IndexTaskBuilder extends TaskBuilder
      *
      * @return \Level23\Druid\Tasks\TaskInterface
      */
-    protected function buildTask($context): TaskInterface
+    protected function buildTask(array|TaskContext $context): TaskInterface
     {
         if (is_array($context)) {
             $context = new TaskContext($context);
@@ -232,7 +221,7 @@ class IndexTaskBuilder extends TaskBuilder
             );
         }
 
-        // No input source known? Then use our deprecated "string" approach.
+        // No input source known?
         if (!isset($this->inputSource)) {
             throw new InvalidArgumentException(
                 'No InputSource known. You have to supply an input source!.'

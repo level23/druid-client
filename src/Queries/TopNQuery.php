@@ -20,7 +20,7 @@ class TopNQuery implements QueryInterface
 
     protected IntervalCollection $intervals;
 
-    protected string $granularity;
+    protected Granularity $granularity;
 
     protected DimensionInterface $dimension;
 
@@ -48,7 +48,7 @@ class TopNQuery implements QueryInterface
      * @param DimensionInterface  $dimension
      * @param int                 $threshold
      * @param string              $metric
-     * @param string              $granularity
+     * @param string|Granularity  $granularity
      */
     public function __construct(
         DataSourceInterface $dataSource,
@@ -56,11 +56,11 @@ class TopNQuery implements QueryInterface
         DimensionInterface $dimension,
         int $threshold,
         string $metric,
-        string $granularity = 'all'
+        string|Granularity $granularity = Granularity::ALL
     ) {
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;
-        $this->granularity = Granularity::validate($granularity);
+        $this->granularity = is_string($granularity) ? Granularity::from(strtolower($granularity)) : $granularity;
         $this->dimension   = $dimension;
         $this->threshold   = $threshold;
         $this->metric      = $metric;
@@ -89,7 +89,7 @@ class TopNQuery implements QueryInterface
             'queryType'   => 'topN',
             'dataSource'  => $this->dataSource->toArray(),
             'intervals'   => $this->intervals->toArray(),
-            'granularity' => $this->granularity,
+            'granularity' => $this->granularity->value,
             'dimension'   => $this->dimension->toArray(),
             'threshold'   => $this->threshold,
             'metric'      => $metricSpec,

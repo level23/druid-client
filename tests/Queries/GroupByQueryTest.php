@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Queries;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Limits\Limit;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
@@ -37,7 +37,7 @@ class GroupByQueryTest extends TestCase
     public function testQuery(string $granularity, bool $expectException = false): void
     {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
         }
         $dimensionCollection = new DimensionCollection(
             new Dimension('column', 'myColumn')

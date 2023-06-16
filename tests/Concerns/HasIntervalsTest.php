@@ -12,15 +12,7 @@ use Level23\Druid\Queries\QueryBuilder;
 
 class HasIntervalsTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\DruidClient
-     */
-    protected $client;
-
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder
-     */
-    protected $builder;
+    protected QueryBuilder $builder;
 
     public function setUp(): void
     {

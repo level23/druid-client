@@ -29,12 +29,12 @@ trait HasVirtualColumns
      *
      * @param string $expression
      * @param string $as
-     * @param string $outputType
+     * @param string|DataType $outputType
      *
      * @return $this
      * @see https://druid.apache.org/docs/latest/misc/math-expr.html
      */
-    public function virtualColumn(string $expression, string $as, string $outputType = DataType::STRING): self
+    public function virtualColumn(string $expression, string $as, string|DataType $outputType = DataType::STRING): self
     {
         $this->virtualColumns[] = new VirtualColumn($expression, $as, $outputType);
 

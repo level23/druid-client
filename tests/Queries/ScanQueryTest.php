@@ -44,7 +44,7 @@ class ScanQueryTest extends TestCase
             'queryType'    => 'scan',
             'dataSource'   => $dataSource->toArray(),
             'intervals'    => $intervals->toArray(),
-            'resultFormat' => ScanQueryResultFormat::NORMAL_LIST,
+            'resultFormat' => ScanQueryResultFormat::NORMAL_LIST->value,
             'columns'      => [],
         ];
 
@@ -79,11 +79,11 @@ class ScanQueryTest extends TestCase
         $this->assertEquals($expected, $query->toArray());
 
         $query->setResultFormat(ScanQueryResultFormat::COMPACTED_LIST);
-        $expected['resultFormat'] = ScanQueryResultFormat::COMPACTED_LIST;
+        $expected['resultFormat'] = ScanQueryResultFormat::COMPACTED_LIST->value;
         $this->assertEquals($expected, $query->toArray());
 
         $query->setOrder(OrderByDirection::ASC);
-        $expected['order'] = OrderByDirection::ASC;
+        $expected['order'] = OrderByDirection::ASC->value;
         $this->assertEquals($expected, $query->toArray());
 
         $columns = ['added', 'delta'];

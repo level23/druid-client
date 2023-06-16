@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Filters;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
@@ -14,12 +14,12 @@ class BoundFilterTest extends TestCase
     /**
      * @return array<array<string|null|bool|float>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         $fields      = ['name'];
         $values      = ['18', 'foo'];
         $operators   = ['>', '>=', '<', '<='];
-        $orderings   = SortingOrder::values();
+        $orderings   = SortingOrder::cases();
         $orderings[] = null;
 
         $result = [];
@@ -28,7 +28,7 @@ class BoundFilterTest extends TestCase
             foreach ($values as $value) {
                 foreach ($operators as $operator) {
                     foreach ($orderings as $ordering) {
-                        $result[] = [$dimension, $operator, $value, $ordering];
+                        $result[] = [$dimension, $operator, $value, $ordering?->value];
                     }
                 }
             }
@@ -72,15 +72,19 @@ class BoundFilterTest extends TestCase
                 break;
         }
 
-        $expected['ordering'] = $ordering ?: (is_numeric($value) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
+        $expected['ordering'] = $ordering ?: (
+            is_numeric($value)
+                ? SortingOrder::NUMERIC->value
+                : SortingOrder::LEXICOGRAPHIC->value
+        );
 
         $this->assertEquals($expected, $filter->toArray());
     }
 
     public function testInvalidOperator(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid operator given');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('"is" is not a valid backing value for enum Level23\Druid\Types\BoundOperator');
 
         new BoundFilter('age', 'is', '18');
     }

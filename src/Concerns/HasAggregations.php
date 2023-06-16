@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Level23\Druid\Concerns;
 
 use Closure;
-use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\QueryBuilder;
@@ -49,7 +48,7 @@ trait HasAggregations
      *
      * @param string        $metric
      * @param string        $as
-     * @param string        $type
+     * @param string|DataType        $type
      * @param \Closure|null $filterBuilder   A closure which receives a FilterBuilder. When given, we will only apply
      *                                       the "sum" function to the records which match with the given filter.
      *
@@ -58,7 +57,7 @@ trait HasAggregations
     public function sum(
         string $metric,
         string $as = '',
-        string $type = DataType::LONG,
+        string|DataType $type = DataType::LONG,
         Closure $filterBuilder = null
     ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
@@ -89,7 +88,7 @@ trait HasAggregations
      * @param int|null $maxStreamLength This parameter is a temporary solution to avoid a known issue. It may be
      *                                  removed in a future release after the bug is fixed. This parameter defines the
      *                                  maximum number of items to store in each sketch. If a sketch reaches the limit,
-     *                                  the query can throw IllegalStateException. To workaround this issue, increase
+     *                                  the query can throw IllegalStateException. To work around this issue, increase
      *                                  the maximum stream length. See accuracy information in the DataSketches
      *                                  documentation for how many bytes are required per stream length.
      *
@@ -237,7 +236,7 @@ trait HasAggregations
      */
     public function cardinality(
         string $as,
-        $dimensionsOrDimensionBuilder,
+        array|Closure $dimensionsOrDimensionBuilder,
         bool $byRow = false,
         bool $round = false
     ): self {
@@ -245,14 +244,12 @@ trait HasAggregations
             $builder = new DimensionBuilder();
             call_user_func($dimensionsOrDimensionBuilder, $builder);
             $dimensions = $builder->getDimensions();
-        } elseif (is_array($dimensionsOrDimensionBuilder)) {
+        } else {
             $dimensions = [];
 
             foreach ($dimensionsOrDimensionBuilder as $dimension) {
                 $dimensions[] = new Dimension($dimension);
             }
-        } else {
-            throw new InvalidArgumentException('You should supply a Closure function or an array.');
         }
 
         $this->aggregations[] = new CardinalityAggregator(
@@ -348,7 +345,7 @@ trait HasAggregations
      *
      * @param string        $metric
      * @param string        $as
-     * @param string        $type
+     * @param string|DataType        $type
      * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
      *                                     min function to the records which match with the given filter.
      *
@@ -357,7 +354,7 @@ trait HasAggregations
     public function min(
         string $metric,
         string $as = '',
-        string $type = DataType::LONG,
+        string|DataType $type = DataType::LONG,
         Closure $filterBuilder = null
     ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
@@ -418,7 +415,7 @@ trait HasAggregations
      *
      * @param string        $metric
      * @param string        $as
-     * @param string        $type
+     * @param string|DataType        $type
      * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
      *                                     max function to the records which match with the given filter.
      *
@@ -427,7 +424,7 @@ trait HasAggregations
     public function max(
         string $metric,
         string $as = '',
-        string $type = DataType::LONG,
+        string|DataType $type = DataType::LONG,
         Closure $filterBuilder = null
     ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
@@ -484,7 +481,7 @@ trait HasAggregations
     }
 
     /**
-     * Get the any metric found based on the applied group-by filters.
+     * Get the any-metric found based on the applied group-by filters.
      * Returns any value including null. This aggregator can simplify and
      * optimize the performance by returning the first encountered value (including null)
      *
@@ -492,7 +489,7 @@ trait HasAggregations
      *
      * @param string        $metric
      * @param string        $as
-     * @param string        $type
+     * @param string|DataType        $type
      * @param int|null      $maxStringBytes For string types only. Optional, defaults to 1024.
      * @param \Closure|null $filterBuilder  A closure which receives a FilterBuilder. When given, we will only apply the
      *                                      "any" function to the records which match with the given filter.
@@ -502,7 +499,7 @@ trait HasAggregations
     public function any(
         string $metric,
         string $as = '',
-        string $type = DataType::LONG,
+        string|DataType $type = DataType::LONG,
         int $maxStringBytes = null,
         Closure $filterBuilder = null
     ): self {
@@ -515,7 +512,7 @@ trait HasAggregations
     }
 
     /**
-     * Get the any metric found based on the applied group-by filters.
+     * Get the any-metric found based on the applied group-by filters.
      * Returns any value including null. This aggregator can simplify and
      * optimize the performance by returning the first encountered value (including null)
      *
@@ -534,7 +531,7 @@ trait HasAggregations
     }
 
     /**
-     * Get the any metric found based on the applied group-by filters.
+     * Get the any-metric found based on the applied group-by filters.
      * Returns any value including null. This aggregator can simplify and
      * optimize the performance by returning the first encountered value (including null)
      *
@@ -553,7 +550,7 @@ trait HasAggregations
     }
 
     /**
-     * Get the any metric found based on the applied group-by filters.
+     * Get the any-metric found based on the applied group-by filters.
      * Returns any value including null. This aggregator can simplify and
      * optimize the performance by returning the first encountered value (including null)
      *
@@ -572,7 +569,7 @@ trait HasAggregations
     }
 
     /**
-     * Get the any metric found based on the applied group-by filters.
+     * Get the any-metric found based on the applied group-by filters.
      * Returns any value including null. This aggregator can simplify and
      * optimize the performance by returning the first encountered value (including null)
      *
@@ -603,7 +600,7 @@ trait HasAggregations
      *
      * @param string        $metric
      * @param string        $as
-     * @param string        $type
+     * @param string|DataType        $type
      * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
      *                                     "first" function to the records which match with the given filter.
      *
@@ -612,7 +609,7 @@ trait HasAggregations
     public function first(
         string $metric,
         string $as = '',
-        string $type = DataType::LONG,
+        string|DataType $type = DataType::LONG,
         Closure $filterBuilder = null
     ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(
@@ -700,7 +697,7 @@ trait HasAggregations
      *
      * @param string        $metric
      * @param string        $as
-     * @param string        $type
+     * @param string|DataType        $type
      * @param \Closure|null $filterBuilder A closure which receives a FilterBuilder. When given, we will only apply the
      *                                     "last" function to the records which match with the given filter.
      *
@@ -709,7 +706,7 @@ trait HasAggregations
     public function last(
         string $metric,
         string $as = '',
-        string $type = DataType::LONG,
+        string|DataType $type = DataType::LONG,
         Closure $filterBuilder = null
     ): self {
         $this->aggregations[] = $this->buildFilteredAggregation(

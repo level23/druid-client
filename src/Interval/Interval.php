@@ -16,18 +16,18 @@ class Interval implements IntervalInterface
     /**
      * Interval constructor.
      *
-     * @param \DateTimeInterface|string|int      $start DateTime object, unix timestamp or string accepted by
+     * @param \DateTimeInterface|int|string      $start DateTime object, unix timestamp or string accepted by
      *                                                  DateTime::__construct
-     * @param \DateTimeInterface|string|int|null $stop  DateTime object, unix timestamp or string accepted by
+     * @param \DateTimeInterface|int|string|null $stop  DateTime object, unix timestamp or string accepted by
      *                                                  DateTime::__construct
      *
      * @throws \Exception
      */
-    public function __construct($start, $stop = null)
+    public function __construct(DateTimeInterface|int|string $start, DateTimeInterface|int|string $stop = null)
     {
         // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
         if (is_string($start) && $stop === null) {
-            if (strpos($start, '/') !== false) {
+            if (str_contains($start, '/')) {
                 [$start, $stop] = explode('/', $start);
             } else {
                 throw new InvalidArgumentException(

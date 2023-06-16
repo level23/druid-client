@@ -10,10 +10,7 @@ use Level23\Druid\TuningConfig\TuningConfig;
 
 class HasTuningConfigTest extends TestCase
 {
-    /**
-     * @var IndexTaskBuilder
-     */
-    protected $builder;
+    protected IndexTaskBuilder $builder;
 
     public function setUp(): void
     {

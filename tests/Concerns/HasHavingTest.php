@@ -5,8 +5,10 @@ namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
 use Exception;
-use InvalidArgumentException;
+use TypeError;
+use Mockery\MockInterface;
 use Level23\Druid\DruidClient;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Queries\QueryBuilder;
@@ -22,10 +24,7 @@ class HasHavingTest extends TestCase
 {
     protected DruidClient $client;
 
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -37,9 +36,9 @@ class HasHavingTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getFilterMock(string $class)
+    protected function getFilterMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -52,9 +51,9 @@ class HasHavingTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getHavingMock(string $class)
+    protected function getHavingMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -67,7 +66,7 @@ class HasHavingTest extends TestCase
     /**
      * @return array<array<string|null|bool|int|float>>
      */
-    public function whereDataProvider(): array
+    public static function whereDataProvider(): array
     {
         return [
             ['name', '=', 'John', 'and'],
@@ -92,14 +91,14 @@ class HasHavingTest extends TestCase
      *
      * @param string                     $field
      * @param string                     $operator
-     * @param string|null|bool|int|float $value
+     * @param float|bool|int|string|null $value
      * @param string                     $boolean
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      * @throws \Exception
      */
-    public function testHaving(string $field, string $operator, $value, string $boolean): void
+    public function testHaving(string $field, string $operator, float|bool|int|string|null $value, string $boolean): void
     {
         if ($value === null) {
             $testingValue    = $operator;
@@ -109,119 +108,93 @@ class HasHavingTest extends TestCase
             $testingValue    = $value;
         }
 
-        switch ($testingOperator) {
-            case '<>':
-            case '!=':
-                $expected = [
-                    'type'       => 'not',
-                    'havingSpec' =>
-                        [
-                            'type'      => 'dimSelector',
-                            'dimension' => $field,
-                            'value'     => $testingValue,
-                        ],
-                ];
-                break;
-
-            case '>=':
-                $expected = [
-                    'type'        => 'or',
-                    'havingSpecs' =>
-                        [
-                            0 =>
-                                [
-                                    'type'        => 'greaterThan',
-                                    'aggregation' => $field,
-                                    'value'       => $testingValue,
-                                ],
-                            1 =>
-                                [
-                                    'type'        => 'equalTo',
-                                    'aggregation' => $field,
-                                    'value'       => $testingValue,
-                                ],
-                        ],
-                ];
-                break;
-
-            case '<=':
-                $expected = [
-                    'type'        => 'or',
-                    'havingSpecs' =>
-                        [
-                            0 =>
-                                [
-                                    'type'        => 'lessThan',
-                                    'aggregation' => $field,
-                                    'value'       => $testingValue,
-                                ],
-                            1 =>
-                                [
-                                    'type'        => 'equalTo',
-                                    'aggregation' => $field,
-                                    'value'       => $testingValue,
-                                ],
-                        ],
-                ];
-                break;
-
-            case 'like':
-                $expected = [
-                    'type'   => 'filter',
-                    'filter' =>
-                        [
-                            'type'      => 'like',
-                            'dimension' => $field,
-                            'pattern'   => $testingValue,
-                            'escape'    => '\\',
-                        ],
-                ];
-                break;
-
-            case 'not like':
-                $expected = [
-                    'type'       => 'not',
-                    'havingSpec' =>
-                        [
-                            'type'   => 'filter',
-                            'filter' =>
-                                [
-                                    'type'      => 'like',
-                                    'dimension' => $field,
-                                    'pattern'   => $testingValue,
-                                    'escape'    => '\\',
-                                ],
-                        ],
-                ];
-                break;
-
-            case '=':
-                $expected = [
-                    'type'      => 'dimSelector',
-                    'dimension' => $field,
-                    'value'     => $testingValue,
-                ];
-                break;
-
-            case '<':
-                $expected = [
-                    'type'        => 'lessThan',
-                    'aggregation' => $field,
-                    'value'       => $testingValue,
-                ];
-                break;
-
-            case '>':
-                $expected = [
-                    'type'        => 'greaterThan',
-                    'aggregation' => $field,
-                    'value'       => $testingValue,
-                ];
-                break;
-
-            default:
-                throw new Exception('Unknown operator ' . $testingOperator);
-        }
+        $expected = match ($testingOperator) {
+            '<>', '!=' => [
+                'type'       => 'not',
+                'havingSpec' =>
+                    [
+                        'type'      => 'dimSelector',
+                        'dimension' => $field,
+                        'value'     => $testingValue,
+                    ],
+            ],
+            '>='       => [
+                'type'        => 'or',
+                'havingSpecs' =>
+                    [
+                        0 =>
+                            [
+                                'type'        => 'greaterThan',
+                                'aggregation' => $field,
+                                'value'       => $testingValue,
+                            ],
+                        1 =>
+                            [
+                                'type'        => 'equalTo',
+                                'aggregation' => $field,
+                                'value'       => $testingValue,
+                            ],
+                    ],
+            ],
+            '<='       => [
+                'type'        => 'or',
+                'havingSpecs' =>
+                    [
+                        0 =>
+                            [
+                                'type'        => 'lessThan',
+                                'aggregation' => $field,
+                                'value'       => $testingValue,
+                            ],
+                        1 =>
+                            [
+                                'type'        => 'equalTo',
+                                'aggregation' => $field,
+                                'value'       => $testingValue,
+                            ],
+                    ],
+            ],
+            'like'     => [
+                'type'   => 'filter',
+                'filter' =>
+                    [
+                        'type'      => 'like',
+                        'dimension' => $field,
+                        'pattern'   => $testingValue,
+                        'escape'    => '\\',
+                    ],
+            ],
+            'not like' => [
+                'type'       => 'not',
+                'havingSpec' =>
+                    [
+                        'type'   => 'filter',
+                        'filter' =>
+                            [
+                                'type'      => 'like',
+                                'dimension' => $field,
+                                'pattern'   => $testingValue,
+                                'escape'    => '\\',
+                            ],
+                    ],
+            ],
+            '='        => [
+                'type'      => 'dimSelector',
+                'dimension' => $field,
+                'value'     => $testingValue,
+            ],
+            '<'        => [
+                'type'        => 'lessThan',
+                'aggregation' => $field,
+                'value'       => $testingValue,
+            ],
+            '>'        => [
+                'type'        => 'greaterThan',
+                'aggregation' => $field,
+                'value'       => $testingValue,
+            ],
+            default    => throw new Exception('Unknown operator ' . $testingOperator),
+        };
 
         $response = $this->builder->having($field, $operator, $value, $boolean);
         $this->assertEquals($this->builder, $response);
@@ -343,7 +316,7 @@ class HasHavingTest extends TestCase
      */
     public function testInvalidArguments(?string $field, ?string $operator, ?string $value): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
 
         $this->builder->having($field, $operator, $value);
     }

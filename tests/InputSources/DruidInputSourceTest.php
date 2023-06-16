@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\InputSources;
 
+use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\InputSources\DruidInputSource;
@@ -25,11 +26,14 @@ class DruidInputSourceTest extends TestCase
     {
         $inputSource = new DruidInputSource('test');
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify the interval which you want to use for your query!');
         $inputSource->toArray();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testFilter(): void
     {
         $interval = new Interval('12-04-2019', '15-04-2019');

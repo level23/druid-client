@@ -4,15 +4,11 @@ declare(strict_types=1);
 namespace Level23\Druid\Aggregations;
 
 use InvalidArgumentException;
+use Level23\Druid\Types\DataType;
 
 abstract class MethodAggregator implements AggregatorInterface
 {
-    /**
-     * The type of field. This can either be "long", "float" or "double"
-     *
-     * @var string
-     */
-    protected string $type;
+    protected DataType $type;
 
     protected string $outputName;
 
@@ -21,17 +17,19 @@ abstract class MethodAggregator implements AggregatorInterface
     /**
      * constructor.
      *
-     * @param string $metricName
-     * @param string $outputName                            When not given, we will use the same name as the metric.
-     * @param string $type                                  The type of field. This can either be "long", "float" or
+     * @param string          $metricName
+     * @param string          $outputName                   When not given, we will use the same name as the metric.
+     * @param string|DataType $type                         The type of field. This can either be "long", "float" or
      *                                                      "double"
      */
-    public function __construct(string $metricName, string $outputName = '', string $type = 'long')
+    public function __construct(string $metricName, string $outputName = '', string|DataType $type = DataType::LONG)
     {
-        $type = strtolower($type);
-        if (!in_array($type, ['long', 'float', 'double'])) {
+        if (is_string($type)) {
+            $type = DataType::from(strtolower($type));
+        }
+        if (!in_array($type, [DataType::LONG, DataType::FLOAT, DataType::DOUBLE])) {
             throw new InvalidArgumentException(
-                'Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"'
+                'Incorrect type given: ' . $type->value . '. This can either be "long", "float" or "double"'
             );
         }
 
@@ -48,7 +46,7 @@ abstract class MethodAggregator implements AggregatorInterface
     public function toArray(): array
     {
         return [
-            'type'      => $this->type . ucfirst($this->getMethod()),
+            'type'      => $this->type->value . ucfirst($this->getMethod()),
             'name'      => $this->outputName,
             'fieldName' => $this->metricName,
         ];

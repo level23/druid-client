@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\PostAggregations;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
@@ -64,8 +64,8 @@ class ArithmeticPostAggregatorTest extends TestCase
 
     public function testInvalidArithmeticFunction(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid arithmetic function given');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('"divide" is not a valid backing value for enum Level23\Druid\Types\ArithmeticFunction');
 
         $collections = new PostAggregationCollection(
             new FieldAccessPostAggregator('totals', 'totals'),
