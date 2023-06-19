@@ -4,7 +4,6 @@
  * This is just a simple helper class which displays the result set as a nice console table.
  *
  * Class ConsoleTable
- * @phpstan-type DataType array<int|string, string|int|array<string|int, array<mixed>|int|string>>
  */
 class ConsoleTable
 {
@@ -14,7 +13,7 @@ class ConsoleTable
     protected array $columns = [];
 
     /**
-     * @param DataType $data
+     * @param array<int|string, string|int|array<string|int, array<mixed>|int|string>> $data
      *
      * @return void
      */
@@ -55,7 +54,7 @@ class ConsoleTable
     }
 
     /**
-     * @param DataType $data
+     * @param array<int|string, string|int|array<string|int, array<mixed>|int|string>> $data
      *
      * @return string
      */
@@ -82,7 +81,7 @@ class ConsoleTable
     }
 
     /**
-     * @param DataType $data
+     * @param array<int|string, string|int|array<string|int, array<mixed>|int|string>> $data
      */
     public function __construct(array $data)
     {
