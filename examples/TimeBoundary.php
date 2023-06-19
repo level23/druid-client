@@ -18,7 +18,7 @@ try {
     // Enable this to see some more data
     $client->setLogger(new ConsoleLogger());
 
-    $response = $client->metadata()->timeBoundary('wikipedia', TimeBound::MAX_TIME, function(FilterBuilder $builder) {
+    $response = $client->metadata()->timeBoundary('wikipedia', TimeBound::MAX_TIME, function (FilterBuilder $builder) {
         $builder->where('channel', '!=', '#vi.wikipedia');
     });
 

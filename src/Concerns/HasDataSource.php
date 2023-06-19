@@ -185,9 +185,7 @@ trait HasDataSource
      */
     protected function getDataSource(DataSourceInterface|Closure|string $dataSourceOrClosure): DataSourceInterface
     {
-        if (is_string($dataSourceOrClosure)) {
-            return new TableDataSource($dataSourceOrClosure);
-        } elseif ($dataSourceOrClosure instanceof DataSourceInterface) {
+        if ($dataSourceOrClosure instanceof DataSourceInterface) {
             return $dataSourceOrClosure;
         } elseif ($dataSourceOrClosure instanceof Closure) {
 
@@ -196,11 +194,7 @@ trait HasDataSource
 
             return new QueryDataSource($builder->getQuery());
         } else {
-            throw new InvalidArgumentException(
-                'Invalid dataSource given! This can either be a string (dataSource name),  ' .
-                'an object which implements the DataSourceInterface, or a Closure function which allows ' .
-                'you to build a sub-query.'
-            );
+            return new TableDataSource($dataSourceOrClosure);
         }
     }
 }

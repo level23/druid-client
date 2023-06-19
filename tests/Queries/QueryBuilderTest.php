@@ -148,27 +148,6 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(Granularity::YEAR, $this->getProperty($this->builder, 'granularity'));
     }
 
-    public function testToJsonWithFailure(): void
-    {
-        $context = ['foo' => 'bar'];
-        $query   = $this->getTimeseriesQueryMock();
-
-        $this->builder
-            ->shouldReceive('getQuery')
-            ->with($context)
-            ->once()
-            ->andReturn($query);
-
-        $query->shouldReceive('toArray')
-            ->once()
-            ->andThrows(InvalidArgumentException::class, 'json_encode error: blaat woei');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('json_encode error:');
-
-        $this->builder->toJson($context);
-    }
-
     public function testToJson(): void
     {
         $context = ['foo' => 'bar'];

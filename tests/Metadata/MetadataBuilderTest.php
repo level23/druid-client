@@ -4,15 +4,23 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Metadata;
 
 use Mockery;
+use Closure;
+use Exception;
 use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\TimeBound;
 use Level23\Druid\Metadata\Structure;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Queries\QueryBuilder;
+use Level23\Druid\Context\QueryContext;
+use Level23\Druid\Filters\FilterBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
+use Level23\Druid\Context\ContextInterface;
+use Level23\Druid\DataSources\TableDataSource;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Exceptions\QueryResponseException;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 
@@ -322,6 +330,7 @@ class MetadataBuilderTest extends TestCase
      *
      * @param string $dataSource
      * @param string $shortHand
+     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
@@ -355,5 +364,211 @@ class MetadataBuilderTest extends TestCase
         } else {
             $this->assertEquals('2019-08-19T12:00:00.000Z/2019-08-19T13:00:00.000Z', $response);
         }
+    }
+
+    /**
+     * @return array<array<string|TableDataSource|TimeBound|Closure|QueryContext|null>>
+     */
+    public static function dataProvider(): array
+    {
+        return [
+            [
+                'wikipedia',
+                TimeBound::MAX_TIME,
+                function (FilterBuilder $builder) {
+                    $builder->where('name', '=', 'John Doe');
+                },
+            ],
+            [
+                'wikipedia',
+                null,
+                null,
+                new QueryContext(['timeout' => '3000']),
+            ],
+            [
+                'wikipedia',
+                TimeBound::BOTH,
+            ],
+            [
+                new TableDataSource('wikipedia'),
+                'minTime',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataProvider
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function testTimeBoundary(
+        DataSourceInterface|string $dataSource,
+        null|string|TimeBound $bound,
+        Closure $filterBuilder = null,
+        ContextInterface $context = null,
+    ): void {
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $expected = [
+            'queryType'  => 'timeBoundary',
+            'dataSource' => $dataSource instanceof DataSourceInterface ? $dataSource->toArray() : $dataSource,
+        ];
+
+        $expectedBound = $bound;
+        if (is_string($expectedBound)) {
+            $expectedBound = TimeBound::from($expectedBound);
+        }
+
+        if (!empty($expectedBound) && $expectedBound != TimeBound::BOTH) {
+            $expected['bound'] = $expectedBound->value;
+        }
+
+        if ($filterBuilder) {
+            $builder = new FilterBuilder();
+            call_user_func($filterBuilder, $builder);
+            $filter = $builder->getFilter();
+
+            if ($filter) {
+                $expected['filter'] = $filter->toArray();
+            }
+        }
+
+        if ($context) {
+            $expected['context'] = $context->toArray();
+        }
+
+        $this->client->shouldReceive('config')
+            ->once()
+            ->with('broker_url')
+            ->andReturn('http://broker.url');
+
+        $this->client->shouldReceive('executeRawRequest')
+            ->once()
+            ->withArgs(function ($method, $url, $config) use ($expected) {
+                $this->assertEquals('post', $method);
+                $this->assertEquals('http://broker.url/druid/v2', $url);
+                $this->assertEquals($expected, $config);
+
+                return true;
+            })
+            ->andReturn([
+                [
+                    'timestamp' => "2013-05-09T18:24:00.000Z",
+                    "result"    => [
+                        "minTime" => "2013-05-09T18:24:00.000Z",
+                        "maxTime" => "2013-05-09T18:37:00.000Z",
+                    ],
+                ],
+            ]);
+
+        $metadataBuilder->timeBoundary(
+            $dataSource,
+            $bound,
+            $filterBuilder,
+            $context
+        );
+    }
+
+    /**
+     * @return array<int, array<int,array<string, array<string, string>|string>|string>>
+     */
+    public static function responseDataProvider(): array
+    {
+        return [
+            [
+                [
+                    'timestamp' => "2013-05-09T18:24:00.000Z",
+                    "result"    => [
+                        "minTime" => "2013-05-09T18:24:00.000Z",
+                        "maxTime" => "2013-05-09T18:37:00.000Z",
+                    ],
+                ],
+            ],
+            [
+                [
+                    'timestamp' => "2013-05-09T18:24:00.000Z",
+                    "result"    => [
+                        "minTime" => "wrong",
+                        "maxTime" => "2013-05-09T18:37:00.000Z",
+                    ],
+                ],
+                'Failed to parse time: wrong',
+            ],
+            [
+                [
+                    'timestamp' => "2013-05-09T18:24:00.000Z",
+                    "result"    => [
+                        "minTime" => "2013-05-09T18:24:00.000Z",
+                    ],
+                ],
+            ],
+            [
+                [
+                    'timestamp' => "2013-05-09T18:24:00.000Z",
+                    "result"    => [
+                        "maxTime" => "2013-05-09T18:24:00.000Z",
+                    ],
+                ],
+            ],
+            [
+                [
+                    'timestamp' => "2013-05-09T18:24:00.000Z",
+                    "result"    => [
+                        "maxTime" => "wrong",
+                    ],
+                ],
+                'Failed to parse time: wrong',
+            ],
+            [
+                [],
+                'Received incorrect response:',
+            ],
+
+        ];
+    }
+
+    /**
+     * @dataProvider responseDataProvider
+     *
+     * @param array<int,null|array<string,string[]|string>> $response
+     * @param string|null                                   $exceptionMessage
+     *
+     * @return void
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testTimeBoundaryResponse(array $response, string $exceptionMessage = null): void
+    {
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $this->client->shouldReceive('config')
+            ->once()
+            ->with('broker_url')
+            ->andReturn('http://broker.url');
+
+        if (!empty($exceptionMessage)) {
+            $this->expectException(Exception::class);
+            $this->expectExceptionMessage($exceptionMessage);
+        }
+
+        $this->client->shouldReceive('executeRawRequest')
+            ->once()
+            ->withArgs(function ($method, $url, $config) {
+                $expected = [
+                    'queryType'  => 'timeBoundary',
+                    'dataSource' => 'wikipedia',
+                ];
+                $this->assertEquals('post', $method);
+                $this->assertEquals('http://broker.url/druid/v2', $url);
+                $this->assertEquals($expected, $config);
+
+                return true;
+            })
+            ->andReturn([$response]);
+
+        $metadataBuilder->timeBoundary('wikipedia');
     }
 }

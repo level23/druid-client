@@ -44,8 +44,6 @@ use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 use function json_encode;
-use function json_last_error;
-use function json_last_error_msg;
 
 class QueryBuilder
 {
@@ -99,10 +97,13 @@ class QueryBuilder
      *
      * @param \Level23\Druid\DruidClient $client
      * @param string                     $dataSource
-     * @param string|Granularity                     $granularity
+     * @param string|Granularity         $granularity
      */
-    public function __construct(DruidClient $client, string $dataSource = '', string|Granularity $granularity = Granularity::ALL)
-    {
+    public function __construct(
+        DruidClient $client,
+        string $dataSource = '',
+        string|Granularity $granularity = Granularity::ALL
+    ) {
         $this->client      = $client;
         $this->query       = $this;
         $this->dataSource  = new TableDataSource($dataSource);
@@ -117,8 +118,8 @@ class QueryBuilder
      * A virtual column can potentially draw from multiple underlying columns, although a virtual column always
      * presents itself as a single column.
      *
-     * @param string $expression
-     * @param string $as
+     * @param string          $expression
+     * @param string          $as
      * @param string|DataType $outputType
      *
      * @return $this
@@ -252,14 +253,7 @@ class QueryBuilder
     {
         $query = $this->getQuery($context);
 
-        $json = json_encode($query->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new InvalidArgumentException(
-                'json_encode error: ' . json_last_error_msg()
-            );
-        }
-
-        return (string)$json;
+        return strval(json_encode($query->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -406,8 +400,10 @@ class QueryBuilder
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function search(array|QueryContext $context = [], string|SortingOrder $sortingOrder = SortingOrder::LEXICOGRAPHIC): SearchQueryResponse
-    {
+    public function search(
+        array|QueryContext $context = [],
+        string|SortingOrder $sortingOrder = SortingOrder::LEXICOGRAPHIC
+    ): SearchQueryResponse {
         $query = $this->buildSearchQuery($context, $sortingOrder);
 
         $rawResponse = $this->client->executeQuery($query);
@@ -452,8 +448,10 @@ class QueryBuilder
      *
      * @return \Level23\Druid\Queries\SearchQuery
      */
-    protected function buildSearchQuery(array|QueryContext $context = [], string|SortingOrder $sortingOrder = SortingOrder::LEXICOGRAPHIC): SearchQuery
-    {
+    protected function buildSearchQuery(
+        array|QueryContext $context = [],
+        string|SortingOrder $sortingOrder = SortingOrder::LEXICOGRAPHIC
+    ): SearchQuery {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
         }

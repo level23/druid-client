@@ -7,6 +7,7 @@ use Mockery;
 use Exception;
 use TypeError;
 use Mockery\MockInterface;
+use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
@@ -98,8 +99,12 @@ class HasHavingTest extends TestCase
      * @preserveGlobalState disabled
      * @throws \Exception
      */
-    public function testHaving(string $field, string $operator, float|bool|int|string|null $value, string $boolean): void
-    {
+    public function testHaving(
+        string $field,
+        string $operator,
+        float|bool|int|string|null $value,
+        string $boolean
+    ): void {
         if ($value === null) {
             $testingValue    = $operator;
             $testingOperator = '=';
@@ -319,6 +324,15 @@ class HasHavingTest extends TestCase
         $this->expectException(TypeError::class);
 
         $this->builder->having($field, $operator, $value);
+    }
+
+    public function testClosureWithoutFilter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The arguments which you have supplied cannot be parsed');
+
+        $this->builder->having(function (HavingBuilder $builder) {
+        });
     }
 
     public function testHavingWithQueryFilter(): void
