@@ -332,7 +332,7 @@ Example of using a custom guzzle client:
 
 ```php
 
-// Create a custom guzzle client which uses a http proxy.
+// Create a custom guzzle client which uses an http proxy.
 $guzzleClient = new GuzzleHttp\Client([
     'proxy' => 'tcp://localhost:8125',
     'timeout' => 30,
