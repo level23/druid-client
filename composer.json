@@ -29,7 +29,6 @@
     "phpunit/phpunit": "^10",
     "laravel/framework": "^9.0",
     "laravel/lumen-framework": "^9.0"
-
   },
   "suggest": {
     "psr/log": "Required for using the log handler"
