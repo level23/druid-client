@@ -22,7 +22,7 @@ jobs:
           php-version: '8.2'
       - run: sudo apt-get update
       - run: sudo apt-get install -y ant
-      - run: phpunit --version
+      - run: vendor/bin/phpunit --version
       - run: composer install
       - run: ant gitlab
       - run: php vendor/bin/php-coveralls -v
