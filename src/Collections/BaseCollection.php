@@ -8,6 +8,7 @@ use Countable;
 use ArrayAccess;
 use ArrayIterator;
 use IteratorAggregate;
+use ReturnTypeWillChange;
 use InvalidArgumentException;
 
 /**
@@ -94,7 +95,7 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      * @return null|T
      * @since 5.0.0
      */
-    #[\ReturnTypeWillChange]
+    #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->items[$offset] ?? null;
@@ -115,8 +116,8 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      * @return void
      * @since 5.0.0
      */
-    #[\ReturnTypeWillChange]
-    public function offsetSet($offset, $value)
+    #[ReturnTypeWillChange]
+    public function offsetSet($offset, $value): void
     {
         $type = $this->getType();
         if (!$value instanceof $type) {
@@ -142,8 +143,8 @@ abstract class BaseCollection implements IteratorAggregate, ArrayAccess, Countab
      * @return void
      * @since 5.0.0
      */
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    #[ReturnTypeWillChange]
+    public function offsetUnset($offset): void
     {
         unset($this->items[$offset]);
     }

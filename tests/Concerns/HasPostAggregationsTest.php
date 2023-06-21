@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\PostAggregations\CdfPostAggregator;
@@ -29,10 +32,7 @@ use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
 
 class HasPostAggregationsTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -54,7 +54,6 @@ class HasPostAggregationsTest extends TestCase
             },
         ];
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $this->builder->shouldAllowMockingProtectedMethods()->buildFields($fields);
 
         $this->assertInstanceOf(PostAggregationCollection::class, $response);
@@ -91,16 +90,16 @@ class HasPostAggregationsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Incorrect field type given in postAggregation fields');
 
-        /** @noinspection PhpUndefinedMethodInspection */
+        /** @noinspection PhpParamsInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildFields($fields);
     }
 
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getPostAggregationMock(string $class)
+    protected function getPostAggregationMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);
@@ -477,7 +476,7 @@ class HasPostAggregationsTest extends TestCase
         $this->getPostAggregationMock(GreatestPostAggregator::class)
             ->shouldReceive('__construct')
             ->once()
-            ->with('theGreatest', new IsInstanceOf(PostAggregationCollection::class), 'long');
+            ->with('theGreatest', new IsInstanceOf(PostAggregationCollection::class), DataType::LONG);
 
         $result = $this->builder->longGreatest('theGreatest', ['field1', 'field2']);
 
@@ -493,7 +492,7 @@ class HasPostAggregationsTest extends TestCase
         $this->getPostAggregationMock(GreatestPostAggregator::class)
             ->shouldReceive('__construct')
             ->once()
-            ->with('theGreatest', new IsInstanceOf(PostAggregationCollection::class), 'double');
+            ->with('theGreatest', new IsInstanceOf(PostAggregationCollection::class), DataType::DOUBLE);
 
         $result = $this->builder->doubleGreatest('theGreatest', ['field1', 'field2']);
 
@@ -509,7 +508,7 @@ class HasPostAggregationsTest extends TestCase
         $this->getPostAggregationMock(LeastPostAggregator::class)
             ->shouldReceive('__construct')
             ->once()
-            ->with('theLeast', new IsInstanceOf(PostAggregationCollection::class), 'long');
+            ->with('theLeast', new IsInstanceOf(PostAggregationCollection::class), DataType::LONG);
 
         $result = $this->builder->longLeast('theLeast', ['field1', 'field2']);
 
@@ -525,7 +524,7 @@ class HasPostAggregationsTest extends TestCase
         $this->getPostAggregationMock(LeastPostAggregator::class)
             ->shouldReceive('__construct')
             ->once()
-            ->with('theLeast', new IsInstanceOf(PostAggregationCollection::class), 'double');
+            ->with('theLeast', new IsInstanceOf(PostAggregationCollection::class), DataType::DOUBLE);
 
         $result = $this->builder->doubleLeast('theLeast', ['field1', 'field2']);
 

@@ -37,7 +37,7 @@ class LookupDimensionTest extends TestCase
      *
      * @return void
      */
-    public function testDimensionWithArray(bool $isOneToOne, $keepMissingValue): void
+    public function testDimensionWithArray(bool $isOneToOne, bool|string $keepMissingValue): void
     {
         $lookupDimension = new LookupDimension(
             'number_id',

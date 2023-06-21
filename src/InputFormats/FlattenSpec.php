@@ -21,7 +21,7 @@ class FlattenSpec
     }
 
     /**
-     * @param string      $flattenFieldType One of the FlattenFieldType::* constant.s
+     * @param string|FlattenFieldType  $flattenFieldType One of the FlattenFieldType::* constant.s
      *                                      Valid options are:
      *                                      root, referring to a field at the root level of the record. Only really
      *                                      useful if useFieldDiscovery is false. path, referring to a field using
@@ -36,15 +36,15 @@ class FlattenSpec
      *
      * @return $this
      */
-    public function field(string $flattenFieldType, string $name, string $expr = null): self
+    public function field(string|FlattenFieldType $flattenFieldType, string $name, string $expr = null): self
     {
-        $type = FlattenFieldType::validate($flattenFieldType);
+        $type = is_string($flattenFieldType) ? FlattenFieldType::from(strtolower($flattenFieldType)) : $flattenFieldType;
 
         if (($type == FlattenFieldType::JQ || $type == FlattenFieldType::PATH) && empty($expr)) {
             throw new InvalidArgumentException('For type JQ or PATH, you need to specify the expression!');
         }
         $field = [
-            'type' => $type,
+            'type' => $type->value,
             'name' => $name,
         ];
 

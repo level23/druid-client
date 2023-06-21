@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Queries;
 
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Context\QueryContext;
 use Level23\Druid\Filters\FilterInterface;
@@ -15,7 +16,7 @@ class SearchQuery implements QueryInterface
 {
     protected DataSourceInterface $dataSource;
 
-    protected string $granularity;
+    protected Granularity $granularity;
 
     protected IntervalCollection $intervals;
 
@@ -30,7 +31,7 @@ class SearchQuery implements QueryInterface
      */
     protected array $dimensions = [];
 
-    protected string $sort = SortingOrder::LEXICOGRAPHIC;
+    protected SortingOrder $sort = SortingOrder::LEXICOGRAPHIC;
 
     protected ?QueryContext $context = null;
 
@@ -38,12 +39,12 @@ class SearchQuery implements QueryInterface
 
     public function __construct(
         DataSourceInterface $dataSource,
-        string $granularity,
+        string|Granularity $granularity,
         IntervalCollection $intervals,
         SearchFilterInterface $searchFilter
     ) {
         $this->dataSource   = $dataSource;
-        $this->granularity  = $granularity;
+        $this->granularity  = is_string($granularity) ? Granularity::from(strtolower($granularity)) : $granularity;
         $this->intervals    = $intervals;
         $this->searchFilter = $searchFilter;
     }
@@ -58,9 +59,9 @@ class SearchQuery implements QueryInterface
         $result = [
             'queryType'   => 'search',
             'dataSource'  => $this->dataSource->toArray(),
-            'granularity' => $this->granularity,
+            'granularity' => $this->granularity->value,
             'intervals'   => $this->intervals->toArray(),
-            'sort'        => ['type' => $this->sort],
+            'sort'        => ['type' => $this->sort->value],
             'query'       => $this->searchFilter->toArray(),
         ];
 
@@ -120,11 +121,11 @@ class SearchQuery implements QueryInterface
     }
 
     /**
-     * @param string $sort
+     * @param string|SortingOrder $sort
      */
-    public function setSort(string $sort): void
+    public function setSort(string|SortingOrder $sort): void
     {
-        $this->sort = SortingOrder::validate($sort);
+        $this->sort = is_string($sort) ? SortingOrder::from(strtolower($sort)) : $sort;
     }
 
     /**

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Extractions;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\NullHandling;
 use Level23\Druid\Extractions\StringFormatExtraction;
@@ -23,8 +23,8 @@ class StringFormatExtractionTest extends TestCase
     public function testExtraction(string $sprintf, string $nullHandling, bool $expectException): void
     {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('The given NullHandling value is invalid');
+            $this->expectException(ValueError::class);
+            $this->expectExceptionMessage('"'. $nullHandling.'" is not a valid backing value for enum Level23\Druid\Types\NullHandling');
         }
 
         $extraction = new StringFormatExtraction($sprintf, $nullHandling);
@@ -43,7 +43,7 @@ class StringFormatExtractionTest extends TestCase
         $this->assertEquals([
             'name'         => 'stringFormat',
             'format'       => '[%s]',
-            'nullHandling' => NullHandling::NULL_STRING,
+            'nullHandling' => NullHandling::NULL_STRING->value,
         ], $extraction->toArray());
     }
 }

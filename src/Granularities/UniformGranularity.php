@@ -8,25 +8,25 @@ use Level23\Druid\Collections\IntervalCollection;
 
 class UniformGranularity extends AbstractGranularity implements GranularityInterface
 {
-    protected string $segmentGranularity;
+    protected Granularity $segmentGranularity;
 
     /**
      * UniformGranularity constructor.
      *
-     * @param string             $segmentGranularity
-     * @param string             $queryGranularity
+     * @param string|Granularity $segmentGranularity
+     * @param string|Granularity $queryGranularity
      * @param bool               $rollup
      * @param IntervalCollection $intervals
      */
     public function __construct(
-        string $segmentGranularity,
-        string $queryGranularity,
+        string|Granularity $segmentGranularity,
+        string|Granularity $queryGranularity,
         bool $rollup,
         IntervalCollection $intervals
     ) {
         parent::__construct($queryGranularity, $rollup, $intervals);
 
-        $this->segmentGranularity = Granularity::validate($segmentGranularity);
+        $this->segmentGranularity = is_string($segmentGranularity) ? Granularity::from(strtolower($segmentGranularity)) : $segmentGranularity;
     }
 
     /**
@@ -38,8 +38,8 @@ class UniformGranularity extends AbstractGranularity implements GranularityInter
     {
         return [
             'type'               => 'uniform',
-            'segmentGranularity' => $this->segmentGranularity,
-            'queryGranularity'   => $this->queryGranularity,
+            'segmentGranularity' => $this->segmentGranularity->value,
+            'queryGranularity'   => $this->queryGranularity->value,
             'rollup'             => $this->rollup,
             'intervals'          => $this->intervals->toArray(),
         ];

@@ -111,14 +111,14 @@ class IndexTask implements TaskInterface
                     'dimensionsSpec'  => [
                         'dimensions' => $this->dimensions,
                     ],
-                    'metricsSpec'     => ($this->aggregations ? $this->aggregations->toArray() : null),
+                    'metricsSpec'     => ($this->aggregations?->toArray()),
                     'granularitySpec' => $this->granularity->toArray(),
-                    'transformSpec'   => ($this->transformSpec ? $this->transformSpec->toArray() : null),
+                    'transformSpec'   => ($this->transformSpec?->toArray()),
                 ],
                 'ioConfig'   => [
                     'type'             => $this->parallel ? 'index_parallel' : 'index',
                     'inputSource'      => $this->inputSource->toArray(),
-                    'inputFormat'      => $this->inputFormat ? $this->inputFormat->toArray() : null,
+                    'inputFormat'      => $this->inputFormat?->toArray(),
                     'appendToExisting' => $this->appendToExisting,
                 ],
             ],

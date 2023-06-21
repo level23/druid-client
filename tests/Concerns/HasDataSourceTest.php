@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
+use TypeError;
+use Mockery\MockInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\JoinType;
 use Level23\Druid\Queries\QueryBuilder;
@@ -18,10 +21,7 @@ use Level23\Druid\DataSources\LookupDataSource;
 
 class HasDataSourceTest extends TestCase
 {
-    /**
-     * @var QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface $builder
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -87,11 +87,9 @@ class HasDataSourceTest extends TestCase
 
     public function testJoinUsingSomethingWrong(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
         $this->expectExceptionMessage(
-            'Invalid dataSource given! This can either be a string (dataSource name),  ' .
-            'an object which implements the DataSourceInterface, or a Closure function which allows ' .
-            'you to build a sub-query.'
+            'must be of type Level23\Druid\DataSources\DataSourceInterface|Closure|string, int given'
         );
 
         $this->builder->join(1, 'o', 'o.name = name');
@@ -196,6 +194,9 @@ class HasDataSourceTest extends TestCase
         );
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testUnion(): void
     {
         $this->assertEquals(

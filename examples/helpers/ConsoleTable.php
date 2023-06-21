@@ -7,25 +7,34 @@
  */
 class ConsoleTable
 {
-    protected $columns = [];
+    /**
+     * @var array<string,int>
+     */
+    protected array $columns = [];
 
-    protected function detectColumnSize(array $data)
+    /**
+     * @param array<int|string, string|int|array<string|int, array<mixed>|int|string>> $data
+     *
+     * @return void
+     */
+    protected function detectColumnSize(array $data): void
     {
-        // Find longest string in each column
+        // Find the longest string in each column
         $columns = [];
-        foreach ($data as $row_key => $row) {
+        foreach ($data as $row) {
+            $row = (array)$row;
             foreach ($row as $cellKey => $cell) {
                 if (is_array($cell)) {
                     $cell = implode(', ', $cell);
                 }
 
-                $valueLength = strlen(((string)$cell));
-                $nameLength  = strlen(($cellKey));
+                $valueLength = strlen(strval($cell));
+                $nameLength  = strlen(strval($cellKey));
 
-                $length = $nameLength > $valueLength ? $nameLength : $valueLength;
+                $length = max($nameLength, $valueLength);
 
                 if (empty($columns[$cellKey]) || $columns[$cellKey] < $length) {
-                    $columns[$cellKey] = $length;
+                    $columns[strval($cellKey)] = $length;
                 }
             }
         }
@@ -36,7 +45,7 @@ class ConsoleTable
     protected function buildRow(): string
     {
         $table = '+';
-        foreach ($this->columns as $column => $length) {
+        foreach ($this->columns as $length) {
             $table .= str_repeat('-', $length + 1) . '-+';
         }
         $table .= PHP_EOL;
@@ -44,17 +53,22 @@ class ConsoleTable
         return $table;
     }
 
+    /**
+     * @param array<int|string, string|int|array<string|int, array<mixed>|int|string>> $data
+     *
+     * @return string
+     */
     protected function buildHeader(array $data): string
     {
-        $table = '';
-
-        $table .= $this->buildRow();
+        $table = $this->buildRow();
 
         // Build the header
         foreach ($data as $row) {
             $table .= '| ';
+            $row = (array)$row;
             foreach ($row as $cellKey => $cell) {
-                $table .= str_pad((string)$cellKey, $this->columns[$cellKey]) . ' | ';
+                $cellKey = strval($cellKey);
+                $table .= str_pad($cellKey, $this->columns[$cellKey]) . ' | ';
             }
             $table .= PHP_EOL;
 
@@ -66,6 +80,9 @@ class ConsoleTable
         return $table;
     }
 
+    /**
+     * @param array<int|string, string|int|array<string|int, array<mixed>|int|string>> $data
+     */
     public function __construct(array $data)
     {
         $this->detectColumnSize($data);

@@ -3,8 +3,14 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Metadata;
 
+use DateTime;
+use Exception;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\TimeBound;
+use Level23\Druid\Filters\FilterBuilder;
+use Level23\Druid\Context\ContextInterface;
+use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Exceptions\QueryResponseException;
 
 class MetadataBuilder
@@ -46,6 +52,105 @@ class MetadataBuilder
         }
 
         return $intervals[$dataSource];
+    }
+
+    /**
+     * Return the time boundary for the given dataSource.
+     * This finds the first and/or last occurrence of a record in the given dataSource.
+     * Optionally, you can also apply a filter. For example, to only see when the first and/or last occurrence
+     * was for a record where a specific condition was met.
+     *
+     * The return type varies per given $bound. If TimeBound::BOTH was given (or null, which is the same),
+     * we will return an array with the minTime and maxTime:
+     * ```
+     * array(
+     *  'minTime' => \DateTime object,
+     *  'maxTime' => \DateTime object
+     * )
+     * ```
+     *
+     * If only one time was requested with either TimeBound::MIN_TIME or TimeBound::MAX_TIME, we will return
+     * a DateTime object.
+     *
+     * @param string|\Level23\Druid\DataSources\DataSourceInterface $dataSource
+     * @param string|\Level23\Druid\Types\TimeBound|null            $bound
+     * @param \Closure|null                                         $filterBuilder
+     * @param \Level23\Druid\Context\ContextInterface|null          $context
+     *
+     * @return ( $bound is null ? array<\DateTime> : ( $bound is "both" ? array<DateTime> : \DateTime))
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function timeBoundary(
+        string|DataSourceInterface $dataSource,
+        null|string|TimeBound $bound = TimeBound::BOTH,
+        \Closure $filterBuilder = null,
+        ContextInterface $context = null
+    ): DateTime|array {
+
+        $query = [
+            'queryType'  => 'timeBoundary',
+            'dataSource' => is_string($dataSource) ? $dataSource : $dataSource->toArray(),
+        ];
+
+        if (is_string($bound)) {
+            $bound = TimeBound::from($bound);
+        }
+
+        if (!empty($bound) && $bound != TimeBound::BOTH) {
+            $query['bound'] = $bound->value;
+        }
+
+        if ($filterBuilder) {
+            $builder = new FilterBuilder();
+            call_user_func($filterBuilder, $builder);
+            $filter = $builder->getFilter();
+
+            if ($filter) {
+                $query['filter'] = $filter->toArray();
+            }
+        }
+
+        if ($context) {
+            $query['context'] = $context->toArray();
+        }
+
+        $url = $this->client->config('broker_url') . '/druid/v2';
+
+        /** @var array<int,null|array<string,string[]|string>> $response */
+        $response = $this->client->executeRawRequest('post', $url, $query);
+
+        if (!empty($response[0])
+            && !empty($response[0]['result'])
+            && is_array($response[0]['result'])
+        ) {
+            if (sizeof($response[0]['result']) == 1) {
+                $dateString = reset($response[0]['result']);
+                $date       = DateTime::createFromFormat('Y-m-d\TH:i:s.000\Z', $dateString);
+
+                if (!$date) {
+                    throw new Exception('Failed to parse time: ' . $dateString);
+                }
+
+                return $date;
+            } else {
+                $result = [];
+                foreach ($response[0]['result'] as $key => $dateString) {
+                    $date = DateTime::createFromFormat('Y-m-d\TH:i:s.000\Z', $dateString);
+
+                    if (!$date) {
+                        throw new Exception('Failed to parse time: ' . $dateString);
+                    }
+
+                    $result[$key] = $date;
+                }
+
+                return $result;
+            }
+        }
+
+        throw new Exception('Received incorrect response: ' . var_export($response, true));
     }
 
     /**

@@ -42,7 +42,7 @@ class IntervalTest extends TestCase
      *           ["2019-04-15", "2019-04-15"]
      *           ["2019-04-15", null, true]
      */
-    public function testIntervalWithStrings($start, $stop = null, $expectException = false): void
+    public function testIntervalWithStrings(string $start, string $stop = null, bool $expectException = false): void
     {
         $format = 'Y-m-d\TH:i:s.000\Z';
 
@@ -52,11 +52,11 @@ class IntervalTest extends TestCase
 
         $interval = new Interval($start, $stop);
 
-        if (strpos($start, '/') !== false) {
+        if (str_contains($start, '/')) {
             [$start, $stop] = explode('/', $start);
         }
 
-        $startObj = new DateTime((string)$start);
+        $startObj = new DateTime($start);
         $stopObj  = new DateTime((string)$stop);
 
         $this->assertEquals($interval->getStart()->format($format), $startObj->format($format));

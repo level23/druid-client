@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
+use ValueError;
 use ArrayObject;
-use InvalidArgumentException;
+use Mockery\MockInterface;
 use Level23\Druid\DruidClient;
 use Hamcrest\Core\IsInstanceOf;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
@@ -21,10 +23,7 @@ use Level23\Druid\Dimensions\PrefixFilteredDimension;
 
 class HasDimensionsTest extends TestCase
 {
-    /**
-     * @var QueryBuilder|\Mockery\MockInterface|\Mockery\LegacyMockInterface $builder
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -39,7 +38,7 @@ class HasDimensionsTest extends TestCase
      *
      * @return array<array<array<string,string>|bool|array<int|string,string|null|array<int|string,string|null>|Dimension|\ArrayObject<string,string>>>>
      */
-    public function selectDataProvider(): array
+    public static function selectDataProvider(): array
     {
         $expected = [
             'type'       => 'default',
@@ -74,7 +73,7 @@ class HasDimensionsTest extends TestCase
             [['browser', 'TheBrowser', null, 'something'], $expected, true],
             [[new Dimension('browser', 'TheBrowser')], $expected],
             [[new ArrayObject(['browser' => 'TheBrowser'])], $expected],
-            [['country_iso', 'country', null, DataType::LONG], $expectedLong],
+            [['country_iso', 'country', null, DataType::LONG->value], $expectedLong],
         ];
     }
 
@@ -90,7 +89,7 @@ class HasDimensionsTest extends TestCase
     public function testSelect(array $parameters, array $expectedResult, bool $expectException = false): void
     {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
         }
 
         $response = null;
@@ -120,7 +119,7 @@ class HasDimensionsTest extends TestCase
      */
     public function testLookup(): void
     {
-        Mockery::mock('overload:' . LookupDimension::class)
+        Mockery::mock('overload:' . LookupDimension::class, DimensionInterface::class)
             ->shouldReceive('__construct')
             ->andReturnUsing(function (
                 $dimension,
@@ -159,7 +158,7 @@ class HasDimensionsTest extends TestCase
             6 => 'Finance',
         ];
 
-        Mockery::mock('overload:' . LookupDimension::class)
+        Mockery::mock('overload:' . LookupDimension::class, DimensionInterface::class)
             ->shouldReceive('__construct')
             ->andReturnUsing(function (
                 $dimension,
@@ -171,7 +170,7 @@ class HasDimensionsTest extends TestCase
                 $this->assertEquals('department_id', $dimension);
                 $this->assertEquals('department', $as);
                 $this->assertEquals($departments, $map);
-                $this->assertEquals(true, $isOneToOne);
+                $this->assertTrue($isOneToOne);
 
                 return true;
             })
@@ -198,7 +197,7 @@ class HasDimensionsTest extends TestCase
      */
     public function testLookupDefaults(): void
     {
-        Mockery::mock('overload:' . LookupDimension::class)
+        Mockery::mock('overload:' . LookupDimension::class, DimensionInterface::class)
             ->shouldReceive('__construct')
             ->andReturnUsing(function (
                 $dimension,
@@ -209,7 +208,7 @@ class HasDimensionsTest extends TestCase
                 $this->assertEquals('name', $dimension);
                 $this->assertEquals('name', $as);
                 $this->assertEquals('full_name', $lookupFunction);
-                $this->assertEquals(false, $replaceMissingValue);
+                $this->assertFalse($replaceMissingValue);
             })
             ->once();
 
@@ -241,7 +240,7 @@ class HasDimensionsTest extends TestCase
             ->with($dimensionName, $as, $outputType)
             ->once();
 
-        Mockery::mock('overload:' . ListFilteredDimension::class)
+        Mockery::mock('overload:' . ListFilteredDimension::class, DimensionInterface::class)
             ->shouldReceive('__construct')
             ->with(new IsInstanceOf(Dimension::class), $values, $isWhitelist)
             ->once();
@@ -270,7 +269,7 @@ class HasDimensionsTest extends TestCase
             ->with($dimensionName, $as, $outputType)
             ->once();
 
-        Mockery::mock('overload:' . RegexFilteredDimension::class)
+        Mockery::mock('overload:' . RegexFilteredDimension::class, DimensionInterface::class)
             ->shouldReceive('__construct')
             ->with(new IsInstanceOf(Dimension::class), $regex)
             ->once();
@@ -299,7 +298,7 @@ class HasDimensionsTest extends TestCase
             ->with($dimensionName, $as, $outputType)
             ->once();
 
-        Mockery::mock('overload:' . PrefixFilteredDimension::class)
+        Mockery::mock('overload:' . PrefixFilteredDimension::class, DimensionInterface::class)
             ->shouldReceive('__construct')
             ->with(new IsInstanceOf(Dimension::class), $prefix)
             ->once();

@@ -5,6 +5,8 @@ namespace Level23\Druid\Tests;
 
 use Mockery;
 use ReflectionClass;
+use Mockery\MockInterface;
+use Mockery\LegacyMockInterface;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -17,11 +19,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function getProperty(object $object, string $propertyName)
+    public static function getProperty(object $object, string $propertyName): mixed
     {
         $reflectionClass = new ReflectionClass($object);
 
         $property = $reflectionClass->getProperty($propertyName);
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $property->setAccessible(true);
 
         return $property->getValue($object);
@@ -51,9 +54,9 @@ class TestCase extends \PHPUnit\Framework\TestCase
      * @param string      $class
      * @param string|null $interface
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getConstructorMock(string $class, ?string $interface = null)
+    protected function getConstructorMock(string $class, ?string $interface = null): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);

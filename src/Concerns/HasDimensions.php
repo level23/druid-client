@@ -33,7 +33,7 @@ trait HasDimensions
      * Select a dimension from our statistics. Possible use a lookup function to find the
      * real data which we want to use.
      *
-     * @param array<int,string>|\ArrayObject<int|string,string>|string|DimensionInterface $dimension
+     * @param \ArrayObject<int|string,string>|string|DimensionInterface|array<int,string> $dimension
      * @param string                                                                      $as         When dimensions
      *                                                                                                is a string (the
      *                                                                                                dimension), you
@@ -41,7 +41,7 @@ trait HasDimensions
      *                                                                                                alias output name
      *                                                                                                here.
      * @param \Closure|null                                                               $extraction
-     * @param string                                                                      $outputType This can either
+     * @param string|DataType                                                             $outputType This can either
      *                                                                                                be
      *                                                                                                "long",
      *                                                                                                "float" or
@@ -50,10 +50,10 @@ trait HasDimensions
      * @return self
      */
     public function select(
-        $dimension,
+        array|ArrayObject|string|DimensionInterface $dimension,
         string $as = '',
         Closure $extraction = null,
-        string $outputType = DataType::STRING
+        string|DataType $outputType = DataType::STRING
     ): self {
         if (is_string($dimension)) {
             if (!empty($extraction)) {
@@ -65,9 +65,12 @@ trait HasDimensions
                 $extraction = null;
             }
 
-            $this->addDimension(
-                new Dimension($dimension, ($as ?: $dimension), DataType::validate($outputType), $extraction)
-            );
+            $this->addDimension(new Dimension(
+                $dimension,
+                ($as ?: $dimension),
+                is_string($outputType) ? DataType::from(strtolower($outputType)) : $outputType,
+                $extraction
+            ));
         } else {
             $this->addDimension($dimension);
         }
@@ -93,7 +96,7 @@ trait HasDimensions
         string $lookupFunction,
         string $dimension,
         string $as = '',
-        $keepMissingValue = false
+        bool|string $keepMissingValue = false
     ): self {
         $this->addDimension(new LookupDimension(
             $dimension,
@@ -127,7 +130,7 @@ trait HasDimensions
         array $map,
         string $dimension,
         string $as = '',
-        $keepMissingValue = false,
+        bool|string $keepMissingValue = false,
         bool $isOneToOne = false
     ): self {
         $this->addDimension(new LookupDimension(
@@ -150,7 +153,7 @@ trait HasDimensions
      * @param string[] $values      A list of items which you want to select (whitelist) or not select (blacklist)
      * @param string   $as          The name as it will be used in the result set. If left empty, we will use the same
      *                              name as the dimension.
-     * @param string   $outputType  This can either be "long", "float" or "string"
+     * @param string|DataType   $outputType  This can either be "long", "float" or "string"
      * @param bool     $isWhitelist Whether the list is a whitelist (true) or a blacklist (false)
      *
      * @return self
@@ -159,7 +162,7 @@ trait HasDimensions
         string $dimension,
         array $values,
         string $as = '',
-        string $outputType = DataType::STRING,
+        string|DataType $outputType = DataType::STRING,
         bool $isWhitelist = true
     ): self {
         $this->addDimension(new ListFilteredDimension(
@@ -185,7 +188,7 @@ trait HasDimensions
      * @param string $regex       Only return the items in this dimension which match with the given java regex.
      * @param string $as          The name as it will be used in the result set. If left empty, we will use the same
      *                            name as the dimension.
-     * @param string $outputType  This can either be "long", "float" or "string"
+     * @param string|DataType $outputType  This can either be "long", "float" or "string"
      *
      * @return self
      */
@@ -193,7 +196,7 @@ trait HasDimensions
         string $dimension,
         string $regex,
         string $as = '',
-        string $outputType = DataType::STRING
+        string|DataType $outputType = DataType::STRING
     ): self {
         $this->addDimension(new RegexFilteredDimension(
             new Dimension(
@@ -216,7 +219,7 @@ trait HasDimensions
      * @param string $prefix      Only return the values which match with the given prefix.
      * @param string $as          The name as it will be used in the result set. If left empty, we will use the same
      *                            name as the dimension.
-     * @param string $outputType  This can either be "long", "float" or "string"
+     * @param string|DataType $outputType  This can either be "long", "float" or "string"
      *
      * @return self
      */
@@ -224,7 +227,7 @@ trait HasDimensions
         string $dimension,
         string $prefix,
         string $as = '',
-        string $outputType = DataType::STRING
+        string|DataType $outputType = DataType::STRING
     ): self {
         $this->addDimension(new PrefixFilteredDimension(
             new Dimension(
@@ -241,9 +244,9 @@ trait HasDimensions
     /**
      * Add a dimension or a set of dimensions to our dimension list.
      *
-     * @param DimensionInterface|string|array<int,string>|ArrayObject<int|string,string> $dimension
+     * @param ArrayObject<int|string,string>|string|DimensionInterface|array<int,string> $dimension
      */
-    protected function addDimension($dimension): void
+    protected function addDimension(array|ArrayObject|string|DimensionInterface $dimension): void
     {
         if ($dimension instanceof DimensionInterface) {
             $this->dimensions[] = $dimension;

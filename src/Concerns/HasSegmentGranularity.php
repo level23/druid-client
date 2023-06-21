@@ -8,18 +8,18 @@ use Level23\Druid\Types\Granularity;
 trait HasSegmentGranularity
 {
     /**
-     * @var null|string
+     * @var null|Granularity
      */
-    protected ?string $segmentGranularity = null;
+    protected ?Granularity $segmentGranularity = null;
 
     /**
-     * @param string $segmentGranularity
+     * @param string|Granularity $segmentGranularity
      *
      * @return $this
      */
-    public function segmentGranularity(string $segmentGranularity): self
+    public function segmentGranularity(string|Granularity $segmentGranularity): self
     {
-        $this->segmentGranularity = Granularity::validate($segmentGranularity);
+        $this->segmentGranularity = is_string($segmentGranularity) ? Granularity::from(strtolower($segmentGranularity)) : $segmentGranularity;
 
         return $this;
     }

@@ -34,7 +34,7 @@ class LookupExtraction implements ExtractionInterface
      */
     public function __construct(
         string $lookupName,
-        $replaceMissingValue = true,
+        bool|string $replaceMissingValue = true,
         bool $optimize = true,
         ?bool $injective = null
 
@@ -46,7 +46,7 @@ class LookupExtraction implements ExtractionInterface
         if (is_string($replaceMissingValue)) {
             $this->replaceMissingValueWith = $replaceMissingValue;
         } else {
-            $this->retainMissingValue = (bool)$replaceMissingValue;
+            $this->retainMissingValue = $replaceMissingValue;
         }
     }
 

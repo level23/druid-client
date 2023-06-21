@@ -9,27 +9,20 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\TimeBound;
+use Level23\Druid\Filters\FilterBuilder;
 
 try {
-    $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
+    $client = new DruidClient(['router_url' => 'https://127.0.0.1:8888']);
 
     // Enable this to see some more data
-    //$client->setLogger(new ConsoleLogger());
+    $client->setLogger(new ConsoleLogger());
 
-    $response = $client->metadata()->intervals('wikipedia');
-
-    // Uncomment this to see the raw response.
-    //print_r($response);
-
-
-    $intervals = [];
-    array_walk($response, function ($value, $key) use (&$intervals) {
-        $intervals[] = array_merge($value, ['interval' => $key]);
+    $response = $client->metadata()->timeBoundary('wikipedia', TimeBound::MAX_TIME, function (FilterBuilder $builder) {
+        $builder->where('channel', '!=', '#vi.wikipedia');
     });
 
-    // Display the result as a console table.
-    new ConsoleTable($intervals);
-
+    echo $response->format('d-m-Y H:i:s');
 } catch (Exception $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

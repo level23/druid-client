@@ -29,7 +29,7 @@ trait HasDataSource
      *
      * @return self
      */
-    public function from($dataSource): self
+    public function from(DataSourceInterface|string $dataSource): self
     {
         return $this->dataSource($dataSource);
     }
@@ -41,7 +41,7 @@ trait HasDataSource
      *
      * @return self
      */
-    public function dataSource($dataSource): self
+    public function dataSource(DataSourceInterface|string $dataSource): self
     {
         if (is_string($dataSource)) {
             $this->dataSource = new TableDataSource($dataSource);
@@ -53,20 +53,20 @@ trait HasDataSource
     }
 
     /**
-     * @param string|DataSourceInterface|\Closure $dataSourceOrClosure
+     * @param \Closure|string|DataSourceInterface $dataSourceOrClosure
      * @param string                              $as
      * @param string                              $condition
-     * @param string                              $joinType
+     * @param string|JoinType                     $joinType
      *
      * @return self
      */
-    public function join($dataSourceOrClosure, string $as, string $condition, string $joinType = JoinType::INNER): self
+    public function join(DataSourceInterface|Closure|string $dataSourceOrClosure, string $as, string $condition, string|JoinType $joinType = JoinType::INNER): self
     {
         if ($this->dataSource instanceof TableDataSource && $this->dataSource->dataSourceName == '') {
             throw new InvalidArgumentException('You first have to define your "from" dataSource before you can join!');
         }
 
-        if (substr($as, -1) != '.') {
+        if (!str_ends_with($as, '.')) {
             $as .= '.';
         }
 
@@ -90,7 +90,7 @@ trait HasDataSource
      * @param string $lookupName The name of the lookup dataSource.
      * @param string $as         The alias name as the dataSource will be used in the query.
      * @param string $condition  The condition how the match will be made.
-     * @param string $joinType   The join type to use. This can be INNER or LEFT.
+     * @param string|JoinType $joinType   The join type to use. This can be INNER or LEFT.
      *
      * @return self
      */
@@ -98,7 +98,7 @@ trait HasDataSource
         string $lookupName,
         string $as,
         string $condition,
-        string $joinType = JoinType::INNER
+        string|JoinType $joinType = JoinType::INNER
     ): self {
         $lookupDataSource = new LookupDataSource($lookupName);
 
@@ -106,25 +106,25 @@ trait HasDataSource
     }
 
     /**
-     * @param string|DataSourceInterface|\Closure $dataSourceOrClosure
+     * @param \Closure|string|DataSourceInterface $dataSourceOrClosure
      * @param string                              $as
      * @param string                              $condition
      *
      * @return self
      */
-    public function leftJoin($dataSourceOrClosure, string $as, string $condition): self
+    public function leftJoin(DataSourceInterface|Closure|string $dataSourceOrClosure, string $as, string $condition): self
     {
         return $this->join($dataSourceOrClosure, $as, $condition, JoinType::LEFT);
     }
 
     /**
-     * @param string|DataSourceInterface|\Closure $dataSourceOrClosure
+     * @param \Closure|string|DataSourceInterface $dataSourceOrClosure
      * @param string                              $as
      * @param string                              $condition
      *
      * @return self
      */
-    public function innerJoin($dataSourceOrClosure, string $as, string $condition): self
+    public function innerJoin(DataSourceInterface|Closure|string $dataSourceOrClosure, string $as, string $condition): self
     {
         return $this->join($dataSourceOrClosure, $as, $condition);
     }
@@ -160,7 +160,7 @@ trait HasDataSource
      * @return $this
      * @see https://druid.apache.org/docs/latest/querying/datasource.html#union
      */
-    public function union($dataSources, bool $append = true): self
+    public function union(array|string $dataSources, bool $append = true): self
     {
         $dataSources = (array)$dataSources;
 
@@ -178,16 +178,14 @@ trait HasDataSource
     }
 
     /**
-     * @param string|DataSourceInterface|\Closure $dataSourceOrClosure
+     * @param \Closure|string|DataSourceInterface $dataSourceOrClosure
      *
      * @return DataSourceInterface
      * @throws InvalidArgumentException
      */
-    protected function getDataSource($dataSourceOrClosure)
+    protected function getDataSource(DataSourceInterface|Closure|string $dataSourceOrClosure): DataSourceInterface
     {
-        if (is_string($dataSourceOrClosure)) {
-            return new TableDataSource($dataSourceOrClosure);
-        } elseif ($dataSourceOrClosure instanceof DataSourceInterface) {
+        if ($dataSourceOrClosure instanceof DataSourceInterface) {
             return $dataSourceOrClosure;
         } elseif ($dataSourceOrClosure instanceof Closure) {
 
@@ -196,11 +194,7 @@ trait HasDataSource
 
             return new QueryDataSource($builder->getQuery());
         } else {
-            throw new InvalidArgumentException(
-                'Invalid dataSource given! This can either be a string (dataSource name),  ' .
-                'an object which implements the DataSourceInterface, or a Closure function which allows ' .
-                'you to build a sub-query.'
-            );
+            return new TableDataSource($dataSourceOrClosure);
         }
     }
 }

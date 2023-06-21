@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Extractions;
 
+use Level23\Druid\Types\Granularity;
+
 /**
  * Class TimeFormatExtraction
  *
@@ -22,7 +24,7 @@ class TimeFormatExtraction implements ExtractionInterface
 {
     protected ?string $format;
 
-    protected ?string $granularity;
+    protected ?Granularity $granularity;
 
     protected ?string $locale;
 
@@ -33,26 +35,27 @@ class TimeFormatExtraction implements ExtractionInterface
     /**
      * TimeFormatExtraction constructor.
      *
-     * @param string|null $format         date time format for the resulting dimension value, in Joda Time
-     *                                    DateTimeFormat, or null to use the default ISO8601 format.
-     * @param string|null $granularity    granularity to apply before formatting, or omit to not apply any granularity.
-     * @param string|null $locale         locale (language and country) to use, given as an IETF BCP 47 language tag,
-     *                                    e.g. en-US, en-GB, fr-FR, fr-CA, etc.
-     * @param string|null $timeZone       time zone to use in IANA tz database format, e.g. Europe/Berlin (this can
-     *                                    possibly be different from the aggregation time-zone)
-     * @param bool|null   $asMilliseconds boolean value, set to true to treat input strings as millis rather than
-     *                                    ISO8601 strings. Additionally, if format is null or not specified, output
-     *                                    will be in millis rather than ISO8601.
+     * @param string|null             $format         date time format for the resulting dimension value, in Joda Time
+     *                                                DateTimeFormat, or null to use the default ISO8601 format.
+     * @param string|Granularity|null $granularity    granularity to apply before formatting, or omit to not apply any
+     *                                                granularity.
+     * @param string|null             $locale         locale (language and country) to use, given as an IETF BCP 47
+     *                                                language tag, e.g. en-US, en-GB, fr-FR, fr-CA, etc.
+     * @param string|null             $timeZone       time zone to use in IANA tz database format, e.g. Europe/Berlin
+     *                                                (this can possibly be different from the aggregation time-zone)
+     * @param bool|null               $asMilliseconds boolean value, set to true to treat input strings as millis
+     *                                                rather than ISO8601 strings. Additionally, if format is null or
+     *                                                not specified, output will be in millis rather than ISO8601.
      */
     public function __construct(
         ?string $format = null,
-        ?string $granularity = null,
+        string|Granularity $granularity = null,
         ?string $locale = null,
         ?string $timeZone = null,
         ?bool $asMilliseconds = null
     ) {
         $this->format      = $format;
-        $this->granularity = $granularity;
+        $this->granularity = is_string($granularity) ? Granularity::from(strtolower($granularity)) : $granularity;
         $this->locale      = $locale;
         $this->timeZone    = $timeZone;
         $this->asMillis    = $asMilliseconds;
@@ -73,7 +76,11 @@ class TimeFormatExtraction implements ExtractionInterface
 
         foreach ($properties as $property) {
             if ($this->$property !== null) {
-                $result[$property] = $this->$property;
+                if ($property == 'granularity') {
+                    $result['granularity'] = $this->granularity?->value;
+                } else {
+                    $result[$property] = $this->$property;
+                }
             }
         }
 

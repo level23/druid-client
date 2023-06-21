@@ -69,6 +69,6 @@ class SqlInputSource implements InputSourceInterface
 
     protected function databaseTypeFromConnectUri(string $connectURI): string
     {
-        return (strpos(strtolower($connectURI), 'postgresql') !== false) ? 'postgresql' : 'mysql';
+        return (str_contains(strtolower($connectURI), 'postgresql')) ? 'postgresql' : 'mysql';
     }
 }

@@ -11,7 +11,7 @@ class DistinctCountAggregatorTest extends TestCase
     /**
      * @return array<array<string|int|null>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['dimension', 'abc', 32768],

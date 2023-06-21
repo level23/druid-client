@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Level23\Druid\Tests\Concerns;
 
 use Mockery;
+use Mockery\MockInterface;
 use Level23\Druid\DruidClient;
+use Mockery\LegacyMockInterface;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\SearchFilters\RegexSearchFilter;
@@ -14,10 +16,7 @@ use Level23\Druid\SearchFilters\SearchFilterInterface;
 
 class HasSearchFiltersTest extends TestCase
 {
-    /**
-     * @var \Level23\Druid\Queries\QueryBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
-     */
-    protected $builder;
+    protected QueryBuilder|MockInterface|LegacyMockInterface $builder;
 
     public function setUp(): void
     {
@@ -29,9 +28,9 @@ class HasSearchFiltersTest extends TestCase
     /**
      * @param string $class
      *
-     * @return \Mockery\Generator\MockConfigurationBuilder|\Mockery\LegacyMockInterface|\Mockery\MockInterface
+     * @return LegacyMockInterface|MockInterface
      */
-    protected function getSearchFilterMock(string $class)
+    protected function getSearchFilterMock(string $class): LegacyMockInterface|MockInterface
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
         $builder->setInstanceMock(true);

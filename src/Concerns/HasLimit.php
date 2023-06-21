@@ -17,9 +17,9 @@ trait HasLimit
     protected ?Limit $limit = null;
 
     /**
-     * @var string|null
+     * @var OrderByDirection|null
      */
-    protected ?string $direction = null;
+    protected ?OrderByDirection $direction = null;
 
     /**
      * We can only order by fields if there is a limit specified (....., I know... ).
@@ -58,16 +58,16 @@ trait HasLimit
      * Sort the result. This only applies for GroupBy and TopN Queries.
      * You should use `orderByDirection()` for TimeSeries, Select and Scan Queries.
      *
-     * @param string $dimensionOrMetric The dimension or metric where you want to order by.
-     * @param string $direction         The direction of your order. Default is "asc".
-     * @param string $sortingOrder      The algorithm used to order the result.
+     * @param string                  $dimensionOrMetric The dimension or metric where you want to order by.
+     * @param string|OrderByDirection $direction         The direction of your order. Default is "asc".
+     * @param string|SortingOrder     $sortingOrder      The algorithm used to order the result.
      *
      * @return $this
      */
     public function orderBy(
         string $dimensionOrMetric,
-        string $direction = OrderByDirection::ASC,
-        string $sortingOrder = SortingOrder::LEXICOGRAPHIC
+        string|OrderByDirection $direction = OrderByDirection::ASC,
+        string|SortingOrder $sortingOrder = SortingOrder::LEXICOGRAPHIC
     ): self {
         $order = new OrderBy($dimensionOrMetric, $direction, $sortingOrder);
 
@@ -84,13 +84,13 @@ trait HasLimit
      * In which order should we return the result.
      * This only applies to TimeSeries, Select and Scan Queries. Use `orderBy()` For GroupBy and TopN Queries.
      *
-     * @param string $direction The direction of your order.
+     * @param string|OrderByDirection $direction The direction of your order.
      *
      * @return $this
      */
-    public function orderByDirection(string $direction = OrderByDirection::DESC): self
+    public function orderByDirection(string|OrderByDirection $direction = OrderByDirection::DESC): self
     {
-        $this->direction = OrderByDirection::validate($direction);
+        $this->direction = is_string($direction) ? OrderByDirection::make($direction) : $direction;
 
         return $this;
     }

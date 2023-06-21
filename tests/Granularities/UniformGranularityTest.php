@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Granularities;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Collections\IntervalCollection;
@@ -31,7 +31,7 @@ class UniformGranularityTest extends TestCase
         bool $expectException = false
     ): void {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
         }
 
         $intervalCollection = new IntervalCollection(

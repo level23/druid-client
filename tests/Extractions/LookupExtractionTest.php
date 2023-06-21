@@ -11,7 +11,7 @@ class LookupExtractionTest extends TestCase
     /**
      * @return array<array<string|bool|null>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         $arguments = [];
         $lookup    = 'numbers';
@@ -35,13 +35,13 @@ class LookupExtractionTest extends TestCase
      * @dataProvider dataProvider
      *
      * @param string      $lookup
-     * @param string|bool $keepMissing
+     * @param bool|string $keepMissing
      * @param bool        $optimize
      * @param bool|null   $injective
      */
     public function testExtractionFunction(
         string $lookup,
-        $keepMissing,
+        bool|string $keepMissing,
         bool $optimize,
         ?bool $injective
     ): void {

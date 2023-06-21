@@ -45,7 +45,7 @@ class CompactTaskBuilder extends TaskBuilder
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function buildTask($context): TaskInterface
+    protected function buildTask(array|TaskContext $context): TaskInterface
     {
         if (is_array($context)) {
             $context = new TaskContext($context);

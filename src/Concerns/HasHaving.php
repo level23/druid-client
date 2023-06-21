@@ -27,23 +27,23 @@ trait HasHaving
      *
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=' or 'like'
      *
-     * @param string|HavingFilterInterface|FilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|null|float                                    $operator
-     * @param string|null|float                                    $value
+     * @param Closure|string|FilterInterface|HavingFilterInterface $havingOrMetricOrClosure
+     * @param float|string|null                                    $operator
+     * @param float|string|null|bool                               $value
      * @param string                                               $boolean
      *
      * @return $this
      */
     public function having(
-        $havingOrMetricOrClosure,
-        $operator = null,
-        $value = null,
+        Closure|string|HavingFilterInterface|FilterInterface $havingOrMetricOrClosure,
+        float|string $operator = null,
+        float|string|bool $value = null,
         string $boolean = 'and'
     ): self {
         $having = null;
 
         if ($value === null && $operator !== null) {
-            $value    = $operator;
+            $value = $operator;
             $operator = '=';
         }
 
@@ -102,14 +102,17 @@ trait HasHaving
     /**
      * Add a having filter
      *
-     * @param string|HavingFilterInterface|Closure $havingOrMetricOrClosure
-     * @param string|float|null                    $operator
-     * @param string|float|null                    $value
+     * @param Closure|string|HavingFilterInterface $havingOrMetricOrClosure
+     * @param float|string|null                    $operator
+     * @param float|string|null                    $value
      *
      * @return $this
      */
-    public function orHaving($havingOrMetricOrClosure, $operator = null, $value = null): self
-    {
+    public function orHaving(
+        Closure|HavingFilterInterface|string $havingOrMetricOrClosure,
+        float|string $operator = null,
+        float|string $value = null
+    ): self {
         return $this->having($havingOrMetricOrClosure, $operator, $value, 'or');
     }
 

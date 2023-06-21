@@ -10,25 +10,25 @@ class OrderBy implements OrderByInterface
 {
     protected string $dimension;
 
-    protected string $direction;
+    protected OrderByDirection $direction;
 
-    protected string $dimensionOrder;
+    protected SortingOrder $dimensionOrder;
 
     /**
      * OrderBy constructor.
      *
-     * @param string $dimension
-     * @param string $direction
-     * @param string $dimensionOrder
+     * @param string                  $dimension
+     * @param string|OrderByDirection $direction
+     * @param string|SortingOrder     $dimensionOrder
      */
     public function __construct(
         string $dimension,
-        string $direction = OrderByDirection::ASC,
-        string $dimensionOrder = SortingOrder::LEXICOGRAPHIC
+        string|OrderByDirection $direction = OrderByDirection::ASC,
+        string|SortingOrder $dimensionOrder = SortingOrder::LEXICOGRAPHIC
     ) {
         $this->dimension      = $dimension;
-        $this->direction      = OrderByDirection::validate($direction);
-        $this->dimensionOrder = SortingOrder::validate($dimensionOrder);
+        $this->direction      = is_string($direction) ? OrderByDirection::make($direction) : $direction;
+        $this->dimensionOrder = is_string($dimensionOrder) ? SortingOrder::from($dimensionOrder) : $dimensionOrder;
     }
 
     /**
@@ -40,8 +40,8 @@ class OrderBy implements OrderByInterface
     {
         return [
             'dimension'      => $this->dimension,
-            'direction'      => $this->direction,
-            'dimensionOrder' => $this->dimensionOrder,
+            'direction'      => $this->direction->value,
+            'dimensionOrder' => $this->dimensionOrder->value,
         ];
     }
 
@@ -58,10 +58,10 @@ class OrderBy implements OrderByInterface
     /**
      * Return the direction of the order by
      *
-     * @return string
+     * @return OrderByDirection
      */
-    public function getDirection(): string
+    public function getDirection(): OrderByDirection
     {
-        return $this->direction ?: OrderByDirection::ASC;
+        return $this->direction;
     }
 }

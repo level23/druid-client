@@ -12,7 +12,7 @@ class SearchFilterTest extends TestCase
     /**
      * @return array<array<string|string[]|bool|null>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             ['name', 'John', false],
@@ -30,7 +30,7 @@ class SearchFilterTest extends TestCase
      * @param string|string[] $valueOrValues
      * @param bool            $caseSensitive
      */
-    public function testFilter(string $dimension, $valueOrValues, ?bool $caseSensitive): void
+    public function testFilter(string $dimension, array|string $valueOrValues, ?bool $caseSensitive): void
     {
         if ($caseSensitive !== null) {
             $filter = new SearchFilter($dimension, $valueOrValues, $caseSensitive);

@@ -19,7 +19,7 @@ class TimeSeriesQuery implements QueryInterface
 
     protected IntervalCollection $intervals;
 
-    protected string $granularity;
+    protected Granularity $granularity;
 
     protected ?FilterInterface $filter = null;
 
@@ -50,16 +50,16 @@ class TimeSeriesQuery implements QueryInterface
      *
      * @param DataSourceInterface $dataSource
      * @param IntervalCollection  $intervals
-     * @param string              $granularity
+     * @param string|Granularity  $granularity
      */
     public function __construct(
         DataSourceInterface $dataSource,
         IntervalCollection $intervals,
-        string $granularity = 'all'
+        string|Granularity $granularity = Granularity::ALL
     ) {
         $this->dataSource  = $dataSource;
         $this->intervals   = $intervals;
-        $this->granularity = Granularity::validate($granularity);
+        $this->granularity = is_string($granularity) ? Granularity::from(strtolower($granularity)) : $granularity;
     }
 
     /**
@@ -74,7 +74,7 @@ class TimeSeriesQuery implements QueryInterface
             'dataSource'  => $this->dataSource->toArray(),
             'descending'  => $this->descending,
             'intervals'   => $this->intervals->toArray(),
-            'granularity' => $this->granularity,
+            'granularity' => $this->granularity->value,
         ];
 
         if ($this->filter) {

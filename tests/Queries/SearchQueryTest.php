@@ -43,13 +43,13 @@ class SearchQueryTest extends TestCase
             'granularity' => 'day',
             'intervals'   => $intervals->toArray(),
             'query'       => $searchFilter->toArray(),
-            'sort'        => ['type' => SortingOrder::LEXICOGRAPHIC],
+            'sort'        => ['type' => SortingOrder::LEXICOGRAPHIC->value],
         ];
 
         $this->assertEquals($expected, $query->toArray());
 
         $query->setSort(SortingOrder::STRLEN);
-        $expected['sort']['type'] = SortingOrder::STRLEN;
+        $expected['sort']['type'] = SortingOrder::STRLEN->value;
         $this->assertEquals($expected, $query->toArray());
 
         $context = new QueryContext();

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\InputSources;
 
+use DateTime;
+use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\InputSources\HttpInputSource;
 use Level23\Druid\InputSources\LocalInputSource;
@@ -32,9 +34,10 @@ class CombineInputSourceTest extends TestCase
 
     public function testCombineInputSourceWithWrongContent(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Only input sources are allowed!');
+        /** @noinspection PhpParamsInspection */
         // @phpstan-ignore-next-line
-        new CombineInputSource([new \DateTime('now')]);
+        new CombineInputSource([new DateTime('now')]);
     }
 }

@@ -1,17 +1,12 @@
 <?php
 declare(strict_types=1);
 
-/** @noinspection PhpUndefinedNamespaceInspection */
-
-/** @noinspection PhpUndefinedClassInspection */
-
 namespace Level23\Druid\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
  * Class Druid
- *
  *
  * @method static \Level23\Druid\Queries\QueryBuilder query(string $dataSource = '', string $granularity = \Level23\Druid\Types\Granularity::ALL)
  * @method static void cancelQuery(string $identifier)
@@ -39,7 +34,7 @@ class Druid extends Facade
      *
      * @return string
      */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return 'druid';
     }

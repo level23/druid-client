@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Level23\Druid\OrderBy;
 
+use Level23\Druid\Types\OrderByDirection;
+
 interface OrderByInterface
 {
     /**
@@ -22,7 +24,7 @@ interface OrderByInterface
     /**
      * Return the direction of the order by
      *
-     * @return string
+     * @return OrderByDirection
      */
-    public function getDirection(): string;
+    public function getDirection(): OrderByDirection;
 }

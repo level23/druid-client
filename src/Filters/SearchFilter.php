@@ -21,7 +21,7 @@ class SearchFilter implements FilterInterface
     /**
      * @var string|string[]
      */
-    protected $value;
+    protected string|array $value;
 
     protected bool $caseSensitive;
 
@@ -38,7 +38,7 @@ class SearchFilter implements FilterInterface
      */
     public function __construct(
         string $dimension,
-        $valueOrValues,
+        array|string $valueOrValues,
         bool $caseSensitive = false,
         ?ExtractionInterface $extractionFunction = null
     ) {

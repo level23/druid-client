@@ -10,7 +10,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
 {
     protected string $outputName;
 
-    protected string $function;
+    protected ArithmeticFunction $function;
 
     protected PostAggregationCollection $fields;
 
@@ -27,7 +27,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
      * - quotient division behaves like regular floating point division
      *
      * @param string                    $outputName
-     * @param string                    $function              Supported functions are +, -, *, /, and quotient.
+     * @param string|ArithmeticFunction                    $function              Supported functions are +, -, *, /, and quotient.
      * @param PostAggregationCollection $fields                List with field names which are used for this function.
      *
      *
@@ -38,12 +38,12 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
      */
     public function __construct(
         string $outputName,
-        string $function,
+        string|ArithmeticFunction $function,
         PostAggregationCollection $fields,
         bool $floatingPointOrdering = true
     ) {
         $this->outputName            = $outputName;
-        $this->function              = ArithmeticFunction::validate($function);
+        $this->function              = is_string($function) ? ArithmeticFunction::from(strtolower($function)) : $function;
         $this->fields                = $fields;
         $this->floatingPointOrdering = $floatingPointOrdering;
     }
@@ -58,7 +58,7 @@ class ArithmeticPostAggregator implements PostAggregatorInterface
         return [
             'type'     => 'arithmetic',
             'name'     => $this->outputName,
-            'fn'       => $this->function,
+            'fn'       => $this->function->value,
             'fields'   => $this->fields->toArray(),
             'ordering' => $this->floatingPointOrdering ? null : 'numericFirst',
         ];

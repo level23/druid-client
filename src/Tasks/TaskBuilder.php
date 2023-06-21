@@ -5,6 +5,7 @@ namespace Level23\Druid\Tasks;
 
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
+use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Interval\IntervalInterface;
 use function json_encode;
 
@@ -45,11 +46,11 @@ abstract class TaskBuilder
 
         foreach ($intervals as $dateStr) {
 
-            if (!$foundFrom && substr($dateStr, 0, strlen($fromStr)) === $fromStr) {
+            if (!$foundFrom && str_starts_with($dateStr, $fromStr)) {
                 $foundFrom = true;
             }
 
-            if (!$foundTo && substr($dateStr, -strlen($toStr)) === $toStr) {
+            if (!$foundTo && str_ends_with($dateStr, $toStr)) {
                 $foundTo = true;
             }
 
@@ -73,7 +74,7 @@ abstract class TaskBuilder
      * @return string
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
-    public function execute($context = []): string
+    public function execute(array|TaskContext $context = []): string
     {
         $task = $this->buildTask($context);
 
@@ -89,7 +90,7 @@ abstract class TaskBuilder
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \JsonException
      */
-    public function toJson($context = []): string
+    public function toJson(array|TaskContext $context = []): string
     {
         $task = $this->buildTask($context);
 
@@ -106,7 +107,7 @@ abstract class TaskBuilder
      * @return array<string,mixed>
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function toArray($context = []): array
+    public function toArray(array|TaskContext $context = []): array
     {
         $task = $this->buildTask($context);
 
@@ -134,5 +135,5 @@ abstract class TaskBuilder
      * @return \Level23\Druid\Tasks\TaskInterface
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    abstract protected function buildTask($context): TaskInterface;
+    abstract protected function buildTask(array|TaskContext $context): TaskInterface;
 }

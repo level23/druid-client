@@ -24,7 +24,7 @@ class ScanQuery implements QueryInterface
 
     protected IntervalCollection $intervals;
 
-    protected string $resultFormat = ScanQueryResultFormat::NORMAL_LIST;
+    protected ScanQueryResultFormat $resultFormat = ScanQueryResultFormat::NORMAL_LIST;
 
     /**
      * How many rows buffered before return to client. Default is 20480
@@ -46,9 +46,9 @@ class ScanQuery implements QueryInterface
      * "none" is used. Currently, "ascending" and "descending" are only supported for queries where the __time column
      * is included in the columns field and the requirements outlined in the time ordering section are met.
      *
-     * @var string
+     * @var OrderByDirection
      */
-    protected string $order;
+    protected OrderByDirection $order;
 
     /**
      * How many rows to return. If not specified, all rows will be returned.
@@ -94,7 +94,7 @@ class ScanQuery implements QueryInterface
             'queryType'    => 'scan',
             'dataSource'   => $this->dataSource->toArray(),
             'intervals'    => $this->intervals->toArray(),
-            'resultFormat' => $this->resultFormat,
+            'resultFormat' => $this->resultFormat->value,
             'columns'      => $this->columns,
         ];
 
@@ -127,7 +127,7 @@ class ScanQuery implements QueryInterface
         }
 
         if (isset($this->order)) {
-            $result['order'] = $this->order;
+            $result['order'] = $this->order->value;
         }
 
         return $result;
@@ -148,11 +148,11 @@ class ScanQuery implements QueryInterface
     /**
      * How the results are represented. Use one of the ScanQueryResultFormat constants
      *
-     * @param string $resultFormat
+     * @param string|ScanQueryResultFormat $resultFormat
      */
-    public function setResultFormat(string $resultFormat): void
+    public function setResultFormat(string|ScanQueryResultFormat $resultFormat): void
     {
-        $this->resultFormat = ScanQueryResultFormat::validate($resultFormat);
+        $this->resultFormat = is_string($resultFormat) ? ScanQueryResultFormat::from(strtolower($resultFormat)) : $resultFormat;
     }
 
     /**
@@ -227,11 +227,11 @@ class ScanQuery implements QueryInterface
      * Currently, "ascending" and "descending" are only supported for queries where the __time column is included in
      * the columns field and the requirements outlined in the time ordering section are met.
      *
-     * @param string $order
+     * @param string|OrderByDirection $order
      */
-    public function setOrder(string $order): void
+    public function setOrder(string|OrderByDirection $order): void
     {
-        $this->order = OrderByDirection::validate($order);
+        $this->order = is_string($order) ? OrderByDirection::make($order) : $order;
     }
 
     /**

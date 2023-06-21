@@ -10,6 +10,7 @@ use Hamcrest\Core\IsInstanceOf;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Tasks\CompactTask;
 use Level23\Druid\Interval\Interval;
+use Level23\Druid\Types\Granularity;
 use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Tasks\CompactTaskBuilder;
@@ -48,7 +49,7 @@ class CompactTaskBuilderTest extends TestCase
     /**
      * @return array<array<array<string,int>|null|string|TuningConfig|int|TaskContext>>
      */
-    public function buildTaskDataProvider(): array
+    public static function buildTaskDataProvider(): array
     {
         $tuningConfig = new TuningConfig();
         $tuningConfig->setMaxRetry(3);
@@ -74,11 +75,13 @@ class CompactTaskBuilderTest extends TestCase
      * @param int|null                         $targetCompactionSizeBytes
      * @param string|null                      $taskId
      *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
      * @dataProvider        buildTaskDataProvider
      */
     public function testBuildTask(
-        $context,
+        array|TaskContext $context,
         ?string $interval,
         ?string $segmentGranularity,
         ?TuningConfig $tuningConfig,
@@ -95,13 +98,13 @@ class CompactTaskBuilderTest extends TestCase
             $this->expectException(InvalidArgumentException::class);
             $this->expectExceptionMessage('You have to specify an interval!');
 
-            /** @noinspection PhpUndefinedMethodInspection */
             $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
 
             return;
         }
 
         if ($segmentGranularity) {
+            $segmentGranularity = Granularity::from(strtolower($segmentGranularity));
             $builder->segmentGranularity($segmentGranularity);
         }
 
@@ -151,7 +154,6 @@ class CompactTaskBuilderTest extends TestCase
                 $taskId
             );
 
-        /** @noinspection PhpUndefinedMethodInspection */
         $response = $builder->shouldAllowMockingProtectedMethods()->buildTask($context);
 
         $this->assertInstanceOf(TaskInterface::class, $response);

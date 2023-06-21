@@ -12,12 +12,12 @@ class LookupDimension implements DimensionInterface
     /**
      * @var string|array<int|string,string>
      */
-    protected $registeredLookupFunctionOrMap;
+    protected string|array $registeredLookupFunctionOrMap;
 
     /**
      * @var bool|string
      */
-    protected $keepMissingValue;
+    protected string|bool $keepMissingValue;
 
     protected bool $isOneToOne;
 
@@ -39,9 +39,9 @@ class LookupDimension implements DimensionInterface
      */
     public function __construct(
         string $dimension,
-        $registeredLookupFunctionOrMap,
+        array|string $registeredLookupFunctionOrMap,
         string $outputName = '',
-        $keepMissingValue = false,
+        bool|string $keepMissingValue = false,
         bool $isOneToOne = false
     ) {
         $this->dimension                     = $dimension;

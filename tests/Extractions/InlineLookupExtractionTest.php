@@ -26,7 +26,7 @@ class InlineLookupExtractionTest extends TestCase
      * @param bool        $optimize
      * @param bool        $injective
      */
-    public function testExtractionFunction($replaceMissingWith, bool $optimize, bool $injective): void
+    public function testExtractionFunction(bool|string $replaceMissingWith, bool $optimize, bool $injective): void
     {
         $extraction = new InlineLookupExtraction(
             ['m' => 'Male', 'f' => 'Female'],
@@ -35,7 +35,7 @@ class InlineLookupExtractionTest extends TestCase
             $injective
         );
 
-        $retainMissingValue      = is_string($replaceMissingWith) ? true : (bool)$replaceMissingWith;
+        $retainMissingValue      = is_string($replaceMissingWith) || $replaceMissingWith;
         $replaceMissingValueWith = is_string($replaceMissingWith) ? $replaceMissingWith : null;
 
         $expected = [
@@ -47,14 +47,12 @@ class InlineLookupExtractionTest extends TestCase
             'optimize' => $optimize,
         ];
 
-        if ($injective !== null) {
-            $expected['injective'] = $injective;
-        }
+        $expected['injective'] = $injective;
 
         if ($replaceMissingValueWith !== null) {
             $expected['replaceMissingValueWith'] = $replaceMissingValueWith;
         } elseif ($retainMissingValue) {
-            $expected['retainMissingValue'] = $retainMissingValue;
+            $expected['retainMissingValue'] = true;
         }
 
         $this->assertEquals($expected, $extraction->toArray());

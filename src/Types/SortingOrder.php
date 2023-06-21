@@ -3,38 +3,16 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Types;
 
-use InvalidArgumentException;
-
 /**
- * Class SortingOrder
+ * Enum SortingOrder
  *
  * @package Level23\Druid\Types
  */
-final class SortingOrder extends Enum
+enum SortingOrder: string
 {
-    public const LEXICOGRAPHIC = 'lexicographic';
-    public const ALPHANUMERIC  = 'alphanumeric';
-    public const NUMERIC       = 'numeric';
-    public const STRLEN        = 'strlen';
-    public const VERSION       = 'version';
-
-    /**
-     * @param string $ordering
-     *
-     * @return string
-     * @throws InvalidArgumentException
-     */
-    public static function validate(string $ordering): string
-    {
-        $ordering = strtolower($ordering);
-
-        if (!SortingOrder::isValidValue($ordering)) {
-            throw new InvalidArgumentException(
-                'The given sorting order is invalid: ' . $ordering . '. ' .
-                'Allowed are: ' . implode(',', SortingOrder::values())
-            );
-        }
-
-        return $ordering;
-    }
+    case LEXICOGRAPHIC = 'lexicographic';
+    case ALPHANUMERIC  = 'alphanumeric';
+    case NUMERIC       = 'numeric';
+    case STRLEN        = 'strlen';
+    case VERSION       = 'version';
 }

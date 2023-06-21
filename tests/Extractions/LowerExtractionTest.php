@@ -11,9 +11,9 @@ class LowerExtractionTest extends TestCase
     /**
      * @testWith [null]
      *           ["fr"]
-     * @param null|string $locale
+     * @param string|null $locale
      */
-    public function testExtraction($locale): void
+    public function testExtraction(?string $locale): void
     {
         $extraction = new LowerExtraction($locale);
 

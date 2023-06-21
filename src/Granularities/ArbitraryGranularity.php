@@ -14,7 +14,7 @@ class ArbitraryGranularity extends AbstractGranularity implements GranularityInt
     {
         return [
             'type'             => 'arbitrary',
-            'queryGranularity' => $this->queryGranularity,
+            'queryGranularity' => $this->queryGranularity->value,
             'rollup'           => $this->rollup,
             'intervals'        => $this->intervals->toArray(),
         ];

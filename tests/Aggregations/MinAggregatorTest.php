@@ -11,9 +11,9 @@ use Level23\Druid\Aggregations\MinAggregator;
 class MinAggregatorTest extends TestCase
 {
     /**
-     * @return array<array<string|bool>>
+     * @return array<array<string|bool|DataType>>
      */
-    public function dataProvider(): array
+    public static function dataProvider(): array
     {
         return [
             [DataType::LONG],
@@ -26,20 +26,21 @@ class MinAggregatorTest extends TestCase
     /**
      * @dataProvider  dataProvider
      *
-     * @param string $type
+     * @param string|DataType $type
      * @param bool   $expectException
      */
-    public function testAggregator(string $type, bool $expectException = false): void
+    public function testAggregator(string|DataType $type, bool $expectException = false): void
     {
+        $strType = is_string($type) ? $type : $type->value;
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('Incorrect type given: ' . $type . '. This can either be "long", "float" or "double"');
+            $this->expectExceptionMessage('Incorrect type given: ' . $strType . '. This can either be "long", "float" or "double"');
         }
 
         $aggregator = new MinAggregator('abc', 'dim123', $type);
 
         $this->assertEquals([
-            'type'      => $type . 'Min',
+            'type'      => $strType . 'Min',
             'name'      => 'dim123',
             'fieldName' => 'abc',
         ], $aggregator->toArray());

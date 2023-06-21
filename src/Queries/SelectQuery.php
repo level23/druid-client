@@ -36,7 +36,7 @@ class SelectQuery implements QueryInterface
 
     protected ?DimensionCollection $dimensions = null;
 
-    protected string $granularity = Granularity::ALL;
+    protected Granularity $granularity = Granularity::ALL;
 
     /**
      * @var array|string[]
@@ -97,7 +97,7 @@ class SelectQuery implements QueryInterface
             'descending'  => $this->descending,
             'dimensions'  => $this->dimensions ? $this->dimensions->toArray() : [],
             'metrics'     => $this->metrics,
-            'granularity' => $this->granularity,
+            'granularity' => $this->granularity->value,
             'pagingSpec'  => [
                 'pagingIdentifiers' => $this->pagingIdentifier,
                 'threshold'         => $this->threshold,
@@ -138,13 +138,13 @@ class SelectQuery implements QueryInterface
     /**
      * Defines the granularity of the query. Default is Granularity.ALL.
      *
-     * @param string $granularity
+     * @param string|Granularity $granularity
      *
      * @throws InvalidArgumentException
      */
-    public function setGranularity(string $granularity): void
+    public function setGranularity(string|Granularity $granularity): void
     {
-        $this->granularity = Granularity::validate($granularity);
+        $this->granularity = is_string($granularity) ? Granularity::from(strtolower($granularity)) : $granularity;
     }
 
     /**

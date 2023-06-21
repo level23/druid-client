@@ -31,7 +31,7 @@ class DoublesSketchAggregator implements AggregatorInterface
     /**
      * This parameter is a temporary solution to avoid a known issue. It may be removed in a future release after the
      * bug is fixed. This parameter defines the maximum number of items to store in each sketch. If a sketch reaches
-     * the limit, the query can throw IllegalStateException. To workaround this issue, increase the maximum stream
+     * the limit, the query can throw IllegalStateException. To work around this issue, increase the maximum stream
      * length. See accuracy information in the DataSketches documentation for how many bytes are required per stream
      * length.
      *
@@ -50,7 +50,7 @@ class DoublesSketchAggregator implements AggregatorInterface
      * @param int|null $maxStreamLength This parameter is a temporary solution to avoid a known issue. It may be
      *                                  removed in a future release after the bug is fixed. This parameter defines the
      *                                  maximum number of items to store in each sketch. If a sketch reaches the limit,
-     *                                  the query can throw IllegalStateException. To workaround this issue, increase
+     *                                  the query can throw IllegalStateException. To work around this issue, increase
      *                                  the maximum stream length. See accuracy information in the DataSketches
      *                                  documentation for how many bytes are required per stream length.
      *

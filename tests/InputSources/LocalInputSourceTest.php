@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\InputSources;
 
+use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\InputSources\LocalInputSource;
 
@@ -56,7 +57,7 @@ class LocalInputSourceTest extends TestCase
 
     public function testLocalInputSourceWithoutData(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify either $baseDir or $files');
 
         new LocalInputSource();
@@ -64,7 +65,7 @@ class LocalInputSourceTest extends TestCase
 
     public function testLocalInputSourceBaseDirWithoutFilter(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify both $filter and $baseDir to make use of these!');
 
         new LocalInputSource([], '/path/to/dir/', null);
@@ -72,7 +73,7 @@ class LocalInputSourceTest extends TestCase
 
     public function testLocalInputSourceFilterWithoutBaseDir(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You have to specify both $filter and $baseDir to make use of these!');
 
         new LocalInputSource(['/path/to/list.json'], null, '*.json');

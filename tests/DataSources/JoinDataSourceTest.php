@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\DataSources;
 
-use InvalidArgumentException;
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\JoinType;
 use Level23\Druid\DataSources\JoinDataSource;
@@ -30,7 +30,7 @@ class JoinDataSourceTest extends TestCase
             'right'       => $right->toArray(),
             'rightPrefix' => 'p.',
             'condition'   => 'p.country_id = country_id',
-            'joinType'    => JoinType::INNER,
+            'joinType'    => JoinType::INNER->value,
         ], $dataSource->toArray());
     }
 
@@ -51,13 +51,12 @@ class JoinDataSourceTest extends TestCase
     public function testJoinType(string $value, bool $expectException): void
     {
         if ($expectException) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(ValueError::class);
             $this->expectExceptionMessage(
-                'The given join type is invalid: ' . strtoupper($value) . '. ' .
-                'Allowed are: ' . implode(', ', JoinType::values())
+                '"'.strtoupper($value).'" is not a valid backing value for enum Level23\Druid\Types\JoinType'
             );
         }
 
-        $this->assertEquals(strtoupper($value), JoinType::validate($value));
+        $this->assertEquals(strtoupper($value), JoinType::from(strtoupper($value))->value);
     }
 }

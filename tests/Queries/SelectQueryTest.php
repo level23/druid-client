@@ -57,7 +57,7 @@ class SelectQueryTest extends TestCase
             'descending'  => $descending,
             'dimensions'  => $dimensions->toArray(),
             'metrics'     => $metrics,
-            'granularity' => Granularity::ALL,
+            'granularity' => Granularity::ALL->value,
             'pagingSpec'  => [
                 'pagingIdentifiers' => null,
                 'threshold'         => $threshold,
@@ -81,7 +81,7 @@ class SelectQueryTest extends TestCase
         $this->assertEquals($expected, $query->toArray());
 
         $query->setGranularity(Granularity::DAY);
-        $expected['granularity'] = Granularity::DAY;
+        $expected['granularity'] = Granularity::DAY->value;
         $this->assertEquals($expected, $query->toArray());
 
         $identifier = [

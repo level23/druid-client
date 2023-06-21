@@ -20,6 +20,8 @@ try {
     $response = $client->metadata()->intervals('wikipedia');
 
     // get our first interval.
+
+    /** @var string $interval */
     $interval = array_key_first($response);
 
     // Build our compact task.
