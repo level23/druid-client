@@ -1,6 +1,6 @@
 # Druid-Client
 
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/level23/druid/build)
+[![Build](https://github.com/level23/druid-client/actions/workflows/build.yml/badge.svg)](https://github.com/level23/druid-client/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/level23/druid-client/badge.svg?branch=master)](https://coveralls.io/github/level23/druid-client?branch=master)
 [![Packagist Version](https://img.shields.io/packagist/v/level23/druid-client.svg)](https://packagist.org/packages/level23/druid-client)
 [![Total Downloads](https://img.shields.io/packagist/dt/level23/druid-client.svg)](https://packagist.org/packages/level23/druid-client)
