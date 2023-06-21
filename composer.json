@@ -24,7 +24,6 @@
   "require-dev": {
     "infection/infection": "^0.27",
     "mockery/mockery": "^1.2",
-    "php-coveralls/php-coveralls": "^2.1",
     "phpstan/phpstan": "^1.0",
     "phpunit/phpunit": "^10",
     "laravel/framework": "^9.0",
