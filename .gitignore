@@ -11,3 +11,4 @@ build/.phpunit.result.cache
 infection.log
 /.phpunit.result.cache
 /build/phpunit.xml.bak
+/build/.phpunit.cache/*

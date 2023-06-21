@@ -1,0 +1,28 @@
+name: Test our code
+on:
+  push:
+    branches:
+      - master
+      - github-actions
+  pull_request:
+    branches:
+      - master
+      - github-actions
+jobs:
+  build:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+    steps:
+      - name: Setup PHP with PECL extension
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ant
+      - run: phpunit --version
+      - run: composer install
+      - run: ant gitlab
+      - run: php vendor/bin/php-coveralls -v
