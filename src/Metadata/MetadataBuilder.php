@@ -137,6 +137,7 @@ class MetadataBuilder
             } else {
                 $result = [];
                 foreach ($response[0]['result'] as $key => $dateString) {
+                    /** @var string $key */
                     $date = DateTime::createFromFormat('Y-m-d\TH:i:s.000\Z', $dateString);
 
                     if (!$date) {
@@ -392,5 +393,22 @@ class MetadataBuilder
         }
 
         return new Structure($dataSource, $dimensions, $metrics);
+    }
+
+    /**
+     * Return a list of all known dataSources
+     *
+     * @return array<string>
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function dataSources(): array
+    {
+        $url = $this->client->config('coordinator_url') . '/druid/coordinator/v1/datasources';
+
+        /** @var array<int,string> $dataSources */
+        $dataSources = $this->client->executeRawRequest('get', $url);
+
+        return $dataSources;
     }
 }

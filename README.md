@@ -214,6 +214,7 @@ for more information.
         - [interval](#metadata-interval)
         - [structure](#metadata-structure)
         - [timeBoundary](#metadata-timeboundary)
+      - [dataSources](#metadata-datasources)
     - [Reindex/compact data/kill](#reindex--compact-data--kill)
         - [compact()](#compact)
         - [reindex()](#reindex)
@@ -3627,6 +3628,22 @@ $response = $client->metadata()->timeBoundary('wikipedia', TimeBound::BOTH);
 
 echo $response['minTime']->format('d-m-Y H:i:s') .' / '. $response['maxTime']->format('d-m-Y H:i:s');
 ``` 
+
+#### `metadata()->dataSources()`
+
+This method will return all dataSources as an array.
+
+Example:
+
+```php
+// Retrieve all data sources
+$dataSources = $client->metadata()->dataSources();
+
+foreach($dataSources as $dataSource) { 
+    // ...
+}
+```
+
 
 ## Reindex / compact data / kill
 

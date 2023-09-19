@@ -571,4 +571,25 @@ class MetadataBuilderTest extends TestCase
 
         $metadataBuilder->timeBoundary('wikipedia');
     }
+
+    public function testDataSources(): void
+    {
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $this->client->shouldReceive('config')
+            ->once()
+            ->with('coordinator_url')
+            ->andReturn('https://coordinator.url');
+
+        $this->client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('get', 'https://coordinator.url/druid/coordinator/v1/datasources')
+            ->andReturn(['wikipedia', 'clicks']);
+
+        $response = $metadataBuilder->dataSources();
+
+        $this->assertEquals(['wikipedia', 'clicks'], $response);
+    }
+
 }
