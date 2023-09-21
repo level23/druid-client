@@ -1,5 +1,9 @@
 ## Changelog
 
+**v3.0.1**
+
+- Added support to retrieve all dataSources from druid.
+
 **v3.0**
  - Changed minimum PHP version to 8.2.
  - Added typehints where possible.
