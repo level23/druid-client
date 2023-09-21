@@ -214,7 +214,7 @@ for more information.
         - [interval](#metadata-interval)
         - [structure](#metadata-structure)
         - [timeBoundary](#metadata-timeboundary)
-      - [dataSources](#metadata-datasources)
+        - [dataSources](#metadata-datasources)
     - [Reindex/compact data/kill](#reindex--compact-data--kill)
         - [compact()](#compact)
         - [reindex()](#reindex)
