@@ -215,6 +215,7 @@ for more information.
         - [structure](#metadata-structure)
         - [timeBoundary](#metadata-timeboundary)
         - [dataSources](#metadata-datasources)
+        - [rowCount](#metadata-rowcount)
     - [Reindex/compact data/kill](#reindex--compact-data--kill)
         - [compact()](#compact)
         - [reindex()](#reindex)
@@ -3642,6 +3643,25 @@ $dataSources = $client->metadata()->dataSources();
 foreach($dataSources as $dataSource) { 
     // ...
 }
+```
+
+#### `metadata()->rowCount()`
+
+Retrieve the number of rows for the given dataSource and interval.
+
+The `rowCount()` method has the following parameters:
+
+| **Type**                  | **Optional/Required** | **Argument**  | **Example**      | **Description**                                                                                                                                                                           |
+|---------------------------|-----------------------|---------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string                    | Required              | `$dataSource` | "wikipedia"      | The name of the dataSource (table) where you want to count the rows for.                                                                                                                  |
+| string/int/DateTime       | Required              | `$start`      | "now - 24 hours" | The start date to retrieve the row count for. See [interval()](#interval) for all allowed formats.                                                                                        |
+| /string/int/DateTime/null | Optional              | `$stop`       | "now"            | The stop date to retrieve the row count for. See [interval()](#interval) for all allowed formats. When a string containing a slash is given as start date, the stop date can be left out. |
+
+Example:
+
+```php
+// Retrieve the total records for the past week.
+$numRows = $client->metadata()->rowCount("wikipedia", "now - 1 week", "now");
 ```
 
 

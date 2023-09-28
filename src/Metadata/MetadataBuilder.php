@@ -5,6 +5,7 @@ namespace Level23\Druid\Metadata;
 
 use DateTime;
 use Exception;
+use DateTimeInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Level23\Druid\Types\TimeBound;
@@ -288,21 +289,74 @@ class MetadataBuilder
      *          )
      *  )
      *
-     * @param string $dataSource
-     * @param string $interval
+     * @param string                             $dataSource
+     * @param \DateTimeInterface|int|string      $start
+     * @param \DateTimeInterface|int|string|null $stop
      *
      * @return array<int,array<string,string>>
+     * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    protected function getColumnsForInterval(string $dataSource, string $interval): array
-    {
+    protected function getColumnsForInterval(
+        string $dataSource,
+        DateTimeInterface|int|string $start,
+        DateTimeInterface|int|string $stop = null
+    ): array {
         $response = $this->client->query($dataSource)
-            ->interval($interval)
+            ->interval($start, $stop)
             ->segmentMetadata();
 
-        return $response->data();
+        $columns = [];
+
+        $rows = $response->data();
+
+        if (isset($rows[0])) {
+
+            /** @var array<string,array<string,array<string,string>>> $row */
+            $row = $rows[0];
+
+            if (isset($row['columns'])) {
+                array_walk($row['columns'], function ($value, $key) use (&$columns) {
+                    $columns[] = array_merge($value, ['field' => $key]);
+                });
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * Return the total number of rows for the given interval
+     *
+     * @param string                             $dataSource The name of the dataSource where you want to count the
+     *                                                       rows for
+     * @param \DateTimeInterface|int|string      $start      The start of the interval.
+     * @param \DateTimeInterface|int|string|null $stop       The end of the interval, or null when it was given as a
+     *                                                       "date/date" interval in the $start parameter.
+     *
+     * @return int
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \Exception
+     */
+    public function rowCount(
+        string $dataSource,
+        DateTimeInterface|int|string $start,
+        DateTimeInterface|int|string $stop = null
+    ): int {
+        $response = $this->client->query($dataSource)
+            ->interval($start, $stop)
+            ->segmentMetadata();
+
+        $totalRows = 0;
+        foreach ($response->data() as $row) {
+            if (isset($row['numRows'])) {
+                $totalRows += intval($row['numRows']);
+            }
+        }
+
+        return $totalRows;
     }
 
     /**
