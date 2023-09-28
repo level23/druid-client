@@ -12,19 +12,6 @@ class SegmentMetadataQueryResponse extends QueryResponse
      */
     public function data(): array
     {
-        $columns = [];
-        if (isset($this->response[0])) {
-
-            /** @var array<string,array<string,array<string,string>>> $row */
-            $row = $this->response[0];
-
-            if (isset($row['columns'])) {
-                array_walk($row['columns'], function ($value, $key) use (&$columns) {
-                    $columns[] = array_merge($value, ['field' => $key]);
-                });
-            }
-        }
-
-        return $columns;
+        return $this->response;
     }
 }

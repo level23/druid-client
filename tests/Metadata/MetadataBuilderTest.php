@@ -282,14 +282,10 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [[{"columns": {"__time": {"type":"LONG"}}}]]
-     *
-     * @param array<string,array<string,array<string,string>>> $segmentMetadataResponse
-     *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testGetColumnsForInterval(array $segmentMetadataResponse): void
+    public function testGetColumnsForInterval(): void
     {
         $dataSource      = 'myDataSource';
         $interval        = '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z';
@@ -304,10 +300,62 @@ class MetadataBuilderTest extends TestCase
 
         $queryBuilder->shouldReceive('interval')
             ->once()
-            ->with($interval)
+            ->with($interval, null)
             ->andReturn($queryBuilder);
 
-        $responseObj = new SegmentMetadataQueryResponse($segmentMetadataResponse);
+        $rawResponse = [
+            [
+                'id'               => 'myDataSource_2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z_2019-08-19T00:00:03.958Z',
+                'intervals'        => ['2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',],
+                'columns'          =>
+                    [
+                        '__time'              =>
+                            [
+                                'typeSignature'     => 'LONG',
+                                'type'              => 'LONG',
+                                'hasMultipleValues' => false,
+                                'hasNulls'          => false,
+                                'size'              => 0,
+                                'cardinality'       => null,
+                                'minValue'          => null,
+                                'maxValue'          => null,
+                                'errorMessage'      => null,
+                            ],
+                        'iso'                 =>
+                            [
+                                'typeSignature'     => 'STRING',
+                                'type'              => 'STRING',
+                                'hasMultipleValues' => false,
+                                'hasNulls'          => false,
+                                'size'              => 0,
+                                'cardinality'       => 42,
+                                'minValue'          => 'be',
+                                'maxValue'          => 'zw',
+                                'errorMessage'      => null,
+                            ],
+                        'counter'      =>
+                            [
+                                'typeSignature'     => 'LONG',
+                                'type'              => 'LONG',
+                                'hasMultipleValues' => false,
+                                'hasNulls'          => false,
+                                'size'              => 0,
+                                'cardinality'       => null,
+                                'minValue'          => null,
+                                'maxValue'          => null,
+                                'errorMessage'      => null,
+                            ],
+                    ],
+                'size'             => 0,
+                'numRows'          => 151,
+                'aggregators'      => null,
+                'timestampSpec'    => null,
+                'queryGranularity' => null,
+                'rollup'           => null,
+            ],
+        ];
+
+        $responseObj = new SegmentMetadataQueryResponse($rawResponse);
 
         $queryBuilder->shouldReceive('segmentMetadata')
             ->once()
@@ -317,7 +365,73 @@ class MetadataBuilderTest extends TestCase
             ->shouldAllowMockingProtectedMethods()
             ->getColumnsForInterval($dataSource, $interval);
 
-        $this->assertEquals($responseObj->data(), $response);
+        $expected = [];
+        array_walk($rawResponse[0]['columns'], function ($value, $key) use (&$expected) {
+            $expected[] = array_merge($value, ['field' => $key]);
+        });
+        $this->assertEquals($expected, $response);
+    }
+
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testRowCount(): void
+    {
+        $dataSource      = 'myDataSource';
+        $interval        = '2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z';
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+        $queryBuilder = Mockery::mock(QueryBuilder::class, [$this->client, 'myDataSource']);
+
+        $this->client->shouldReceive('query')
+            ->with($dataSource)
+            ->once()
+            ->andReturn($queryBuilder);
+
+        $queryBuilder->shouldReceive('interval')
+            ->once()
+            ->with($interval, null)
+            ->andReturn($queryBuilder);
+
+        $rawResponse = [
+            [
+                'id'               => 'myDataSource_2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z_2019-08-19T00:00:03.958Z',
+                'intervals'        => ['2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',],
+                'columns'          => [],
+                'size'             => 0,
+                'numRows'          => 151,
+                'aggregators'      => null,
+                'timestampSpec'    => null,
+                'queryGranularity' => null,
+                'rollup'           => null,
+            ],
+            [
+                'id'               => 'myDataSource_2019-08-19T13:00:00.000Z/2019-08-19T15:00:00.000Z_2019-08-19T00:00:03.958Z',
+                'intervals'        => ['2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',],
+                'columns'          => [],
+                'size'             => 0,
+                'numRows'          => 645,
+                'aggregators'      => null,
+                'timestampSpec'    => null,
+                'queryGranularity' => null,
+                'rollup'           => null,
+            ],
+        ];
+
+        $responseObj = new SegmentMetadataQueryResponse($rawResponse);
+
+        $queryBuilder->shouldReceive('segmentMetadata')
+            ->once()
+            ->andReturn($responseObj);
+
+        $response = $metadataBuilder
+            ->shouldAllowMockingProtectedMethods()
+            ->rowCount($dataSource, $interval);
+
+
+        $this->assertEquals(645 + 151, $response);
     }
 
     /**
@@ -591,5 +705,4 @@ class MetadataBuilderTest extends TestCase
 
         $this->assertEquals(['wikipedia', 'clicks'], $response);
     }
-
 }
