@@ -33,6 +33,8 @@ use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Filters\ColumnComparisonFilter;
 use Level23\Druid\Extractions\ExtractionInterface;
+use Level23\Druid\Filters\SelectorFilterIsNotNull;
+use Level23\Druid\Filters\SelectorFilterIsNull;
 use Level23\Druid\Filters\SpatialRectangularFilter;
 
 trait HasFilter
@@ -754,6 +756,56 @@ trait HasFilter
     public function orWhereSpatialPolygon(string $dimension, array $abscissa, array $ordinate): self
     {
         return $this->whereSpatialPolygon($dimension, $abscissa, $ordinate, 'or');
+    }
+
+    /**
+     * Return the records where dimension is NULL.
+     * SQL example: SELECT * FROM [table] WHERE [dimention] IS NULL
+     *
+     * @param string $dimension The name of the dimension.
+     * @param string $boolean   This influences how this filter will be
+     *                          joined with previous added filters. Should
+     *                          both filters apply ("and") or one or the
+     *                          other ("or") ? Default is "and".
+     *
+     * @return $this
+     */
+    public function whereIsNull(
+        string $dimension,
+        string $boolean = 'and'
+    ): self {
+        $filter = new SelectorFilterIsNull(
+            $dimension
+        );
+
+        strtolower($boolean) == 'and' ? $this->addAndFilter($filter) : $this->addOrFilter($filter);
+
+        return $this;
+    }
+
+    /**
+     * Return the records where dimension is NOT NULL.
+     * SQL example: SELECT * FROM [table] WHERE [dimention] IS NOT NULL
+     *
+     * @param string $dimension The name of the dimension.
+     * @param string $boolean   This influences how this filter will be
+     *                          joined with previous added filters. Should
+     *                          both filters apply ("and") or one or the
+     *                          other ("or") ? Default is "and".
+     *
+     * @return $this
+     */
+    public function whereIsNotNull(
+        string $dimension,
+        string $boolean = 'and'
+    ): self {
+        $filter = new SelectorFilterIsNotNull(
+            $dimension
+        );
+
+        strtolower($boolean) == 'and' ? $this->addAndFilter($filter) : $this->addOrFilter($filter);
+
+        return $this;
     }
 
     /**

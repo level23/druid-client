@@ -159,6 +159,7 @@ for more information.
         - [orWhereSpatialRectangular()](#orwherespatialrectangular)
         - [orWhereSpatialRadius()](#orwherespatialradius)
         - [orWhereSpatialPolygon()](#orwherespatialpolygon)
+        - [whereIsNull()](#whereisnull)
         - [QueryBuilder: Extractions](#querybuilder-extractions)
         - [lookup()](#lookup-extraction)
         - [inlineLookup()](#inlinelookup-extraction)
@@ -1904,6 +1905,44 @@ This method has the following arguments:
 ### `orWhereSpatialPolygon()`
 
 Same as `orWhereSpatialPolygon()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+### `whereIsNull()`
+
+This filter allows you to filter dimensions that are NULL. In SQL that would look like so: `SELECT * FROM [table] WHERE [dimension] IS NULL`. Please know that on Druid it's not the same as `WHERE [dimension] = NULL`
+
+**Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                                                                                                         |
+|----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
+| string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
+
+```php
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    ->whereIsNull('cityName')
+```
+
+### `whereIsNotNull()`
+
+This filter allows you to filter dimensions that are NOT NULL. In SQL that would look like so: `SELECT * FROM [table] WHERE [dimension] IS NOT NULL`. Please know that on Druid it's not the same as `WHERE [dimension] != NULL`
+
+**Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                                                                                                         |
+|----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
+| string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
+
+```php
+$client = new \Level23\Druid\DruidClient([
+    'router_url' => 'https://router.url:8080',
+]);
+
+$client->query('myDataSource')
+    ->interval('now - 1 day', 'now')
+    ->whereIsNotNull('cityName')
+```
 
 ## QueryBuilder: Extractions
 
