@@ -160,6 +160,7 @@ for more information.
         - [orWhereSpatialRadius()](#orwherespatialradius)
         - [orWhereSpatialPolygon()](#orwherespatialpolygon)
         - [whereIsNull()](#whereisnull)
+        - [whereIsNotNull()](#whereisnotnull)
         - [QueryBuilder: Extractions](#querybuilder-extractions)
         - [lookup()](#lookup-extraction)
         - [inlineLookup()](#inlinelookup-extraction)
