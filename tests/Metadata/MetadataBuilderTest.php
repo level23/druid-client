@@ -7,6 +7,7 @@ use Mockery;
 use Closure;
 use Exception;
 use Mockery\MockInterface;
+use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
 use Level23\Druid\DruidClient;
 use Mockery\LegacyMockInterface;
@@ -309,7 +310,7 @@ class MetadataBuilderTest extends TestCase
                 'intervals'        => ['2019-08-19T13:00:00.000Z/2019-08-19T14:00:00.000Z',],
                 'columns'          =>
                     [
-                        '__time'              =>
+                        '__time'  =>
                             [
                                 'typeSignature'     => 'LONG',
                                 'type'              => 'LONG',
@@ -321,7 +322,7 @@ class MetadataBuilderTest extends TestCase
                                 'maxValue'          => null,
                                 'errorMessage'      => null,
                             ],
-                        'iso'                 =>
+                        'iso'     =>
                             [
                                 'typeSignature'     => 'STRING',
                                 'type'              => 'STRING',
@@ -333,7 +334,7 @@ class MetadataBuilderTest extends TestCase
                                 'maxValue'          => 'zw',
                                 'errorMessage'      => null,
                             ],
-                        'counter'      =>
+                        'counter' =>
                             [
                                 'typeSignature'     => 'LONG',
                                 'type'              => 'LONG',
@@ -371,7 +372,6 @@ class MetadataBuilderTest extends TestCase
         });
         $this->assertEquals($expected, $response);
     }
-
 
     /**
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -430,7 +430,6 @@ class MetadataBuilderTest extends TestCase
             ->shouldAllowMockingProtectedMethods()
             ->rowCount($dataSource, $interval);
 
-
         $this->assertEquals(645 + 151, $response);
     }
 
@@ -478,6 +477,51 @@ class MetadataBuilderTest extends TestCase
         } else {
             $this->assertEquals('2019-08-19T12:00:00.000Z/2019-08-19T13:00:00.000Z', $response);
         }
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @testWith ["laST"]
+     *           ["first"]
+     *
+     * @param string $shortHand
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     */
+    public function testGetIntervalByShorthandWithoutData(string $shortHand): void
+    {
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('intervals')
+            ->once()
+            ->with('wikipedia')
+            ->andReturn([]);
+
+        $logger = Mockery::mock(LoggerInterface::class);
+
+        $this->client->shouldReceive('getLogger')
+            ->once()
+            ->andReturn($logger);
+
+        $logger->shouldReceive('warning')
+            ->once()
+            ->withArgs(function($msg) use ($shortHand) {
+                $this->assertEquals('Failed to get ' . strtolower($shortHand) . ' interval! ' .
+                    'We got 0 intervals: ' . var_export([], true), $msg);
+
+                return true;
+
+            });
+
+        $response = $metadataBuilder
+            ->shouldAllowMockingProtectedMethods()
+            ->getIntervalByShorthand('wikipedia', $shortHand);
+
+        $this->assertEquals('', $response);
     }
 
     /**
