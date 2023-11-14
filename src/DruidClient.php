@@ -87,7 +87,7 @@ class DruidClient
     /**
      * Create a new query using the druid query builder.
      *
-     * @param string $dataSource
+     * @param string             $dataSource
      * @param string|Granularity $granularity
      *
      * @return \Level23\Druid\Queries\QueryBuilder
@@ -148,7 +148,7 @@ class DruidClient
         /** @var array<string,array<mixed>|int|string> $payload */
         $payload = $task->toArray();
 
-        $this->log('Executing druid task: '. var_export($payload, true));
+        $this->log('Executing druid task: ' . var_export($payload, true));
 
         /** @var string[] $result */
         $result = $this->executeRawRequest(
@@ -264,6 +264,16 @@ class DruidClient
     }
 
     /**
+     * Return the logger if one is set.
+     *
+     * @return \Psr\Log\LoggerInterface|null
+     */
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger;
+    }
+
+    /**
      * Set a custom guzzle client which should be used.
      *
      * @param GuzzleClient $client
@@ -327,7 +337,7 @@ class DruidClient
             if (!is_array($row)) {
                 throw new InvalidArgumentException('We failed to parse response!');
             }
-        } catch (InvalidArgumentException|JsonException $exception ) {
+        } catch (InvalidArgumentException|JsonException $exception) {
             $this->log('We failed to decode druid response. ');
             $this->log('Status code: ' . $response->getStatusCode());
             $this->log('Response body: ' . $contents);

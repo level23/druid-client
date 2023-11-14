@@ -1,5 +1,16 @@
 ## Changelog
 
+**v3.0.3**
+
+- Added `whereNull()` and `orWhereNull()` filter methods.
+- Changed `where()` filter method to accept `NULL` as value. 
+- Added `getLogger` method to retrieve the current logger. Changed MetadataBuilder. Log a warning when no interval
+  was found by the given shorthand name (like "first" or "last")
+
+**v3.0.2**
+
+- Added rowCount method to fetch the number of rows over a specific interval
+- 
 **v3.0.1**
 
 - Added support to retrieve all dataSources from druid.

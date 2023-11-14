@@ -9,7 +9,7 @@ class SelectorFilter implements FilterInterface
 {
     protected string $dimension;
 
-    protected string $value;
+    protected ?string $value;
 
     protected ?ExtractionInterface $extractionFunction;
 
@@ -17,12 +17,12 @@ class SelectorFilter implements FilterInterface
      * InFilter constructor.
      *
      * @param string                   $dimension
-     * @param string                   $value
+     * @param string|null              $value
      * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
-        string $value,
+        ?string $value,
         ?ExtractionInterface $extractionFunction = null
     ) {
         $this->value              = $value;
@@ -33,7 +33,7 @@ class SelectorFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array<string,string|array<string,string|int|bool|array<mixed>>>
+     * @return array<string,string|null|array<string,string|int|bool|array<mixed>>>
      */
     public function toArray(): array
     {
