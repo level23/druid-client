@@ -2,6 +2,8 @@
 
 **v3.0.3**
 
+- Added `whereNull()` and `orWhereNull()` filter methods.
+- Changed `where()` filter method to accept `NULL` as value. 
 - Added `getLogger` method to retrieve the current logger. Changed MetadataBuilder. Log a warning when no interval
   was found by the given shorthand name (like "first" or "last")
 

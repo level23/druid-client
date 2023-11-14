@@ -75,6 +75,7 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 
 ## Todo's
 
+- Implement the [Equality filter](https://druid.apache.org/docs/latest/querying/filters#equality-filter)
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement hadoop based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
@@ -141,6 +142,8 @@ for more information.
         - [orWhere()](#orwhere)
         - [whereNot()](#wherenot)
         - [orWhereNot()](#orwherenot)
+        - [whereNull()](#wherenull)
+        - [orWhereNull()](#orwherenull)
         - [whereIn()](#wherein)
         - [orWhereIn()](#orwherein)
         - [whereBetween()](#wherebetween)
@@ -1538,7 +1541,7 @@ This method uses the following arguments:
 |----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
 | string   | Required              | `$operator`   | "="                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                                     |
-| mixed    | Required              | `$value`      | "Auburn"           | The value which you want to use in your filter comparison                                                                                                                               |
+| mixed    | Optional              | `$value`      | "Auburn"           | The value which you want to use in your filter comparison. Set to null to match against NULL values.                                                                                    |
 | Closure  | Optional              | `$extraction` | See example below. | A closure which builds one or more extraction function. These are applied _before_ the filter will be applied. So the filter will use the value returned by the extraction function(s). |
 | string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
 
@@ -1642,6 +1645,36 @@ This method has the following arguments:
 #### `orWhereNot()`
 
 Same as `whereNot()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+#### `whereNull()`
+
+Druid has changed its NULL handling. You can now configure it to store `NULL` values by configuring 
+`druid.generic.useDefaultValueForNull=false`.
+
+If this is configured, you can filter on NULL values with this filter. 
+
+This method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$column`    | "city"      | The column or virtual column which you want to filter on null values.                                                                                        |
+| string   | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+Example:
+
+```php
+// filter on all places where city name is NULL.
+$builder->whereNull('city'); 
+
+// filter on all places where the country is NOT NULL!
+$builder->whereNot(function (FilterBuilder $filterBuilder) {
+    $filterBuilder->whereNull('country');    
+});
+```
+
+#### `orWhereNull()`
+
+Same as `whereNull()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 #### `whereIn()`
 

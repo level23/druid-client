@@ -23,6 +23,7 @@ use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Metadata\Structure;
+use Level23\Druid\Filters\NullFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
@@ -70,6 +71,10 @@ class HasFilterTest extends TestCase
         return [
             ['name', '=', 'John', 'and'],
             ['name', '=', 1, 'and'],
+            ['name', '=', null, 'and'],
+            ['name', null, null, 'and'],
+            ['name', '!=', null, 'and'],
+            ['age', '>', null, 'and'],
             ['name', 'John', null, 'and'],
             ['id', '0', null, 'and'],
             ['name', '!=', 'John', 'and'],
@@ -206,7 +211,7 @@ class HasFilterTest extends TestCase
      * @dataProvider        whereDataProvider
      *
      * @param string                              $field
-     * @param string                              $operator
+     * @param string|null                         $operator
      * @param float|bool|int|string|null|string[] $value
      * @param string                              $boolean
      *
@@ -216,11 +221,15 @@ class HasFilterTest extends TestCase
      */
     public function testWhere(
         string $field,
-        string $operator,
+        string|null $operator,
         float|bool|int|string|null|array $value,
         string $boolean
     ): void {
-        if ($value === null) {
+        if ($operator === null || $value === null) {
+            $operator = '=';
+        }
+
+        if ($value === null && $operator !== null && !in_array($operator, ['=', '!=', '<>'])) {
             $testingValue    = $operator;
             $testingOperator = '=';
         } else {
@@ -339,6 +348,34 @@ class HasFilterTest extends TestCase
     }
 
     /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testWhereNull(): void
+    {
+        $search = $this->getFilterMock(NullFilter::class);
+        $search->shouldReceive('__construct')
+            ->once()
+            ->with('city');
+
+        $result = $this->builder->whereNull('city');
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    public function testOrWhereNull(): void
+    {
+        $this->builder->shouldReceive('whereNull')
+            ->with('country', 'or')
+            ->once()
+            ->andReturn($this->builder);
+
+        $response = $this->builder->orWhereNull('country');
+
+        $this->assertEquals($this->builder, $response);
+    }
+
+    /**
      * @testWith ["search"]
      *           ["not search"]
      *
@@ -406,21 +443,14 @@ class HasFilterTest extends TestCase
         $this->builder->where($field, $operator, $value);
     }
 
-    /**
-     * @testWith [true, false]
-     *           [true, true]
-     *
-     * @param bool $withoutOperator
-     * @param bool $withoutValue
-     */
-    public function testWhereWithoutOperatorOrValue(bool $withoutOperator, bool $withoutValue): void
+    public function testWhereWithoutOperatorOrValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('You have to supply an operator and an compare value when you supply a dimension as string');
+        $this->expectExceptionMessage('You have to supply an operator when you supply a dimension as string');
         $this->builder->where(
             'field',
-            ($withoutOperator ? null : '='),
-            ($withoutValue ? null : 'value')
+            null,
+            'value'
         );
     }
 

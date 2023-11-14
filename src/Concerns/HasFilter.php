@@ -13,6 +13,7 @@ use Level23\Druid\Filters\NotFilter;
 use Level23\Druid\Interval\Interval;
 use Level23\Druid\Filters\LikeFilter;
 use Level23\Druid\Types\SortingOrder;
+use Level23\Druid\Filters\NullFilter;
 use Level23\Druid\Filters\BoundFilter;
 use Level23\Druid\Filters\RegexFilter;
 use Level23\Druid\Filters\SearchFilter;
@@ -46,20 +47,22 @@ trait HasFilter
      * The operator can be '=', '>', '>=', '<', '<=', '<>', '!=', 'like', 'not like', 'regex', 'not regex',
      * 'javascript', 'not javascript', 'search' and 'not search'
      *
-     * @param \Closure|string|FilterInterface $filterOrDimensionOrClosure The dimension which you want to filter.
-     * @param int|string|null                 $operator                   The operator which you want to use to filter.
-     *                                                                    See below for a complete list of supported
-     *                                                                    operators.
+     * @param \Closure|string|FilterInterface     $filterOrDimensionOrClosure The dimension which you want to filter.
+     * @param int|string|null                     $operator                   The operator which you want to use to
+     *                                                                        filter. See below for a complete list of
+     *                                                                        supported operators.
      * @param int|string|string[]|null|float|bool $value                      The value which you want to use in your
-     *                                                                    filter comparison
-     * @param \Closure|null                   $extraction                 A closure which builds one or more extraction
-     *                                                                    function. These are applied before the filter
-     *                                                                    will be applied. So the filter will use the
-     *                                                                    value returned by the extraction function(s).
-     * @param string                          $boolean                    This influences how this filter will be
-     *                                                                    joined with previous added filters. Should
-     *                                                                    both filters apply ("and") or one or the
-     *                                                                    other ("or") ? Default is "and".
+     *                                                                        filter comparison
+     * @param \Closure|null                       $extraction                 A closure which builds one or more
+     *                                                                        extraction function. These are applied
+     *                                                                        before the filter will be applied. So the
+     *                                                                        filter will use the value returned by the
+     *                                                                        extraction function(s).
+     * @param string                              $boolean                    This influences how this filter will be
+     *                                                                        joined with previous added filters.
+     *                                                                        Should
+     *                                                                        both filters apply ("and") or one or the
+     *                                                                        other ("or") ? Default is "and".
      *
      * @return $this
      */
@@ -72,13 +75,17 @@ trait HasFilter
     ): self {
         $filter = null;
         if (is_string($filterOrDimensionOrClosure)) {
-            if ($value === null && $operator !== null) {
+            if ($operator === null && $value !== null) {
+                throw new InvalidArgumentException('You have to supply an operator when you supply a dimension as string');
+            }
+
+            if ($value === null && $operator !== null && !in_array($operator, ['=', '!=', '<>'])) {
                 $value    = $operator;
                 $operator = '=';
             }
 
             if ($operator === null || $value === null) {
-                throw new InvalidArgumentException('You have to supply an operator and an compare value when you supply a dimension as string');
+                $operator = '=';
             }
 
             $operator = strtolower((string)$operator);
@@ -86,17 +93,17 @@ trait HasFilter
                 throw new InvalidArgumentException('Given $value is invalid in combination with operator ' . $operator);
             }
 
-            /** @var string|int $value */
+            /** @var string|int|null $value */
 
             if ($operator == '=') {
                 $filter = new SelectorFilter(
                     $filterOrDimensionOrClosure,
-                    (string)$value,
+                    is_null($value) ? null : (string)$value,
                     $this->getExtraction($extraction)
                 );
             } elseif ($operator == '<>' || $operator == '!=') {
                 $filter = new NotFilter(
-                    new SelectorFilter($filterOrDimensionOrClosure, (string)$value, $this->getExtraction($extraction))
+                    new SelectorFilter($filterOrDimensionOrClosure, is_null($value) ? null : (string)$value, $this->getExtraction($extraction))
                 );
             } elseif (in_array($operator, ['>', '>=', '<', '<='])) {
                 $filter = new BoundFilter(
@@ -133,14 +140,14 @@ trait HasFilter
                     $value = (string)$value;
                 }
                 $filter = new SearchFilter(
-                    $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
+                    $filterOrDimensionOrClosure, $value ?? '', false, $this->getExtraction($extraction)
                 );
             } elseif ($operator == 'not search') {
                 if (is_int($value)) {
                     $value = (string)$value;
                 }
                 $filter = new NotFilter(new SearchFilter(
-                    $filterOrDimensionOrClosure, $value, false, $this->getExtraction($extraction)
+                    $filterOrDimensionOrClosure, $value ?? '', false, $this->getExtraction($extraction)
                 ));
             }
         } elseif ($filterOrDimensionOrClosure instanceof FilterInterface) {
@@ -243,6 +250,37 @@ trait HasFilter
         $filter = new InFilter($dimension, $items, $this->getExtraction($extraction));
 
         return $this->where($filter, null, null, null, $boolean);
+    }
+
+    /**
+     * Filter on (virutal) columns with a value which is equal to NULL. This is especially useful when
+     * `druid.generic.useDefaultValueForNull=false` was configured.
+     *
+     * @param string $column
+     * @param string $boolean
+     *
+     * @return $this
+     */
+    public function whereNull(string $column, string $boolean = 'and'): self
+    {
+        $filter = new NullFilter($column);
+
+        strtolower($boolean) == 'and' ? $this->addAndFilter($filter) : $this->addOrFilter($filter);
+
+        return $this;
+    }
+
+    /**
+     * Filter on (virtual) columns with a value which is equal to NULL. This is especially useful when
+     * `druid.generic.useDefaultValueForNull=false` was configured.
+     *
+     * @param string $column
+     *
+     * @return $this
+     */
+    public function orWhereNull(string $column): self
+    {
+        return $this->whereNull($column, 'or');
     }
 
     /**
@@ -440,17 +478,17 @@ trait HasFilter
      * WHERE (dimension => $minValue AND dimension <= $maxValue) or .... (other filters here)
      * ```
      *
-     * @param string        $dimension   The dimension which you want to filter
-     * @param int|string    $minValue    The minimum value where the dimension should match. It should be equal or
-     *                                   greater than this value.
-     * @param int|string    $maxValue    The maximum value where the dimension should match. It should be less than
-     *                                   this value.
-     * @param \Closure|null $extraction  Extraction function to extract a different value from the dimension.
-     * @param null|string|SortingOrder   $ordering    Specifies the sorting order using when comparing values against the
-     *                                   between filter. Can be one of the following values: "lexicographic",
-     *                                   "alphanumeric", "numeric", "strlen", "version". See Sorting Orders for
-     *                                   more details. By default, it will be "numeric" if the values are
-     *                                   numeric, otherwise it will be "lexicographic"
+     * @param string                   $dimension  The dimension which you want to filter
+     * @param int|string               $minValue   The minimum value where the dimension should match. It should be
+     *                                             equal or greater than this value.
+     * @param int|string               $maxValue   The maximum value where the dimension should match. It should be
+     *                                             less than this value.
+     * @param \Closure|null            $extraction Extraction function to extract a different value from the dimension.
+     * @param null|string|SortingOrder $ordering   Specifies the sorting order using when comparing values against the
+     *                                             between filter. Can be one of the following values: "lexicographic",
+     *                                             "alphanumeric", "numeric", "strlen", "version". See Sorting Orders
+     *                                             for more details. By default, it will be "numeric" if the values are
+     *                                             numeric, otherwise it will be "lexicographic"
      *
      * @return $this
      */
