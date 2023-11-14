@@ -245,10 +245,15 @@ class DruidClientTest extends TestCase
         $client = $this->mockDruidClient();
         $client->makePartial();
 
+        $this->assertNull($client->getLogger());
+
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('debug')->twice();
 
         $client->setLogger($logger);
+
+        // Test that our getter also works.
+        $this->assertEquals($logger, $client->getLogger());
 
         $payload = ['task' => 'here'];
 

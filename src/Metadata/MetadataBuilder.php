@@ -381,13 +381,20 @@ class MetadataBuilder
             throw new InvalidArgumentException('Only shorthand "first" and "last" are supported!');
         }
 
-        $intervals = array_keys($this->intervals($dataSource));
+        $rawIntervals = $this->intervals($dataSource);
 
-        if ($shortHand == 'last') {
-            return $intervals[0] ?? '';
+        $intervals = array_keys($rawIntervals);
+
+        $result = ($shortHand == 'last') ? ($intervals[0] ?? '') : ($intervals[count($intervals) - 1] ?? '');
+
+        if (empty($result)) {
+            $this->client->getLogger()?->warning(
+                'Failed to get ' . $shortHand . ' interval! ' .
+                'We got ' . count($rawIntervals) . ' intervals: ' . var_export($intervals, true)
+            );
         }
 
-        return $intervals[count($intervals) - 1] ?? '';
+        return $result;
     }
 
     /**
