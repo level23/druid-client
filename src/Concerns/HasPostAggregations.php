@@ -18,6 +18,7 @@ use Level23\Druid\PostAggregations\PostAggregatorInterface;
 use Level23\Druid\PostAggregations\QuantilesPostAggregator;
 use Level23\Druid\PostAggregations\HistogramPostAggregator;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
+use Level23\Druid\PostAggregations\ExpressionPostAggregator;
 use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 use Level23\Druid\PostAggregations\SketchSummaryPostAggregator;
@@ -602,5 +603,15 @@ trait HasPostAggregations
     public function getPostAggregations(): array
     {
         return $this->postAggregations;
+    }
+
+    public function expression(string $as, $expression): self
+    {
+        $this->postAggregations[] = new ExpressionPostAggregator(
+            $as,
+            $expression
+        );
+
+        return $this;
     }
 }
