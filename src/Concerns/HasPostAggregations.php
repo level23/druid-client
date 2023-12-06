@@ -622,7 +622,7 @@ trait HasPostAggregations
      *                                         type of the expression, the value will be attempted to coerced to the
      *                                         specified type, possibly failing if coercion is not possible.
      *
-     * @return \Level23\Druid\Queries\QueryBuilder|\Level23\Druid\Concerns\HasPostAggregations|\Level23\Druid\PostAggregations\PostAggregationsBuilder
+     * @return $this
      *
      * @see https://druid.apache.org/docs/latest/querying/math-expr
      */
