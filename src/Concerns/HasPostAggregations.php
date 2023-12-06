@@ -19,6 +19,7 @@ use Level23\Druid\PostAggregations\QuantilesPostAggregator;
 use Level23\Druid\PostAggregations\HistogramPostAggregator;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
+use Level23\Druid\PostAggregations\ExpressionPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 use Level23\Druid\PostAggregations\SketchSummaryPostAggregator;
 use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
@@ -190,8 +191,12 @@ trait HasPostAggregations
      *
      * @return $this
      */
-    public function histogram(string $as, Closure|string $fieldOrClosure, ?array $splitPoints = null, ?int $numBins = null): self
-    {
+    public function histogram(
+        string $as,
+        Closure|string $fieldOrClosure,
+        ?array $splitPoints = null,
+        ?int $numBins = null
+    ): self {
         $fields = $this->buildFields([$fieldOrClosure]);
         if ($fields->count() != 1 || !$fields[0]) {
             throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
@@ -592,6 +597,47 @@ trait HasPostAggregations
     public function hyperUniqueCardinality(string $hyperUniqueField, string $as = null): self
     {
         $this->postAggregations[] = new HyperUniqueCardinalityPostAggregator($hyperUniqueField, $as);
+
+        return $this;
+    }
+
+    /**
+     * Use an expression as post-aggregation.
+     *
+     * @param string               $as         Output name of the post-aggregation
+     * @param string               $expression Native Druid expression to compute, may refer to any dimension or
+     *                                         aggregator output names.
+     * @param string|null          $ordering   If no ordering (or null) is specified, the "natural" ordering is used.
+     *                                         "numericFirst" ordering always returns finite values first, followed by
+     *                                         NaN, and infinite values last. If the expression produces array or
+     *                                         complex types, specify ordering as null and use outputType instead to
+     *                                         use the correct type native ordering.
+     * @param DataType|string|null $outputType Output type is optional, and can be any native Druid type: LONG, FLOAT,
+     *                                         DOUBLE, STRING, ARRAY types (e.g. ARRAY<LONG>), or COMPLEX types (e.g.
+     *                                         COMPLEX<json>). If not specified, the output type will be inferred from
+     *                                         the expression. If specified and ordering is null, the type native
+     *                                         ordering will be used for sorting values. If the expression produces
+     *                                         array or complex types, this value must be non-null to ensure the
+     *                                         correct ordering is used. If outputType does not match the actual output
+     *                                         type of the expression, the value will be attempted to coerced to the
+     *                                         specified type, possibly failing if coercion is not possible.
+     *
+     * @return $this
+     *
+     * @see https://druid.apache.org/docs/latest/querying/math-expr
+     */
+    public function expression(
+        string $as,
+        string $expression,
+        ?string $ordering = null,
+        DataType|string|null $outputType = null
+    ): self {
+        $this->postAggregations[] = new ExpressionPostAggregator(
+            $as,
+            $expression,
+            $ordering,
+            $outputType
+        );
 
         return $this;
     }

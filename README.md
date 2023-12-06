@@ -185,6 +185,7 @@ for more information.
     - [QueryBuilder: Post Aggregations](#querybuilder-post-aggregations)
         - [fieldAccess()](#fieldaccess)
         - [constant()](#constant)
+        - [expression](#expression)
         - [divide()](#divide)
         - [multiply()](#multiply)
         - [subtract()](#subtract)
@@ -1823,7 +1824,7 @@ Same as `whereFlags()`, but now we will join previous added filters with a `or` 
 #### `whereExpression()`
 
 This filter allows you to filter on a druid expression. See
-also: https://druid.apache.org/docs/latest/misc/math-expr.html
+also: https://druid.apache.org/docs/latest/querying/math-expr
 
 This filter allows for more flexibility, but it might be less performant than a combination of the other filters on this
 page due to the fact that not all filter optimizations are in place yet.
@@ -2375,7 +2376,7 @@ Druid expressions allow you to do various actions, like:
 * Use a "case" statement
 * Etc.
 
-For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/misc/math-expr.html
+For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/querying/math-expr
 
 To use a virtual column, you should use the `virtualColumn()` method:
 
@@ -2502,6 +2503,40 @@ The `constant()` post aggregator has the following arguments:
 |-----------|-----------------------|-----------------|-------------|-----------------------------------------|
 | int/float | Required              | `$numericValue` | 3.14        | This will be our static value           |
 | string    | Required              | `$as`           | pi          | The output name as how we can access it |
+
+#### `expression()`
+
+The `expression()` post aggregator method allows you to supply a Native Druid expression which allows you to compute a
+result value.
+
+Druid expressions allow you to do various actions, like:
+
+* Execute a lookup and use the result
+* Execute mathematical operations on values
+* Use if, else statements
+* Concat strings
+* Use a "case" statement
+* Etc.
+
+For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/querying/math-expr
+
+Example: 
+```php
+$builder
+    ->sum('kids', 'totalKids')
+    ->sum('adults', 'totalAdults')
+    ->expression('totalHumans', 'totalKids + totalAdults', null, DataType::LONG)
+```
+
+The `expression()` post aggregator has the following arguments:
+
+| **Type**        | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+|-----------------|-----------------------|---------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string          | Required              | `$as`         | pi              | The output name as how we can access it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| string          | Required              | `$expression` | field1 + field2 | The expression which you want to compute.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| string          | Optional              | `$ordering`   | "numericFirst"  | If no ordering (or `null`) is specified, the "natural" ordering is used. `numericFirst` ordering always returns finite values first, followed by NaN, and infinite values last. If the expression produces array or complex types, specify ordering as null and use outputType instead to use the correct type native ordering.                                                                                                                                                                                                                                                                                                             |
+| DataType/string | Optional              | `$outputType` | DOUBLE          | Output type is optional, and can be any native Druid type. Use a string value for ARRAY types (e.g. `ARRAY<LONG>`), or COMPLEX types (e.g. `COMPLEX<json>`). If not specified, the output type will be inferred from the expression. If specified and ordering is null, the type native ordering will be used for sorting values. If the expression produces array or complex types, this value must be non-null to ensure the correct ordering is used. If outputType does not match the actual output type of the expression, the value will be attempted to coerced to the specified type, possibly failing if coercion is not possible. |
+ 
 
 #### `divide()`
 

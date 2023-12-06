@@ -1,5 +1,9 @@
 ## Changelog
 
+**v3.0.4**
+
+- Added the [expression()](README.md#expression) post aggregator method. 
+
 **v3.0.3**
 
 - Added `whereNull()` and `orWhereNull()` filter methods.
