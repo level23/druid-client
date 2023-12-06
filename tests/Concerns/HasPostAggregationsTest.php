@@ -26,6 +26,7 @@ use Level23\Druid\PostAggregations\QuantilesPostAggregator;
 use Level23\Druid\PostAggregations\HistogramPostAggregator;
 use Level23\Druid\PostAggregations\ArithmeticPostAggregator;
 use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
+use Level23\Druid\PostAggregations\ExpressionPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 use Level23\Druid\PostAggregations\SketchSummaryPostAggregator;
 use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
@@ -545,6 +546,32 @@ class HasPostAggregationsTest extends TestCase
             ->with('myJsResult', new IsInstanceOf(PostAggregationCollection::class), $jsFunction);
 
         $result = $this->builder->postJavascript('myJsResult', $jsFunction, ['field1', 'field2']);
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testExpression(): void
+    {
+        $this->getPostAggregationMock(ExpressionPostAggregator::class)
+            ->shouldReceive('__construct')
+            ->once()
+            ->with(
+                'mySum',
+                'field1 + field2',
+                "numericFirst",
+                DataType::DOUBLE
+            );
+
+        $result = $this->builder->expression(
+            'mySum',
+            'field1 + field2',
+            "numericFirst",
+            DataType::DOUBLE
+        );
 
         $this->assertEquals($this->builder, $result);
     }
