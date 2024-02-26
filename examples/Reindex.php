@@ -10,6 +10,7 @@ include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
 use Level23\Druid\Types\Granularity;
+use Level23\Druid\InputSources\DruidInputSource;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -17,10 +18,17 @@ try {
     // Enable this to see some more data
     $client->setLogger(new ConsoleLogger());
 
-    // Build our reindex task
+    # Build our input source for the reindex job.
+    # Only read the non-draft records.
+    $source = new DruidInputSource('wikipedia');
+    $source->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
+    $source->where('namespace', 'not like', '%Draft%');
+
+    # Build our reindex task
     $taskId = $client->reindex('wikipedia')
-        ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
+        ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z')
         ->parallel()
+        ->inputSource($source) # Specify our custom input source.
         ->segmentGranularity(Granularity::DAY)
         ->queryGranularity(Granularity::HOUR)
         //        ->rollup()

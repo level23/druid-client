@@ -1,5 +1,9 @@
 ## Changelog
 
+**v3.0.5**
+
+- Fixed the fromDataSource method which was removed since version 2.0, but it was still in the README and in the examples.
+
 **v3.0.4**
 
 - Added the [expression()](README.md#expression) post aggregator method. 
