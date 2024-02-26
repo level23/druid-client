@@ -3817,11 +3817,17 @@ For example, you can filter or transform existing data or change the query granu
 ```php
 $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
 
+// Create our custom input source.
+$source = new DruidInputSource('wikipedia');
+$source->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z');
+$source->where('namespace', 'not like', '%Draft%');
+
 // Build our reindex task
 $taskId = $client->reindex('wikipedia-new')
     ->interval('2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z ')
     ->parallel()
-    ->fromDataSource('wikipedia') 
+    // Here we overwrite our "source" data, we define our own source data.
+    ->inputSource($source) 
     ->segmentGranularity(Granularity::DAY)
     ->queryGranularity(Granularity::HOUR)
     ->rollup()
@@ -3854,9 +3860,8 @@ print_r($status->data());
 The `reindex` method will return a `IndexTaskBuilder` object which allows you to specify the rest of the
 required data. By default, we will use a `DruidInputSource` to ingest data from an existing data source.
 
-If you want you can change the data source where the data is read from using the `fromDataSource()` method.
-
-**NOTE:** Currently we only support re-indexing, and thus the DruidInputSource.
+If you want you can change the data source where the data is read from using the `inputSource()` method.
+See the [Input Sources](#input-sources) chapter for other input sources.
 
 #### `kill()`
 
