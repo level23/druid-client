@@ -3,12 +3,10 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Concerns;
 
-use Closure;
 use ArrayObject;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Dimensions\LookupDimension;
-use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\ListFilteredDimension;
 use Level23\Druid\Dimensions\RegexFilteredDimension;
@@ -40,7 +38,6 @@ trait HasDimensions
      *                                                                                                can specify the
      *                                                                                                alias output name
      *                                                                                                here.
-     * @param \Closure|null                                                               $extraction
      * @param string|DataType                                                             $outputType This can either
      *                                                                                                be
      *                                                                                                "long",
@@ -52,24 +49,13 @@ trait HasDimensions
     public function select(
         array|ArrayObject|string|DimensionInterface $dimension,
         string $as = '',
-        Closure $extraction = null,
         string|DataType $outputType = DataType::STRING
     ): self {
         if (is_string($dimension)) {
-            if (!empty($extraction)) {
-                $builder = new ExtractionBuilder();
-                call_user_func($extraction, $builder);
-
-                $extraction = $builder->getExtraction();
-            } else {
-                $extraction = null;
-            }
-
             $this->addDimension(new Dimension(
                 $dimension,
                 ($as ?: $dimension),
                 is_string($outputType) ? DataType::from(strtolower($outputType)) : $outputType,
-                $extraction
             ));
         } else {
             $this->addDimension($dimension);
@@ -149,12 +135,13 @@ trait HasDimensions
      *
      * @see: https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
      *
-     * @param string   $dimension   The name of the multi-value dimension where you want to select data from
-     * @param string[] $values      A list of items which you want to select (whitelist) or not select (blacklist)
-     * @param string   $as          The name as it will be used in the result set. If left empty, we will use the same
-     *                              name as the dimension.
-     * @param string|DataType   $outputType  This can either be "long", "float" or "string"
-     * @param bool     $isWhitelist Whether the list is a whitelist (true) or a blacklist (false)
+     * @param string          $dimension   The name of the multi-value dimension where you want to select data from
+     * @param string[]        $values      A list of items which you want to select (whitelist) or not select
+     *                                     (blacklist)
+     * @param string          $as          The name as it will be used in the result set. If left empty, we will use
+     *                                     the same name as the dimension.
+     * @param string|DataType $outputType  This can either be "long", "float" or "string"
+     * @param bool            $isWhitelist Whether the list is a whitelist (true) or a blacklist (false)
      *
      * @return self
      */
@@ -184,11 +171,12 @@ trait HasDimensions
      *
      * @see: https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
      *
-     * @param string $dimension   The name of the multi-value dimension where you want to select data from
-     * @param string $regex       Only return the items in this dimension which match with the given java regex.
-     * @param string $as          The name as it will be used in the result set. If left empty, we will use the same
-     *                            name as the dimension.
-     * @param string|DataType $outputType  This can either be "long", "float" or "string"
+     * @param string          $dimension  The name of the multi-value dimension where you want to select data from
+     * @param string          $regex      Only return the items in this dimension which match with the given java
+     *                                    regex.
+     * @param string          $as         The name as it will be used in the result set. If left empty, we will use the
+     *                                    same name as the dimension.
+     * @param string|DataType $outputType This can either be "long", "float" or "string"
      *
      * @return self
      */
@@ -215,11 +203,11 @@ trait HasDimensions
      *
      * @see: https://druid.apache.org/docs/latest/querying/multi-value-dimensions.html
      *
-     * @param string $dimension   The name of the multi-value dimension where you want to select data from
-     * @param string $prefix      Only return the values which match with the given prefix.
-     * @param string $as          The name as it will be used in the result set. If left empty, we will use the same
-     *                            name as the dimension.
-     * @param string|DataType $outputType  This can either be "long", "float" or "string"
+     * @param string          $dimension  The name of the multi-value dimension where you want to select data from
+     * @param string          $prefix     Only return the values which match with the given prefix.
+     * @param string          $as         The name as it will be used in the result set. If left empty, we will use the
+     *                                    same name as the dimension.
+     * @param string|DataType $outputType This can either be "long", "float" or "string"
      *
      * @return self
      */

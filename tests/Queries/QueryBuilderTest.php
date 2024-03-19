@@ -32,18 +32,15 @@ use Level23\Druid\Queries\TimeSeriesQuery;
 use Level23\Druid\Filters\FilterInterface;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\ScanQueryContext;
-use Level23\Druid\Extractions\UpperExtraction;
 use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\DataSources\TableDataSource;
+use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\DataSources\LookupDataSource;
 use Level23\Druid\Dimensions\DimensionInterface;
-use Level23\Druid\Context\GroupByV2QueryContext;
-use Level23\Druid\Context\GroupByV1QueryContext;
 use Level23\Druid\Responses\SelectQueryResponse;
-use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Responses\SearchQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Context\TimeSeriesQueryContext;
@@ -146,6 +143,11 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($this->builder, $response);
 
         $this->assertEquals(Granularity::YEAR, $this->getProperty($this->builder, 'granularity'));
+    }
+
+    public function testGetClient(): void
+    {
+        $this->assertEquals($this->client, $this->builder->getClient());
     }
 
     public function testToJson(): void
@@ -450,7 +452,7 @@ class QueryBuilderTest extends TestCase
     {
         return [
             [['__time' => 'hour'], true],
-            [new Dimension('__hour', 'time', 'string', new UpperExtraction()), false],
+            [new Dimension('__hour', 'time', 'string'), false],
             [['time' => 'hour'], false],
             [['__time' => 'hour', 'full_name'], false],
         ];
@@ -538,20 +540,15 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith [false, false, true]
-     *           [false, true, true]
-     *           [true, true, true]
-     *           [true, true, false]
-     *           [true, false, false]
-     *           [true, false, true]
-     *           [false, false, false]
-     *           [false, true, false]
+     * @testWith [false, false]
+     *           [false, true]
+     *           [true, true]
+     *           [true, false]
      *
      * @param bool $onlyDimensions
      * @param bool $alias
-     * @param bool $extractions
      */
-    public function testIsDimensionsListScanCompliant(bool $onlyDimensions, bool $alias, bool $extractions): void
+    public function testIsDimensionsListScanCompliant(bool $onlyDimensions, bool $alias): void
     {
         $expected = true;
         if (!$onlyDimensions) {
@@ -564,49 +561,8 @@ class QueryBuilderTest extends TestCase
             $expected = false;
         }
 
-        if ($extractions) {
-            $this->builder->select('FirstName', 'name', function (ExtractionBuilder $extractionBuilder) {
-                $extractionBuilder->lower();
-            });
-            $expected = false;
-        }
-
         $this->assertEquals($expected,
             $this->builder->shouldAllowMockingProtectedMethods()->isDimensionsListScanCompliant());
-    }
-
-    /**
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
-     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
-     */
-    public function testGroupByV1(): void
-    {
-        $context = ['foo' => 'bar'];
-        $query   = $this->getGroupByQueryMock();
-
-        $result       = [['event' => ['result' => 'here']]];
-        $parsedResult = new GroupByQueryResponse($result);
-
-        $this->builder
-            ->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('buildGroupByQuery')
-            ->with($context, 'v1')
-            ->once()
-            ->andReturn($query);
-
-        $this->client->shouldReceive('executeQuery')
-            ->with($query)
-            ->once()
-            ->andReturn($result);
-
-        $query->shouldReceive('parseResponse')
-            ->once()
-            ->with($result)
-            ->andReturn($parsedResult);
-
-        $response = $this->builder->groupByV1($context);
-
-        $this->assertEquals($parsedResult, $response);
     }
 
     /**
@@ -1603,27 +1559,25 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @testWith ["v1", true, true, true, true, true, true, true]
-     *           ["v1", false, false, true, false, true, false, false]
-     *           ["v2", true, false, false, true, false, true, false]
-     *           ["v2", false, false, false, false, false, false, true]
+     * @testWith [true, true, true, true, true, true, true]
+     *           [false, false, true, false, true, false, false]
+     *           [true, false, false, true, false, true, false]
+     *           [false, false, false, false, false, false, true]
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      *
-     * @param string $version
-     * @param bool   $withArrayContext
-     * @param bool   $withVirtual
-     * @param bool   $withFilter
-     * @param bool   $withLimit
-     * @param bool   $withHaving
-     * @param bool   $withPostAggregations
-     * @param bool   $withSubtotals
+     * @param bool $withArrayContext
+     * @param bool $withVirtual
+     * @param bool $withFilter
+     * @param bool $withLimit
+     * @param bool $withHaving
+     * @param bool $withPostAggregations
+     * @param bool $withSubtotals
      *
      * @throws \Exception
      */
     public function testBuildGroupByQuery(
-        string $version,
         bool $withArrayContext,
         bool $withVirtual,
         bool $withFilter,
@@ -1641,13 +1595,12 @@ class QueryBuilderTest extends TestCase
         $this->builder->granularity('week');
 
         if ($withArrayContext) {
-            $context    = ['timeout' => 60];
-            $expectType = $version == 'v1' ? GroupByV1QueryContext::class : GroupByV2QueryContext::class;
+            $context = ['timeout' => 60];
         } else {
-            $context = new GroupByV2QueryContext();
+            $context = new GroupByQueryContext();
             $context->setFinalize(true);
-            $expectType = GroupByV2QueryContext::class;
         }
+        $expectType = GroupByQueryContext::class;
 
         if ($withPostAggregations) {
             $this->builder->divide('avg', ['field', 'suppliers']);
@@ -1726,7 +1679,7 @@ class QueryBuilderTest extends TestCase
                 ->with($subtotals);
         }
 
-        $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery($context, $version);
+        $this->builder->shouldAllowMockingProtectedMethods()->buildGroupByQuery($context);
     }
 
     /**

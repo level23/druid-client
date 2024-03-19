@@ -6,28 +6,11 @@ namespace Level23\Druid\Context;
 /**
  * GroupBy queries can be executed using two different strategies. The default strategy for a cluster is determined
  * by the "druid.query.groupBy.defaultStrategy" runtime property on the Broker. This can be overridden using
- * "groupByStrategy" in the query context. If neither the context field nor the property is set, the "v2" strategy
- * will be used.
- *
- * "v2", the default, is designed to offer better performance and memory management. This strategy generates
- * per-segment results using a fully off-heap map. Data processes merge the per-segment results using a fully
- * off-heap concurrent facts map combined with an on-heap string dictionary. This may optionally involve spilling
- * to disk. Data processes return sorted results to the Broker, which merges result streams using an N-way merge.
- * The broker materializes the results if necessary (e.g. if the query sorts on columns other than its dimensions).
- * Otherwise, it streams results back as they are merged.
- *
- * "v1", a legacy engine, generates per-segment results on data processes (Historical, realtime, MiddleManager)
- * using a map which is partially on-heap (dimension keys and the map itself) and partially off-heap (the
- * aggregated values). Data processes then merge the per-segment results using Druid's indexing mechanism. This
- * merging is multithreaded by default, but can optionally be single-threaded. The Broker merges the final result
- * set using Druid's indexing mechanism again. The broker merging is always single-threaded. Because the Broker
- * merges results using the indexing mechanism, it must materialize the full result set before returning any
- * results. On both the data processes and the Broker, the merging index is fully on-heap by default, but it can
- * optionally store aggregated values off-heap.
+ * "groupByStrategy" in the query context.
  *
  * Overrides the value of druid.query.groupBy.defaultStrategy for this query.
  */
-class GroupByV2QueryContext extends QueryContext implements ContextInterface
+class GroupByQueryContext extends QueryContext implements ContextInterface
 {
     /**
      * @param array<string,string|int|bool> $properties
@@ -35,8 +18,6 @@ class GroupByV2QueryContext extends QueryContext implements ContextInterface
     public function __construct(array $properties = [])
     {
         parent::__construct($properties);
-
-        $this->properties['groupByStrategy'] = 'v2';
     }
 
     /**

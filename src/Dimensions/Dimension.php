@@ -5,7 +5,6 @@ namespace Level23\Druid\Dimensions;
 
 use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
-use Level23\Druid\Extractions\ExtractionInterface;
 
 class Dimension implements DimensionInterface
 {
@@ -15,21 +14,17 @@ class Dimension implements DimensionInterface
 
     protected DataType $outputType;
 
-    protected ?ExtractionInterface $extractionFunction;
-
     /**
      * Dimension constructor.
      *
      * @param string                   $dimension
      * @param string|null              $outputName
      * @param string|DataType          $outputType This can either be "long", "float" or "string"
-     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string $outputName = null,
-        string|DataType $outputType = DataType::STRING,
-        ExtractionInterface $extractionFunction = null
+        string|DataType $outputType = DataType::STRING
     ) {
         $this->dimension  = $dimension;
         $this->outputName = $outputName ?: $dimension;
@@ -47,7 +42,6 @@ class Dimension implements DimensionInterface
         }
 
         $this->outputType         = $outputType;
-        $this->extractionFunction = $extractionFunction;
     }
 
     /**
@@ -57,18 +51,12 @@ class Dimension implements DimensionInterface
      */
     public function toArray(): array
     {
-        $result = [
-            'type'       => ($this->extractionFunction ? 'extraction' : 'default'),
+        return [
+            'type'       => 'default',
             'dimension'  => $this->dimension,
             'outputType' => $this->outputType->value,
             'outputName' => $this->outputName,
         ];
-
-        if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->toArray();
-        }
-
-        return $result;
     }
 
     /**
@@ -89,13 +77,5 @@ class Dimension implements DimensionInterface
     public function getOutputName(): string
     {
         return $this->outputName;
-    }
-
-    /**
-     * @return \Level23\Druid\Extractions\ExtractionInterface|null
-     */
-    public function getExtractionFunction(): ?ExtractionInterface
-    {
-        return $this->extractionFunction;
     }
 }

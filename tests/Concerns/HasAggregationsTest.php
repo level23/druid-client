@@ -25,7 +25,6 @@ use Level23\Druid\Aggregations\LastAggregator;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Aggregations\CountAggregator;
 use Level23\Druid\Aggregations\FirstAggregator;
-use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Aggregations\FilteredAggregator;
 use Level23\Druid\Collections\DimensionCollection;
 use Level23\Druid\Aggregations\AggregatorInterface;
@@ -178,11 +177,11 @@ class HasAggregationsTest extends TestCase
                 $round);
 
         $counter = 0;
+        $this->builder->virtualColumn('left(last_name, 1)', 'last_name_first_char');
+
         $closure = function (DimensionBuilder $builder) use (&$counter) {
             $counter++;
-            $builder->select('last_name', 'last_name_first_char', function (ExtractionBuilder $extractionBuilder) {
-                $extractionBuilder->substring(0, 1);
-            });
+            $builder->select('last_name_first_char');
         };
 
         $response = $this->builder->cardinality('distinct_last_name_first_char', $closure, $byRow, $round);
@@ -238,12 +237,12 @@ class HasAggregationsTest extends TestCase
                 false,
                 false);
 
+        $this->builder->virtualColumn('left(last_name, 1)', 'last_name_first_char');
+
         $counter = 0;
         $closure = function (DimensionBuilder $builder) use (&$counter) {
             $counter++;
-            $builder->select('last_name', 'last_name_first_char', function (ExtractionBuilder $extractionBuilder) {
-                $extractionBuilder->substring(0, 1);
-            });
+            $builder->select('last_name_first_char');
         };
 
         $response = $this->builder->cardinality('distinct_last_name_first_char', $closure);

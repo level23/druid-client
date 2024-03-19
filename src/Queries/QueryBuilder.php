@@ -28,9 +28,8 @@ use Level23\Druid\Types\ScanQueryResultFormat;
 use Level23\Druid\Responses\ScanQueryResponse;
 use Level23\Druid\Responses\TopNQueryResponse;
 use Level23\Druid\DataSources\TableDataSource;
+use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Concerns\HasPostAggregations;
-use Level23\Druid\Context\GroupByV1QueryContext;
-use Level23\Druid\Context\GroupByV2QueryContext;
 use Level23\Druid\Responses\SelectQueryResponse;
 use Level23\Druid\Responses\SearchQueryResponse;
 use Level23\Druid\Collections\IntervalCollection;
@@ -128,7 +127,7 @@ class QueryBuilder
     public function selectVirtual(string $expression, string $as, string|DataType $outputType = DataType::STRING): self
     {
         $this->virtualColumn($expression, $as, $outputType);
-        $this->select($as, $as, null, $outputType);
+        $this->select($as, $as, $outputType);
 
         return $this;
     }
@@ -357,33 +356,15 @@ class QueryBuilder
     /**
      * Return the group by query
      *
-     * @param GroupByV1QueryContext|GroupByV2QueryContext|array<string,string|int|bool> $context
+     * @param GroupByQueryContext|array<string,string|int|bool> $context
      *
      * @return GroupByQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function groupBy(array|GroupByV1QueryContext|GroupByV2QueryContext $context = []): GroupByQueryResponse
+    public function groupBy(array|GroupByQueryContext $context = []): GroupByQueryResponse
     {
         $query = $this->buildGroupByQuery($context);
-
-        $rawResponse = $this->client->executeQuery($query);
-
-        return $query->parseResponse($rawResponse);
-    }
-
-    /**
-     * Return the group by query
-     *
-     * @param GroupByV1QueryContext|GroupByV2QueryContext|array<string,string|int|bool> $context
-     *
-     * @return GroupByQueryResponse
-     * @throws \Level23\Druid\Exceptions\QueryResponseException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function groupByV1(array|GroupByV1QueryContext|GroupByV2QueryContext $context = []): GroupByQueryResponse
-    {
-        $query = $this->buildGroupByQuery($context, 'v1');
 
         $rawResponse = $this->client->executeQuery($query);
 
@@ -409,6 +390,14 @@ class QueryBuilder
         $rawResponse = $this->client->executeQuery($query);
 
         return $query->parseResponse($rawResponse);
+    }
+
+    /**
+     * @return \Level23\Druid\DruidClient
+     */
+    public function getClient(): DruidClient
+    {
+        return $this->client;
     }
 
     //<editor-fold desc="Protected methods">
@@ -769,11 +758,10 @@ class QueryBuilder
      * Build the group by query
      *
      * @param QueryContext|array<string,string|int|bool> $context
-     * @param string                                     $type
      *
      * @return GroupByQuery
      */
-    protected function buildGroupByQuery(array|QueryContext $context = [], string $type = 'v2'): GroupByQuery
+    protected function buildGroupByQuery(array|QueryContext $context = []): GroupByQuery
     {
         if (count($this->intervals) == 0) {
             throw new InvalidArgumentException('You have to specify at least one interval');
@@ -788,16 +776,7 @@ class QueryBuilder
         );
 
         if (is_array($context)) {
-            switch ($type) {
-                case 'v1':
-                    $context = new GroupByV1QueryContext($context);
-                    break;
-
-                default:
-                case 'v2':
-                    $context = new GroupByV2QueryContext($context);
-                    break;
-            }
+            $context = new GroupByQueryContext($context);
         }
 
         $query->setContext($context);
@@ -880,8 +859,7 @@ class QueryBuilder
         }
 
         return $this->dimensions[0]->getDimension() == '__time'
-            && $this->dimensions[0] instanceof Dimension
-            && $this->dimensions[0]->getExtractionFunction() === null;
+            && $this->dimensions[0] instanceof Dimension;
     }
 
     /**
@@ -940,10 +918,6 @@ class QueryBuilder
     {
         foreach ($this->dimensions as $dimension) {
             if (!$dimension instanceof Dimension) {
-                return false;
-            }
-
-            if ($dimension->getExtractionFunction()) {
                 return false;
             }
 

@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\ExtractionInterface;
-
 /**
  * Class SearchFilter
  *
@@ -15,8 +13,6 @@ use Level23\Druid\Extractions\ExtractionInterface;
 class SearchFilter implements FilterInterface
 {
     protected string $dimension;
-
-    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * @var string|string[]
@@ -31,21 +27,18 @@ class SearchFilter implements FilterInterface
      * When an array of values is given, we expect the dimension value contains all
      * the values specified in this search query spec.
      *
-     * @param string                   $dimension
-     * @param string|string[]          $valueOrValues
-     * @param bool                     $caseSensitive
-     * @param ExtractionInterface|null $extractionFunction
+     * @param string          $dimension
+     * @param string|string[] $valueOrValues
+     * @param bool            $caseSensitive
      */
     public function __construct(
         string $dimension,
         array|string $valueOrValues,
-        bool $caseSensitive = false,
-        ?ExtractionInterface $extractionFunction = null
+        bool $caseSensitive = false
     ) {
-        $this->dimension          = $dimension;
-        $this->extractionFunction = $extractionFunction;
-        $this->value              = $valueOrValues;
-        $this->caseSensitive      = $caseSensitive;
+        $this->dimension     = $dimension;
+        $this->value         = $valueOrValues;
+        $this->caseSensitive = $caseSensitive;
     }
 
     /**
@@ -69,16 +62,10 @@ class SearchFilter implements FilterInterface
             ];
         }
 
-        $result = [
+        return [
             'type'      => 'search',
             'dimension' => $this->dimension,
             'query'     => $query,
         ];
-
-        if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->toArray();
-        }
-
-        return $result;
     }
 }

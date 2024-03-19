@@ -5,7 +5,6 @@ namespace Level23\Druid\Filters;
 
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\BoundOperator;
-use Level23\Druid\Extractions\ExtractionInterface;
 
 /**
  * Class BoundFilter
@@ -25,8 +24,6 @@ class BoundFilter implements FilterInterface
 
     protected SortingOrder $ordering;
 
-    protected ?ExtractionInterface $extractionFunction;
-
     /**
      * BoundFilter constructor.
      *
@@ -37,14 +34,12 @@ class BoundFilter implements FilterInterface
      *                                                    string.
      * @param string|SortingOrder|null $ordering          Specifies the sorting order using when comparing values
      *                                                    against the bound.
-     * @param ExtractionInterface|null $extractionFunction
      */
     public function __construct(
         string $dimension,
         string|BoundOperator $operator,
         string $value,
-        string|SortingOrder $ordering = null,
-        ?ExtractionInterface $extractionFunction = null
+        string|SortingOrder $ordering = null
     ) {
         if(is_string($ordering)) {
             $ordering = SortingOrder::from(strtolower($ordering));
@@ -54,7 +49,6 @@ class BoundFilter implements FilterInterface
         $this->operator           = is_string($operator) ? BoundOperator::from($operator) : $operator;
         $this->value              = $value;
         $this->ordering           = $ordering ?? (is_numeric($value) ? SortingOrder::NUMERIC : SortingOrder::LEXICOGRAPHIC);
-        $this->extractionFunction = $extractionFunction;
     }
 
     /**
@@ -87,10 +81,6 @@ class BoundFilter implements FilterInterface
                 $result['upper']       = $this->value;
                 $result['upperStrict'] = true;
                 break;
-        }
-
-        if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->toArray();
         }
 
         return $result;

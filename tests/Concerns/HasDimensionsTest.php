@@ -16,7 +16,6 @@ use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Dimensions\LookupDimension;
 use Level23\Druid\Dimensions\DimensionInterface;
-use Level23\Druid\Extractions\ExtractionBuilder;
 use Level23\Druid\Dimensions\ListFilteredDimension;
 use Level23\Druid\Dimensions\RegexFilteredDimension;
 use Level23\Druid\Dimensions\PrefixFilteredDimension;
@@ -63,17 +62,17 @@ class HasDimensionsTest extends TestCase
 
         return [
             // give as first and second parameter
-            [['browser', 'TheBrowser', null, 'string'], $expected],
+            [['browser', 'TheBrowser', 'string'], $expected],
             // give as array
             [[['browser' => 'TheBrowser']], $expected],
             // give as array (simple)
             [[['browser']], $expectedSimple],
 
             // incorrect output type
-            [['browser', 'TheBrowser', null, 'something'], $expected, true],
+            [['browser', 'TheBrowser', 'something'], $expected, true],
             [[new Dimension('browser', 'TheBrowser')], $expected],
             [[new ArrayObject(['browser' => 'TheBrowser'])], $expected],
-            [['country_iso', 'country', null, DataType::LONG->value], $expectedLong],
+            [['country_iso', 'country', DataType::LONG->value], $expectedLong],
         ];
     }
 
@@ -306,20 +305,5 @@ class HasDimensionsTest extends TestCase
         $result = $this->builder->multiValuePrefixSelect($dimensionName, $prefix, $as, $outputType);
 
         $this->assertEquals($result, $this->builder);
-    }
-
-    public function testSelectWithExtraction(): void
-    {
-        $this->builder->shouldAllowMockingProtectedMethods()
-            ->shouldReceive('addDimension')
-            ->once();
-
-        $counter = 0;
-        $this->builder->select('user_id', 'username', function (ExtractionBuilder $builder) use (&$counter) {
-            $counter++;
-            $builder->lookup('user');
-        });
-
-        $this->assertEquals(1, $counter);
     }
 }

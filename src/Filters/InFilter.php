@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\ExtractionInterface;
-
 class InFilter implements FilterInterface
 {
     protected string $dimension;
@@ -14,20 +12,16 @@ class InFilter implements FilterInterface
      */
     protected array $values;
 
-    protected ?ExtractionInterface $extraction;
-
     /**
      * InFilter constructor.
      *
      * @param string                   $dimension
      * @param string[]|int[]           $values
-     * @param ExtractionInterface|null $extraction
      */
-    public function __construct(string $dimension, array $values, ?ExtractionInterface $extraction = null)
+    public function __construct(string $dimension, array $values)
     {
         $this->values     = $values;
         $this->dimension  = $dimension;
-        $this->extraction = $extraction;
     }
 
     /**
@@ -37,16 +31,10 @@ class InFilter implements FilterInterface
      */
     public function toArray(): array
     {
-        $result = [
+        return [
             'type'      => 'in',
             'dimension' => $this->dimension,
             'values'    => array_values($this->values),
         ];
-
-        if ($this->extraction) {
-            $result['extractionFn'] = $this->extraction->toArray();
-        }
-
-        return $result;
     }
 }

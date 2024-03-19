@@ -5,9 +5,9 @@ namespace Level23\Druid\Tests\OrderBy;
 
 use ValueError;
 use Level23\Druid\Tests\TestCase;
-use Level23\Druid\OrderBy\OrderBy;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\OrderByDirection;
+use Level23\Druid\OrderBy\OrderBy;
 
 class OrderByTest extends TestCase
 {

@@ -7,7 +7,6 @@ use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
-use Level23\Druid\Extractions\LookupExtraction;
 
 class BoundFilterTest extends TestCase
 {
@@ -87,30 +86,5 @@ class BoundFilterTest extends TestCase
         $this->expectExceptionMessage('"is" is not a valid backing value for enum Level23\Druid\Types\BoundOperator');
 
         new BoundFilter('age', 'is', '18');
-    }
-
-    public function testExtractionFunction(): void
-    {
-        $extractionFunction = new LookupExtraction(
-            'age_by_member', false
-        );
-
-        $filter = new BoundFilter(
-            'member_id',
-            '>',
-            '18',
-            SortingOrder::ALPHANUMERIC,
-            $extractionFunction
-        );
-
-        $this->assertEquals([
-            'type'         => 'bound',
-            'dimension'    => 'member_id',
-            'ordering'     => 'alphanumeric',
-            'lower'        => 18,
-            'lowerStrict'  => true,
-            'extractionFn' => $extractionFunction->toArray(),
-        ], $filter->toArray()
-        );
     }
 }
