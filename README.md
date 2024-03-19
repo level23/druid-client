@@ -79,7 +79,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement hadoop based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
-- 
 
 ## ChangeLog and Upgrading
 
