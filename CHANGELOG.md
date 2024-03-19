@@ -28,7 +28,7 @@ https://github.com/apache/druid/pull/14542
 
 ## Replacing extraction functions with expressions
 
-You can replace the logic placed in extraction function in expressions, as this is how druid is wanting it. 
+You can replace the logic placed in extraction function in expressions, as this is how druid wants it. 
 
 For example, this:
 ```php
