@@ -28,6 +28,7 @@ use Level23\Druid\Filters\ExpressionFilter;
 use Level23\Druid\Interval\IntervalInterface;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Filters\SpatialRadiusFilter;
+use Level23\Druid\Filters\ArrayContainsFilter;
 use Level23\Druid\Filters\SpatialPolygonFilter;
 use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Filters\ColumnComparisonFilter;
@@ -231,6 +232,39 @@ trait HasFilter
     }
 
     /**
+     * Check if an ARRAY contains a specific element but can also match against any type of column.
+     * When matching against scalar columns, scalar columns are treated as single-element arrays.
+     *
+     * @param string                $column Input column or virtual column name to filter on.
+     * @param int|float|string|null $value  Array element value to match. This value can be null.
+     * @param string                $boolean
+     *
+     * @return $this
+     * @see https://druid.apache.org/docs/latest/querying/filters/#array-contains-element-filter
+     *
+     */
+    public function whereArrayContains(string $column, int|float|string|null $value, string $boolean = 'and'): self
+    {
+        $filter = new ArrayContainsFilter($column, $value);
+
+        return $this->useFilter($filter, $boolean);
+    }
+
+    /**
+     * Check if an ARRAY contains a specific element but can also match against any type of column.
+     * When matching against scalar columns, scalar columns are treated as single-element arrays.
+     *
+     * @param string                $column Input column or virtual column name to filter on.
+     * @param int|float|string|null $value  Array element value to match. This value can be null.
+     *
+     * @return $this
+     */
+    public function orWhereArrayContains(string $column, int|float|string|null $value): self
+    {
+        return $this->whereArrayContains($column, $value, 'or');
+    }
+
+    /**
      * Build a where selection which is inverted
      *
      * @param \Closure $filterBuilder A closure which will receive a FilterBuilder instance.
@@ -382,8 +416,8 @@ trait HasFilter
      *
      * If there are previously defined filters, this filter will be joined with an "or".
      *
-     * @param string         $dimension  The dimension which you want to filter
-     * @param string[]|int[] $items      A list of values. We will return records where the dimension is in this list.
+     * @param string         $dimension The dimension which you want to filter
+     * @param string[]|int[] $items     A list of values. We will return records where the dimension is in this list.
      *
      * @return $this
      */

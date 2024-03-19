@@ -15,6 +15,7 @@
 - The `whereFlags()` method does not accept `$useJavascript` anymore, as it used an expression filter.
 - Removed `orWhereNotColumn`. This was a left-over and should have been removed in v3.
 - Added support for authentication in the druid client. See [DruidClient::auth()](README.md#druidclientauth)
+- Added new `whereArrayContains` and `orWhereArrayContains` filter methods.
 
 ## NULL handling (SQL compatibility)
 

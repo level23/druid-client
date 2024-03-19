@@ -40,6 +40,7 @@ use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Filters\ExpressionFilter;
 use Level23\Druid\Dimensions\DimensionBuilder;
 use Level23\Druid\Filters\SpatialRadiusFilter;
+use Level23\Druid\Filters\ArrayContainsFilter;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Filters\SpatialPolygonFilter;
 use Level23\Druid\Filters\ColumnComparisonFilter;
@@ -352,6 +353,38 @@ class HasFilterTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
+    public function testWhereArrayContains(): void
+    {
+        $search = $this->getFilterMock(ArrayContainsFilter::class);
+        $search->shouldReceive('__construct')
+            ->once()
+            ->with('foo', 'bar');
+
+        $result = $this->builder->whereArrayContains('foo', 'bar');
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testOrWhereArrayContains(): void
+    {
+        $this->builder->shouldReceive('whereArrayContains')
+            ->once()
+            ->with('foo', 'bar', 'or')
+            ->andReturnSelf();
+
+        $result = $this->builder->orWhereArrayContains('foo', 'bar');
+
+        $this->assertEquals($this->builder, $result);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testWhereNull(): void
     {
         $search = $this->getFilterMock(NullFilter::class);
@@ -508,7 +541,8 @@ class HasFilterTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The arguments which you have supplied cannot be parsed.');
-        $this->builder->where(function (FilterBuilder $builder) {});
+        $this->builder->where(function (FilterBuilder $builder) {
+        });
     }
 
     /**
@@ -543,7 +577,7 @@ class HasFilterTest extends TestCase
             ->once()
             ->andReturn($this->builder);
 
-        $response = $this->builder->orWhereBetween('age', 18, 22,  DataType::LONG);
+        $response = $this->builder->orWhereBetween('age', 18, 22, DataType::LONG);
 
         $this->assertEquals($this->builder, $response);
     }
@@ -642,7 +676,6 @@ class HasFilterTest extends TestCase
 
         $this->assertEquals($this->builder, $response);
     }
-
 
     public function testWhereFlags(): void
     {

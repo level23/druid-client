@@ -19,7 +19,8 @@ This package only requires Guzzle as dependency. The PHP and Guzzle version requ
 
 | Druid Client Version | PHP Requirements                        | Guzzle Requirements |
 |----------------------|-----------------------------------------|---------------------|
-| 3.* (current)        | PHP 8.2 or higher                       | Version 7.0         |
+| 4.* (current)        | PHP 8.2 or higher                       | Version 7.0         |
+| 3.*                  | PHP 8.2 or higher                       | Version 7.0         |
 | 2.*                  | PHP 7.4, 8.0, 8.1 and 8.2.              | Version 6.2 or 7.*  |
 | 1.*                  | PHP version 7.2, 7.4, 8.0, 8.1 and 8.2. | Version 6.2 or 7.*  |
 
@@ -75,10 +76,10 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 
 ## Todo's
 
-- Implement the [Equality filter](https://druid.apache.org/docs/latest/querying/filters#equality-filter)
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement hadoop based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
+- 
 
 ## ChangeLog and Upgrading
 
@@ -147,6 +148,8 @@ for more information.
         - [orWhereNull()](#orwherenull)
         - [whereIn()](#wherein)
         - [orWhereIn()](#orwherein)
+        - [whereArrayContains()](#wherearraycontains)
+        - [orWhereArrayContains()](#orwherearraycontains) 
         - [whereBetween()](#wherebetween)
         - [orWhereBetween()](#orwherebetween)
         - [whereColumn()](#wherecolumn)
@@ -1654,9 +1657,39 @@ This method has the following arguments:
 | array    | Required              | `$items`     | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.                                                                                |
 | string   | Optional              | `$boolean`   | "and"              | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
+Example:
+
+```php
+// filter where country in "it", "de" or "au".
+$builder->whereIn('country_iso', ['it', 'de', 'au']); 
+```
+
 #### `orWhereIn()`
 
 Same as `whereIn()`, but now we will join previous added filters with a `or` instead of an `and`.
+
+#### `whereArrayContains()`
+
+With this method you can filter if an array contains a given element.
+
+This method has the following arguments:
+
+| **Type**              | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                              |
+|-----------------------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string                | Required              | `$column`    | country_iso | Input column or virtual column name to filter on.                                                                                                            |
+| int/string/float/null | Required              | `$value`     | "it"        | Array element value to match. This value can be null.                                                                                                        |
+| string                | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+
+Example:
+
+```php
+$builder->whereArrayContains('features', 'myNewFeature'); 
+```
+
+
+#### `orWhereArrayContains()`
+
+Same as `whereArrayContains()`, but now we will join previous added filters with a `or` instead of an `and`.
 
 #### `whereBetween()`
 
