@@ -18,8 +18,8 @@ class CombinationsTest extends TestCase
         $query->interval('2020-01-01', '2020-01-02');
 
         $query->where(function (FilterBuilder $builder) {
-            $builder->orWhere('foo', '=', 'bar');
-            $builder->orWhere('foo', '=', 'baz');
+            $builder->orWhere('foo', '=', 5.3);
+            $builder->orWhere('foo', '=', 1);
         });
 
         $query->where('bar', '=', 'qux');
@@ -33,21 +33,24 @@ class CombinationsTest extends TestCase
                     'type'   => 'or',
                     'fields' => [
                         [
-                            'type'      => 'selector',
-                            'dimension' => 'foo',
-                            'value'     => 'bar',
+                            'type'           => 'equals',
+                            'column'         => 'foo',
+                            'matchValueType' => 'double',
+                            'matchValue'     => 5.3,
                         ],
                         [
-                            'type'      => 'selector',
-                            'dimension' => 'foo',
-                            'value'     => 'baz',
+                            'type'           => 'equals',
+                            'column'         => 'foo',
+                            'matchValueType' => 'long',
+                            'matchValue'     => 1,
                         ],
                     ],
                 ],
                 [
-                    'type'      => 'selector',
-                    'dimension' => 'bar',
-                    'value'     => 'qux',
+                    'type'           => 'equals',
+                    'column'         => 'bar',
+                    'matchValueType' => 'string',
+                    'matchValue'     => 'qux',
                 ],
             ],
         ];

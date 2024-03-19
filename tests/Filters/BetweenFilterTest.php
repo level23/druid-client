@@ -5,92 +5,60 @@ namespace Level23\Druid\Tests\Filters;
 
 use ValueError;
 use Level23\Druid\Tests\TestCase;
-use Level23\Druid\Types\SortingOrder;
+use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\BetweenFilter;
-use Level23\Druid\Extractions\LookupExtraction;
 
 class BetweenFilterTest extends TestCase
 {
     /**
-     * @param int|string  $minValue
-     * @param int|string  $maxValue
-     * @param string|null $ordering
-     * @param bool        $expectException
+     * @param int|float|string $minValue
+     * @param int|float|string $maxValue
+     * @param string|null      $dataType
+     * @param bool             $expectException
      *
      * @testWith [12, 14]
+     *           [12, 14, "long"]
+     *           [12.6, 14.2, "long"]
+     *           [12.6, 14.2]
+     *           [12.6, 14.2, "string"]
      *           ["john", "doe"]
-     *           ["john", "doe", "alphanumeric"]
+     *           ["john", "doe", "string"]
      *           ["john", "doe", "something", true]
      */
-    public function testFilter(int|string $minValue, int|string $maxValue, string $ordering = null, bool $expectException = false): void
-    {
+    public function testFilter(
+        int|float|string $minValue,
+        int|float|string $maxValue,
+        string $dataType = null,
+        bool $expectException = false
+    ): void {
         if ($expectException) {
             $this->expectException(ValueError::class);
         }
-        $filter = new BetweenFilter('age', $minValue, $maxValue, $ordering);
 
-        if (is_numeric($minValue) && is_numeric($maxValue) && is_null($ordering)) {
-            $ordering = 'numeric';
-        } elseif (is_null($ordering)) {
-            $ordering = SortingOrder::LEXICOGRAPHIC;
+        if (is_string($dataType)) {
+            $dataType = DataType::from($dataType);
+        }
+
+        $filter = new BetweenFilter('age', $minValue, $maxValue, $dataType);
+
+        if (is_null($dataType)) {
+            if (is_int($minValue)) {
+                $dataType = DataType::LONG;
+            } elseif (is_float($minValue)) {
+                $dataType = DataType::DOUBLE;
+            } else {
+                $dataType = DataType::STRING;
+            }
         }
 
         $expected = [
-            'type'        => 'bound',
-            'dimension'   => 'age',
-            'ordering'    => (is_string($ordering) ? SortingOrder::from($ordering) : $ordering)->value,
-            'lower'       => (string)$minValue,
-            'lowerStrict' => false,
-            'upper'       => (string)$maxValue,
-            'upperStrict' => true,
-        ];
-
-        $this->assertEquals($expected, $filter->toArray());
-    }
-
-    public function testExtractionFunction(): void
-    {
-        $extractionFunction = new LookupExtraction(
-            'real_age', false
-        );
-
-        $filter = new BetweenFilter('age', 12, 18, null, $extractionFunction);
-
-        $expected = [
-            'type'         => 'bound',
-            'dimension'    => 'age',
-            'ordering'     => 'numeric',
-            'lower'        => '12',
-            'lowerStrict'  => false,
-            'upper'        => '18',
-            'upperStrict'  => true,
-            'extractionFn' => $extractionFunction->toArray(),
-        ];
-
-        $this->assertEquals($expected, $filter->toArray());
-    }
-
-    /**
-     * @testWith ["12", "15"]
-     *           ["-inf", "15"]
-     *           ["-inf", "+inf"]
-     *           ["1", "+inf"]
-     *
-     * @param string $minValue
-     * @param string $maxValue
-     */
-    public function testDefaultOrdering(string $minValue, string $maxValue): void
-    {
-        $filter = new BetweenFilter('age', $minValue, $maxValue);
-
-        $expected = [
-            'type'        => 'bound',
-            'dimension'   => 'age',
-            'ordering'    => is_numeric($minValue) && is_numeric($maxValue) ? 'numeric' : 'lexicographic',
-            'lower'       => $minValue,
-            'lowerStrict' => false,
-            'upper'       => $maxValue,
-            'upperStrict' => true,
+            'type'           => 'range',
+            'column'         => 'age',
+            'matchValueType' => $dataType->value,
+            'lower'          => $minValue,
+            'lowerOpen'      => false,
+            'upper'          => $maxValue,
+            'upperOpen'      => true,
         ];
 
         $this->assertEquals($expected, $filter->toArray());

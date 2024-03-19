@@ -15,7 +15,7 @@ use Level23\Druid\Filters\SelectorFilter;
 use Level23\Druid\Aggregations\SumAggregator;
 use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\VirtualColumns\VirtualColumn;
-use Level23\Druid\Context\GroupByV2QueryContext;
+use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Responses\GroupByQueryResponse;
 use Level23\Druid\Collections\DimensionCollection;
@@ -55,7 +55,7 @@ class GroupByQueryTest extends TestCase
 
         $subtotals = [['country', 'city'], ['country'], []];
 
-        $context = new GroupByV2QueryContext();
+        $context = new GroupByQueryContext();
         $context->setFinalize(true);
         $context->setMaxOnDiskStorage(15000);
 

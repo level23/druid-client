@@ -1,4 +1,70 @@
-## Changelog
+# Changelog
+
+**v4.0.0**
+
+- Removed GroupByV1. GroupBy v1 is a legacy engine and has not been supported since 2021.
+- **Removed extraction functions.** Extraction functions are deprecated in druid and 
+  are NOT build in the new NullFilter, EqualityFilter and RangeFilter. These are deprecated and 
+  should be replaced by expressions. This is poorly documented, but can be found here:
+  https://github.com/apache/druid/pull/14612
+  Therefore, we have decided to remove the extraction functionality completely. You can replace the functionality of 
+  extraction functions with expressions (and virtual columns). See below for some examples.
+- Added `RangeFilter` which replaces the `BoundFilter`. See NULL usage sector below.
+- Added `EqualityFilter` which replaces the `SelectorFilter`. See NULL usage sector below.
+- `whereBetween` now uses the `range` filter. The `whereBetween` doesn't accept an SortingOrder anymore, but a DataType.
+- The `whereFlags()` method does not accept `$useJavascript` anymore, as it used an expression filter.
+- Removed `orWhereNotColumn`. This was a left-over and should have been removed in v3.
+- Added support for authentication in the druid client. See [DruidClient::auth()](README.md#druidclientauth)
+
+## NULL handling (SQL compatibility)
+
+Druid has changed how it handles NULL values. Since version 28.0 it handles NULL as a separate value.
+It has introduced a few new filters, which will ignore NULL values. See for more information this page:
+https://druid.apache.org/docs/latest/release-info/upgrade-notes#sql-compatibility
+
+Also see this PULL request about information 
+https://github.com/apache/druid/pull/14542
+
+## Replacing extraction functions with expressions
+
+You can replace the logic placed in extraction function in expressions, as this is how druid is wanting it. 
+
+For example, this:
+```php
+$query->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
+    $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
+})
+```
+can be rewritten as:
+```php 
+$query->selectVirtual("timestamp_format(__time, 'yyyy-MM-dd HH:00:00')", 'hour')
+```
+
+Also, this:
+```php
+// Select records where "initials" is equal to the first character of "first_name".
+$builder->whereColumn('initials', function(DimensionBuilder $dimensionBuilder) {
+  $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
+    $extractionBuilder->substring(0, 1);
+  });
+});
+```
+can be rewritten as
+```php
+// Select records where "initials" is equal to the first character of "first_name".
+$builder->whereExpression("initials == left(first_name, 1)");
+```
+
+## Migrating from v3 to v4
+- Search for usage of `ExtractionBuilder`. If found, replace the extraction function logic with expressions. See above. 
+- Check usage of `whereBetween()`. Make sure that there is no extraction filter used and that the $ordering parameter is 
+  removed. Optionally, supply a $valueType parameter.
+- Check the `whereFlags()` and make sure that there are no javascript versions used anymore.
+- Check if `orWhereNotColumn` is used. If so, replace it with:
+  `whereNot(function (FilterBuilder $filterBuilder) { $filterBuilder->whereColumn(...); })`
+
+A handy regex to search in your project for points of interest: 
+`/ExtractionBuilder|whereBetween|whereFlags|orWhereNotColumn|GroupByV1/`
 
 **v3.0.5**
 
@@ -127,7 +193,7 @@ If you are currently using druid-client version 1.*, you should check for these 
    this.
    However, if you do not remove them it will not break.
 7. Removed deprecated `getPagingIdentifier()` from SelectQueryResponse class.
-8. All Query Types (`GroupByQuery`, `SelectQuery`, etc) now receive a `DataSourceInterface` object instead of a string
+8. All Query Types (`GroupByQuery`, `SelectQuery`, etc.) now receive a `DataSourceInterface` object instead of a string
    as dataSource.
 9. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and it is now public.
 10. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.

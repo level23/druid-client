@@ -30,6 +30,11 @@ class DruidClient
     protected ?LoggerInterface $logger = null;
 
     /**
+     * @var null|array{0:string,1:string}
+     */
+    protected ?array $auth = null;
+
+    /**
      * @var array<string,string|int>
      */
     protected array $config = [
@@ -82,6 +87,25 @@ class DruidClient
         $this->config = array_merge($this->config, $config);
 
         $this->client = $client ?: $this->makeGuzzleClient();
+    }
+
+    /**
+     * Provide HTTP basic auth credentials.
+     *
+     * @param string $username
+     * @param string $password
+     *
+     * @return $this
+     */
+    public function auth(
+        #[\SensitiveParameter]
+        string $username,
+        #[\SensitiveParameter]
+        string $password
+    ): self {
+        $this->auth = [$username, $password];
+
+        return $this;
     }
 
     /**
@@ -180,15 +204,15 @@ class DruidClient
         begin:
         try {
             if (strtolower($method) == 'post') {
-                $response = $this->client->post($url, [
+                $response = $this->client->post($url, array_merge([
                     'json' => $data,
-                ]);
+                ], $this->auth ? ['auth' => $this->auth] : []));
             } elseif (strtolower($method) == 'delete') {
-                $response = $this->client->delete($url);
+                $response = $this->client->delete($url, $this->auth ? ['auth' => $this->auth] : []);
             } else {
-                $response = $this->client->get($url, [
+                $response = $this->client->get($url, array_merge([
                     'query' => $data,
-                ]);
+                ], $this->auth ? ['auth' => $this->auth] : []));
             }
 
             if ($response->getStatusCode() == 204 || $response->getStatusCode() == 202) {

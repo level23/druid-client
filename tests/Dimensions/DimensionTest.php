@@ -7,44 +7,38 @@ use ValueError;
 use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Dimensions\Dimension;
-use Level23\Druid\Extractions\RegexExtraction;
-use Level23\Druid\Extractions\ExtractionInterface;
 
 class DimensionTest extends TestCase
 {
     /**
-     * @return array<array<string|null|bool|RegexExtraction>>
+     * @return array<array<string|null|bool>>
      */
     public static function dataProvider(): array
     {
-        $extraction = new RegexExtraction("^([a-z]+)$");
-
         return [
-            ["name", "full_name", "string", null, false],
-            ["name", "__time", "string", null, false],
-            ["name", null, "STRING", null, false],
-            ["name", "full_name", "double", null, true],
-            ["name", "full_name", "whatever", null, false, true],
-            ["name", "full_name", "", null, false],
-            ["name", "full_name", "", $extraction, false],
+            ["name", "full_name", "string", false],
+            ["name", "__time", "string", false],
+            ["name", null, "STRING", false],
+            ["name", "full_name", "double", true],
+            ["name", "full_name", "whatever", false, true],
+            ["name", "full_name", "", false],
+            ["name", "full_name", "", false],
         ];
     }
 
     /**
      * @dataProvider dataProvider
      *
-     * @param string                   $dimension
-     * @param string|null              $outputName
-     * @param string                   $type
-     * @param ExtractionInterface|null $extractionFunction
-     * @param bool                     $expectException
-     * @param bool                     $valueError
+     * @param string      $dimension
+     * @param string|null $outputName
+     * @param string      $type
+     * @param bool        $expectException
+     * @param bool        $valueError
      */
     public function testDimension(
         string $dimension,
         ?string $outputName,
         string $type,
-        ?ExtractionInterface $extractionFunction,
         bool $expectException,
         bool $valueError = false
     ): void {
@@ -52,32 +46,45 @@ class DimensionTest extends TestCase
             $this->expectException(InvalidArgumentException::class);
         }
 
-        if($valueError) {
+        if ($valueError) {
             $this->expectException(ValueError::class);
             $this->expectExceptionMessage('is not a valid backing value for enum Level23\Druid\Types\DataType');
         }
 
-        if (!empty($type) || $extractionFunction !== null) {
-            $dimensionObj = new Dimension($dimension, $outputName, $type, $extractionFunction);
+        if (!empty($type)) {
+            $dimensionObj = new Dimension($dimension, $outputName, $type);
         } else {
             $dimensionObj = new Dimension($dimension, $outputName);
         }
         $expected = [
-            'type'       => ($extractionFunction ? 'extraction' : 'default'),
+            'type'       => 'default',
             'dimension'  => $dimension,
             'outputName' => ($outputName ?: $dimension),
             'outputType' => strtolower($type ?: "string"),
         ];
 
-        if ($extractionFunction) {
-            $expected['extractionFn'] = $extractionFunction->toArray();
-        }
-
         $this->assertEquals($expected, $dimensionObj->toArray());
 
         $this->assertEquals(($outputName ?: $dimension), $dimensionObj->getOutputName());
         $this->assertEquals($dimension, $dimensionObj->getDimension());
+    }
 
-        $this->assertEquals($extractionFunction, $dimensionObj->getExtractionFunction());
+    public function testDimensionDefaults(): void
+    {
+        $dimension    = 'countryIso';
+        $outputName   = 'country';
+        $dimensionObj = new Dimension($dimension, $outputName, '');
+
+        $expected = [
+            'type'       => 'default',
+            'dimension'  => $dimension,
+            'outputName' => $outputName,
+            'outputType' => "string",
+        ];
+
+        $this->assertEquals($expected, $dimensionObj->toArray());
+
+        $this->assertEquals($outputName, $dimensionObj->getOutputName());
+        $this->assertEquals($dimension, $dimensionObj->getDimension());
     }
 }

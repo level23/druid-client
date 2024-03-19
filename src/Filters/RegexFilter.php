@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\ExtractionInterface;
-
 /**
  * Class RegexFilter
  *
@@ -20,26 +18,20 @@ class RegexFilter implements FilterInterface
 
     protected string $pattern;
 
-    protected ?ExtractionInterface $extractionFunction;
-
     /**
      * RegexFilter constructor.
      *
-     * @param string                   $dimension
-     * @param string                   $pattern A Java regex pattern
-     *
-     * @param ExtractionInterface|null $extractionFunction
+     * @param string $dimension
+     * @param string $pattern A Java regex pattern
      *
      * @see http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
      */
     public function __construct(
         string $dimension,
-        string $pattern,
-        ?ExtractionInterface $extractionFunction = null
+        string $pattern
     ) {
-        $this->pattern            = $pattern;
-        $this->dimension          = $dimension;
-        $this->extractionFunction = $extractionFunction;
+        $this->pattern   = $pattern;
+        $this->dimension = $dimension;
     }
 
     /**
@@ -49,16 +41,10 @@ class RegexFilter implements FilterInterface
      */
     public function toArray(): array
     {
-        $result = [
+        return [
             'type'      => 'regex',
             'dimension' => $this->dimension,
             'pattern'   => $this->pattern,
         ];
-
-        if ($this->extractionFunction) {
-            $result['extractionFn'] = $this->extractionFunction->toArray();
-        }
-
-        return $result;
     }
 }

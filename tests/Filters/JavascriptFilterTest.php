@@ -5,21 +5,11 @@ namespace Level23\Druid\Tests\Filters;
 
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\JavascriptFilter;
-use Level23\Druid\Extractions\LookupExtraction;
 
 class JavascriptFilterTest extends TestCase
 {
-    /**
-     * @param bool $useExtractionFunction
-     * @testWith [true]
-     *           [false]
-     */
-    public function testFilter(bool $useExtractionFunction): void
+    public function testFilter(): void
     {
-        $extractionFunction = new LookupExtraction(
-            'singup_by_member', false
-        );
-
         $function = "function(x) { return(x >= 'bar' && x <= 'foo') }";
 
         $expected = [
@@ -28,12 +18,7 @@ class JavascriptFilterTest extends TestCase
             'function'  => $function,
         ];
 
-        if ($useExtractionFunction) {
-            $filter                   = new JavascriptFilter('name', $function, $extractionFunction);
-            $expected['extractionFn'] = $extractionFunction->toArray();
-        } else {
-            $filter = new JavascriptFilter('name', $function);
-        }
+        $filter = new JavascriptFilter('name', $function);
 
         $this->assertEquals($expected, $filter->toArray());
     }

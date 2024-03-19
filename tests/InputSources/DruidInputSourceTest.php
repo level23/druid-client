@@ -40,7 +40,7 @@ class DruidInputSourceTest extends TestCase
 
         $inputSource = new DruidInputSource('test');
         $inputSource->interval('12-04-2019', '15-04-2019');
-        $inputSource->where('name', 'john');
+        $inputSource->where('value', 12.9);
         $inputSource->whereFlags('settings', 12);
         $inputSource->orWhere('status', 'admin');
 
@@ -56,9 +56,10 @@ class DruidInputSourceTest extends TestCase
                         'type'   => 'and',
                         'fields' => [
                             [
-                                'type'      => 'selector',
-                                'dimension' => 'name',
-                                'value'     => 'john',
+                                'type'           => 'equals',
+                                'column'         => 'value',
+                                'matchValueType' => 'double',
+                                'matchValue'     => 12.9,
                             ],
                             [
                                 'type'       => 'expression',
@@ -67,9 +68,10 @@ class DruidInputSourceTest extends TestCase
                         ],
                     ],
                     [
-                        'type'      => 'selector',
-                        'dimension' => 'status',
-                        'value'     => 'admin',
+                        'type'           => 'equals',
+                        'column'         => 'status',
+                        'matchValueType' => 'string',
+                        'matchValue'     => 'admin',
                     ],
                 ],
             ],

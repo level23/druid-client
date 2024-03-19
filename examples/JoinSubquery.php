@@ -11,8 +11,7 @@ include __DIR__ . '/helpers/ConsoleTable.php';
 use Level23\Druid\DruidClient;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Filters\FilterBuilder;
-use Level23\Druid\Extractions\ExtractionBuilder;
-use Level23\Druid\Context\GroupByV2QueryContext;
+use Level23\Druid\Context\GroupByQueryContext;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -23,9 +22,7 @@ try {
     // Build a groupBy query.
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
-        ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
-            $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
-        })
+        ->selectVirtual("timestamp_format(__time, 'yyyy-MM-dd HH:00:00')", 'hour')
         ->join(function (QueryBuilder $queryBuilder) {
             $queryBuilder
                 ->select('name')
@@ -52,7 +49,7 @@ try {
         ->having('edits', '>', '5');
 
     // Example of setting query context. It can also be supplied as an array in the groupBy() method call.
-    $context = new GroupByV2QueryContext();
+    $context = new GroupByQueryContext();
     $context->setMaxOnDiskStorage(1024 * 1024);
 
     // Execute the query.

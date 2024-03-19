@@ -39,7 +39,7 @@ This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, 
 
 #### Laravel
 
-For Laravel the package will be auto discovered. 
+For Laravel the package will be auto discovered.
 
 #### Lumen
 
@@ -92,6 +92,7 @@ for more information.
 # Table of Contents
 
 - [DruidClient](#druidclient)
+    - [DruidClient::auth()](#druidclientauth)
     - [DruidClient::query()](#druidclientquery)
     - [DruidClient::cancelQuery()](#druidclientcancelquery)
     - [DruidClient::compact()](#druidclientcompact)
@@ -162,20 +163,6 @@ for more information.
         - [orWhereSpatialRectangular()](#orwherespatialrectangular)
         - [orWhereSpatialRadius()](#orwherespatialradius)
         - [orWhereSpatialPolygon()](#orwherespatialpolygon)
-        - [QueryBuilder: Extractions](#querybuilder-extractions)
-        - [lookup()](#lookup-extraction)
-        - [inlineLookup()](#inlinelookup-extraction)
-        - [format()](#format-extraction)
-        - [upper()](#upper-extraction)
-        - [lower()](#lower-extraction)
-        - [timeParse()](#timeparse-extraction)
-        - [timeFormat()](#timeformat-extraction)
-        - [regex()](#regex-extraction)
-        - [partial()](#partial-extraction)
-        - [searchQuery()](#searchquery-extraction)
-        - [substring()](#substring-extraction)
-        - [javascript()](#javascript-extraction)
-        - [bucket()](#bucket-extraction)
     - [QueryBuilder: Having Filters](#querybuilder-having-filters)
         - [having()](#having)
         - [orHaving()](#orhaving)
@@ -258,7 +245,6 @@ include __DIR__ . '/../vendor/autoload.php';
 use Level23\Druid\DruidClient;
 use Level23\Druid\Types\Granularity;
 use Level23\Druid\Filters\FilterBuilder;
-use Level23\Druid\Extractions\ExtractionBuilder;
 
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
@@ -274,11 +260,8 @@ $response = $client->query('traffic-hits', Granularity::ALL)
     ->select(['mccmnc' => 'carrierCode'])
     // Select a dimension, but change its value using a lookup function.
     ->lookup('carrier_title', 'mccmnc', 'carrierName', 'Unknown')
-    // Select a dimension, but change its value by using an extraction function. Multiple functions are available,
-    // like timeFormat, upper, lower, substring, lookup, regexp, etc.
-    ->select('__time', 'dateTime', function(ExtractionBuilder $builder) {
-        $builder->timeFormat('yyyy-MM-dd HH:00:00');
-    })    
+    // Select a dimension, but use an expression to change the value.
+    ->selectVirtual("timestamp_format(__time, 'yyyy-MM-dd HH:00:00')", 'hour')
     // Summing a metric.
     ->sum('hits', 'totalHits')
     // Sum hits which only occurred at night
@@ -356,6 +339,22 @@ $druidClient = new DruidClient(
 
 The `DruidClient` class gives you various methods. The most commonly used is the `query()` method, which allows you
 to build and execute a query.
+
+#### `DruidClient::auth()`
+
+If you have configured your Druid cluster with authentication, you can supply your username/password with this method.
+The username/password will be sent in the requests as HTTP Basic Auth parameters.
+
+See also: https://druid.apache.org/docs/latest/operations/auth/
+
+The `auth()` method has 2 parameters:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                       |
+|----------|-----------------------|--------------|-------------|---------------------------------------|
+| string   | Required              | `$username`  | "foo"       | The username used for authentication. |
+| string   | Required              | `$password`  | "bar"       | The password used for authentication. |
+
+You can also overwrite the client and use your own mechanism. See [DruidClient](#druidclient).
 
 #### `DruidClient::query()`
 
@@ -645,9 +644,7 @@ Example:
 // Build a groupBy query with subtotals
 $response = $client->query('wikipedia')
     ->interval('2015-09-12 20:00:00', '2015-09-12 22:00:00')
-    ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
-        $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
-    })
+    ->selectVirtual("timestamp_format(__time, 'yyyy-MM-dd HH:00:00')", 'hour')
     ->select('namespace')
     ->count('edits')
     ->longSum('added')
@@ -969,12 +966,11 @@ To select a _dimension_, you can use one of the methods below:
 
 This method has the following arguments:
 
-| **Type**        | **Optional/Required** | **Argument**  | **Example**                       | **Description**                                                                                                                                                    |
-|-----------------|-----------------------|---------------|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string or array | Required              | `$dimension`  | country_iso                       | The dimension which you want to select                                                                                                                             |
-| string          | Optional              | `$as`         | country                           | The name where the result will be available by in the result set.                                                                                                  |
-| Closure         | Optional              | `$extraction` | A PHP closure, see example below. | A PHP Closure function. This function will receive an instance of the ExtractionBuilder, which allows you to extract data from the dimension as you would like it. |
-| string          | Optional              | `$outputType` | string                            | The output type of the data. If left unspecified, we will use `string`.                                                                                            |
+| **Type**        | **Optional/Required** | **Argument**      | **Example**                       | **Description**                                                                                                                                                                   |
+|-----------------|-----------------------|-------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string or array | Required              | `$dimension`      | country_iso                       | The dimension which you want to select                                                                                                                                            |
+| string          | Optional              | `$as`             | country                           | The name where the result will be available by in the result set.                                                                                                                 |
+| string          | Optional              | `$outputType`     | string                            | The output type of the data. If left unspecified, we will use `string`.                                                                                                           |
 
 This method allows you to select a dimension in various way's, as shown in the example above.
 
@@ -1009,21 +1005,11 @@ $builder->select([
 ])
 ```
 
-**Select a dimension and extract a value from it:**
-
-```php 
-// retrieve the first two characters from the "locale" string and use it as language.
-$builder->select("locale", "language", function(ExtractionBuilder $extraction) {
-    $extraction->substring(0, 2);
-});
-```
-
-See the chapter __Extractions__ for all available extractions.
 
 **Change the output type of the dimension:**
 
 ```php 
-$builder->select('age', null, null, DataType::LONG);
+$builder->select('age', null, DataType::LONG);
 ```
 
 #### `lookup()`
@@ -1450,12 +1436,10 @@ situations, for example:
 
 ```php 
 $builder->cardinality(
-    'nrOfDistinctFirstLetters',
+    'itemsPerCountry',
     function(DimensionBuilder $dimensions) {
-        // select the first character of all the last names.
-        $dimensions->select('last_name', 'lastName', function (ExtractionBuilder $extractionBuilder) {
-            $extractionBuilder->substring(1);
-        });        
+        // select the country name by its iso value.
+        $dimensions->lookup('country_name', 'iso');        
     },
     false, # byRow
     false # round
@@ -1538,13 +1522,12 @@ This is probably the most used filter. It is very flexible.
 
 This method uses the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                                                                                                         |
-|----------|-----------------------|---------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | "cityName"         | The dimension which you want to filter.                                                                                                                                                 |
-| string   | Required              | `$operator`   | "="                | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                                     |
-| mixed    | Optional              | `$value`      | "Auburn"           | The value which you want to use in your filter comparison. Set to null to match against NULL values.                                                                                    |
-| Closure  | Optional              | `$extraction` | See example below. | A closure which builds one or more extraction function. These are applied _before_ the filter will be applied. So the filter will use the value returned by the extraction function(s). |
-| string   | Optional              | `$boolean`    | "and" / "or"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and".                            |
+| **Type** | **Optional/Required** | **Argument** | **Example**  | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | "cityName"   | The dimension which you want to filter.                                                                                                                      |
+| string   | Required              | `$operator`  | "="          | The operator which you want to use to filter. See below for a complete list of supported operators.                                                          |
+| mixed    | Optional              | `$value`     | "Auburn"     | The value which you want to use in your filter comparison. Set to null to match against NULL values.                                                         |
+| string   | Optional              | `$boolean`   | "and" / "or" | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 The following `$operator` values are supported:
 
@@ -1565,24 +1548,6 @@ The following `$operator` values are supported:
 | not regex      | Check if the dimension does not match the given regular expression.                                                                                                                            |
 | search         | Check if the dimension partially matches the given string(s). When an array of values are given, we expect the dimension value contains all of the values specified in this search query spec. |
 | not search     | Same as `search`, only now the dimension should not match.                                                                                                                                     |
-
-We support retrieving a value using an extraction function. This can be done by passing a `Closure` function in the
-`$extraction` parameter. This function will receive a `ExtractionBuilder`, which allows you to extract the value which
-you want.
-
-For example:
-
-```php
-
-// Build a group-by query.
-$builder = $client->query('wikipedia')
-    // Filter on all names starting with "jo"    
-    ->where('name', '=', 'jo', function (ExtractionBuilder $extractionBuilder) {
-        $extractionBuilder->substring(2);
-    });
-```
-
-For a full list of extraction functions, see the Extractions chapter
 
 This method supports a quick equals shorthand. Example:
 
@@ -1649,10 +1614,10 @@ Same as `whereNot()`, but now we will join previous added filters with a `or` in
 
 #### `whereNull()`
 
-Druid has changed its NULL handling. You can now configure it to store `NULL` values by configuring 
+Druid has changed its NULL handling. You can now configure it to store `NULL` values by configuring
 `druid.generic.useDefaultValueForNull=false`.
 
-If this is configured, you can filter on NULL values with this filter. 
+If this is configured, you can filter on NULL values with this filter.
 
 This method has the following arguments:
 
@@ -1683,11 +1648,11 @@ With this method you can filter on records using multiple values.
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                               |
-|----------|-----------------------|---------------|--------------------|-------------------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | country_iso        | The dimension which you want to filter                                        |
-| array    | Required              | `$items`      | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list. |
-| Closure  | Optional              | `$extraction` | See Extractions    | An extraction function to extract a different value from the dimension.       |
+| **Type** | **Optional/Required** | **Argument** | **Example**        | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | country_iso        | The dimension which you want to filter                                                                                                                       |
+| array    | Required              | `$items`     | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.                                                                                |
+| string   | Optional              | `$boolean`   | "and"              | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereIn()`
 
@@ -1703,13 +1668,13 @@ The SQL equivalent would be:
 
 This method has the following arguments:
 
-| **Type**   | **Optional/Required** | **Argument**  | **Example**     | **Description**                                                                                                                                                                                                                                                                      |
-|------------|-----------------------|---------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string     | Required              | `$dimension`  | year            | The dimension which you want to filter                                                                                                                                                                                                                                               |
-| int/string | Required              | `$minValue`   | 1990            | The minimum value where the dimension should match. It should be equal or greater than this value.                                                                                                                                                                                   |
-| int/string | Required              | `$maxValue`   | 2000            | The maximum value where the dimension should match. It should be less than this value.                                                                                                                                                                                               |
-| Closure    | Optional              | `$extraction` | See Extractions | Extraction function to extract a different value from the dimension.                                                                                                                                                                                                                 |
-| string     | Optional              | `$ordering`   | numeric         | Specifies the sorting order to use when comparing values against the dimension. Can be one of the following values: "lexicographic", "alphanumeric", "numeric", "strlen", "version". By default it will be "numeric" if the values are numeric, otherwise it will be "lexicographic" |
+| **Type**         | **Optional/Required** | **Argument** | **Example**       | **Description**                                                                                                                                              |
+|------------------|-----------------------|--------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string           | Required              | `$dimension` | year              | The dimension which you want to filter                                                                                                                       |
+| int/float/string | Required              | `$minValue`  | 1990              | The minimum value where the dimension should match. It should be equal or greater than this value.                                                           |
+| int/float/string | Required              | `$maxValue`  | 2000              | The maximum value where the dimension should match. It should be less than this value.                                                                       |
+| DataType         | Optional              | `$valueType` | `DataType::FLOAT` | This determines how druid will interprets the min and max values in comparison with the existing values. When not given we will auto detect it.              |
+| string           | Optional              | `$boolean`   | "and"             | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereBetween()`
 
@@ -1720,24 +1685,13 @@ Same as `whereBetween()`, but now we will join previous added filters with a `or
 The `whereColumn()` filter compares two dimensions with each other. Only records where the dimensions match will be
 returned.
 
-You can supply the dimension name as a string, or you can build a more advanced dimension (with for example an
-extraction filter) using a Closure function. Example:
-
-```php
-// Select records where "initials" is equal to the first character of "first_name".
-$builder->whereColumn('initials', function(DimensionBuilder $dimensionBuilder) {
-  $dimensionBuilder->select('first_name', function(ExtractionBuilder $extractionBuilder) {
-    $extractionBuilder->substring(0, 1);
-  });
-});
-```
-
 The `whereColumn()` filter has the following arguments:
 
-| **Type**       | **Optional/Required** | **Argument**  | **Example**  | **Description**                                                                                                                                             |
-|----------------|-----------------------|---------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
-| string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way. |
+| **Type**       | **Optional/Required** | **Argument**  | **Example**  | **Description**                                                                                                                                              |
+|----------------|-----------------------|---------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way.  |
+| string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way.  |
+| string         | Optional              | `$boolean`    | "and"        | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereColumn()`
 
@@ -1754,11 +1708,11 @@ It will then use a between filter to see if the interval matches.
 
 This method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**  | **Example**       | **Description**                                                      |
-|----------|-----------------------|---------------|-------------------|----------------------------------------------------------------------|
-| string   | Required              | `$dimension`  | __time            | The dimension which you want to filter                               |
-| array    | Required              | `$intervals`  | ['yesterday/now'] | See below for more info                                              |
-| Closure  | Optional              | `$extraction` | See Extractions   | Extraction function to extract a different value from the dimension. |
+| **Type** | **Optional/Required** | **Argument** | **Example**       | **Description**                                                                                                                                              |
+|----------|-----------------------|--------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string   | Required              | `$dimension` | __time            | The dimension which you want to filter                                                                                                                       |
+| array    | Required              | `$intervals` | ['yesterday/now'] | See below for more info                                                                                                                                      |
+| string   | Optional              | `$boolean`   | "and" / "or"      | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 The `$intervals` array can contain the following:
 
@@ -1938,351 +1892,6 @@ This method has the following arguments:
 ### `orWhereSpatialPolygon()`
 
 Same as `orWhereSpatialPolygon()`, but now we will join previous added filters with a `or` instead of an `and`.
-
-## QueryBuilder: Extractions
-
-With an extraction you can _extract_ a value from the dimension. These extractions can be used to select the data (see
-`select()`), or to filter on  (see `where()`).
-
-There are several extraction methods available. These are described below.
-See also this page in the druid
-manual: https://druid.apache.org/docs/latest/querying/dimensionspecs.html#extraction-functions
-
-Please note that it is possible to use multiple extraction functions at the same time. They will be executed in order
-of requested.
-
-For example, this will extract the first 3 letters of a surname in upper case:
-
-```php
-$builder->select('surName', 'nameCategory', function(ExtractionBuilder $extraction) {
-    $extraction->substring(3)->upper();
-});
-```
-
-#### `lookup()` extraction
-
-With this extraction function, you can use a registered lookup function to transform the dimension value to something
-else.
-
-For example, when you have stored a dimension called `country_id`. However, you want to filter on the country name.
-Then you could use a lookup function to transform the `country_id` to a country name, and use that value in your
-where statement.
-
-Example:
-
-```php
-// Match any country like %Nether%
-$builder->where('country_id', 'like', '%Nether%', function (ExtractionBuilder $extractionBuilder) {
-    // Extract the country name by its id by using this lookup function. 
-    $extractionBuilder->lookup('country_name_by_id');
-});
-```
-
-The `lookup()` extraction function has the following arguments:
-
-| **Type**    | **Optional/Required** | **Argument**        | **Example**            | **Description**                                                                                                                                                                                                                                                                                                 |
-|-------------|-----------------------|---------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string      | Required              | `$lookupName`       | "country_name_by_id"   | The name of the registered lookup function to transform the dimension value to another value.                                                                                                                                                                                                                   |
-| bool/string | Optional              | `$keepMissingValue` | `false` or `"Unknown"` | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                        |
-| bool        | Optional              | `$optimize`         | `true`                 | When set to true, we allow the optimization layer (which will run on the broker) to rewrite the extraction filter if needed.                                                                                                                                                                                    |
-| bool/null   | Optional              | `$injective`        | `true`                 | This can override the look-ups own sense of whether or not it is injective. If left unspecified, Druid will use the registered cluster-wide lookup configuration. In general, you should set this property for any lookup that is naturally one-to-one, to allow Druid to run your queries as fast as possible. |
-
-#### `inlineLookup()` extraction
-
-With the `inlineLookup()` extraction function, you can transform the dimension's value using a given list, instead of
-using a registered lookup function (as `lookup()` does).
-
-Example:
-
-```php
-$builder->select('likesAnimals', 'LikesAnimals', function(ExtractionBuilder $extraction) {
-    $extraction->inlineLookup(['y' => 'Yes', 'n' => 'No']);
-});
-```
-
-The `inlineLookup()` extraction function has the following arguments:
-
-| **Type**    | **Optional/Required** | **Argument**        | **Example**                 | **Description**                                                                                                                                                                                                                                                                                                                                                                                         |
-|-------------|-----------------------|---------------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| array       | Required              | `$map`              | ["y" => "Yes", "n" => "No"] | An array with key => value items which will be used as lookup map.                                                                                                                                                                                                                                                                                                                                      |
-| bool/string | Optional              | `$keepMissingValue` | `false` or `"Unknown"`      | When true, we will keep values which are not known in the lookup function. The original value will be kept. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value.                                                                                                                                |
-| bool        | Optional              | `$optimize`         | `true`                      | When set to true, we allow the optimization layer (which will run on the broker) to rewrite the extraction filter if needed.                                                                                                                                                                                                                                                                            |
-| bool/null   | Optional              | `$injective`        | `true`                      | Whether or not this list is injective. Injective lookups should include all possible keys that may show up in your dataset, and should also map all keys to unique values. This matters because non-injective lookups may map different keys to the same value, which must be accounted for during aggregation, lest query results contain two result values that should have been aggregated into one. |
-
-#### `format()` extraction
-
-With the extraction function `format()` you can format a dimension value according to the given format string.
-The formatting is equal to the format used in the PHP's sprintf method.
-
-Example:
-
-```php
-// Display the number with leading zero's
-$builder->select('number', 'myBigNumber', function(ExtractionBuilder $extraction) {
-  $extraction->format('%03d');
-});
-```
-
-The `format()` extraction function has the following arguments:
-
-| **Type**            | **Optional/Required** | **Argument**         | **Example**                | **Description**                                                                                                                                                                  |
-|---------------------|-----------------------|----------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string              | Required              | `$sprintfExpression` | "%02d"                     | The format string which will be used to format the dimensions value.                                                                                                             |
-| string/NullHandling | Optional              | `$nullHandling`      | NullHandling::EMPTY_STRING | Can be one of nullString, emptyString or returnNull. With "[%s]" format, each configuration will result [null], [], null. Default is nullString. See also the NullHandling enum. |
-
-#### `upper()` extraction
-
-The `upper()` extraction function will change the given dimension value to upper case. Optionally user can specify the
-language to use in order to perform upper transformation.
-
-Example:
-
-```php
-// Return the city name in upper case.
-$builder->select('cityName', 'city', function(ExtractionBuilder $extraction) {
-  $extraction->upper();
-});
-```
-
-The `upper()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
-|----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
-| string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform upper transformation |
-
-#### `lower()` extraction
-
-The `lower()` extraction function will change the given dimension value to lower case. Optionally user can specify the
-language to use in order to perform lower transformation.
-
-Example:
-
-```php
-// compare the city name in lower case
-$builder->where('cityName', '=', strtolower($city), function(ExtractionBuilder $extraction) {
-  $extraction->lower();
-});
-```
-
-The `lower()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                              |
-|----------|-----------------------|--------------|-------------|--------------------------------------------------------------|
-| string   | Optional              | `$locale`    | "fr"        | The language to use in order to perform lower transformation |
-
-#### `timeParse()` extraction
-
-The `timeParse()` extraction function parses dimension values as timestamps using the given input format,
-and returns them formatted using the given output format.
-
-The date format can be given in the Joda DateTimeFormat or in SimpleDateFormat.
-
-If `$jodaFormat` is true, time formats are described in the Joda DateTimeFormat documentation. If `$jodaFormat` is
-false (or unspecified) then formats are described in the SimpleDateFormat documentation. In general, we
-recommend setting `$jodaFormat` to true since Joda format strings are more common in Druid APIs and since Joda
-handles certain edge cases (like weeks and week-years near the start and end of calendar years)
-in a more ISO8601 compliant way.
-
-See:
-
-* Joda DateTimeFormat: http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
-* SimpleDateFormat: http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html
-
-**Note**: if you are working with the `__time` dimension, you should consider using the `timeFormat()` extraction
-function instead, which works on time value directly as opposed to string values.
-
-If a value cannot be parsed using the provided timeFormat, it will be returned as-is.
-
-Example:
-
-```php
-// Change the date format from something like "1984-05-23" to "23 May 1984"
-$builder->select('birthday', 'dayOfBirth', function(ExtractionBuilder $extraction) {
-    $extraction->timeParse('yyyy-MM-dd', 'dd MMMM yy');
-});
-```
-
-The `timeParse()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument**    | **Example** | **Description**                                                         |
-|----------|-----------------------|-----------------|-------------|-------------------------------------------------------------------------|
-| string   | Required              | `$inputFormat`  | yyyy-MM-dd  | The format which is used to parse the dimensions value.                 |
-| string   | Required              | `$outputFormat` | dd MMMM yy  | The format which is used to display the parsed value.                   |
-| bool     | Optional              | `$jodaFormat`   | true        | Whether or not to use the Joda DateTimeFornat. See for more info above. |
-
-#### `timeFormat()` extraction
-
-The `timeFormat()` extraction function will format the dimension according to the given format string, time zone, and
-locale. The format should be given in Joda DateTimeFormat.
-
-See: http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
-
-For `__time` dimension values, this formats the time value bucketed by the aggregation granularity.
-
-For a regular dimension, it assumes the string is formatted in ISO-8601 date and time format.
-
-Example:
-
-```php
-// Format the time like "23 May 2019"
-$builder->select('__time', 'time', function(ExtractionBuilder $extraction) {
-    $extraction->timeFormat('dd MMMM yyyy', Granularity::DAY);
-});
-```
-
-The `timeFormat()` extraction function has the following arguments:
-
-| **Type**                | **Optional/Required** | **Argument**      | **Example**      | **Description**                                                                                                                                                                      |
-|-------------------------|-----------------------|-------------------|------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string/null             | Optional              | `$format`         | dd-MM-yyyy       | Date time format for the resulting dimension value, in Joda TimeDateTimeFormat, or null to use the default ISO8601 format.                                                           |
-| string/Granularity/null | Optional              | `$granularity`    | Granularity::DAY | Granularity to apply before formatting, or omit to not apply any granularity.                                                                                                        |
-| string/null             | Optional              | `$locale`         | en-GB            | Locale (language and country) to use, given as a IETF BCP 47 language tag, e.g. en-US, en-GB, fr-FR, fr-CA, etc.                                                                     |
-| string/null             | Optional              | `$timeZone`       | Europe/Berlin    | time zone to use in IANA tz database format, e.g. Europe/Berlin (this can possibly be different than the aggregation time-zone)                                                      |
-| bool/null               | Optional              | `$asMilliseconds` | `true`           | Set to true to treat input strings as milliseconds rather thanISO8601 strings. Additionally, if format is null or not specified, output will be in milliseconds rather than ISO8601. |
-
-#### `regex()` extraction
-
-The `regex()` extraction function will return the first matching group for the given regular expression.
-If there is no match, it returns the dimension value as is.
-
-Example:
-
-```php
-// Zipcodes
-$builder->select('day', Granularity::DAY, function(ExtractionBuilder $extraction) {
-    // Transform 'Monday', 'Tuesday', 'Wednesday' into 'Mon', 'Tue', 'Wed'.
-    $extraction->regex('(\\w\\w\\w).*');
-});
-```
-
-The `regex()` extraction function has the following arguments:
-
-| **Type**    | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                                                                                                                                                          |
-|-------------|-----------------------|----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string      | Required              | `$regularExpression` | `[0-9]*`    | The regular expression where the dimensions value should match with.                                                                                                                                                                                     |
-| int         | Optional              | `$groupToExtract`    | 1           | If "$groupToExtract" is set, it will control which group from the match to extract. Index zero extracts the string matching the entire pattern.                                                                                                          |
-| bool/string | Optional              | `$keepMissingValue`  | "Unknown"   | When true, we will keep values which are not matched by the regexp. The value will be null. If false, the missing items will not be kept in the result set. If this is a string, we will keep the missing values and replace them with the string value. |
-
-#### `partial()` extraction
-
-The `partial()` extraction function will return the dimension value unchanged if the regular expression matches,
-otherwise returns null.
-
-See this page for more information about the regular expression
-format: http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
-
-Example:
-
-```php
-// Zipcodes
-$builder->select('zipcode', 'zipcode', function(ExtractionBuilder $extraction) {
-    // filter out all incorrect zipcodes, only allow zipcodes in format "2881 AB"
-    $extraction->partial('[0-9]{4} [A-Z]{2}');
-});
-```
-
-The `partial()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                     |
-|----------|-----------------------|----------------------|-------------|---------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$regularExpression` | `[0-9]*`    | The regular expression where the dimensions value should match with. All none matching values are changed to `null` |
-
-#### `searchQuery()` extraction
-
-The `searchQuery()` extraction function will return the values which will match the given
-search string(s), or `null` when there is no match.
-
-Example:
-
-```php
-// Zipcodes
-$builder->select('page', 'page', function(ExtractionBuilder $extraction) {
-    // Filter out all pages containing the word "talk" (case-insensitive)
-    $extraction->searchQuery('talk', false);
-});
-``` 
-
-The `searchQuery()` extraction function has the following arguments:
-
-| **Type**     | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                                                                            |
-|--------------|-----------------------|------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string/array | Required              | `$valueOrValues` | "Talk"      | The word (string) or words (array) where the dimension should match with. If this word is in the dimension, it matches. When multiple words are given, all of then should match with the dimensions value. |
-| bool         | Optional              | `$caseSensitive` | true        | Set to true to do a case sensitive match, false for an case insensitive match.                                                                                                                             |
-
-#### `substring()` extraction
-
-The `substring()` extraction function will return a substring of the dimension value starting from the supplied index
-and of the desired length. Both index and length are measured in the number of Unicode code units present in the string
-as if it were encoded in UTF-16. Note that some Unicode characters may be represented by two code units.
-This is the same behavior as the Java String class's "substring" method.
-
-If the desired length exceeds the length of the dimension value, the remainder of the string starting at
-index will be returned. If index is greater than the length of the dimension value, null will be returned.
-
-Example:
-
-```php
-// Filter on all surname's starting with the letter B
-$builder->where('surname', '=', 'B', function(ExtractionBuilder $extraction) {
-    $extraction->substring(0, 1);
-});
-```
-
-The `substring()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                             |
-|----------|-----------------------|--------------|-------------|-----------------------------------------------------------------------------|
-| int      | Required              | `$index`     | 2           | The starting index from where the dimension's value should be returned.     |
-| int      | Optional              | `$length`    | 5           | The number of characters which should be returned from the $index position. |
-
-#### `javascript()` extraction
-
-The `javascript()` extraction function will return the dimension value, as transformed by the given JavaScript function.
-
-For regular dimensions, the input value is passed as a string.
-
-For the `__time` dimension, the input value is passed as a number representing the number of milliseconds since January
-1, 1970 UTC.
-
-Example:
-
-```php
-$builder->select('__time', 'second', function(ExtractionBuilder $extraction) {
-    $extraction->javascript("function(t) { return 'Second ' + Math.floor((t % 60000) / 1000); }");
-});
-```
-
-**NOTE:** JavaScript-based functionality is disabled by default. Please refer to the Druid JavaScript programming guide
-for guidelines about using Druid's JavaScript functionality, including instructions on how to enable it:
-https://druid.apache.org/docs/latest/development/javascript.html
-
-The `javascript()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument**  | **Example**        | **Description**                                                                                          |
-|----------|-----------------------|---------------|--------------------|----------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$javascript` | See examples above | The javascript function which transforms the given dimension value.                                      |
-| boolean  | Optional              | `$injective`  | true               | Set to true if this function preserves the uniqueness of the dimensions value. Default value is `false`. |
-
-#### `bucket()` extraction
-
-The `bucket()` extraction function is used to bucket numerical values in each range of the given size by converting
-them to the same base value. Non-numeric values are converted to null.
-
-Example:
-
-```php
-// Group all ages into "groups" by 10, 20, 30, etc. 
-$builder->select('age', 'ageGroup', function(ExtractionBuilder $extraction) {
-    $extraction->bucket(10);
-}); 
-```
-
-The `bucket()` extraction function has the following arguments:
-
-| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                  |
-|----------|-----------------------|--------------|-------------|------------------------------------------------------------------|
-| int      | Optional              | `$size`      | 10          | The size of the bucket where the numerical values are grouped in |
-| int      | Optional              | `$offset`    | 2           | The offset for the buckets                                       |
 
 ## QueryBuilder: Having Filters
 
@@ -2520,7 +2129,8 @@ Druid expressions allow you to do various actions, like:
 
 For the full list of available expressions, see this page: https://druid.apache.org/docs/latest/querying/math-expr
 
-Example: 
+Example:
+
 ```php
 $builder
     ->sum('kids', 'totalKids')
@@ -2536,7 +2146,6 @@ The `expression()` post aggregator has the following arguments:
 | string          | Required              | `$expression` | field1 + field2 | The expression which you want to compute.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | string          | Optional              | `$ordering`   | "numericFirst"  | If no ordering (or `null`) is specified, the "natural" ordering is used. `numericFirst` ordering always returns finite values first, followed by NaN, and infinite values last. If the expression produces array or complex types, specify ordering as null and use outputType instead to use the correct type native ordering.                                                                                                                                                                                                                                                                                                             |
 | DataType/string | Optional              | `$outputType` | DOUBLE          | Output type is optional, and can be any native Druid type. Use a string value for ARRAY types (e.g. `ARRAY<LONG>`), or COMPLEX types (e.g. `COMPLEX<json>`). If not specified, the output type will be inferred from the expression. If specified and ordering is null, the type native ordering will be used for sorting values. If the expression produces array or complex types, this value must be non-null to ensure the correct ordering is used. If outputType does not match the actual output type of the expression, the value will be attempted to coerced to the specified type, possibly failing if coercion is not possible. |
- 
 
 #### `divide()`
 
@@ -3120,15 +2729,7 @@ $result = $builder
     ->groupBy();
 ```
 
-There are two different strategies to execute a GroupBy query. V2 which is the current default, and V1, which is the
-legacy strategy. When execute a query using the `groupBy()` method, the v2 strategy is used. If you want to use the v1
-strategy, you can make use of the method `groupByV1()`. This method works the same, only uses the v1 strategy to
-execute the query.
-
-For more information about groupBy strategies see this page:
-https://druid.apache.org/docs/latest/querying/groupbyquery.html#implementation-details
-
-The `groupBy()` method and the `groupByV1()` method have the following arguments:
+The `groupBy()` method has the following arguments:
 
 | **Type**           | **Optional/Required** | **Argument** | **Example**        | **Description**                                           |
 |--------------------|-----------------------|--------------|--------------------|-----------------------------------------------------------|
@@ -3137,11 +2738,7 @@ The `groupBy()` method and the `groupByV1()` method have the following arguments
 **Context**
 
 The `groupBy()` method accepts 1 parameter, the query context. This can be given as an array with key => value pairs,
-or an `GroupByV2QueryContext` object.
-
-The context allows you to change the behaviour of the query execution. There is a difference between the available
-context parameters between the v1 and the v2 query strategy. If you use  `groupByV1()`, then you should also use the
-`GroupByV1QueryContext`.
+or an `GroupByQueryContext` object.
 
 Example using query context:
 
@@ -3157,7 +2754,7 @@ $builder
     ->where('isRobot', 'false');
 
 // Create the query context 
-$context = new GroupByV2QueryContext();
+$context = new GroupByQueryContext();
 $context->setNumParallelCombineThreads(5);
 
 // Execute the query using the query context.
@@ -3457,8 +3054,6 @@ The `search()` method executes your query as a Search Query. A Search Query will
 which matches a specific search selection. The response will be containing the dimension which matched your search
 criteria, the value of your dimension and the number of occurrences.
 
-**Note:** You should not mix up this method with the [searchQuery()](#searchquery-extraction) extraction filter.
-
 For more information about the Search Query, see this
 page: https://druid.apache.org/docs/latest/querying/searchquery.html
 
@@ -3731,7 +3326,6 @@ Example:
 // Retrieve the total records for the past week.
 $numRows = $client->metadata()->rowCount("wikipedia", "now - 1 week", "now");
 ```
-
 
 ## Reindex / compact data / kill
 

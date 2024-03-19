@@ -5,8 +5,10 @@ namespace Level23\Druid\Tests;
 
 use Mockery;
 use ValueError;
+use GuzzleHttp\Client;
 use Mockery\MockInterface;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Psr7\Response;
 use Level23\Druid\DruidClient;
 use Mockery\LegacyMockInterface;
 use Level23\Druid\Tasks\IndexTask;
@@ -87,6 +89,22 @@ class DruidClientTest extends TestCase
         $this->assertEquals($guzzle,
             $this->getProperty($client, 'client')
         );
+    }
+
+    public function testAuth(): void
+    {
+        $guzzle = Mockery::mock(Client::class);
+        $client = new DruidClient([], $guzzle);
+
+        // Set the authentication credentials.
+        $client->auth('foo', 'bar');
+
+        $guzzle->shouldReceive('get')
+            ->once()
+            ->with('/druid/coordinator/v1/servers?simple', ['query' => [], 'auth' => ['foo', 'bar']])
+            ->andReturn(new Response(200, [], '{ "status" : "OK" }'));
+
+        $client->executeRawRequest('GET', '/druid/coordinator/v1/servers?simple');
     }
 
     /**
@@ -618,7 +636,7 @@ class DruidClientTest extends TestCase
         $guzzle = Mockery::mock(GuzzleClient::class);
         $guzzle->shouldReceive('delete')
             ->once()
-            ->with('/druid/v2/my-long-query-id')
+            ->with('/druid/v2/my-long-query-id', [])
             ->times(1)
             ->andReturnUsing(function () {
                 return new GuzzleResponse(202, [], '');

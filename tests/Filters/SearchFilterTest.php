@@ -5,7 +5,6 @@ namespace Level23\Druid\Tests\Filters;
 
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\SearchFilter;
-use Level23\Druid\Extractions\LookupExtraction;
 
 class SearchFilterTest extends TestCase
 {
@@ -56,26 +55,6 @@ class SearchFilterTest extends TestCase
             'type'      => 'search',
             'dimension' => $dimension,
             'query'     => $expectedQuery,
-        ], $filter->toArray());
-    }
-
-    public function testExtractionFunction(): void
-    {
-        $extractionFunction = new LookupExtraction(
-            'full_username', false
-        );
-
-        $filter = new SearchFilter('name', 'john', false, $extractionFunction);
-
-        $this->assertEquals([
-            'type'         => 'search',
-            'dimension'    => 'name',
-            'query'        => [
-                'type'          => 'contains',
-                'value'         => 'john',
-                'caseSensitive' => false,
-            ],
-            'extractionFn' => $extractionFunction->toArray(),
         ], $filter->toArray());
     }
 }

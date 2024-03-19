@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Filters;
 
-use Level23\Druid\Extractions\ExtractionInterface;
-
 /**
  * Class NullFilter
  *
@@ -14,8 +12,6 @@ use Level23\Druid\Extractions\ExtractionInterface;
 class NullFilter implements FilterInterface
 {
     protected string $column;
-
-    protected ?ExtractionInterface $extractionFunction;
 
     /**
      * NullFilter constructor.
@@ -34,11 +30,9 @@ class NullFilter implements FilterInterface
      */
     public function toArray(): array
     {
-        $result = [
+        return [
             'type'   => 'null',
             'column' => $this->column,
         ];
-
-        return $result;
     }
 }

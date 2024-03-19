@@ -15,7 +15,7 @@ use Level23\Druid\Dimensions\DimensionInterface;
  *
  * This is the equivalent of WHERE <dimension_a> = <dimension_b>.
  *
- * dimensions is list of DimensionSpecs, making it possible to apply an extraction function if needed.
+ * dimensions is list of DimensionSpecs
  *
  * @package Level23\Druid\Filters
  */

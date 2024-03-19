@@ -11,8 +11,7 @@ use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Context\ContextInterface;
 use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\ScanQueryContext;
-use Level23\Druid\Context\GroupByV2QueryContext;
-use Level23\Druid\Context\GroupByV1QueryContext;
+use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
 
 class ContextTest extends TestCase
@@ -23,8 +22,7 @@ class ContextTest extends TestCase
     public static function dataProvider(): array
     {
         return [
-            [GroupByV1QueryContext::class, ['groupByStrategy' => 'v1']],
-            [GroupByV2QueryContext::class, ['groupByStrategy' => 'v2']],
+            [GroupByQueryContext::class],
             [TopNQueryContext::class],
             [TimeSeriesQueryContext::class],
             [TaskContext::class],
@@ -99,7 +97,7 @@ class ContextTest extends TestCase
 
     public function testNonExistingProperty(): void
     {
-        $context = new GroupByV2QueryContext(['something' => 1]);
+        $context = new GroupByQueryContext(['something' => 1]);
 
         $properties = $context->toArray();
 
@@ -114,7 +112,7 @@ class ContextTest extends TestCase
 
         /** @noinspection PhpParamsInspection */
         // @phpstan-ignore-next-line
-        new GroupByV2QueryContext(['priority' => ['oops']]);
+        new GroupByQueryContext(['priority' => ['oops']]);
     }
 
     protected function getRandomWord(): string

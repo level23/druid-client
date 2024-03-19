@@ -9,7 +9,6 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
-use Level23\Druid\Extractions\ExtractionBuilder;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
@@ -20,9 +19,7 @@ try {
     // Build a groupBy query.
     $builder = $client->query('wikipedia')
         ->interval('2015-09-12 20:00:00', '2015-09-12 22:00:00')
-        ->select('__time', 'hour', function (ExtractionBuilder $extractionBuilder) {
-            $extractionBuilder->timeFormat('yyyy-MM-dd HH:00:00');
-        })
+        ->selectVirtual("timestamp_format(__time, 'yyyy-MM-dd HH:00:00')", 'hour')
         ->select('namespace')
         ->count('edits')
         ->longSum('added')
