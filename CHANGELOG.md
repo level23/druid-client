@@ -123,7 +123,6 @@ A handy regex to search in your project for points of interest:
 - Fixed first and last aggregator, as these also support the string types.
 - Added missing link (kill) in documentation
 - Add method documentation to facade (phpdoc) for better code completion.
--
 
 **v2.0**
 
