@@ -48,7 +48,7 @@ class ArrayContainsFilter implements FilterInterface
     /**
      * Return the filter as it can be used in the druid query.
      *
-     * @return array<string,string|int|float|array<string,string|int|bool|array<mixed>>>
+     * @return array<string, float|int|string|null>
      */
     public function toArray(): array
     {
