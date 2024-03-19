@@ -28,7 +28,7 @@ https://github.com/apache/druid/pull/14542
 
 ## Replacing extraction functions with expressions
 
-You can replace the logic placed in extraction function in expressions, as this is how druid is wanting it. 
+You can replace the logic placed in extraction function in expressions, as this is how druid wants it. 
 
 For example, this:
 ```php
@@ -66,6 +66,10 @@ $builder->whereExpression("initials == left(first_name, 1)");
 
 A handy regex to search in your project for points of interest: 
 `/ExtractionBuilder|whereBetween|whereFlags|orWhereNotColumn|GroupByV1/`
+
+**v3.0.5**
+
+- Fixed the fromDataSource method which was removed since version 2.0, but it was still in the README and in the examples.
 
 **v3.0.5**
 
@@ -194,7 +198,7 @@ If you are currently using druid-client version 1.*, you should check for these 
    this.
    However, if you do not remove them it will not break.
 7. Removed deprecated `getPagingIdentifier()` from SelectQueryResponse class.
-8. All Query Types (`GroupByQuery`, `SelectQuery`, etc.) now receive a `DataSourceInterface` object instead of a string
+8. All Query Types (`GroupByQuery`, `SelectQuery`, etc) now receive a `DataSourceInterface` object instead of a string
    as dataSource.
 9. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and it is now public.
 10. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.
