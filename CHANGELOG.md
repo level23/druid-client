@@ -12,7 +12,7 @@
 - Added `RangeFilter` which replaces the `BoundFilter`. See NULL usage sector below.
 - Added `EqualityFilter` which replaces the `SelectorFilter`. See NULL usage sector below.
 - `whereBetween` now uses the `range` filter. The `whereBetween` doesn't accept an SortingOrder anymore, but a DataType.
-- The `whereFlags()` method does not accept `$useJavascript` anymore, as it used an expression filter.
+- The `whereFlags()` method does not accept `$useJavascript` anymore, as it used an extraction function.
 - Removed `orWhereNotColumn`. This was a left-over and should have been removed in v3.
 - Added support for authentication in the druid client. See [DruidClient::auth()](README.md#druidclientauth)
 - Added new `whereArrayContains` and `orWhereArrayContains` filter methods.
