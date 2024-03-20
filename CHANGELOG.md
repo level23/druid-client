@@ -123,7 +123,6 @@ A handy regex to search in your project for points of interest:
 - Fixed first and last aggregator, as these also support the string types.
 - Added missing link (kill) in documentation
 - Add method documentation to facade (phpdoc) for better code completion.
--
 
 **v2.0**
 
@@ -198,7 +197,7 @@ If you are currently using druid-client version 1.*, you should check for these 
    this.
    However, if you do not remove them it will not break.
 7. Removed deprecated `getPagingIdentifier()` from SelectQueryResponse class.
-8. All Query Types (`GroupByQuery`, `SelectQuery`, etc.) now receive a `DataSourceInterface` object instead of a string
+8. All Query Types (`GroupByQuery`, `SelectQuery`, etc) now receive a `DataSourceInterface` object instead of a string
    as dataSource.
 9. The protected method `QueryBuilder::buildQuery()` is renamed to `QueryBuilder::getQuery()` and it is now public.
 10. The `FilterBuilder` class no longer receives an instance of the `DruidClient` as first parameter in its constructor.

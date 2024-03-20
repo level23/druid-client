@@ -17,12 +17,12 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 This package only requires Guzzle as dependency. The PHP and Guzzle version requirements are listed below.
 
-| Druid Client Version | PHP Requirements                        | Guzzle Requirements |
-|----------------------|-----------------------------------------|---------------------|
-| 4.* (current)        | PHP 8.2 or higher                       | Version 7.0         |
-| 3.*                  | PHP 8.2 or higher                       | Version 7.0         |
-| 2.*                  | PHP 7.4, 8.0, 8.1 and 8.2.              | Version 6.2 or 7.*  |
-| 1.*                  | PHP version 7.2, 7.4, 8.0, 8.1 and 8.2. | Version 6.2 or 7.*  |
+| Druid Client Version | PHP Requirements                        | Guzzle Requirements | Druid Requirements |
+|----------------------|-----------------------------------------|---------------------|--------------------|
+| 4.* (current)        | PHP 8.2 or higher                       | Version 7.0         | >= 28.0.0          |
+| 3.*                  | PHP 8.2 or higher                       | Version 7.0         |                    |
+| 2.*                  | PHP 7.4, 8.0, 8.1 and 8.2.              | Version 6.2 or 7.*  |                    |
+| 1.*                  | PHP version 7.2, 7.4, 8.0, 8.1 and 8.2. | Version 6.2 or 7.*  |                    |
 
 ## Installation
 
@@ -33,6 +33,10 @@ composer require level23/druid-client
 ```
 
 You can also download it as a ZIP file and include it in your project, as long as you have Guzzle also in your project.
+
+## ChangeLog and Upgrading
+
+See [CHANGELOG](CHANGELOG.md) for changes in the different versions and how to upgrade to the latest version.
 
 ## Laravel/Lumen support.
 
@@ -79,11 +83,6 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement hadoop based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
-
-## ChangeLog and Upgrading
-
-See [CHANGELOG](CHANGELOG.md) for changes in the different versions and how to upgrade to the latest version.
-
 ## Examples
 
 There are several examples which are written on the single-server tutorial of druid. See [this](examples/README.md) page
