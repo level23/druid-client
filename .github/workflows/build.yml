@@ -45,6 +45,7 @@ jobs:
         run: composer install
 
       - run: phpunit --version
+      - run: phpstan --version
 
       - run: ant gitlab
 

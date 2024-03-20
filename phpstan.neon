@@ -1,12 +1,22 @@
+includes:
+    - vendor/phpstan/phpstan-mockery/extension.neon
+
 parameters:
     level: 8
     checkMissingIterableValueType: true
     ignoreErrors:
-      - '#Cannot call method getName\(\) on ReflectionType\|null.#'
-      - '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
-      - '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
-      - '#expects class-string<Throwable>, string given.#'
-      - '#Ternary operator condition is always true.#'
+      - message: '#Cannot call method getName\(\) on ReflectionType\|null.#'
+      - message: '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
+      - message: '#of static method Mockery::mock\(\) expects#'
+      - message: '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
+      - message: '#expects class-string<Throwable>, string given.#'
+      - message: '#Ternary operator condition is always true.#'
+      - message: '#Call to protected method (getColumnsForInterval|getIntervalByShorthand)\(\) of class Level23\\Druid\\Metadata\\MetadataBuilder\.#'
+        path: tests/Metadata/MetadataBuilderTest.php
+      - message: '#Call to protected method validateInterval\(\) of class Level23\\Druid\\Tasks\\TaskBuilder\.#'
+        path: tests/Tasks/TaskBuilderTest.php
+      - message: '#Call to protected method buildTask\(\) of class Level23\\Druid\\Tasks\\(.*)Builder\.#'
+        path: tests/Tasks/*
     excludePaths:
     paths:
       - tests
