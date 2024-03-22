@@ -22,7 +22,7 @@ class ContextTest extends TestCase
     public static function dataProvider(): array
     {
         return [
-            [GroupByQueryContext::class],
+            [GroupByQueryContext::class, ['groupByStrategy' => 'v2']],
             [TopNQueryContext::class],
             [TimeSeriesQueryContext::class],
             [TaskContext::class],

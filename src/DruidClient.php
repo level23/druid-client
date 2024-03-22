@@ -150,7 +150,7 @@ class DruidClient
     {
         $query = $druidQuery->toArray();
 
-        $this->log('Executing druid query: ' . var_export($query, true));
+        $this->log('Executing druid query: ' . json_encode($query, JSON_UNESCAPED_SLASHES));
 
         $result = $this->executeRawRequest('post', $this->config('broker_url') . '/druid/v2', $query);
 

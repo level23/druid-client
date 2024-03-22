@@ -93,8 +93,11 @@ class TimeSeriesQuery implements QueryInterface
             $result['postAggregations'] = $this->postAggregations->toArray();
         }
 
-        if ($this->context) {
-            $result['context'] = $this->context->toArray();
+        if (isset($this->context)) {
+            $context = $this->context->toArray();
+            if (sizeof($context) > 0) {
+                $result['context'] = $context;
+            }
         }
 
         if ($this->limit) {

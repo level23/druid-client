@@ -109,8 +109,11 @@ class GroupByQuery implements QueryInterface
             $query['having'] = $this->having->toArray();
         }
 
-        if ($this->context) {
-            $query['context'] = $this->context->toArray();
+        if (isset($this->context)) {
+            $context = $this->context->toArray();
+            if (sizeof($context) > 0) {
+                $query['context'] = $context;
+            }
         }
 
         if ($this->limit) {

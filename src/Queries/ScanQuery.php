@@ -123,7 +123,10 @@ class ScanQuery implements QueryInterface
         }
 
         if (isset($this->context)) {
-            $result['context'] = $this->context->toArray();
+            $context = $this->context->toArray();
+            if (sizeof($context) > 0) {
+                $result['context'] = $context;
+            }
         }
 
         if (isset($this->order)) {
