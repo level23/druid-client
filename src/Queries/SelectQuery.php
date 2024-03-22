@@ -104,8 +104,11 @@ class SelectQuery implements QueryInterface
             ],
         ];
 
-        if ($this->context) {
-            $result['context'] = $this->context->toArray();
+        if (isset($this->context)) {
+            $context = $this->context->toArray();
+            if (sizeof($context) > 0) {
+                $result['context'] = $context;
+            }
         }
 
         if ($this->filter) {

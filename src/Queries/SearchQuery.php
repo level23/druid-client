@@ -77,8 +77,11 @@ class SearchQuery implements QueryInterface
             $result['searchDimensions'] = $this->dimensions;
         }
 
-        if ($this->context) {
-            $result['context'] = $this->context->toArray();
+        if (isset($this->context)) {
+            $context = $this->context->toArray();
+            if (sizeof($context) > 0) {
+                $result['context'] = $context;
+            }
         }
 
         return $result;

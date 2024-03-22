@@ -17,6 +17,7 @@ class GroupByQueryContext extends QueryContext implements ContextInterface
      */
     public function __construct(array $properties = [])
     {
+        $this->properties['groupByStrategy'] = 'v2';
         parent::__construct($properties);
     }
 
