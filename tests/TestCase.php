@@ -52,7 +52,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
      * * @ preserveGlobalState disabled
      *
      * @param string      $class
-     * @param string|null $interface
+     * @param class-string|null $interface
      *
      * @return LegacyMockInterface|MockInterface
      */

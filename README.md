@@ -1069,7 +1069,7 @@ $departments = [
     6 => 'Finance'
 ];
 
-$builder->lookup($departments, 'department_id', 'department', 'Unknown'); 
+$builder->inlineLookup($departments, 'department_id', 'department', 'Unknown'); 
 ```
 
 #### `multiValueListSelect()`

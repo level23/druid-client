@@ -7,7 +7,6 @@ parameters:
     ignoreErrors:
       - message: '#Cannot call method getName\(\) on ReflectionType\|null.#'
       - message: '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'
-      - message: '#of static method Mockery::mock\(\) expects#'
       - message: '#Parameter (.*) of (.*) expects (.*)Mockery\\LegacyMockInterface given.#'
       - message: '#expects class-string<Throwable>, string given.#'
       - message: '#Ternary operator condition is always true.#'

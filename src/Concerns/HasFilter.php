@@ -307,7 +307,7 @@ trait HasFilter
      * This applies a filter, only it will join previous added filters with an "or" instead of an "and".
      * See the documentation of the "where" method for more information
      *
-     * @param string|FilterInterface              $filterOrDimension
+     * @param string|FilterInterface|Closure      $filterOrDimension
      * @param string|int|float|bool|null          $operator
      * @param int|string|float|bool|string[]|null $value
      *
@@ -315,7 +315,7 @@ trait HasFilter
      * @see \Level23\Druid\Concerns\HasFilter::where()
      */
     public function orWhere(
-        string|FilterInterface $filterOrDimension,
+        string|FilterInterface|Closure $filterOrDimension,
         string|int|float|bool $operator = null,
         array|int|float|string|bool $value = null
     ): self {
