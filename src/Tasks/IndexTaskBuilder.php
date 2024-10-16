@@ -202,7 +202,7 @@ class IndexTaskBuilder extends TaskBuilder
             throw new InvalidArgumentException('You have to specify an timestamp column!');
         }
 
-        if ($this->granularityType == ArbitraryGranularity::class) {
+        if ($this->granularityType === ArbitraryGranularity::class) {
             $granularity = new ArbitraryGranularity(
                 $this->queryGranularity,
                 $this->rollup,

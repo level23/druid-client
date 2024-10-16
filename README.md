@@ -83,6 +83,7 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
 - Implement hadoop based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
+
 ## Examples
 
 There are several examples which are written on the single-server tutorial of druid. See [this](examples/README.md) page
@@ -93,6 +94,7 @@ for more information.
 - [DruidClient](#druidclient)
     - [DruidClient::auth()](#druidclientauth)
     - [DruidClient::query()](#druidclientquery)
+    - [DruidClient::lookup()](#druidclientquery)
     - [DruidClient::cancelQuery()](#druidclientcancelquery)
     - [DruidClient::compact()](#druidclientcompact)
     - [DruidClient::reindex()](#druidclientreindex)
@@ -147,7 +149,7 @@ for more information.
         - [whereIn()](#wherein)
         - [orWhereIn()](#orwherein)
         - [whereArrayContains()](#wherearraycontains)
-        - [orWhereArrayContains()](#orwherearraycontains) 
+        - [orWhereArrayContains()](#orwherearraycontains)
         - [whereBetween()](#wherebetween)
         - [orWhereBetween()](#orwherebetween)
         - [whereColumn()](#wherecolumn)
@@ -201,6 +203,30 @@ for more information.
         - [scan()](#scan)
         - [timeseries()](#timeseries)
         - [search()](#search)
+    - [LookupBuilder: Generic Methods](#lookupbuilder-generic-methods)
+        - [all()](#all)
+        - [names()](#names)
+        - [keys()](#keys)
+        - [values()](#values)
+        - [introspect()](#introspect)
+        - [tiers()](#tiers)
+        - [store()](#store)
+        - [delete()](#delete)
+    - [LookupBuilder: Building Lookups](#lookupbuilder-building-lookups)
+        - [uri()](#uri)
+        - [uriPrefix()](#uriprefix)
+        - [kafka()](#kafka)
+        - [jdbc()](#jdbc)
+        - [map()](#map)
+        - [maxHeapPercentage()](maxheappercentage)
+        - [pollPeriod()](#pollperiod)
+        - [injective()](#injective)
+        - [firstCacheTimeout()](#firstcachetimeout)
+    - [LookupBuilder: Lookup Parse Specifications](#lookupbuilder-lookup-parse-specifications)
+        - [tsv()](#tsv)
+        - [csv()](#csv)
+        - [json()](#json)
+        - [customJson()](#customjson)
     - [Metadata](#metadata)
         - [intervals](#metadata-intervals)
         - [interval](#metadata-interval)
@@ -331,7 +357,7 @@ $guzzleClient = new GuzzleHttp\Client([
 
 // Create a new DruidClient, which uses our custom Guzzle Client 
 $druidClient = new DruidClient(
-    ['router_url' => 'http://druid.router.com'], 
+    ['router_url' => 'https://druid.router.com'], 
     $guzzleClient
 );
 
@@ -386,6 +412,40 @@ When you do not specify the dataSource, you need to specify it later on your que
 to do this. See [QueryBuilder: Data Sources](#querybuilder-data-sources)
 
 See the following chapters for more information about the query builder.
+
+#### `DruidClient::lookup()`
+
+The `lookup()` method gives you a `LookupBuilder` instance, which allows you to create/update, list or delete lookups.
+
+A lookup is a key-value list which is kept in-memory in druid. During queries, you can use these lists to transform
+certain data.
+For example, change a `user_id` to a human-readable `name`.
+
+See also [LookupBuilder: Generic Methods](#lookupbuilder-generic-methods).
+
+Example:
+
+```php
+$client = new DruidClient(['router_url' => 'https://router.url:8080']);
+
+// Create a new lookup, fetching data from a database
+$client->lookup()->jdbc(
+        connectUri: 'jdbc:mysql://localhost:3306/my_database',
+        username: 'username',
+        password: 'p4ssw0rd!',
+        table: 'users',
+        keyColumn: 'id',
+        valueColumn: 'name',
+        filter: "state='active'",
+        tsColumn: 'updated_at',
+    )
+    ->pollPeriod('PT30M') // renew our data every 30 minutes
+    ->store(
+        lookupName: 'usernames',
+        tier: 'company'
+    );    
+
+```
 
 #### `DruidClient::cancelQuery()`
 
@@ -967,11 +1027,11 @@ To select a _dimension_, you can use one of the methods below:
 
 This method has the following arguments:
 
-| **Type**        | **Optional/Required** | **Argument**      | **Example**                       | **Description**                                                                                                                                                                   |
-|-----------------|-----------------------|-------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string or array | Required              | `$dimension`      | country_iso                       | The dimension which you want to select                                                                                                                                            |
-| string          | Optional              | `$as`             | country                           | The name where the result will be available by in the result set.                                                                                                                 |
-| string          | Optional              | `$outputType`     | string                            | The output type of the data. If left unspecified, we will use `string`.                                                                                                           |
+| **Type**        | **Optional/Required** | **Argument**  | **Example** | **Description**                                                         |
+|-----------------|-----------------------|---------------|-------------|-------------------------------------------------------------------------|
+| string or array | Required              | `$dimension`  | country_iso | The dimension which you want to select                                  |
+| string          | Optional              | `$as`         | country     | The name where the result will be available by in the result set.       |
+| string          | Optional              | `$outputType` | string      | The output type of the data. If left unspecified, we will use `string`. |
 
 This method allows you to select a dimension in various way's, as shown in the example above.
 
@@ -1005,7 +1065,6 @@ $builder->select([
     'gender'      => 'MaleOrFemale'
 ])
 ```
-
 
 **Change the output type of the dimension:**
 
@@ -1683,7 +1742,6 @@ Example:
 ```php
 $builder->whereArrayContains('features', 'myNewFeature'); 
 ```
-
 
 #### `orWhereArrayContains()`
 
@@ -2696,6 +2754,128 @@ The `searchRegex()` method has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                |
 |----------|-----------------------|--------------|-------------|----------------------------------------------------------------|
 | string   | Required              | `$pattern`   | "^Wiki"     | A regular expression where the dimension should match against. |
+
+## LookupBuilder: Generic Methods
+
+With the Lookup builder you can do everything related to lookups in Druid. See the coming chapters for more information.
+
+#### `all()`
+
+This method fetches **all** lookup configurations from **all** tiers and returns them in a large array.
+
+See also this page: https://druid.apache.org/docs/latest/api-reference/lookups-api/#get-all-lookups
+
+For example:
+
+```php
+$config = $client->lookup()->all();
+
+var_export($config);
+```
+
+The code above could return something like this:
+
+```php
+array (
+  '__default' =>
+  array (
+    'test_map' =>
+    array (
+      'version' => '2024-10-14T15:16:55.000Z',
+      'lookupExtractorFactory' =>
+      array (
+        'type' => 'map',
+        'map' =>
+        array (
+          'test1' => 'Test Number 1',
+          'test2' => 'Test Number 2',
+          'test3' => 'Test Number 3',
+        ),
+      ),
+    ),
+    'usernames' =>
+    array (
+      'version' => '2024-10-15T11:21:30.000Z',
+      'lookupExtractorFactory' =>
+      array (
+        'type' => 'cachedNamespace',
+        'extractionNamespace' =>
+        array (
+          'type' => 'jdbc',
+          'connectorConfig' =>
+          array (
+            'connectURI' => 'jdbc:mysql://database.example.com:3306/my_db_name',
+            'user' => 'userN4me',
+            'password' => 'p4ssw0rd!',
+          ),
+          'table' => 'users',
+          'keyColumn' => 'id',
+          'valueColumn' => 'username',
+          'filter' => 'status = "active"',
+          'pollPeriod' => 'P15M',
+          'jitterSeconds' => 300,
+        ),
+        'injective' => false,
+        'firstCacheTimeout' => 0,
+      ),
+    ),
+  ),
+)
+```
+
+#### `names()`
+
+This method returns all lookup names defined within the given tier.
+
+The `names()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**  | **Description**                                                                   |
+|----------|-----------------------|--------------|--------------|-----------------------------------------------------------------------------------|
+| string   | Optiona               | `$tier`      | "personalia" | The name of the tier where we want to search in. By default this is `"__default"` |
+
+
+
+#### `keys()`
+
+#### `values()`
+
+#### `introspect()`
+
+#### `tiers()`
+
+#### `store()`
+
+#### `delete()`
+
+## LookupBuilder: Building Lookups
+
+#### `uri()`
+
+#### `uriPrefix()`
+
+#### `kafka()`
+
+#### `jdbc()`
+
+#### `map()`
+
+#### `maxHeapPercentage()`
+
+#### `pollPeriod()`
+
+#### `injective()`
+
+#### `firstCacheTimeout()`
+
+## LookupBuilder: Lookup Parse Specifications
+
+#### `tsv()`
+
+#### `csv()`
+
+#### `json()`
+
+#### `customJson()`
 
 ## QueryBuilder: Execute The Query
 
