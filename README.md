@@ -94,7 +94,7 @@ for more information.
 - [DruidClient](#druidclient)
     - [DruidClient::auth()](#druidclientauth)
     - [DruidClient::query()](#druidclientquery)
-    - [DruidClient::lookup()](#druidclientquery)
+    - [DruidClient::lookup()](#druidclientlookup)
     - [DruidClient::cancelQuery()](#druidclientcancelquery)
     - [DruidClient::compact()](#druidclientcompact)
     - [DruidClient::reindex()](#druidclientreindex)
@@ -206,9 +206,9 @@ for more information.
     - [LookupBuilder: Generic Methods](#lookupbuilder-generic-methods)
         - [all()](#all)
         - [names()](#names)
+        - [introspect()](#introspect)
         - [keys()](#keys)
         - [values()](#values)
-        - [introspect()](#introspect)
         - [tiers()](#tiers)
         - [store()](#store)
         - [delete()](#delete)
@@ -428,7 +428,7 @@ Example:
 ```php
 $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 
-// Create a new lookup, fetching data from a database
+// Store a lookup, which is populated by fetching data from a database
 $client->lookup()->jdbc(
         connectUri: 'jdbc:mysql://localhost:3306/my_database',
         username: 'username',
@@ -2826,32 +2826,286 @@ array (
 #### `names()`
 
 This method returns all lookup names defined within the given tier.
+See also: https://druid.apache.org/docs/latest/api-reference/lookups-api/#list-lookup-names
 
 The `names()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument** | **Example**  | **Description**                                                                   |
-|----------|-----------------------|--------------|--------------|-----------------------------------------------------------------------------------|
-| string   | Optiona               | `$tier`      | "personalia" | The name of the tier where we want to search in. By default this is `"__default"` |
+| **Type** | **Optional/Required** | **Argument** | **Example**   | **Description**                                                                   |
+|----------|-----------------------|--------------|---------------|-----------------------------------------------------------------------------------|
+| string   | Optional              | `$tier`      | "my_business" | The name of the tier where we want to search in. By default this is `"__default"` |
 
+Example:
 
+```php
 
-#### `keys()`
+$names = $client->lookup()->names();
 
-#### `values()`
+var_export($names);
+```
+
+This will result a list of all lookups which are defined, for example:
+
+```php
+array (
+  0 => 'usernames',
+  1 => 'departments'
+) 
+```
 
 #### `introspect()`
 
+The `introspect()` method allows you fetch the current content of a lookup (so the key/value list).
+See also: https://druid.apache.org/docs/latest/querying/lookups/#introspect-a-lookup
+
+The `names()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**    | **Description**                                                     |
+|----------|-----------------------|---------------|----------------|---------------------------------------------------------------------|
+| string   | Required              | `$lookupName` | "countryNames" | The name of the lookup where you want to retrieve the contents for. |
+
+Example:
+
+```php
+
+$names = $client->lookup()->introspect('countryNames');
+
+var_export($names);
+```
+
+The result will be a key/value list of the contents of the lookup. For example:
+
+```php
+array(
+    'nl' => 'The Netherlands',
+    'be' => 'Belgium',
+    'de' => 'Germany'
+)
+```
+
+#### `keys()`
+
+The `keys()` method allows you to fetch all keys for a given lookup.
+See also: https://druid.apache.org/docs/latest/querying/lookups/#introspect-a-lookup
+
+The `keys()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**    | **Description**                                                 |
+|----------|-----------------------|---------------|----------------|-----------------------------------------------------------------|
+| string   | Required              | `$lookupName` | "countryNames" | The name of the lookup where you want to retrieve the keys for. |
+
+Example:
+
+```php
+
+$keys = $client->lookup()->keys('countryNames');
+
+var_export($keys);
+```
+
+The result will be a keys of the contents of the lookup. For example:
+
+```php
+array(
+    0 => 'nl'
+    1 => 'be'
+    2 => 'de'
+)
+```
+
+#### `values()`
+
+The `values()` method allows you to fetch all values for a given lookup.
+See also: https://druid.apache.org/docs/latest/querying/lookups/#introspect-a-lookup
+
+The `values()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**    | **Description**                                                   |
+|----------|-----------------------|---------------|----------------|-------------------------------------------------------------------|
+| string   | Required              | `$lookupName` | "countryNames" | The name of the lookup where you want to retrieve the values for. |
+
+Example:
+
+```php
+
+$values = $client->lookup()->values('countryNames');
+
+var_export($values);
+```
+
+The result will be a keys of the contents of the lookup. For example:
+
+```php
+array(
+    0 => 'The Netherlands',
+    1 => 'Belgium',
+    2 => 'Germany'
+)
+```
+
 #### `tiers()`
+
+The `tiers()` method will return a list of all tier names known in the druid configuration.
+
+The `tiers()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                           |
+|----------|-----------------------|--------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| boolean  | Optional              | `$discover`  | `false`     | When set to true (default), we will also discover all tiers which are active in the cluster, and not only in the ones known in the dynamic configuration. |
+
+Example:
+
+```php
+
+$tiers = $client->lookup()->tiers();
+
+var_export($tiers);
+```
+
+The result will be a list of all tier names. For example:
+
+```php
+array(
+    0 => '__default',
+    1 => 'project1',
+)
+```
 
 #### `store()`
 
+The `store()` method stores the configured lookup in druid. If it did not exist yet, it will be created, otherwise it
+will be updated. Be aware that the version number needs to be unique for the given lookup name.
+
+The `store()` method has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**   | **Example**     | **Description**                                                                                |
+|-------------|-----------------------|----------------|-----------------|------------------------------------------------------------------------------------------------|
+| string      | Required              | `$lookupName`  | "country_names" | The name of the lookup to store.                                                               |
+| string      | Optional              | `$tier`        | "__default"     | The name of the tier where we should store the lookup. Default value is `"__default"`          |
+| string/null | Optional              | `$versionName` | "v10"           | The version name. When not given (or `null`), we will use the current datetime as the version. |
+
+The store method requires a lookup configuration to be defined. This can be done by one of the lookup builder methods:
+
+- [uri()](#uri)
+- [uriPrefix()](#uriprefix)
+- [kafka()](#kafka)
+- [jdbc()](#jdbc)
+- [map()](#map)
+
+Example:
+
+```php
+// Store a lookup, which is populated by fetching data from a database
+$client->lookup()->jdbc(
+        connectUri: 'jdbc:mysql://localhost:3306/my_database',
+        username: 'username',
+        password: 'p4ssw0rd!',
+        table: 'users',
+        keyColumn: 'id',
+        valueColumn: 'name',
+        filter: "state='active'",
+        tsColumn: 'updated_at',
+    )
+    ->pollPeriod('PT30M') // renew our data every 30 minutes
+    ->store(
+        lookupName: 'usernames',
+        tier: 'company'
+    );
+```
+
+The store method does not have any result. If the store fails, it will throw an exception.
+
 #### `delete()`
+
+The `delete()` method will delete a lookup from the cluster. If it was last lookup in the tier, then tier is deleted as
+well.
+See also: https://druid.apache.org/docs/latest/api-reference/lookups-api/#delete-lookup
+
+The `delete()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**  | **Example**    | **Description**                                  |
+|----------|-----------------------|---------------|----------------|--------------------------------------------------|
+| string   | Required              | `$lookupName` | "countryNames" | The name of the lookup which you want to delete. |
+
+Example:
+
+```php
+$client->lookup()->delete('countryNames');
+``` 
+
+The delete method has no result. When the delete action fails, it will throw an exception.
 
 ## LookupBuilder: Building Lookups
 
+The following methods allow you to _build_ a lookup so you can store it.
+
 #### `uri()`
 
+The `uri` method allows you to define that lookup data should be read from a file. The file can be an "on disk file",
+HDFS, S3 or GCS path.
+
+See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global#uri-lookup
+
+It is required to also specify how we can parse the file. You can do this with one of the
+[Parse Specification](#lookupbuilder-lookup-parse-specifications) methods.
+
+Also, if you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
+
+Finally, you cna also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+
+The `uri` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                      | **Description**                                              |
+|----------|-----------------------|--------------|----------------------------------|--------------------------------------------------------------|
+| string   | Required              | `$uri`       | "s3://bucket/some/key/file.json" | The path of the file which contains the data for the lookup. |
+
+Example:
+
+```php
+
+$client->lookup()
+    // define the location of the file
+    ->uri("s3://bucket/some/key/countries.tsv")
+    // define how the file should be parsed
+    ->tsv(["id", "country_name", "country_iso", "size"], "country_iso", "country_name")
+    // Refresh the lookup every hour
+    ->pollPeriod('PT60M')
+    // store the lookup
+    ->store("country_iso_to_name");
+```
+
 #### `uriPrefix()`
+
+The `uriPrefix` method allows you to define that lookup data should be read from one or multiple files.
+The file can be an "on disk file", HDFS, S3 or GCS path.
+
+See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global#uri-lookup
+
+It is required to also specify how we can parse the file(s). You can do this with one of the
+[Parse Specification](#lookupbuilder-lookup-parse-specifications) methods.
+
+Also, if you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
+
+Finally, you cna also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+
+The `uriPrefix` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**          | **Description**                                                                       |
+|----------|-----------------------|--------------|----------------------|---------------------------------------------------------------------------------------|
+| string   | Required              | `$uriPrefix` | "/mount/disk/files/" | The path prefix of where the file(s) can be found                                     |
+| string   | Optional              | `$fileRegex` | "*.json"             | Optional regex for matching the file name under uriPrefix. By default `".*"` is used/ |
+
+Example:
+
+```php
+
+$client->lookup()
+    // define the location of the file(s)
+    ->uriPrefix("s3://bucket/some/key/", "*.json")
+    // define how the file should be parsed
+    ->customJson("country_iso", "country_title")
+    // store the lookup
+    ->store("country_iso_to_name");
+```
 
 #### `kafka()`
 
