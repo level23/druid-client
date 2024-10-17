@@ -5,6 +5,7 @@ namespace Level23\Druid\Lookups;
 
 /**
  * @see https://druid.apache.org/docs/latest/querying/lookups-cached-global#jdbc-lookup
+ * @internal
  */
 class JdbcLookup implements LookupInterface
 {

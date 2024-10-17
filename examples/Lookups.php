@@ -33,7 +33,6 @@ try {
 
     // Display the result as a console table.
     new ConsoleTable(array_map(fn($name) => ["lookup name" => $name], $names));
-
 } catch (Throwable $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";

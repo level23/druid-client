@@ -5,6 +5,7 @@ namespace Level23\Druid\Lookups;
 
 /**
  * @see https://druid.apache.org/docs/latest/querying/kafka-extraction-namespace
+ * @internal
  */
 class KafkaLookup implements LookupInterface
 {

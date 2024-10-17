@@ -2857,7 +2857,7 @@ array (
 The `introspect()` method allows you fetch the current content of a lookup (so the key/value list).
 See also: https://druid.apache.org/docs/latest/querying/lookups/#introspect-a-lookup
 
-The `names()` method has the following arguments:
+The `introspect()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument**  | **Example**    | **Description**                                                     |
 |----------|-----------------------|---------------|----------------|---------------------------------------------------------------------|
@@ -2990,6 +2990,8 @@ The store method requires a lookup configuration to be defined. This can be done
 - [kafka()](#kafka)
 - [jdbc()](#jdbc)
 - [map()](#map)
+
+These builder methods should be called _before_ calling the `store()` method.
 
 Example:
 
@@ -3151,7 +3153,7 @@ If you want the lookup to be updated periodically, you should define a poll peri
 
 Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
 
-The `kafka()` method has the following arguments:
+The `jdbc()` method has the following arguments:
 
 | **Type**    | **Optional/Required** | **Argument**          | **Example**                         | **Description**                                                                                                                                                                                                                                                                     |
 |-------------|-----------------------|-----------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -3192,7 +3194,7 @@ $client->lookup()->jdbc(
 
 #### `maxHeapPercentage()`
 
-With this method you can set the maximum percentage The maximum percentage of heap size that the lookup should consume.
+With this method you can set the maximum percentage of heap size that the lookup should consume.
 If the lookup grows beyond this size, warning messages will be logged in the respective service logs.
 
 This method only applies for [jdbc](#jdbc), [uri](#uri) and [uriPrefix](#uriprefix) lookups.
@@ -3264,7 +3266,7 @@ How long to wait (in ms) for the first run of the cache to populate. 0 indicates
 
 This applies for all lookup types.
 
-The `injective()` has the following arguments:
+The `firstCacheTimeout()` has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument**           | **Example** | **Description**                                                                              |
 |----------|-----------------------|------------------------|-------------|----------------------------------------------------------------------------------------------|
@@ -3331,7 +3333,7 @@ $client->lookup()
 With this method you can indicate that the file which is going to be processed is a CSV file.
 CSV are files where the content is seperated most comma's.
 
-The `tsv()` method has the following arguments:
+The `csv()` method has the following arguments:
 
 | **Type**   | **Optional/Required** | **Argument**      | **Example**                             | **Description**                                                                                                                                                              |
 |------------|-----------------------|-------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -3369,23 +3371,17 @@ This method does not take any arguments.
 
 Example JSON content:
 
-```json lines
-{
-  "foo": "bar"
-}
-{
-  "baz": "bat"
-}
-{
-  "buck": "truck"
-}
+```
+{ "foo": "bar" }
+{ "baz": "bat" }
+{ "buck": "truck" }
 ```
 
 Example:
 
 ```php
 
-// Create our lookup based on CSV files
+// Create our lookup based on JSON files
 $client->lookup()
     ->uri('s3://my_bucket/path/to/my/companies.json')
     ->json
@@ -3406,29 +3402,17 @@ The `customJson()` method has the following arguments:
 
 Example JSON content:
 
-```json lines
-{
-  "key": "foo",
-  "value": "bar",
-  "somethingElse": "something"
-}
-{
-  "key": "baz",
-  "value": "bat",
-  "somethingElse": "something"
-}
-{
-  "key": "buck",
-  "somethingElse": "something",
-  "value": "truck"
-}
+```
+{ "key": "foo", "value": "bar", "somethingElse": "something" }
+{ "key": "baz", "value": "bat", "somethingElse": "something" }
+{ "key": "buck", "somethingElse": "something", "value": "truck" }
 ```
 
 Example:
 
 ```php
 
-// Create our lookup based on CSV files
+// Create our lookup based on JSON files
 $client->lookup()
     ->uri('/mount/disk/path/users.json')
     ->customJson('id', 'username')    

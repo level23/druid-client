@@ -489,7 +489,7 @@ class LookupBuilder
      * @return $this
      */
     public function csv(
-        ?array $columns = null,
+        ?array $columns,
         ?string $keyColumn = null,
         ?string $valueColumn = null,
         bool $hasHeaderRow = false,
