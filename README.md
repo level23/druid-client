@@ -348,7 +348,7 @@ Example of using a custom guzzle client:
 
 ```php
 
-// Create a custom guzzle client which uses an http proxy.
+// Create a custom guzzle client which uses a http proxy.
 $guzzleClient = new GuzzleHttp\Client([
     'proxy' => 'tcp://localhost:8125',
     'timeout' => 30,
@@ -1858,7 +1858,7 @@ This method has the following arguments:
 | string   | Required              | `$dimension`     | "flags"     | The dimension where you want to filter on                                                                                                                    |
 | int      | Required              | `$flags`         | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
 | string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
-| boolean  | Optional              | `$useJavascript` | true        | Older versions do not yet support the bitwiseAnd expression. Set this parameter to `true` to use an javacript alternative instead.                           |
+| boolean  | Optional              | `$useJavascript` | true        | Older versions do not yet support the bitwiseAnd expression. Set this parameter to `true` to use an javascript alternative instead.                          |
 
 #### `orWhereFlags()`
 
@@ -2035,7 +2035,7 @@ We also support using a `Closure` to group various havings in 1 filter. It will 
 
 ```php
 $builder->having(function (FilterBuilder $filterBuilder) {
-    $filterBuilder->orHaving('sumKats', '>', 0);
+    $filterBuilder->orHaving('sumCats', '>', 0);
     $filterBuilder->orHaving('sumDogs', '>', 0);
 });
 $builder->having('sumKids', '=', 0);
@@ -3163,7 +3163,7 @@ The `kafka()` method has the following arguments:
 | string      | Required              | `$valueColumn`        | "company_name                       | The column from the table which is used as value from the lookup.                                                                                                                                                                                                                   |
 | string      | Optional              | `$filter`             | status = 'active' and sector='it'   | Specify a filter (like a where statement) which should be used in the query to fetch the data from the database.                                                                                                                                                                    |
 | string      | Optional              | `$tsColumn`           | "updated_at"                        | Specify a column which contains a datetime. Druid will use this to only fetch rows from the database which have been changed since the last poll request. This reduces database load and is highly recommended!                                                                     |
-| int         | Optional              | `$jitterSeconds`      | 300                                 | How much jitter to add (in seconds) up to maximum as a delay (actual value will be used as random from 0 to jitterSeconds), used to istribute db load more evenly.                                                                                                                  |
+| int         | Optional              | `$jitterSeconds`      | 300                                 | How much jitter to add (in seconds) up to maximum as a delay (actual value will be used as random from 0 to jitterSeconds), used to distribute db load more evenly.                                                                                                                 |
 | int         | Optional              | `$loadTimeoutSeconds` | 60                                  | How much time (in seconds) it can take to query and populate lookup values. It will be helpful in lookup updates. On lookup update, it will wait maximum of loadTimeoutSeconds for new lookup to come up and  continue serving from old lookup until new lookup successfully loads. |
 
 Example:
@@ -3246,7 +3246,7 @@ The `injective()` has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                            |
 |----------|-----------------------|--------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| boolean  | Optional              | `$injective` | false       | Set injective to true or false. By default druid handles the data as NOT injective (false). When this methid is called, we will set it by default to true. |
+| boolean  | Optional              | `$injective` | false       | Set injective to true or false. By default druid handles the data as NOT injective (false). When this method is called, we will set it by default to true. |
 
 Example:
 
@@ -3970,7 +3970,7 @@ It will retrieve the structure for the last known interval, or for the interval 
 Example:
 
 ```php
-// Retrieve the strucutre of our dataSource
+// Retrieve the structure of our dataSource
 $structure = $client->metadata()->structure('wikipedia');
 ``` 
 
