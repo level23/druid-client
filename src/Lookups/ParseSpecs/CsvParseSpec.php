@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Lookups\ParseSpecs;
 
+/**
+ * @internal
+ */
 class CsvParseSpec implements ParseSpecInterface
 {
     /**
@@ -15,7 +18,7 @@ class CsvParseSpec implements ParseSpecInterface
      * @param int                    $skipHeaderRows
      */
     public function __construct(
-        protected ?array $columns = null,
+        protected ?array $columns,
         protected ?string $keyColumn = null,
         protected ?string $valueColumn = null,
         protected bool $hasHeaderRow = false,

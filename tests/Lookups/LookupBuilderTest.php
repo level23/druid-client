@@ -127,8 +127,8 @@ class LookupBuilderTest extends TestCase
             'name',
             "state='active'",
             'updated_at',
-            30,
-            30,
+            null,
+            null,
             'PT30M',
             20,
             false,
@@ -142,27 +142,36 @@ class LookupBuilderTest extends TestCase
 
         $client->shouldReceive('executeRawRequest')
             ->once()
-            ->with(
-                'post',
-                'https://coordinator.example.com/druid/coordinator/v1/lookups/config/company/usernames',
-                [
-                    'version'                => (new DateTime())->format('Y-m-d\TH:i:s.000\Z'),
-                    'lookupExtractorFactory' => $lookup->toArray(),
-                ]
-            );
+            ->withArgs(function ($method, $url, $parameters) use ($lookup) {
+                $this->assertEquals('post', $method);
+                $this->assertEquals(
+                    'https://coordinator.example.com/druid/coordinator/v1/lookups/config/company/usernames',
+                    $url
+                );
+
+                $this->assertEquals(
+                    [
+                        'version'                => (new DateTime())->format('Y-m-d\TH:i:s.000\Z'),
+                        'lookupExtractorFactory' => $lookup->toArray(),
+                    ],
+                    $parameters
+                );
+
+                return true;
+            });
 
         $builder = new LookupBuilder($client);
 
         $builder->jdbc(
-                connectUri: 'jdbc:mysql://localhost:3306/druid',
-                username: 'druid',
-                password: 'pssswrrdd',
-                table: 'users',
-                keyColumn: 'id',
-                valueColumn: 'name',
-                filter: "state='active'",
-                tsColumn: 'updated_at',
-            )
+            connectUri: 'jdbc:mysql://localhost:3306/druid',
+            username: 'druid',
+            password: 'pssswrrdd',
+            table: 'users',
+            keyColumn: 'id',
+            valueColumn: 'name',
+            filter: "state='active'",
+            tsColumn: 'updated_at',
+        )
             ->pollPeriod('PT30M')
             ->maxHeapPercentage(20)
             ->injective(false)
@@ -184,7 +193,7 @@ class LookupBuilderTest extends TestCase
         $lookup = new KafkaLookup(
             'clients',
             'kafka.service:9092',
-            ['group.id' => 'myApp'],
+            ['enable.auto.commit' => true],
             30,
             true
         );
@@ -211,7 +220,7 @@ class LookupBuilderTest extends TestCase
             ->kafka(
                 'clients',
                 'kafka.service:9092',
-                ['group.id' => 'myApp'],
+                ['enable.auto.commit' => true],
                 30
             )
             ->injective()
@@ -650,7 +659,7 @@ class LookupBuilderTest extends TestCase
         $result = $builder->kafka(
             'users',
             'kafka.server1:9092,kafka.server2.9092',
-            ['group.id' => 'myApp'],
+            ['enable.auto.commit' => true],
             30
         );
 
@@ -660,7 +669,7 @@ class LookupBuilderTest extends TestCase
         $this->assertEquals([
             'users',
             'kafka.server1:9092,kafka.server2.9092',
-            ['group.id' => 'myApp'],
+            ['enable.auto.commit' => true],
             30,
         ], $this->getProperty($builder, 'parameters'));
 

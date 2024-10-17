@@ -244,7 +244,7 @@ class LookupBuilder
      *
      * @return $this
      */
-    public function firstCacheTimeout(int $ms = 0): self
+    public function firstCacheTimeout(int $ms): self
     {
         $this->firstCacheTimeoutMs = $ms;
 
@@ -362,7 +362,7 @@ class LookupBuilder
      * @param string                   $kafkaTopic      The Kafka topic to read the data from
      * @param string|array<int,string> $servers         The kafka server(s), for example ["kafka1.service:9092",
      *                                                  "kafka2.service:9092"]
-     * @param array<string,string>     $kafkaProperties Other optional kafka properties.
+     * @param array<string,scalar>     $kafkaProperties Other optional kafka properties.
      * @param int                      $connectTimeout  How long to wait for an initial connection
      *
      * @return $this
@@ -489,7 +489,7 @@ class LookupBuilder
      * @return $this
      */
     public function csv(
-        ?array $columns = null,
+        ?array $columns,
         ?string $keyColumn = null,
         ?string $valueColumn = null,
         bool $hasHeaderRow = false,

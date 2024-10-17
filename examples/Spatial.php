@@ -22,8 +22,7 @@ try {
         ->select('Mountain')
         ->select('Country')
         ->select('Location')
-        ->whereSpatialRadius('Location', [28,84], 0.8)
-    ;
+        ->whereSpatialRadius('Location', [28, 84], 0.8);
 
     // Execute the query.
     $response = $builder->execute();

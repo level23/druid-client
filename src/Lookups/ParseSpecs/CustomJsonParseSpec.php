@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Lookups\ParseSpecs;
 
+/**
+ * @internal
+ */
 class CustomJsonParseSpec implements ParseSpecInterface
 {
     /**

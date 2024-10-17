@@ -7,6 +7,7 @@ use Level23\Druid\Lookups\ParseSpecs\ParseSpecInterface;
 
 /**
  * @see https://druid.apache.org/docs/latest/querying/lookups-cached-global#uri-lookup
+ * @internal
  */
 class UriLookup implements LookupInterface
 {
