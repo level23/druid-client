@@ -3240,7 +3240,7 @@ $client->lookup()
 If the underlying lookup data is injective (keys and values are unique) then optimizations can occur internally by
 setting this to true.
 
-This applies for all lookup types.
+This applies for all lookup types except for the `map()` lookup type.
 
 The `injective()` has the following arguments:
 
@@ -3368,13 +3368,21 @@ With this method you can indicate that the file which is going to be processed i
 This method does not take any arguments.
 
 Example JSON content:
+
 ```json lines
-{ "foo": "bar" }
-{ "baz": "bat" }
-{ "buck": "truck" }
+{
+  "foo": "bar"
+}
+{
+  "baz": "bat"
+}
+{
+  "buck": "truck"
+}
 ```
 
 Example:
+
 ```php
 
 // Create our lookup based on CSV files
@@ -3397,13 +3405,27 @@ The `customJson()` method has the following arguments:
 | string   | Required              | `$valueFieldName` | "company_name | The field name of the value | 
 
 Example JSON content:
+
 ```json lines
-{"key": "foo", "value": "bar", "somethingElse" : "something"}
-{"key": "baz", "value": "bat", "somethingElse" : "something"}
-{"key": "buck", "somethingElse": "something", "value": "truck"}
+{
+  "key": "foo",
+  "value": "bar",
+  "somethingElse": "something"
+}
+{
+  "key": "baz",
+  "value": "bat",
+  "somethingElse": "something"
+}
+{
+  "key": "buck",
+  "somethingElse": "something",
+  "value": "truck"
+}
 ```
 
 Example:
+
 ```php
 
 // Create our lookup based on CSV files
