@@ -18,6 +18,7 @@ use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
 use Psr\Http\Message\ResponseInterface;
 use Level23\Druid\Tasks\KillTaskBuilder;
+use Level23\Druid\Lookups\LookupBuilder;
 use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Queries\QueryInterface;
 use GuzzleHttp\Exception\ServerException;
@@ -121,6 +122,15 @@ class DruidClientTest extends TestCase
             ->with($client, 'randomDataSource', 'quarter');
 
         $client->query('randomDataSource', 'quarter');
+    }
+
+    public function testLookup(): void
+    {
+        $client = new DruidClient([]);
+
+        $instance = $client->lookup();
+
+        $this->assertInstanceOf(LookupBuilder::class, $instance);
     }
 
     /**

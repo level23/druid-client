@@ -12,6 +12,7 @@ use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Queries\QueryBuilder;
 use Psr\Http\Message\ResponseInterface;
 use Level23\Druid\Tasks\KillTaskBuilder;
+use Level23\Druid\Lookups\LookupBuilder;
 use GuzzleHttp\Exception\ServerException;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Tasks\IndexTaskBuilder;
@@ -470,6 +471,17 @@ class DruidClient
     public function index(string $dataSource, InputSourceInterface $inputSource): IndexTaskBuilder
     {
         return new IndexTaskBuilder($this, $dataSource, $inputSource);
+    }
+
+    /**
+     * Return a LookupBuilder instance. With this class you can do your lookup management, such as store, list and
+     * delete lookups.
+     *
+     * @return \Level23\Druid\Lookups\LookupBuilder
+     */
+    public function lookup(): LookupBuilder
+    {
+        return new LookupBuilder($this);
     }
 
     /**

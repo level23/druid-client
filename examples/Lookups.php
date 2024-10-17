@@ -9,27 +9,31 @@ include __DIR__ . '/helpers/ConsoleLogger.php';
 include __DIR__ . '/helpers/ConsoleTable.php';
 
 use Level23\Druid\DruidClient;
+use Level23\Druid\Types\OrderByDirection;
 
 try {
     $client = new DruidClient(['router_url' => 'http://127.0.0.1:8888']);
 
     // Enable this to see some more data
-    $client->setLogger(new ConsoleLogger());
+    //$client->setLogger(new ConsoleLogger());
 
-    // Build a groupBy query.
-    $builder = $client->query('mountains')
-        ->interval('2000-01-01T00:00:00.000Z/now')
-        ->select('Mountain')
-        ->select('Country')
-        ->select('Location')
-        ->whereSpatialRadius('Location', [28, 84], 0.8);
+    // Store a lookup.
+    $client->lookup()
+        ->map([
+            'nl' => 'The Netherlands',
+            'de' => 'Germany',
+            'be' => 'Belgium',
+            'fr' => 'France',
+            'it' => 'Italy',
+            'es' => 'Spain',
+        ])->store('country_iso_to_name');
 
-    // Execute the query.
-    $response = $builder->execute();
+    // List al lookup names
+    $names = $client->lookup()->names();
 
     // Display the result as a console table.
-    new ConsoleTable($response->data());
-} catch (Exception $exception) {
+    new ConsoleTable(array_map(fn($name) => ["lookup name" => $name], $names));
+} catch (Throwable $exception) {
     echo "Something went wrong during retrieving druid data\n";
     echo $exception->getMessage() . "\n";
     echo $exception->getTraceAsString();
