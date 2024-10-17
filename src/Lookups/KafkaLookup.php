@@ -11,7 +11,7 @@ class KafkaLookup implements LookupInterface
     /**
      * @param string                   $kafkaTopic      The Kafka topic to read the data from
      * @param string|array<int,string> $servers
-     * @param array<string,string|int> $kafkaProperties Kafka consumer properties
+     * @param array<string,scalar>     $kafkaProperties Kafka consumer properties
      * @param int                      $connectTimeout  How long to wait for an initial connection
      * @param bool                     $isOneToOne      The map is a one-to-one (like injective)
      */
@@ -29,7 +29,7 @@ class KafkaLookup implements LookupInterface
     }
 
     /**
-     * @return array<string,string|array<string,int|string>|int|bool>
+     * @return array<string,string|array<string,scalar>|int|bool>
      */
     public function toArray(): array
     {

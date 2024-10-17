@@ -1,5 +1,9 @@
 # Changelog
 
+**v4.1.0** 
+
+Added support to manage lookups. See [DruidClient::lookup()](README.md#druidclientlookup)
+
 **v4.0.0**
 
 - Removed GroupByV1. GroupBy v1 is a legacy engine and has not been supported since 2021.

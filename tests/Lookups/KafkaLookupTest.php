@@ -31,7 +31,7 @@ class KafkaLookupTest extends TestCase
         $lookup = new KafkaLookup(
             'countries',
             'kafka3.server:9092,kafka4.server:9092',
-            ['group.id' => 'myGroup'],
+            ['enable.auto.commit' => true],
             6000,
             true
         );
@@ -41,8 +41,8 @@ class KafkaLookupTest extends TestCase
                 'type'            => 'kafka',
                 'kafkaTopic'      => 'countries',
                 'kafkaProperties' => [
-                    'bootstrap.servers' => 'kafka3.server:9092,kafka4.server:9092',
-                    'group.id'          => 'myGroup',
+                    'bootstrap.servers'  => 'kafka3.server:9092,kafka4.server:9092',
+                    'enable.auto.commit' => true,
                 ],
                 'connectTimeout'  => 6000,
                 'isOneToOne'      => true,

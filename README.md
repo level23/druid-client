@@ -3040,7 +3040,7 @@ The following methods allow you to _build_ a lookup so you can store it.
 
 #### `uri()`
 
-The `uri` method allows you to define that lookup data should be read from a file. The file can be an "on disk file",
+The `uri()` method allows you to define that lookup data should be read from a file. The file can be an "on disk file",
 HDFS, S3 or GCS path.
 
 See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global#uri-lookup
@@ -3050,9 +3050,9 @@ It is required to also specify how we can parse the file. You can do this with o
 
 Also, if you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
 
-Finally, you cna also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
 
-The `uri` method has the following arguments:
+The `uri()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**                      | **Description**                                              |
 |----------|-----------------------|--------------|----------------------------------|--------------------------------------------------------------|
@@ -3075,7 +3075,7 @@ $client->lookup()
 
 #### `uriPrefix()`
 
-The `uriPrefix` method allows you to define that lookup data should be read from one or multiple files.
+The `uriPrefix()` method allows you to define that lookup data should be read from one or multiple files.
 The file can be an "on disk file", HDFS, S3 or GCS path.
 
 See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global#uri-lookup
@@ -3085,9 +3085,9 @@ It is required to also specify how we can parse the file(s). You can do this wit
 
 Also, if you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
 
-Finally, you cna also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
 
-The `uriPrefix` method has the following arguments:
+The `uriPrefix()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**          | **Description**                                                                       |
 |----------|-----------------------|--------------|----------------------|---------------------------------------------------------------------------------------|
@@ -3109,27 +3109,309 @@ $client->lookup()
 
 #### `kafka()`
 
+The `kafka()` method allows you to fetch the data for a lookup from a kafka topic.
+
+See for more information about how this works: https://druid.apache.org/docs/latest/querying/kafka-extraction-namespace
+
+It is also possible to specify that each key/value pair in the lookup is unique. When this is the case, you can use the
+[injective](#injective) method to specify this.
+
+The `kafka()` method has the following arguments:
+
+| **Type**     | **Optional/Required** | **Argument**       | **Example**                               | **Description**                                                        |
+|--------------|-----------------------|--------------------|-------------------------------------------|------------------------------------------------------------------------|
+| string       | Required              | `$kafkaTopic`      | "customers"                               | The Kafka topic to read the data from                                  |
+| string/array | Required              | `$servers`         | "kafka1.service:9092,kafka2.service:9092" | A string or array with the server(s)                                   |
+| array        | Optional              | `$kafkaProperties` | `["enable.auto.commit" => true]`          | Extra consumer properties.                                             |
+| int          | Optional              | `$connectTimeout`  | 30                                        | How long to wait for an initial connection. Default is 0 (do not wait) |
+
+Example:
+
+```php
+
+$client->lookup()
+    // configure that our data comes from kafka
+    ->kafka(
+        "customers",
+        "kafka1.service:9092,kafka2.service:9092"
+    )
+    // define that this data is one-to-one (unique)
+    ->injective()    
+    // store the lookup
+    ->store("customer_id_to_name");
+```
+
 #### `jdbc()`
+
+The `jdbc()` method allows you to fetch the data for a lookup from a database.
+
+See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global/#jdbc-lookup
+
+If you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
+
+Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+
+The `kafka()` method has the following arguments:
+
+| **Type**    | **Optional/Required** | **Argument**          | **Example**                         | **Description**                                                                                                                                                                                                                                                                     |
+|-------------|-----------------------|-----------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string      | Required              | `$connectUri`         | "jdbc:mysql://localhost:3306/druid" | The URI where to connect to.                                                                                                                                                                                                                                                        |
+| string/null | Required              | `$username`           | "johnny"                            | The username for the connection, or null when not used.                                                                                                                                                                                                                             |
+| string/null | Required              | `$password`           | "fooBarBaz123;"                     | The password for the connection, or null when not used.                                                                                                                                                                                                                             |
+| string      | Required              | `$table`              | "customers"                         | A string or array with the server(s)                                                                                                                                                                                                                                                |
+| string      | Required              | `$keyColumn`          | "id"                                | The column from the table which is used as key for the lookup.                                                                                                                                                                                                                      |
+| string      | Required              | `$valueColumn`        | "company_name                       | The column from the table which is used as value from the lookup.                                                                                                                                                                                                                   |
+| string      | Optional              | `$filter`             | status = 'active' and sector='it'   | Specify a filter (like a where statement) which should be used in the query to fetch the data from the database.                                                                                                                                                                    |
+| string      | Optional              | `$tsColumn`           | "updated_at"                        | Specify a column which contains a datetime. Druid will use this to only fetch rows from the database which have been changed since the last poll request. This reduces database load and is highly recommended!                                                                     |
+| int         | Optional              | `$jitterSeconds`      | 300                                 | How much jitter to add (in seconds) up to maximum as a delay (actual value will be used as random from 0 to jitterSeconds), used to istribute db load more evenly.                                                                                                                  |
+| int         | Optional              | `$loadTimeoutSeconds` | 60                                  | How much time (in seconds) it can take to query and populate lookup values. It will be helpful in lookup updates. On lookup update, it will wait maximum of loadTimeoutSeconds for new lookup to come up and  continue serving from old lookup until new lookup successfully loads. |
+
+Example:
+
+```php
+// Store a lookup, which is populated by fetching data from a database
+$client->lookup()->jdbc(
+        connectUri: 'jdbc:mysql://localhost:3306/my_database',
+        username: 'username',
+        password: 'p4ssw0rd!',
+        table: 'users',
+        keyColumn: 'id',
+        valueColumn: 'name',
+        filter: "state='active'",
+        tsColumn: 'updated_at',
+    )
+    ->pollPeriod('PT30M') // renew our data every 30 minutes
+    ->maxHeapPercentage(10) // 10% of JVM heap size
+    ->store(
+        lookupName: 'usernames',
+        tier: 'company'
+    );
+```
 
 #### `map()`
 
 #### `maxHeapPercentage()`
 
+With this method you can set the maximum percentage The maximum percentage of heap size that the lookup should consume.
+If the lookup grows beyond this size, warning messages will be logged in the respective service logs.
+
+This method only applies for [jdbc](#jdbc), [uri](#uri) and [uriPrefix](#uriprefix) lookups.
+
+The `maxHeapPercentage()` has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**         | **Example** | **Description**                                                     |
+|----------|-----------------------|----------------------|-------------|---------------------------------------------------------------------|
+| int      | Required              | `$maxHeapPercentage` | 10          | The maximum percentage of heap size that the lookup should consume. |
+
+Example:
+
+```php
+// Store a lookup, which is populated by fetching data from a database
+$client->lookup()
+    ->jdbc( ... )    
+    ->maxHeapPercentage(10) // 10% of JVM heap size
+    ->store( ... );
+```
+
 #### `pollPeriod()`
+
+With this method you can specify at which interval the data should be refreshed.
+
+This method only applies for [jdbc](#jdbc), [uri](#uri) and [uriPrefix](#uriprefix) lookups.
+
+The `pollPeriod()` has the following arguments:
+
+| **Type**   | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                    |
+|------------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------|
+| int/string | Required              | `$period`    | 600000      | Period between polling for updates. This can either be in milliseconds or in  ISO 8601 format periods like "PT15M" |
+
+Example:
+
+```php
+// Store a lookup, which is populated by fetching data from a database
+$client->lookup()
+    ->jdbc( ... )    
+    ->pollPeriod('PT30M') // renew our data every 30 minutes
+    ->store( ... );
+```
 
 #### `injective()`
 
+If the underlying lookup data is injective (keys and values are unique) then optimizations can occur internally by
+setting this to true.
+
+This applies for all lookup types.
+
+The `injective()` has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                            |
+|----------|-----------------------|--------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| boolean  | Optional              | `$injective` | false       | Set injective to true or false. By default druid handles the data as NOT injective (false). When this methid is called, we will set it by default to true. |
+
+Example:
+
+```php
+// Store a lookup, which is populated by fetching data from a database
+$client->lookup()
+    ->jdbc( ... )    
+    ->pollPeriod('PT30M') // renew our data every 30 minutes
+    ->store( ... );
+```
+
 #### `firstCacheTimeout()`
+
+How long to wait (in ms) for the first run of the cache to populate. 0 indicates to not wait
+
+This applies for all lookup types.
+
+The `injective()` has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**           | **Example** | **Description**                                                                              |
+|----------|-----------------------|------------------------|-------------|----------------------------------------------------------------------------------------------|
+| int      | Required              | `$firstCacheTimeoutMs` | 5000        | How long to wait (in ms) for the first run of the cache to populate. 0 indicates to not wait | 
+
+Example:
+
+```php
+// Store a lookup, which is populated by fetching data from a database
+$client->lookup()
+    ->jdbc( ... )    
+    ->firstCacheTimeout(5000) // ms to wait before first run.
+    ->store( ... );
+```
 
 ## LookupBuilder: Lookup Parse Specifications
 
+When a lookup is filled with data from a file, we need to know how to parse the file.
+This can be done with the following parse specification types.
+
+These method only apply on the [uri](#uri) and [uriPrefix](#uriprefix) lookup types.
+
 #### `tsv()`
+
+With this method you can indicate that the file which is going to be processed is a TSV file.
+TSV are files where the content is seperated most commonly by tabs.
+
+The `tsv()` method has the following arguments:
+
+| **Type**   | **Optional/Required** | **Argument**      | **Example**                             | **Description**                                                                                                                                                              |
+|------------|-----------------------|-------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array/null | Required              | `$columns`        | `['id', 'type', 'age', 'company_name']` | List of columns in the tsv file. Set to `null` if the file already has a header row which can be used as column names. In this case you should set `$hasHeaderRow` to `true` | 
+| string     | Optional              | `$keyColumn`      | "id"                                    | The name of the column containing the key. When not specified the first column is used.                                                                                      | 
+| string     | Optional              | `$valueColumn`    | "company_name"                          | The name of the column containing the value. When not specified the seconds column is used.                                                                                  | 
+| string     | Optional              | `$delimiter`      | "\t"                                    | The delimiter in the file. By default this is a tab (`\t`)                                                                                                                   | 
+| string     | Optional              | `$listDelimiter`  | "\n"                                    | The list delimiter in the file. By default this is a "Start of Header" (`\x01`)                                                                                              | 
+| boolean    | Optional              | `$hasHeaderRow`   | true                                    | Set to `true` to indicate that column information can be extracted from the input files header row                                                                           | 
+| int        | Optional              | `$skipHeaderRows` | 2                                       | Number of header rows to be skipped.                                                                                                                                         | 
+
+If both skipHeaderRows and hasHeaderRow options are set, skipHeaderRows is first applied. For example, if you set
+skipHeaderRows to 2 and hasHeaderRow to true, Druid will skip the first two lines and then extract column information
+from the third line.
+
+Example:
+
+```php
+
+// Create our lookup based on TSV files
+$client->lookup()
+    ->uri('/path/to/my/file.tsv')
+    ->tsv(
+        ['id', 'type', 'age', 'company_name',
+        'id',
+        'company_name',
+        "\t",
+        "\n"
+    )
+    ->pollPeriod('PT5M') // Refresh every 5 minutes
+    ->store('company_names');
+```
 
 #### `csv()`
 
+With this method you can indicate that the file which is going to be processed is a CSV file.
+CSV are files where the content is seperated most comma's.
+
+The `tsv()` method has the following arguments:
+
+| **Type**   | **Optional/Required** | **Argument**      | **Example**                             | **Description**                                                                                                                                                              |
+|------------|-----------------------|-------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| array/null | Required              | `$columns`        | `['id', 'type', 'age', 'company_name']` | List of columns in the csv file. Set to `null` if the file already has a header row which can be used as column names. In this case you should set `$hasHeaderRow` to `true` | 
+| string     | Optional              | `$keyColumn`      | "id"                                    | The name of the column containing the key. When not specified the first column is used.                                                                                      | 
+| string     | Optional              | `$valueColumn`    | "company_name"                          | The name of the column containing the value. When not specified the seconds column is used.                                                                                  |  
+| boolean    | Optional              | `$hasHeaderRow`   | true                                    | Set to `true` to indicate that column information can be extracted from the input files header row                                                                           | 
+| int        | Optional              | `$skipHeaderRows` | 2                                       | Number of header rows to be skipped.                                                                                                                                         | 
+
+If both skipHeaderRows and hasHeaderRow options are set, skipHeaderRows is first applied. For example, if you set
+skipHeaderRows to 2 and hasHeaderRow to true, Druid will skip the first two lines and then extract column information
+from the third line.
+
+Example:
+
+```php
+
+// Create our lookup based on CSV files
+$client->lookup()
+    ->uri('s3://my_bucket/path/to/my/file.csv')
+    ->csv(
+        ['id', 'type', 'age', 'company_name',
+        'id',
+        'company_name'       
+    )
+    ->pollPeriod('PT5M') // Refresh every 5 minutes
+    ->store('company_names');
+```
+
 #### `json()`
 
+With this method you can indicate that the file which is going to be processed is a JSON file.
+
+This method does not take any arguments.
+
+Example JSON content:
+```json lines
+{ "foo": "bar" }
+{ "baz": "bat" }
+{ "buck": "truck" }
+```
+
+Example:
+```php
+
+// Create our lookup based on CSV files
+$client->lookup()
+    ->uri('s3://my_bucket/path/to/my/companies.json')
+    ->json
+    ->pollPeriod('PT5M') // Refresh every 5 minutes
+    ->store('company_names');
+```
+
 #### `customJson()`
+
+With this method you can indicate that the file which is going to be processed is a JSON file.
+
+The `customJson()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument**      | **Example**   | **Description**             |
+|----------|-----------------------|-------------------|---------------|-----------------------------|
+| string   | Required              | `$keyFieldName`   | "id"          | The field name of the key   | 
+| string   | Required              | `$valueFieldName` | "company_name | The field name of the value | 
+
+Example JSON content:
+```json lines
+{"key": "foo", "value": "bar", "somethingElse" : "something"}
+{"key": "baz", "value": "bat", "somethingElse" : "something"}
+{"key": "buck", "somethingElse": "something", "value": "truck"}
+```
+
+Example:
+```php
+
+// Create our lookup based on CSV files
+$client->lookup()
+    ->uri('/mount/disk/path/users.json')
+    ->customJson('id', 'username')    
+    ->store('lookup_usernames');
+```
 
 ## QueryBuilder: Execute The Query
 
