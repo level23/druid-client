@@ -23,7 +23,7 @@ class Interval implements IntervalInterface
      *
      * @throws \Exception
      */
-    public function __construct(DateTimeInterface|int|string $start, DateTimeInterface|int|string $stop = null)
+    public function __construct(DateTimeInterface|int|string $start, DateTimeInterface|int|string|null $stop = null)
     {
         // Check if we received a "raw" interval string, like 2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z
         if (is_string($start) && $stop === null) {

@@ -20,7 +20,7 @@ class QueryResponseException extends Exception
      * @param string                                     $message
      * @param \Throwable|null                            $previous
      */
-    public function __construct(array $query, string $message = "", Throwable $previous = null)
+    public function __construct(array $query, string $message = "", ?Throwable $previous = null)
     {
         $this->query = $query;
         parent::__construct($message, 500, $previous);

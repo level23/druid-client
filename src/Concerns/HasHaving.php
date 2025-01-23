@@ -36,8 +36,8 @@ trait HasHaving
      */
     public function having(
         Closure|string|HavingFilterInterface|FilterInterface $havingOrMetricOrClosure,
-        float|string $operator = null,
-        float|string|bool $value = null,
+        float|string|null $operator = null,
+        float|string|bool|null $value = null,
         string $boolean = 'and'
     ): self {
         $having = null;
@@ -110,8 +110,8 @@ trait HasHaving
      */
     public function orHaving(
         Closure|HavingFilterInterface|string $havingOrMetricOrClosure,
-        float|string $operator = null,
-        float|string $value = null
+        float|string|null $operator = null,
+        float|string|null $value = null
     ): self {
         return $this->having($havingOrMetricOrClosure, $operator, $value, 'or');
     }

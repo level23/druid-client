@@ -357,9 +357,7 @@ class HasHavingTest extends TestCase
         $this->assertInstanceOf(AndHavingFilter::class, $this->builder->getHaving());
 
         $having = $this->builder->getHaving();
-        if ($having instanceof AndHavingFilter) {
-            $this->assertCount(3, $having->getHavingFilters());
-        }
+        $this->assertCount(3, $having->getHavingFilters());
     }
 
     public function testWHavingClosure(): void

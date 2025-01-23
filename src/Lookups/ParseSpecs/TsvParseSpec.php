@@ -54,7 +54,7 @@ class TsvParseSpec implements ParseSpecInterface
         if ($this->listDelimiter !== null) {
             $response['listDelimiter'] = $this->listDelimiter;
         }
-        if ($this->skipHeaderRows !== null) {
+        if ($this->skipHeaderRows !== 0) {
             $response['skipHeaderRows'] = $this->skipHeaderRows;
         }
 

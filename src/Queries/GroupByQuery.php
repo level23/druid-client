@@ -61,7 +61,7 @@ class GroupByQuery implements QueryInterface
         DataSourceInterface $dataSource,
         DimensionCollection $dimensions,
         IntervalCollection $intervals,
-        array|AggregationCollection $aggregations = null,
+        array|AggregationCollection|null $aggregations = null,
         string|Granularity $granularity = 'all'
     ) {
         $this->dataSource  = $dataSource;

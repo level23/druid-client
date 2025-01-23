@@ -47,7 +47,7 @@ class CsvParseSpec implements ParseSpecInterface
         if ($this->valueColumn !== null) {
             $response['valueColumn'] = $this->valueColumn;
         }
-        if ($this->skipHeaderRows !== null) {
+        if ($this->skipHeaderRows !== 0) {
             $response['skipHeaderRows'] = $this->skipHeaderRows;
         }
 

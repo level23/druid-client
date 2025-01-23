@@ -23,7 +23,7 @@ class JsonInputFormat implements InputFormatInterface
      *
      * @see https://github.com/FasterXML/jackson-core/wiki/JsonParser-Features
      */
-    public function __construct(FlattenSpec $flattenSpec = null, array $features = null)
+    public function __construct(?FlattenSpec $flattenSpec = null, ?array $features = null)
     {
         $this->flattenSpec = $flattenSpec;
         $this->features    = $features;

@@ -23,10 +23,10 @@ class TsvInputFormat extends CsvInputFormat
      *                                                  rows.
      */
     public function __construct(
-        array $columns = null,
-        string $delimiter = null,
-        string $listDelimiter = null,
-        bool $findColumnsFromHeader = null,
+        ?array $columns = null,
+        ?string $delimiter = null,
+        ?string $listDelimiter = null,
+        ?bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ) {
         $this->delimiter = $delimiter;

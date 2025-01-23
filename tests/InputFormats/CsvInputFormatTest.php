@@ -26,9 +26,9 @@ class CsvInputFormatTest extends TestCase
      * @return void
      */
     public function testInputFormat(
-        string $listDelimiter = null,
-        array $columns = null,
-        bool $findColumnsFromHeader = null,
+        ?string $listDelimiter = null,
+        ?array $columns = null,
+        ?bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ): void {
         $input = new CsvInputFormat($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);

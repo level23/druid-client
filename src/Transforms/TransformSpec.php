@@ -18,7 +18,7 @@ class TransformSpec
      * @param \Level23\Druid\Collections\TransformCollection $transforms
      * @param FilterInterface|null                           $filter
      */
-    public function __construct(TransformCollection $transforms, FilterInterface $filter = null)
+    public function __construct(TransformCollection $transforms, ?FilterInterface $filter = null)
     {
         $this->transforms = $transforms;
         $this->filter     = $filter;

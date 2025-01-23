@@ -41,7 +41,7 @@ class DruidClientTest extends TestCase
      *
      * @return \Mockery\LegacyMockInterface|\Mockery\MockInterface|\Level23\Druid\DruidClient
      */
-    protected function mockDruidClient(GuzzleClient $guzzle = null): LegacyMockInterface|MockInterface|DruidClient
+    protected function mockDruidClient(?GuzzleClient $guzzle = null): LegacyMockInterface|MockInterface|DruidClient
     {
         $guzzle = $guzzle ?: new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 

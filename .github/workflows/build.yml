@@ -14,8 +14,8 @@ jobs:
     strategy:
       matrix:
         operating-system: [ 'ubuntu-latest' ]
-        php-versions: [ '8.2', '8.3' ]
-        phpunit-versions: [ '10' ]
+        php-versions: [ '8.2', '8.3', '8.4' ]
+        phpunit-versions: [ '11' ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -23,7 +23,7 @@ jobs:
       - name: Setup PHP with PECL extension
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.4'
           coverage: xdebug
           tools: phpstan,phpunit:${{ matrix.phpunit-versions }}
 

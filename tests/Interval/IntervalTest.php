@@ -42,7 +42,7 @@ class IntervalTest extends TestCase
      *           ["2019-04-15", "2019-04-15"]
      *           ["2019-04-15", null, true]
      */
-    public function testIntervalWithStrings(string $start, string $stop = null, bool $expectException = false): void
+    public function testIntervalWithStrings(string $start, ?string $stop = null, bool $expectException = false): void
     {
         $format = 'Y-m-d\TH:i:s.000\Z';
 

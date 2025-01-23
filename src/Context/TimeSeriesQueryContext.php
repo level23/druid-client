@@ -12,7 +12,7 @@ class TimeSeriesQueryContext extends QueryContext implements ContextInterface
      *
      * @param bool $skipEmptyBuckets
      *
-     * @return $this;
+     * @return $this
      */
     public function setSkipEmptyBuckets(bool $skipEmptyBuckets): self
     {

@@ -61,7 +61,7 @@ class LookupBuilder
     public function store(
         string $lookupName,
         string $tier = '__default',
-        string $versionName = null
+        ?string $versionName = null
     ): void {
         if ($this->lookupClass === null) {
             throw new InvalidArgumentException('No lookup defined. Please define the lookup by using the map, kafka, jdbc, uri or uriPrefix methods!');

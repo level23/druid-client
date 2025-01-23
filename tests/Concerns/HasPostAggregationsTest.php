@@ -59,27 +59,26 @@ class HasPostAggregationsTest extends TestCase
 
         $this->assertInstanceOf(PostAggregationCollection::class, $response);
 
-        if ($response instanceof PostAggregationCollection) {
-            $this->assertEquals([
-                [
-                    'type'      => 'fieldAccess',
-                    'name'      => 'field',
-                    'fieldName' => 'field',
-                ],
-                [
-                    'type'      => 'hyperUniqueCardinality',
-                    'name'      => 'myHyperUniqueCardinality',
-                    'fieldName' => 'myHyperUniqueField',
-                ],
-                [
-                    'type'  => 'constant',
-                    'name'  => 'pi',
-                    'value' => 3.14,
-                ],
+        $this->assertEquals([
+            [
+                'type'      => 'fieldAccess',
+                'name'      => 'field',
+                'fieldName' => 'field',
             ],
-                $response->toArray()
-            );
-        }
+            [
+                'type'      => 'hyperUniqueCardinality',
+                'name'      => 'myHyperUniqueCardinality',
+                'fieldName' => 'myHyperUniqueField',
+            ],
+            [
+                'type'  => 'constant',
+                'name'  => 'pi',
+                'value' => 3.14,
+            ],
+        ],
+            $response->toArray()
+        );
+
     }
 
     public function testBuildFieldsWithIncorrectType(): void

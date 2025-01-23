@@ -473,11 +473,6 @@ class DruidClient
         return new IndexTaskBuilder($this, $dataSource, $inputSource);
     }
 
-    public function lookup(): LookupBuilder
-    {
-        return new LookupBuilder($this);
-    }
-
     /**
      * Return a LookupBuilder instance. With this class you can do your lookup management, such as store, list and
      * delete lookups.

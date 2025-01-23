@@ -85,8 +85,8 @@ class CompactTaskBuilderTest extends TestCase
         ?string $interval,
         ?string $segmentGranularity,
         ?TuningConfig $tuningConfig,
-        int $targetCompactionSizeBytes = null,
-        string $taskId = null
+        ?int $targetCompactionSizeBytes = null,
+        ?string $taskId = null
     ): void {
         $dataSource = 'myThings';
         $client     = new DruidClient([]);

@@ -3,7 +3,7 @@ includes:
 
 parameters:
     level: 8
-    checkMissingIterableValueType: true
+    treatPhpDocTypesAsCertain: false
     ignoreErrors:
       - message: '#Cannot call method getName\(\) on ReflectionType\|null.#'
       - message: '#Call to an undefined method (.*)?Mockery\\(.*)::(.*)#'

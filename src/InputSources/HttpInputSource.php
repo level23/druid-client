@@ -24,7 +24,7 @@ class HttpInputSource implements InputSourceInterface
      * @param string|null          $username
      * @param string|string[]|null $password
      */
-    public function __construct(array $uris, ?string $username = null, array|string $password = null)
+    public function __construct(array $uris, ?string $username = null, array|string|null $password = null)
     {
         $this->uris     = $uris;
         $this->username = $username;

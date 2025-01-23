@@ -11,7 +11,7 @@ class ParquetInputFormat extends OrcInputFormat
      * @param bool|null        $binaryAsString Specifies if the bytes parquet column which is not logically marked as a
      *                                         string or enum type should be treated as a UTF-8 encoded string.
      */
-    public function __construct(FlattenSpec $flattenSpec = null, bool $binaryAsString = null)
+    public function __construct(?FlattenSpec $flattenSpec = null, ?bool $binaryAsString = null)
     {
         parent::__construct($flattenSpec, $binaryAsString);
     }

@@ -44,7 +44,7 @@ class BoundFilterTest extends TestCase
      * @param string      $value
      * @param string|null $ordering
      */
-    public function testFilter(string $dimension, string $operator, string $value, string $ordering = null): void
+    public function testFilter(string $dimension, string $operator, string $value, ?string $ordering = null): void
     {
         $filter = new BoundFilter($dimension, $operator, $value, $ordering);
 

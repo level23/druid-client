@@ -36,7 +36,7 @@ class FlattenSpec
      *
      * @return $this
      */
-    public function field(string|FlattenFieldType $flattenFieldType, string $name, string $expr = null): self
+    public function field(string|FlattenFieldType $flattenFieldType, string $name, ?string $expr = null): self
     {
         $type = is_string($flattenFieldType) ? FlattenFieldType::from(strtolower($flattenFieldType)) : $flattenFieldType;
 

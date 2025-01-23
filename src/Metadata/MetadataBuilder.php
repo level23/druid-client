@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Metadata;
 
+use Closure;
 use DateTime;
 use Exception;
 use DateTimeInterface;
@@ -86,8 +87,8 @@ class MetadataBuilder
     public function timeBoundary(
         string|DataSourceInterface $dataSource,
         null|string|TimeBound $bound = TimeBound::BOTH,
-        \Closure $filterBuilder = null,
-        ContextInterface $context = null
+        ?Closure $filterBuilder = null,
+        ?ContextInterface $context = null
     ): DateTime|array {
 
         $query = [
@@ -301,7 +302,7 @@ class MetadataBuilder
     protected function getColumnsForInterval(
         string $dataSource,
         DateTimeInterface|int|string $start,
-        DateTimeInterface|int|string $stop = null
+        DateTimeInterface|int|string|null $stop = null
     ): array {
         $response = $this->client->query($dataSource)
             ->interval($start, $stop)
@@ -343,7 +344,7 @@ class MetadataBuilder
     public function rowCount(
         string $dataSource,
         DateTimeInterface|int|string $start,
-        DateTimeInterface|int|string $stop = null
+        DateTimeInterface|int|string|null $stop = null
     ): int {
         $response = $this->client->query($dataSource)
             ->interval($start, $stop)

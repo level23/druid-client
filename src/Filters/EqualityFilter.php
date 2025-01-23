@@ -27,7 +27,7 @@ class EqualityFilter implements FilterInterface
     public function __construct(
         string $column,
         string|int|float $value,
-        DataType $matchValueType = null
+        ?DataType $matchValueType = null
     ) {
         if (is_null($matchValueType)) {
 

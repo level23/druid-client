@@ -101,7 +101,6 @@ class HasDimensionsTest extends TestCase
 
         $collection = $this->builder->getDimensions();
 
-        $this->assertIsArray($collection);
         $this->assertCount(1, $collection);
 
         /** @var \Level23\Druid\Dimensions\Dimension $dimension */
