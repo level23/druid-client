@@ -29,9 +29,9 @@ class CsvInputFormat implements InputFormatInterface
      * @param int           $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
      */
     public function __construct(
-        array $columns = null,
-        string $listDelimiter = null,
-        bool $findColumnsFromHeader = null,
+        ?array $columns = null,
+        ?string $listDelimiter = null,
+        ?bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ) {
         $this->listDelimiter         = $listDelimiter;

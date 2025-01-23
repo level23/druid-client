@@ -43,7 +43,7 @@ class BetweenFilter implements FilterInterface
         string $column,
         int|float|string $minValue,
         int|float|string $maxValue,
-        DataType $valueType = null
+        ?DataType $valueType = null
     ) {
         if (is_null($valueType)) {
 

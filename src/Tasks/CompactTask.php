@@ -52,7 +52,7 @@ class CompactTask implements TaskInterface
     public function __construct(
         string $dataSource,
         IntervalInterface $interval,
-        string|Granularity $segmentGranularity = null,
+        string|Granularity|null $segmentGranularity = null,
         ?TuningConfig $tuningConfig = null,
         ?TaskContext $context = null,
         ?int $targetCompactionSizeBytes = null,

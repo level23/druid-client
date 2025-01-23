@@ -12,7 +12,7 @@ class TopNQueryContext extends QueryContext implements ContextInterface
      *
      * @param int $minTopNThreshold
      *
-     * @return $this;
+     * @return $this
      */
     public function setMinTopNThreshold(int $minTopNThreshold): self
     {

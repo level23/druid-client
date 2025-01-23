@@ -45,7 +45,7 @@ class IndexTaskTest extends TestCase
         bool $withTuning,
         bool $withContext,
         bool $withSpatialDimensions,
-        string $taskId = null
+        ?string $taskId = null
     ): void {
         $dataSource = 'people';
         $interval   = new Interval('12-02-2019', '13-02-2019');

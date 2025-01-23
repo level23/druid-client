@@ -51,7 +51,7 @@ trait HasInterval
      * @return $this
      * @throws \Exception
      */
-    public function interval(DateTimeInterface|int|string $start, DateTimeInterface|int|string $stop = null): self
+    public function interval(DateTimeInterface|int|string $start, DateTimeInterface|int|string|null $stop = null): self
     {
         $this->interval = new Interval($start, $stop);
 

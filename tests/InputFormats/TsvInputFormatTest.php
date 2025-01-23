@@ -27,10 +27,10 @@ class TsvInputFormatTest extends TestCase
      * @return void
      */
     public function testInputFormat(
-        string $delimiter = null,
-        string $listDelimiter = null,
-        array $columns = null,
-        bool $findColumnsFromHeader = null,
+        ?string $delimiter = null,
+        ?string $listDelimiter = null,
+        ?array $columns = null,
+        ?bool $findColumnsFromHeader = null,
         int $skipHeaderRows = 0
     ): void {
         $input = new TsvInputFormat($columns, $delimiter, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);

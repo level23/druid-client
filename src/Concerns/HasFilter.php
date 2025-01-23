@@ -62,7 +62,7 @@ trait HasFilter
     public function where(
         Closure|string|FilterInterface $filterOrDimensionOrClosure,
         int|string|float|bool|null $operator = null,
-        array|int|string|float|bool $value = null,
+        array|int|string|float|bool|null $value = null,
         string $boolean = 'and'
     ): self {
 
@@ -316,8 +316,8 @@ trait HasFilter
      */
     public function orWhere(
         string|FilterInterface|Closure $filterOrDimension,
-        string|int|float|bool $operator = null,
-        array|int|float|string|bool $value = null
+        string|int|float|bool|null $operator = null,
+        array|int|float|string|bool|null $value = null
     ): self {
         return $this->where($filterOrDimension, $operator, $value, 'or');
     }
@@ -805,7 +805,7 @@ trait HasFilter
     /**
      * Normalize the given intervals into Interval objects.
      *
-     * @param array<string|IntervalInterface|array<string|\DateTimeInterface|int>> $intervals
+     * @param array<int,string|IntervalInterface|array<string|\DateTimeInterface|int>|mixed> $intervals
      *
      * @return array<IntervalInterface>
      * @throws \Exception
@@ -825,7 +825,6 @@ trait HasFilter
 
         return array_map(function ($interval) {
 
-            /** @var string|IntervalInterface|array<string|\DateTimeInterface|int> $interval */
             if ($interval instanceof IntervalInterface) {
                 return $interval;
             }

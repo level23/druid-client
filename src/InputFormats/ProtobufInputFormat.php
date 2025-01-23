@@ -31,7 +31,7 @@ class ProtobufInputFormat implements InputFormatInterface
      *
      * @see https://druid.apache.org/docs/latest/ingestion/data-formats.html#protobuf
      */
-    public function __construct(array $protoBytesDecoder, FlattenSpec $flattenSpec = null)
+    public function __construct(array $protoBytesDecoder, ?FlattenSpec $flattenSpec = null)
     {
         $this->protoBytesDecoder = $protoBytesDecoder;
         $this->flattenSpec       = $flattenSpec;

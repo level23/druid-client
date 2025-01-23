@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Facade;
  *
  * @method static \Level23\Druid\Queries\QueryBuilder query(string $dataSource = '', string $granularity = \Level23\Druid\Types\Granularity::ALL)
  * @method static void cancelQuery(string $identifier)
- * @method static array executeQuery(\Level23\Druid\Queries\QueryInterface $druidQuery)
+ * @method static array<string|int,array<mixed>|string|int> executeQuery(\Level23\Druid\Queries\QueryInterface $druidQuery)
  * @method static string executeTask(\Level23\Druid\Tasks\TaskInterface $task)
- * @method static array executeRawRequest(string $method, string $url, array $data = [])
+ * @method static array<string|int,array<mixed>|string|int> executeRawRequest(string $method, string $url, array<string,string|int|array<mixed>> $data = [])
  * @method static \Level23\Druid\DruidClient setLogger(\Psr\Log\LoggerInterface $logger)
  * @method static \Level23\Druid\DruidClient setGuzzleClient(\GuzzleHttp\Client $client)
  * @method static mixed config(string $key, $default = null)

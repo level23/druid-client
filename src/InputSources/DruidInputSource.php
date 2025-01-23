@@ -44,7 +44,7 @@ class DruidInputSource implements InputSourceInterface
      * @param \Level23\Druid\Interval\IntervalInterface|null $interval
      * @param \Level23\Druid\Filters\FilterInterface|null    $filter
      */
-    public function __construct(string $dataSource, IntervalInterface $interval = null, FilterInterface $filter = null)
+    public function __construct(string $dataSource, ?IntervalInterface $interval = null, ?FilterInterface $filter = null)
     {
         $this->dataSource = $dataSource;
         $this->interval   = $interval;

@@ -32,11 +32,11 @@ class CompactTaskTest extends TestCase
      */
     public function testCompactTask(
         string $segmentGranularity,
-        array $tuningConfig = null,
-        array $context = null,
-        int $targetCompactionSizeBytes = null,
+        ?array $tuningConfig = null,
+        ?array $context = null,
+        ?int $targetCompactionSizeBytes = null,
         bool $expectException = false,
-        string $taskId = null
+        ?string $taskId = null
     ): void {
         if ($expectException) {
             $this->expectException(InvalidArgumentException::class);

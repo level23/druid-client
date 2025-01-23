@@ -24,7 +24,7 @@ class AnyAggregator extends MethodAggregator
         string $metricName,
         string $outputName = '',
         string|DataType $type = DataType::LONG,
-        int $maxStringBytes = null
+        ?int $maxStringBytes = null
     ) {
         if (is_string($type)) {
             $type = DataType::from($type);

@@ -39,7 +39,7 @@ trait HasLimit
      *
      * @return $this
      */
-    public function limit(int $limit, int $offset = null): self
+    public function limit(int $limit, ?int $offset = null): self
     {
         if ($this->limit instanceof LimitInterface) {
             $this->limit->setLimit($limit);

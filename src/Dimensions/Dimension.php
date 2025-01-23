@@ -23,7 +23,7 @@ class Dimension implements DimensionInterface
      */
     public function __construct(
         string $dimension,
-        string $outputName = null,
+        ?string $outputName = null,
         string|DataType $outputType = DataType::STRING
     ) {
         $this->dimension  = $dimension;

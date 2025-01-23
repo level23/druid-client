@@ -39,7 +39,7 @@ class BoundFilter implements FilterInterface
         string $dimension,
         string|BoundOperator $operator,
         string $value,
-        string|SortingOrder $ordering = null
+        string|SortingOrder|null $ordering = null
     ) {
         if(is_string($ordering)) {
             $ordering = SortingOrder::from(strtolower($ordering));

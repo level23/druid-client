@@ -22,13 +22,13 @@
     "guzzlehttp/guzzle": "^7.0"
   },
   "require-dev": {
-    "infection/infection": "^0.27",
-    "laravel/framework": "^9.0",
-    "laravel/lumen-framework": "^9.0",
+    "infection/infection": "^0.29",
+    "laravel/framework": "^11.0",
+    "laravel/lumen-framework": "^11.0",
     "mockery/mockery": "^1.2",
-    "phpstan/phpstan": "^1.0",
-    "phpstan/phpstan-mockery": "^1.1",
-    "phpunit/phpunit": "^10"
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-mockery": "^2.0",
+    "phpunit/phpunit": "^11"
   },
   "suggest": {
     "psr/log": "Required for using the log handler"

@@ -1,5 +1,9 @@
 # Changelog
 
+**v4.1.1**
+
+Improved support for PHP 8.4
+
 **v4.1.0** 
 
 Added support to manage lookups. See [DruidClient::lookup()](README.md#druidclientlookup)

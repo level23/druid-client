@@ -46,7 +46,7 @@ class RangeFilter implements FilterInterface
         string $column,
         string|BoundOperator $operator,
         string|int|float $value,
-        DataType $valueType = null
+        ?DataType $valueType = null
     ) {
         $this->column   = $column;
         $this->operator = is_string($operator) ? BoundOperator::from($operator) : $operator;

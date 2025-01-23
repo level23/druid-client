@@ -18,7 +18,7 @@ class QueryContext extends Context implements ContextInterface
      *
      * @param int $timeout
      *
-     * @return $this;
+     * @return $this
      */
     public function setTimeout(int $timeout): self
     {

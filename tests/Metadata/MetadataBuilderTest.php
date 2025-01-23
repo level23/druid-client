@@ -104,7 +104,7 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @return array<array<array<int|string,array<string,array<string,array<int|string,array<scalar>|int|string>>|int|string>>|Structure|string|null>>.
+     * @return array<array<array<int|string,array<string,array<string,array<int|string,array<int,scalar>|int|string>>|int|string>>|Structure|string|null>>
      */
     public static function structureDataProvider(): array
     {
@@ -563,8 +563,8 @@ class MetadataBuilderTest extends TestCase
     public function testTimeBoundary(
         DataSourceInterface|string $dataSource,
         null|string|TimeBound $bound,
-        Closure $filterBuilder = null,
-        ContextInterface $context = null,
+        ?Closure $filterBuilder = null,
+        ?ContextInterface $context = null,
     ): void {
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
         $metadataBuilder->makePartial();
@@ -697,7 +697,7 @@ class MetadataBuilderTest extends TestCase
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
-    public function testTimeBoundaryResponse(array $response, string $exceptionMessage = null): void
+    public function testTimeBoundaryResponse(array $response, ?string $exceptionMessage = null): void
     {
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
         $metadataBuilder->makePartial();

@@ -15,7 +15,7 @@ class OrcInputFormat implements InputFormatInterface
      * @param bool|null        $binaryAsString Specifies if the binary orc column which is not logically marked as a
      *                                         string should be treated as a UTF-8 encoded string. Default is false.
      */
-    public function __construct(FlattenSpec $flattenSpec = null, bool $binaryAsString = null)
+    public function __construct(?FlattenSpec $flattenSpec = null, ?bool $binaryAsString = null)
     {
         $this->flattenSpec    = $flattenSpec;
         $this->binaryAsString = $binaryAsString;
