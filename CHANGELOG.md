@@ -3,7 +3,7 @@
 **v4.1.2**
 
 Bugfixes:
-- $druidClient->metadata()->structure($this->dataSource); could return sometimes empty.
+- $druidClient->metadata()->structure('dataSource'); could return sometimes empty.
   The last segment can somehow have empty dimensions, which is wrong. Now we traverse back until we have a segment with both dimensions and metrics.
 - Index task bugfix: if the transform only had a filter specified, it was not applied.
 
