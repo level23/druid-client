@@ -749,4 +749,108 @@ class MetadataBuilderTest extends TestCase
 
         $this->assertEquals(['wikipedia', 'clicks'], $response);
     }
+
+    /**
+     * Test that structure method iterates through segments to find one with dimensions
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testStructureIteratesThroughSegmentsToFindDimensions(): void
+    {
+        $dataSource = 'myDataSource';
+        $interval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+
+        // First segment has empty dimensions, second has dimensions
+        $intervalResponse = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
+                'segment1' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => '', // Empty dimensions
+                        'metrics' => 'revenue',
+                    ],
+                ],
+                'segment2' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'country_iso,city', // Has dimensions
+                        'metrics' => 'revenue,clicks',
+                    ],
+                ],
+            ],
+        ];
+
+        $columnsResponse = [
+            [
+                'field' => '__time',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'country_iso',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 4,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'city',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 10,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'revenue',
+                'type' => 'DOUBLE',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'clicks',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 5,
+                'minValue' => '',
+                'maxValue' => 100,
+                'errorMessage' => '',
+            ],
+        ];
+
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('interval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($intervalResponse);
+
+        $metadataBuilder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('getColumnsForInterval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($columnsResponse);
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        // Verify that it found dimensions from the second segment
+        $expectedStructure = new Structure(
+            $dataSource,
+            ['country_iso' => 'STRING', 'city' => 'STRING'],
+            ['revenue' => 'DOUBLE', 'clicks' => 'LONG']
+        );
+
+        $this->assertEquals($expectedStructure, $response);
+    }
 }

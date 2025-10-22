@@ -249,6 +249,86 @@ class IndexTaskBuilderTest extends TestCase
     }
 
     /**
+     * Test that transform method works with filters only (no actual transforms)
+     *
+     * @throws \ReflectionException
+     */
+    public function testTransformBuilderWithFiltersOnly(): void
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'animals';
+        $builder    = new IndexTaskBuilder($client, $dataSource);
+
+        $counter  = 0;
+        $function = function ($builder) use (&$counter) {
+            $this->assertInstanceOf(TransformBuilder::class, $builder);
+            $counter++;
+
+            $builder->whereNot(function($fb) {
+                $fb->where('type', '=', 'human');
+            });
+
+            $builder->whereNot(function($fb) {
+                $fb->where('type', 'LIKE', '%robot%');
+            });
+        };
+
+        $response = $builder->transform($function);
+
+        $this->assertEquals($builder, $response);
+        $this->assertEquals(1, $counter);
+
+        /** @var TransformSpec $transformSpec */
+        $transformSpec = $this->getProperty($builder, 'transformSpec');
+        $this->assertInstanceOf(TransformSpec::class, $transformSpec);
+
+        $transformArray = $transformSpec->toArray();
+
+        // Should not have transforms key when no transforms, but should have filter
+        $this->assertArrayNotHasKey('transforms', $transformArray);
+        $this->assertArrayHasKey('filter', $transformArray);
+        $this->assertIsArray($transformArray['filter']);
+        $this->assertEquals('and', $transformArray['filter']['type']);
+        $this->assertArrayHasKey('fields', $transformArray['filter']);
+        $this->assertIsArray($transformArray['filter']['fields']);
+        $this->assertCount(2, $transformArray['filter']['fields']);
+        
+        // Verify both filters are "not" filters
+        $this->assertIsArray($transformArray['filter']['fields'][0]);
+        $this->assertIsArray($transformArray['filter']['fields'][1]);
+        $this->assertEquals('not', $transformArray['filter']['fields'][0]['type']);
+        $this->assertEquals('not', $transformArray['filter']['fields'][1]['type']);
+    }
+
+    /**
+     * Test that transform method ignores empty closures (no transforms and no filters)
+     *
+     * @throws \ReflectionException
+     */
+    public function testTransformBuilderWithEmptyClosure(): void
+    {
+        $client     = new DruidClient([]);
+        $dataSource = 'animals';
+        $builder    = new IndexTaskBuilder($client, $dataSource);
+
+        $counter  = 0;
+        $function = function ($builder) use (&$counter) {
+            $this->assertInstanceOf(TransformBuilder::class, $builder);
+            $counter++;
+            // Do nothing - no transforms, no filters
+        };
+
+        $response = $builder->transform($function);
+
+        $this->assertEquals($builder, $response);
+        $this->assertEquals(1, $counter);
+
+        // Should not have created a transformSpec since there were no transforms or filters
+        $transformSpec = $this->getProperty($builder, 'transformSpec');
+        $this->assertNull($transformSpec);
+    }
+
+    /**
      * @throws \ReflectionException
      */
     public function testDimension(): void

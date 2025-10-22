@@ -275,7 +275,7 @@ class IndexTaskBuilder extends TaskBuilder
         $builder = new TransformBuilder();
         call_user_func($transformBuilder, $builder);
 
-        if (!$builder->getTransforms()) {
+        if (!$builder->getTransforms() && !$builder->getFilter()) {
             return $this;
         }
 
