@@ -433,6 +433,8 @@ class MetadataBuilder
 
         $keys = array_keys($structureData);
 
+        // Iterate through segments to find one with both dimensions and metrics
+        // Some segments may have empty dimensions or metrics, so we continue searching until we find a complete one
         do {
             $key = array_shift($keys);
             $dimensions = $structureData[$key]['metadata']['dimensions'] ?? '';
