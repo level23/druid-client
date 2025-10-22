@@ -437,7 +437,7 @@ class MetadataBuilder
             $key = array_shift($keys);
             $dimensions = $structureData[$key]['metadata']['dimensions'] ?? '';
             $metrics    = $structureData[$key]['metadata']['metrics'] ?? '';
-        } while( (empty($dimensions) && !empty($metrics)) && sizeof($keys) > 0 );
+        } while( (empty($dimensions) || empty($metrics)) && sizeof($keys) > 0 );
 
         $dimensionFields = explode(',', $dimensions);
         $metricFields    = explode(',', $metrics);

@@ -853,4 +853,470 @@ class MetadataBuilderTest extends TestCase
 
         $this->assertEquals($expectedStructure, $response);
     }
+
+    /**
+     * Test structure method with segment having empty metrics
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testStructureIteratesThroughSegmentsWithEmptyMetrics(): void
+    {
+        $dataSource = 'myDataSource';
+        $interval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+
+        // First segment has empty metrics, second has metrics
+        $intervalResponse = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
+                'segment1' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'country_iso',
+                        'metrics' => '', // Empty metrics
+                    ],
+                ],
+                'segment2' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'country_iso,city',
+                        'metrics' => 'revenue,clicks',
+                    ],
+                ],
+            ],
+        ];
+
+        $columnsResponse = [
+            [
+                'field' => '__time',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'country_iso',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 4,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'city',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 10,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'revenue',
+                'type' => 'DOUBLE',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'clicks',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 5,
+                'minValue' => '',
+                'maxValue' => 100,
+                'errorMessage' => '',
+            ],
+        ];
+
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('interval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($intervalResponse);
+
+        $metadataBuilder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('getColumnsForInterval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($columnsResponse);
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        // Should use the second segment with both dimensions and metrics
+        $expectedStructure = new Structure(
+            $dataSource,
+            ['country_iso' => 'STRING', 'city' => 'STRING'],
+            ['revenue' => 'DOUBLE', 'clicks' => 'LONG']
+        );
+
+        $this->assertEquals($expectedStructure, $response);
+    }
+
+    /**
+     * Test structure method with segments having empty dimensions and metrics
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testStructureIteratesThroughSegmentsWithEmptyDimensionsAndMetrics(): void
+    {
+        $dataSource = 'myDataSource';
+        $interval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+
+        // First two segments have empty dimensions or metrics, third has both
+        $intervalResponse = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
+                'segment1' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => '',
+                        'metrics' => '',
+                    ],
+                ],
+                'segment2' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'city',
+                        'metrics' => '', // Has dimensions but empty metrics
+                    ],
+                ],
+                'segment3' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'country_iso,region',
+                        'metrics' => 'revenue,impressions',
+                    ],
+                ],
+            ],
+        ];
+
+        $columnsResponse = [
+            [
+                'field' => '__time',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'country_iso',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 4,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'region',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 8,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'revenue',
+                'type' => 'DOUBLE',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'impressions',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 100,
+                'minValue' => '',
+                'maxValue' => 10000,
+                'errorMessage' => '',
+            ],
+        ];
+
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('interval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($intervalResponse);
+
+        $metadataBuilder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('getColumnsForInterval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($columnsResponse);
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        // Should use the third segment with both dimensions and metrics
+        $expectedStructure = new Structure(
+            $dataSource,
+            ['country_iso' => 'STRING', 'region' => 'STRING'],
+            ['revenue' => 'DOUBLE', 'impressions' => 'LONG']
+        );
+
+        $this->assertEquals($expectedStructure, $response);
+    }
+
+    /**
+     * Test structure method when all segments have empty dimensions or metrics (fallback to last segment)
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testStructureWithAllSegmentsHavingEmptyData(): void
+    {
+        $dataSource = 'myDataSource';
+        $interval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+
+        // All segments have either empty dimensions or empty metrics
+        $intervalResponse = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
+                'segment1' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => '',
+                        'metrics' => 'revenue',
+                    ],
+                ],
+                'segment2' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'city',
+                        'metrics' => '',
+                    ],
+                ],
+                'segment3' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => '',
+                        'metrics' => '',
+                    ],
+                ],
+            ],
+        ];
+
+        $columnsResponse = [
+            [
+                'field' => '__time',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'city',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 10,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'revenue',
+                'type' => 'DOUBLE',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+        ];
+
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('interval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($intervalResponse);
+
+        $metadataBuilder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('getColumnsForInterval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($columnsResponse);
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        // Should fall back to last segment (segment3) which has empty dimensions and metrics
+        $expectedStructure = new Structure(
+            $dataSource,
+            [], // No dimensions found
+            []  // No metrics found
+        );
+
+        $this->assertEquals($expectedStructure, $response);
+    }
+
+    /**
+     * Test structure method with segment having only dimensions (empty metrics)
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testStructureWithOnlyDimensions(): void
+    {
+        $dataSource = 'myDataSource';
+        $interval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+
+        // Only one segment with dimensions but no metrics
+        $intervalResponse = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
+                'segment1' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => 'country_iso,city',
+                        'metrics' => '',
+                    ],
+                ],
+            ],
+        ];
+
+        $columnsResponse = [
+            [
+                'field' => '__time',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'country_iso',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 4,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'city',
+                'type' => 'STRING',
+                'size' => 0,
+                'cardinality' => 10,
+                'minValue' => '',
+                'maxValue' => '',
+                'errorMessage' => '',
+            ],
+        ];
+
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('interval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($intervalResponse);
+
+        $metadataBuilder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('getColumnsForInterval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($columnsResponse);
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        // Should use the segment with dimensions but empty metrics
+        $expectedStructure = new Structure(
+            $dataSource,
+            ['country_iso' => 'STRING', 'city' => 'STRING'],
+            [] // No metrics
+        );
+
+        $this->assertEquals($expectedStructure, $response);
+    }
+
+    /**
+     * Test structure method with segment having only metrics (empty dimensions)
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testStructureWithOnlyMetrics(): void
+    {
+        $dataSource = 'myDataSource';
+        $interval = '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z';
+
+        // Only one segment with metrics but no dimensions
+        $intervalResponse = [
+            '2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z' => [
+                'segment1' => [
+                    'metadata' => [
+                        'dataSource' => $dataSource,
+                        'dimensions' => '',
+                        'metrics' => 'revenue,clicks',
+                    ],
+                ],
+            ],
+        ];
+
+        $columnsResponse = [
+            [
+                'field' => '__time',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'revenue',
+                'type' => 'DOUBLE',
+                'size' => 0,
+                'cardinality' => 84,
+                'minValue' => '',
+                'maxValue' => 74807,
+                'errorMessage' => '',
+            ],
+            [
+                'field' => 'clicks',
+                'type' => 'LONG',
+                'size' => 0,
+                'cardinality' => 5,
+                'minValue' => '',
+                'maxValue' => 100,
+                'errorMessage' => '',
+            ],
+        ];
+
+        $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
+        $metadataBuilder->makePartial();
+
+        $metadataBuilder->shouldReceive('interval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($intervalResponse);
+
+        $metadataBuilder->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('getColumnsForInterval')
+            ->once()
+            ->with($dataSource, $interval)
+            ->andReturn($columnsResponse);
+
+        $response = $metadataBuilder->structure($dataSource, $interval);
+
+        // Should use the segment with metrics but empty dimensions
+        $expectedStructure = new Structure(
+            $dataSource,
+            [], // No dimensions
+            ['revenue' => 'DOUBLE', 'clicks' => 'LONG']
+        );
+
+        $this->assertEquals($expectedStructure, $response);
+    }
 }
