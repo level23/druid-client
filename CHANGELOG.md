@@ -1,5 +1,12 @@
 # Changelog
 
+**v4.1.2**
+
+Bugfixes:
+- $druidClient->metadata()->structure('dataSource'); could return sometimes empty.
+  The last segment can somehow have empty dimensions, which is wrong. Now we traverse back until we have a segment with both dimensions and metrics.
+- Index task bugfix: if the transform only had a filter specified, it was not applied.
+
 **v4.1.1**
 
 Improved support for PHP 8.4

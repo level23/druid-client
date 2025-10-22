@@ -414,7 +414,6 @@ class MetadataBuilder
         if (in_array(strtolower($interval), ['first', 'last'])) {
             $interval = $this->getIntervalByShorthand($dataSource, $interval);
         }
-
         if (empty($interval)) {
             throw new InvalidArgumentException(
                 'Error, interval "' . $interval . '" is invalid. Maybe there are no intervals for this dataSource?'
@@ -432,11 +431,18 @@ class MetadataBuilder
             );
         }
 
-        /** @var array<string|string[]> $data */
-        $data = reset($structureData);
+        $keys = array_keys($structureData);
 
-        $dimensionFields = explode(',', $data['metadata']['dimensions'] ?? '');
-        $metricFields    = explode(',', $data['metadata']['metrics'] ?? '');
+        // Iterate through segments to find one with both dimensions and metrics
+        // Some segments may have empty dimensions or metrics, so we continue searching until we find a complete one
+        do {
+            $key = array_shift($keys);
+            $dimensions = $structureData[$key]['metadata']['dimensions'] ?? '';
+            $metrics    = $structureData[$key]['metadata']['metrics'] ?? '';
+        } while( (empty($dimensions) || empty($metrics)) && sizeof($keys) > 0 );
+
+        $dimensionFields = explode(',', $dimensions);
+        $metricFields    = explode(',', $metrics);
 
         $dimensions = [];
         $metrics    = [];
