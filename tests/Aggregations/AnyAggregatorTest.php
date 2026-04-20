@@ -7,6 +7,7 @@ use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Aggregations\AnyAggregator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AnyAggregatorTest extends TestCase
 {
@@ -25,11 +26,10 @@ class AnyAggregatorTest extends TestCase
     }
 
     /**
-     * @dataProvider  dataProvider
-     *
      * @param DataType|string $type
      * @param bool            $expectException
      */
+    #[DataProvider('dataProvider')]
     public function testAggregator(DataType|string $type, bool $expectException = false): void
     {
         $strVal = (is_string($type) ? $type : $type->value);

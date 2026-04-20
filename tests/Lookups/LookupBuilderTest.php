@@ -19,6 +19,8 @@ use Level23\Druid\Lookups\ParseSpecs\TsvParseSpec;
 use Level23\Druid\Lookups\ParseSpecs\ParseSpecInterface;
 use Level23\Druid\Lookups\ParseSpecs\CustomJsonParseSpec;
 use Level23\Druid\Lookups\ParseSpecs\SimpleJsonParseSpec;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class LookupBuilderTest extends TestCase
 {
@@ -795,11 +797,13 @@ class LookupBuilderTest extends TestCase
      * @testWith [true]
      *           [false]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param bool $withDefaults
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCsv(bool $withDefaults): void
     {
         $client  = new DruidClient([]);
@@ -838,11 +842,13 @@ class LookupBuilderTest extends TestCase
      * @testWith [true]
      *           [false]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param bool $withDefaults
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testTsv(bool $withDefaults): void
     {
         $client  = new DruidClient([]);
@@ -881,10 +887,8 @@ class LookupBuilderTest extends TestCase
         $this->assertEquals($result, $builder);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCustomJson(): void
     {
         $client  = new DruidClient([]);
@@ -899,10 +903,8 @@ class LookupBuilderTest extends TestCase
         $this->assertEquals($result, $builder);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testJson(): void
     {
         $client  = new DruidClient([]);

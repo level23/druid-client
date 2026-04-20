@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Aggregations\MinAggregator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MinAggregatorTest extends TestCase
 {
@@ -24,11 +25,10 @@ class MinAggregatorTest extends TestCase
     }
 
     /**
-     * @dataProvider  dataProvider
-     *
      * @param string|DataType $type
      * @param bool   $expectException
      */
+    #[DataProvider('dataProvider')]
     public function testAggregator(string|DataType $type, bool $expectException = false): void
     {
         $strType = is_string($type) ? $type : $type->value;

@@ -33,6 +33,9 @@ use Level23\Druid\InputSources\InputSourceInterface;
 use Level23\Druid\Granularities\ArbitraryGranularity;
 use Level23\Druid\Granularities\GranularityInterface;
 use Level23\Druid\Collections\SpatialDimensionCollection;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class IndexTaskBuilderTest extends TestCase
 {
@@ -120,10 +123,8 @@ class IndexTaskBuilderTest extends TestCase
         $this->assertTrue($this->getProperty($builder, 'parallel'));
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSpatialDimension(): void
     {
         $client  = new DruidClient([]);
@@ -144,10 +145,12 @@ class IndexTaskBuilderTest extends TestCase
      * @testWith ["String", "array", true]
      *           ["DOUBLE", "sorted_array", false]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @throws \ReflectionException
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMultiValueDimension(string $type, string $multiValueHandling, bool $createBitmapIndex): void
     {
         $client  = new DruidClient([]);
@@ -368,12 +371,10 @@ class IndexTaskBuilderTest extends TestCase
      *
      * @throws \ReflectionException
      * @throws \Exception
-     *
-     * @dataProvider        buildTaskDataProvider
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[DataProvider('buildTaskDataProvider')]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildTask(
         string $queryGranularity,
         string $segmentGranularity,
@@ -561,10 +562,9 @@ class IndexTaskBuilderTest extends TestCase
      * @param string $granularityType
      *
      * @throws \Exception
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildTaskGranularityObject(string $granularityType): void
     {
         $client     = new DruidClient([]);

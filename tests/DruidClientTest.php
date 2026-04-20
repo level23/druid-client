@@ -33,6 +33,9 @@ use Level23\Druid\Queries\SegmentMetadataQuery;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\InputSources\LocalInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class DruidClientTest extends TestCase
 {
@@ -57,10 +60,8 @@ class DruidClientTest extends TestCase
         $client->query('hits', 'wrong');
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMakeGuzzleClient(): void
     {
         Mockery::mock('overload:' . GuzzleClient::class)
@@ -108,10 +109,8 @@ class DruidClientTest extends TestCase
         $client->executeRawRequest('GET', '/druid/coordinator/v1/servers?simple');
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testQuery(): void
     {
         $client = new DruidClient([]);
@@ -133,10 +132,8 @@ class DruidClientTest extends TestCase
         $this->assertInstanceOf(LookupBuilder::class, $instance);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMetaBuilder(): void
     {
         $client = new DruidClient([]);
@@ -149,10 +146,8 @@ class DruidClientTest extends TestCase
         $client->metadata();
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testIndex(): void
     {
         $client = new DruidClient([]);
@@ -167,10 +162,8 @@ class DruidClientTest extends TestCase
         $client->index('someDataSource', $inputSource);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCompact(): void
     {
         $client = new DruidClient([]);
@@ -185,10 +178,8 @@ class DruidClientTest extends TestCase
         $client->compact($dataSource);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testKill(): void
     {
         $client = new DruidClient([]);
@@ -203,9 +194,11 @@ class DruidClientTest extends TestCase
 
     /**
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testReindex(): void
     {
         $dataSource = 'somethingElse';
@@ -256,10 +249,12 @@ class DruidClientTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testExecuteTask(): void
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
@@ -382,10 +377,12 @@ class DruidClientTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testExecuteDruidQuery(): void
     {
         $client = $this->mockDruidClient();
@@ -581,8 +578,6 @@ class DruidClientTest extends TestCase
     }
 
     /**
-     * @dataProvider executeRawRequestDataProvider
-     *
      * @param string      $method
      * @param callable    $responseFunction
      * @param bool|string $expectException
@@ -590,6 +585,7 @@ class DruidClientTest extends TestCase
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
      */
+    #[DataProvider('executeRawRequestDataProvider')]
     public function testExecuteRawRequest(
         string $method,
         callable $responseFunction,

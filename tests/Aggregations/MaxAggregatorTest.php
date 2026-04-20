@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Aggregations\MaxAggregator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MaxAggregatorTest extends TestCase
 {
@@ -25,11 +26,10 @@ class MaxAggregatorTest extends TestCase
     }
 
     /**
-     * @dataProvider  dataProvider
-     *
      * @param string|\Level23\Druid\Types\DataType $type
      * @param bool                                 $expectException
      */
+    #[DataProvider('dataProvider')]
     public function testAggregator(string|DataType $type, bool $expectException = false): void
     {
         $strVal = is_string($type) ? $type : $type->value;

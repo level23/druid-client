@@ -30,6 +30,8 @@ use Level23\Druid\PostAggregations\ExpressionPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 use Level23\Druid\PostAggregations\SketchSummaryPostAggregator;
 use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasPostAggregationsTest extends TestCase
 {
@@ -109,10 +111,8 @@ class HasPostAggregationsTest extends TestCase
         return Mockery::mock($builder);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDivide(): void
     {
         $fields = ['field1', 'field2'];
@@ -127,10 +127,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMultiply(): void
     {
         $fields = ['field1', 'field2'];
@@ -145,10 +143,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSubtract(): void
     {
         $fields = ['field1', 'field2'];
@@ -163,10 +159,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testAdd(): void
     {
         $fields = ['field1', 'field2'];
@@ -181,10 +175,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testQuotient(): void
     {
         $fields = ['field1', 'field2'];
@@ -199,10 +191,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testQuantile(): void
     {
         $this->getPostAggregationMock(QuantilePostAggregator::class)
@@ -233,10 +223,8 @@ class HasPostAggregationsTest extends TestCase
         }, 0.95);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testQuantiles(): void
     {
         $this->getPostAggregationMock(QuantilesPostAggregator::class)
@@ -272,12 +260,14 @@ class HasPostAggregationsTest extends TestCase
      *           [null, 10]
      *           [[1,2,3], null]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param int[]|null $splitPoints
      * @param int|null   $numBins
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testHistogram(?array $splitPoints, ?int $numBins): void
     {
         $this->getPostAggregationMock(HistogramPostAggregator::class)
@@ -313,10 +303,8 @@ class HasPostAggregationsTest extends TestCase
         }, $splitPoints, $numBins);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testRank(): void
     {
         $this->getPostAggregationMock(RankPostAggregator::class)
@@ -347,10 +335,8 @@ class HasPostAggregationsTest extends TestCase
         }, 12);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCdf(): void
     {
         $this->getPostAggregationMock(CdfPostAggregator::class)
@@ -381,10 +367,8 @@ class HasPostAggregationsTest extends TestCase
         }, [1, 2, 3, 4, 5]);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSketchSummary(): void
     {
         $this->getPostAggregationMock(SketchSummaryPostAggregator::class)
@@ -419,10 +403,9 @@ class HasPostAggregationsTest extends TestCase
      *           [false]
      *
      * @param bool $finalizing
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testFieldAccess(bool $finalizing): void
     {
         $this->getPostAggregationMock(FieldAccessPostAggregator::class)
@@ -435,10 +418,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testFieldAccessDefaults(): void
     {
         $this->getPostAggregationMock(FieldAccessPostAggregator::class)
@@ -451,10 +432,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testConstant(): void
     {
         $this->getPostAggregationMock(ConstantPostAggregator::class)
@@ -467,10 +446,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLongGreatest(): void
     {
         $this->getPostAggregationMock(GreatestPostAggregator::class)
@@ -483,10 +460,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDoubleGreatest(): void
     {
         $this->getPostAggregationMock(GreatestPostAggregator::class)
@@ -499,10 +474,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLongLeast(): void
     {
         $this->getPostAggregationMock(LeastPostAggregator::class)
@@ -515,10 +488,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDoubleLeast(): void
     {
         $this->getPostAggregationMock(LeastPostAggregator::class)
@@ -531,10 +502,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testPostJavascript(): void
     {
         $jsFunction = 'function(a,b) { return a*b; }';
@@ -549,10 +518,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testExpression(): void
     {
         $this->getPostAggregationMock(ExpressionPostAggregator::class)
@@ -575,10 +542,8 @@ class HasPostAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testHyperUniqueCardinality(): void
     {
         $this->getPostAggregationMock(HyperUniqueCardinalityPostAggregator::class)

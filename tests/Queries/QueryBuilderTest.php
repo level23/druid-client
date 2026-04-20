@@ -53,6 +53,9 @@ use Level23\Druid\Collections\VirtualColumnCollection;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class QueryBuilderTest extends TestCase
 {
@@ -105,10 +108,8 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($responseObj, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSelectVirtual(): void
     {
         Mockery::mock('overload:' . VirtualColumn::class)
@@ -365,11 +366,13 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSegmentMetadata(): void
     {
         $builder = new Mockery\Generator\MockConfigurationBuilder();
@@ -459,11 +462,10 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider isTimeSeriesQueryDataProvider
-     *
      * @param Dimension|array<int|string,string> $dimension
      * @param bool                               $expected
      */
+    #[DataProvider('isTimeSeriesQueryDataProvider')]
     public function testIsTimeSeriesQuery(array|Dimension $dimension, bool $expected): void
     {
         $this->builder->select($dimension);
@@ -665,7 +667,6 @@ class QueryBuilderTest extends TestCase
      *           [false, false, false, true, false]
      *           [false, false, false, false, true]
      *           [false, false, false, false, false]
-     *
      */
     public function testGetQuery(
         bool $isTimeSeries,
@@ -819,8 +820,8 @@ class QueryBuilderTest extends TestCase
      *           ["myTime", {"skipEmptyBuckets":true}, false, false, false, false, 5, "desc", false, true]
      *           ["__time", {"skipEmptyBuckets":true}, false, false, false, false, 5, "asc", false, true]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param string             $timeAlias
      * @param array<string,bool> $context
@@ -835,6 +836,8 @@ class QueryBuilderTest extends TestCase
      *
      * @throws \Exception
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildTimeSeriesQuery(
         string $timeAlias,
         array $context,
@@ -1037,8 +1040,8 @@ class QueryBuilderTest extends TestCase
      *           [{"priority": 10}, "alphanumeric", "hour", false, 10, {"0": "channel", "1": "namespace"}, true]
      *           [{}, "alphanumeric", "hour", false, 20, {}, false]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param array<string,int>        $context
      * @param string                   $sortingOrder
@@ -1051,6 +1054,8 @@ class QueryBuilderTest extends TestCase
      * @throws \ReflectionException
      * @throws \Exception
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildSearchQuery(
         array $context,
         string $sortingOrder,
@@ -1138,8 +1143,8 @@ class QueryBuilderTest extends TestCase
      *           [{"priority": 10}, false, 10, false, true, "desc", true, false]
      *           [{"priority": 10}, true, 10, false, true, "desc", false, true]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param array<string,int> $context
      * @param bool              $contextAsObject
@@ -1152,6 +1157,8 @@ class QueryBuilderTest extends TestCase
      *
      * @throws \Exception
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildSelectQuery(
         array $context,
         bool $contextAsObject,
@@ -1285,8 +1292,8 @@ class QueryBuilderTest extends TestCase
      *           [true, false, false, {"maxRowsQueuedForOrdering":5}, false, 0, 0, 200, false, "list", "__time", true, false]
      *           [false, false, true, {}, false, 12, null, 0, true, "compactedList", "__time", false, false]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param bool              $withDimensions
      * @param bool              $withVirtual
@@ -1304,6 +1311,8 @@ class QueryBuilderTest extends TestCase
      *
      * @throws \Exception
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildScanQuery(
         bool $withDimensions,
         bool $withVirtual,
@@ -1444,8 +1453,8 @@ class QueryBuilderTest extends TestCase
      *           [true, true, true, true, true, "asc", {"minTopNThreshold":2}, false]
      *           [false, false, false, false, false, "desc", {}, true]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param bool              $withAggregations
      * @param bool              $withPostAggregations
@@ -1458,6 +1467,8 @@ class QueryBuilderTest extends TestCase
      *
      * @throws \Exception
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildTopNQuery(
         bool $withAggregations,
         bool $withPostAggregations,
@@ -1564,8 +1575,8 @@ class QueryBuilderTest extends TestCase
      *           [true, false, false, true, false, true, false]
      *           [false, false, false, false, false, false, true]
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      *
      * @param bool $withArrayContext
      * @param bool $withVirtual
@@ -1577,6 +1588,8 @@ class QueryBuilderTest extends TestCase
      *
      * @throws \Exception
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildGroupByQuery(
         bool $withArrayContext,
         bool $withVirtual,

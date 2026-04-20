@@ -15,13 +15,13 @@ use Level23\Druid\InputFormats\JsonInputFormat;
 use Level23\Druid\InputFormats\ParquetInputFormat;
 use Level23\Druid\InputFormats\ProtobufInputFormat;
 use Level23\Druid\InputFormats\InputFormatInterface;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasInputFormatTest extends TestCase
 {
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testJsonFormat(): void
     {
         $client  = new DruidClient([]);
@@ -41,10 +41,8 @@ class HasInputFormatTest extends TestCase
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testOrcFormat(): void
     {
         $client  = new DruidClient([]);
@@ -64,10 +62,8 @@ class HasInputFormatTest extends TestCase
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testParquetFormat(): void
     {
         $client  = new DruidClient([]);
@@ -87,10 +83,8 @@ class HasInputFormatTest extends TestCase
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testProtobufFormat(): void
     {
         $client  = new DruidClient([]);
@@ -116,10 +110,8 @@ class HasInputFormatTest extends TestCase
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCsvFormat(): void
     {
         $client  = new DruidClient([]);
@@ -136,10 +128,8 @@ class HasInputFormatTest extends TestCase
         );
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testTsvFormat(): void
     {
         $client  = new DruidClient([]);

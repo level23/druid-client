@@ -33,6 +33,8 @@ use Level23\Druid\Aggregations\HyperUniqueAggregator;
 use Level23\Druid\Aggregations\CardinalityAggregator;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
 use Level23\Druid\Aggregations\DoublesSketchAggregator;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasAggregationsTest extends TestCase
 {
@@ -74,9 +76,6 @@ class HasAggregationsTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      * @testWith [null, null]
      *           [256, null]
      *           [null, 1000000]
@@ -85,6 +84,8 @@ class HasAggregationsTest extends TestCase
      * @param int|null $sizeAndAccuracy
      * @param int|null $maxStreamLength
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDoubleSketch(?int $sizeAndAccuracy, ?int $maxStreamLength): void
     {
         $this->getAggregationMock(DoublesSketchAggregator::class)
@@ -97,10 +98,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDoubleSketchDefaults(): void
     {
         $this->getAggregationMock(DoublesSketchAggregator::class)
@@ -114,9 +113,6 @@ class HasAggregationsTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      * @testWith [true, true]
      *           [false, false]
      *           [true, false]
@@ -125,6 +121,8 @@ class HasAggregationsTest extends TestCase
      * @param bool $round
      * @param bool $isInputHyperUnique
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testHyperUnique(bool $round, bool $isInputHyperUnique): void
     {
         $this->getAggregationMock(HyperUniqueAggregator::class)
@@ -137,10 +135,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testHyperUniqueDefaults(): void
     {
         $this->getAggregationMock(HyperUniqueAggregator::class)
@@ -154,9 +150,6 @@ class HasAggregationsTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      * @testWith [true, true]
      *           [false, false]
      *           [true, false]
@@ -165,6 +158,8 @@ class HasAggregationsTest extends TestCase
      * @param bool $byRow
      * @param bool $round
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCardinality(bool $byRow, bool $round): void
     {
         $this->getAggregationMock(CardinalityAggregator::class)
@@ -200,9 +195,11 @@ class HasAggregationsTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCardinalityWithArray(): void
     {
         $dimensions = [new Dimension('last_name')];
@@ -222,10 +219,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCardinalityDefaults(): void
     {
         $this->getAggregationMock(CardinalityAggregator::class)
@@ -318,10 +313,8 @@ class HasAggregationsTest extends TestCase
         return Mockery::mock($builder);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testJavascript(): void
     {
         $this->getAggregationMock(JavascriptAggregator::class)
@@ -335,10 +328,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSum(): void
     {
         $this->getAggregationMock(SumAggregator::class)
@@ -355,10 +346,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSumDefaults(): void
     {
         $this->getAggregationMock(SumAggregator::class)
@@ -403,10 +392,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testCount(): void
     {
         $this->getAggregationMock(CountAggregator::class)
@@ -420,10 +407,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDistinctCount(): void
     {
         $this->getAggregationMock(DistinctCountAggregator::class)
@@ -440,10 +425,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testDistinctCountDefaults(): void
     {
         $this->getAggregationMock(DistinctCountAggregator::class)
@@ -457,10 +440,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMin(): void
     {
         $this->getAggregationMock(MinAggregator::class)
@@ -477,10 +458,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMinDefaults(): void
     {
         $this->getAggregationMock(MinAggregator::class)
@@ -527,10 +506,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMax(): void
     {
         $this->getAggregationMock(MaxAggregator::class)
@@ -547,10 +524,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMaxDefaults(): void
     {
         $this->getAggregationMock(MaxAggregator::class)
@@ -597,10 +572,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testFirst(): void
     {
         $this->getAggregationMock(FirstAggregator::class)
@@ -617,10 +590,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testFirstDefaults(): void
     {
         $this->getAggregationMock(FirstAggregator::class)
@@ -634,10 +605,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testAny(): void
     {
         $this->getAggregationMock(AnyAggregator::class)
@@ -654,10 +623,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testAnyDefaults(): void
     {
         $this->getAggregationMock(AnyAggregator::class)
@@ -759,10 +726,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLast(): void
     {
         $this->getAggregationMock(LastAggregator::class)
@@ -779,10 +744,8 @@ class HasAggregationsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLastDefaults(): void
     {
         $this->getAggregationMock(LastAggregator::class)
