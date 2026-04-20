@@ -5,6 +5,7 @@ namespace Level23\Druid\Tests\Aggregations;
 
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Aggregations\DistinctCountAggregator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DistinctCountAggregatorTest extends TestCase
 {
@@ -23,9 +24,8 @@ class DistinctCountAggregatorTest extends TestCase
      * @param string   $outputName
      * @param string   $dimension
      * @param int|null $size
-     *
-     * @dataProvider dataProvider
      */
+    #[DataProvider('dataProvider')]
     public function testAggregator(string $dimension, string $outputName, ?int $size = null): void
     {
         if ($size) {

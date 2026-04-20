@@ -7,6 +7,7 @@ use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Filters\BoundFilter;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class BoundFilterTest extends TestCase
 {
@@ -37,13 +38,12 @@ class BoundFilterTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @param string      $dimension
      * @param string      $operator
      * @param string      $value
      * @param string|null $ordering
      */
+    #[DataProvider('dataProvider')]
     public function testFilter(string $dimension, string $operator, string $value, ?string $ordering = null): void
     {
         $filter = new BoundFilter($dimension, $operator, $value, $ordering);

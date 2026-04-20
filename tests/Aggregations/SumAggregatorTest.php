@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Aggregations\SumAggregator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SumAggregatorTest extends TestCase
 {
@@ -27,12 +28,11 @@ class SumAggregatorTest extends TestCase
     }
 
     /**
-     * @dataProvider  dataProvider
-     *
      * @param string|DataType $type
      * @param bool            $expectException
      * @param bool            $exceptValueError
      */
+    #[DataProvider('dataProvider')]
     public function testAggregator(string|DataType $type, bool $expectException = false, bool $exceptValueError = false): void
     {
         $strType = is_string($type) ? strtolower($type) : $type->value;

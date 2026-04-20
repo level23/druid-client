@@ -1,5 +1,12 @@
 # Changelog
 
+**v4.1.3**
+
+- Fixed 6 security vulnerabilities by updating dependencies.
+- Replaced deprecated PHPUnit doc-comment annotations with PHP attributes.
+- Updated GitHub Actions to v4.
+- Fixed invalid JSON in infection.json.dist.
+
 **v4.1.2**
 
 Bugfixes:

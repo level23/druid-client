@@ -7,6 +7,7 @@ use ValueError;
 use InvalidArgumentException;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Dimensions\Dimension;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DimensionTest extends TestCase
 {
@@ -27,14 +28,13 @@ class DimensionTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @param string      $dimension
      * @param string|null $outputName
      * @param string      $type
      * @param bool        $expectException
      * @param bool        $valueError
      */
+    #[DataProvider('dataProvider')]
     public function testDimension(
         string $dimension,
         ?string $outputName,

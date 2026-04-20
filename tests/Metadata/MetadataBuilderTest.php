@@ -24,6 +24,9 @@ use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\DataSources\DataSourceInterface;
 use Level23\Druid\Exceptions\QueryResponseException;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class MetadataBuilderTest extends TestCase
 {
@@ -230,8 +233,9 @@ class MetadataBuilderTest extends TestCase
      * @param \Level23\Druid\Metadata\Structure|null                                                    $expectedResponse
      *
      * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
-     * @dataProvider structureDataProvider
+
      */
+    #[DataProvider('structureDataProvider')]
     public function testStructure(
         string $dataSource,
         string $interval,
@@ -434,9 +438,6 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      * @testWith ["dataSource", "laST"]
      *           ["theDataSource", "first"]
      *           ["john", "wrong"]
@@ -447,6 +448,8 @@ class MetadataBuilderTest extends TestCase
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testGetIntervalByShorthand(string $dataSource, string $shortHand): void
     {
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
@@ -480,9 +483,6 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      * @testWith ["laST"]
      *           ["first"]
      *
@@ -491,6 +491,8 @@ class MetadataBuilderTest extends TestCase
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testGetIntervalByShorthandWithoutData(string $shortHand): void
     {
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);
@@ -555,11 +557,10 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
+    #[DataProvider('dataProvider')]
     public function testTimeBoundary(
         DataSourceInterface|string $dataSource,
         null|string|TimeBound $bound,
@@ -688,8 +689,6 @@ class MetadataBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider responseDataProvider
-     *
      * @param array<int,null|array<string,string[]|string>> $response
      * @param string|null                                   $exceptionMessage
      *
@@ -697,6 +696,7 @@ class MetadataBuilderTest extends TestCase
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      */
+    #[DataProvider('responseDataProvider')]
     public function testTimeBoundaryResponse(array $response, ?string $exceptionMessage = null): void
     {
         $metadataBuilder = Mockery::mock(MetadataBuilder::class, [$this->client]);

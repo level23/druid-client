@@ -13,6 +13,7 @@ use Level23\Druid\Context\TopNQueryContext;
 use Level23\Druid\Context\ScanQueryContext;
 use Level23\Druid\Context\GroupByQueryContext;
 use Level23\Druid\Context\TimeSeriesQueryContext;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ContextTest extends TestCase
 {
@@ -31,14 +32,13 @@ class ContextTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @param string               $class
      * @param array<string,string> $extra
      *
      * @throws \ReflectionException
      * @throws \Exception
      */
+    #[DataProvider('dataProvider')]
     public function testContext(string $class, array $extra = []): void
     {
         $methods = get_class_methods($class);
