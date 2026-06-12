@@ -15,7 +15,7 @@ It also gives you a way to manage dataSources (tables) in druid and import new d
 
 ## Requirements
 
-This package only requires Guzzle as dependency. The PHP and Guzzle version requirements are listed below.
+This package only requires Guzzle as a dependency. The PHP and Guzzle version requirements are listed below.
 
 | Druid Client Version | PHP Requirements                        | Guzzle Requirements | Druid Requirements |
 |----------------------|-----------------------------------------|---------------------|--------------------|
@@ -44,7 +44,7 @@ This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, 
 
 #### Laravel
 
-For Laravel the package will be auto discovered.
+For Laravel the package will be auto-discovered.
 
 #### Lumen
 
@@ -81,12 +81,12 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ## Todo's
 
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
-- Implement hadoop based batch ingestion (indexing)
+- Implement hadoop-based batch ingestion (indexing)
 - Implement Avro Stream and Avro OCF input formats.
 
 ## Examples
 
-There are several examples which are written on the single-server tutorial of druid. See [this](examples/README.md) page
+There are several examples that are written on the single-server tutorial of druid. See [this](examples/README.md) page
 for more information.
 
 # Table of Contents
@@ -94,6 +94,7 @@ for more information.
 - [DruidClient](#druidclient)
     - [DruidClient::auth()](#druidclientauth)
     - [DruidClient::query()](#druidclientquery)
+    - [DruidClient::sql()](#druidclientsql)
     - [DruidClient::lookup()](#druidclientlookup)
     - [DruidClient::cancelQuery()](#druidclientcancelquery)
     - [DruidClient::compact()](#druidclientcompact)
@@ -412,6 +413,52 @@ When you do not specify the dataSource, you need to specify it later on your que
 to do this. See [QueryBuilder: Data Sources](#querybuilder-data-sources)
 
 See the following chapters for more information about the query builder.
+
+#### `DruidClient::sql()`
+
+The `sql()` method executes a raw Druid SQL query against the broker and returns a `SqlQueryResponse`. The response
+has the same `raw()` and `data()` methods as the responses returned by the other query methods.
+
+Use this when you want to write SQL directly rather than build a native Druid query through the `QueryBuilder`.
+
+Example:
+
+```php
+$client = new DruidClient(['router_url' => 'https://router.url:8080']);
+
+$response = $client->sql(
+    'SELECT page, COUNT(*) AS edits FROM wikipedia WHERE __time > ? GROUP BY page ORDER BY edits DESC',
+    [
+        ['type' => 'TIMESTAMP', 'value' => '2015-09-12'],
+    ]
+);
+
+foreach ($response->data() as $row) {
+    // ['page' => '...', 'edits' => 123]
+}
+```
+
+The `sql()` method has the following arguments:
+
+| **Type**                        | **Optional/Required** | **Argument**   | **Example**                                            | **Description**                                                                                                                                                |
+|---------------------------------|-----------------------|----------------|--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string                          | Required              | `$query`       | `'SELECT * FROM wikipedia WHERE page = ?'`             | The SQL query. Use `?` for parameter placeholders.                                                                                                             |
+| array<int,array<string,mixed>>  | Optional              | `$parameters`  | `[['type' => 'VARCHAR', 'value' => 'Main']]`           | One entry per `?` placeholder. Each entry is `['type' => '<SQL type>', 'value' => <value>]`. See the [Druid SQL types reference][druid-sql-types] for `type`.  |
+| array<string,string\|int\|bool> | Optional              | `$context`     | `['priority' => 75]`                                   | Optional query context parameters.                                                                                                                             |
+
+[druid-sql-types]: https://druid.apache.org/docs/latest/querying/sql-data-types
+
+**Response**
+
+The method returns a `SqlQueryResponse`. Druid's default SQL `resultFormat` is `"object"`, so both `raw()` and `data()`
+return an array of row objects:
+
+```php
+[
+    ['page' => 'Foo', 'edits' => 5],
+    ['page' => 'Bar', 'edits' => 3],
+]
+```
 
 #### `DruidClient::lookup()`
 
@@ -3426,7 +3473,7 @@ query types available, or you can use the `execute()` method which tries to dete
 
 #### `execute()`
 
-This method will analyse the data which you have supplied in the query builder, and try to use the best suitable query
+This method will analyze the data which you have supplied in the query builder, and try to use the best suitable query
 type for you. If you do not want to use the "internal logic", you should use one of the methods below.
 
 ```php 

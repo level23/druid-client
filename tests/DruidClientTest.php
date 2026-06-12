@@ -420,6 +420,82 @@ class DruidClientTest extends TestCase
         $this->assertEquals(['result' => 'yes'], $client->executeQuery($query));
     }
 
+    public function testSqlMinimal(): void
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $rows = [
+            ['page' => 'Foo', 'edits' => 5],
+            ['page' => 'Bar', 'edits' => 3],
+        ];
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('debug')->twice();
+
+        $client->shouldReceive('config')
+            ->with('broker_url')
+            ->once()
+            ->andReturn('http://broker.url');
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('post', 'http://broker.url/druid/v2/sql/', ['query' => 'SELECT page, COUNT(*) AS edits FROM wikipedia GROUP BY page'])
+            ->andReturn($rows);
+
+        $client->setLogger($logger);
+
+        $response = $client->sql('SELECT page, COUNT(*) AS edits FROM wikipedia GROUP BY page');
+
+        $this->assertInstanceOf(\Level23\Druid\Responses\SqlQueryResponse::class, $response);
+        $this->assertEquals($rows, $response->raw());
+        $this->assertEquals($rows, $response->data());
+    }
+
+    public function testSqlWithParametersAndContext(): void
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $parameters = [
+            ['type' => 'TIMESTAMP', 'value' => '2015-09-12'],
+            ['type' => 'VARCHAR', 'value' => 'Main'],
+        ];
+
+        $context = ['priority' => 75];
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('debug')->twice();
+
+        $client->shouldReceive('config')
+            ->with('broker_url')
+            ->once()
+            ->andReturn('http://broker.url');
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with(
+                'post',
+                'http://broker.url/druid/v2/sql/',
+                [
+                    'query'      => 'SELECT * FROM wikipedia WHERE __time > ? AND page = ?',
+                    'parameters' => $parameters,
+                    'context'    => $context,
+                ]
+            )
+            ->andReturn([]);
+
+        $client->setLogger($logger);
+
+        $response = $client->sql(
+            'SELECT * FROM wikipedia WHERE __time > ? AND page = ?',
+            $parameters,
+            $context
+        );
+
+        $this->assertEquals([], $response->data());
+    }
+
     public function testParseResponse(): void
     {
         $client = $this->mockDruidClient();
