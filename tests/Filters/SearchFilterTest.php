@@ -5,6 +5,7 @@ namespace Level23\Druid\Tests\Filters;
 
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Filters\SearchFilter;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SearchFilterTest extends TestCase
 {
@@ -23,12 +24,11 @@ class SearchFilterTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @param string          $dimension
      * @param string|string[] $valueOrValues
      * @param bool            $caseSensitive
      */
+    #[DataProvider('dataProvider')]
     public function testFilter(string $dimension, array|string $valueOrValues, ?bool $caseSensitive): void
     {
         if ($caseSensitive !== null) {

@@ -7,6 +7,7 @@ use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\DataType;
 use Level23\Druid\Filters\RangeFilter;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RangeFilterTest extends TestCase
 {
@@ -33,12 +34,11 @@ class RangeFilterTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @param string           $dimension
      * @param string           $operator
      * @param string|int|float $value
      */
+    #[DataProvider('dataProvider')]
     public function testFilter(
         string $dimension,
         string $operator,

@@ -24,8 +24,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
         $reflectionClass = new ReflectionClass($object);
 
         $property = $reflectionClass->getProperty($propertyName);
-        /** @noinspection PhpExpressionResultUnusedInspection */
-        $property->setAccessible(true);
 
         return $property->getValue($object);
     }

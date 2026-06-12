@@ -46,6 +46,9 @@ use Level23\Druid\Filters\SpatialPolygonFilter;
 use Level23\Druid\Filters\ColumnComparisonFilter;
 use Level23\Druid\Filters\SpatialRectangularFilter;
 use Level23\Druid\Filters\LogicalExpressionFilterInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasFilterTest extends TestCase
 {
@@ -179,8 +182,9 @@ class HasFilterTest extends TestCase
      * @param string                                        $expectException
      *
      * @throws \Exception
-     * @dataProvider normalizeIntervalsDataProvider
+
      */
+    #[DataProvider('normalizeIntervalsDataProvider')]
     public function testNormalizeIntervals(array $given, array $expected, string $expectException = ""): void
     {
         if (!empty($expectException)) {
@@ -204,17 +208,18 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @dataProvider        whereDataProvider
-     *
      * @param string                              $field
      * @param string|null                         $operator
      * @param float|bool|int|string|null|string[] $value
      * @param string                              $boolean
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @throws \Exception
      */
+    #[DataProvider('whereDataProvider')]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhere(
         string $field,
         string|null $operator,
@@ -349,10 +354,8 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereArrayContains(): void
     {
         $search = $this->getFilterMock(ArrayContainsFilter::class);
@@ -365,10 +368,8 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testOrWhereArrayContains(): void
     {
         $this->builder->shouldReceive('whereArrayContains')
@@ -381,10 +382,8 @@ class HasFilterTest extends TestCase
         $this->assertEquals($this->builder, $result);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereNull(): void
     {
         $search = $this->getFilterMock(NullFilter::class);
@@ -414,10 +413,9 @@ class HasFilterTest extends TestCase
      *           ["not search"]
      *
      * @param string $operator
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereSearchWithInt(string $operator): void
     {
         $search = $this->getFilterMock(SearchFilter::class);
@@ -544,10 +542,9 @@ class HasFilterTest extends TestCase
 
     /**
      * Test the whereBetween
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereBetween(): void
     {
         $in = $this->getFilterMock(BetweenFilter::class);
@@ -581,10 +578,9 @@ class HasFilterTest extends TestCase
 
     /**
      * Test the whereColumn
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereColumn(): void
     {
         $this->getFilterMock(ColumnComparisonFilter::class)
@@ -617,10 +613,9 @@ class HasFilterTest extends TestCase
 
     /**
      * Test the whereExpression method.
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereExpression(): void
     {
         $this->client = new DruidClient([]);
@@ -763,10 +758,9 @@ class HasFilterTest extends TestCase
 
     /**
      * Test the whereIn
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereIn(): void
     {
         $in = $this->getFilterMock(InFilter::class);
@@ -787,10 +781,9 @@ class HasFilterTest extends TestCase
      * @return void
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereFlagsInTaskBuilder()
     {
         $client = Mockery::mock(DruidClient::class);
@@ -891,9 +884,11 @@ class HasFilterTest extends TestCase
 
     /**
      * @throws \Exception
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereInterval(): void
     {
         $interval = new Interval('now', 'tomorrow');
@@ -932,10 +927,12 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @return void
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereSpatialRectangular(): void
     {
         $filter = $this->getFilterMock(SpatialRectangularFilter::class);
@@ -952,10 +949,12 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @return void
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereSpatialRadius(): void
     {
         $filter = $this->getFilterMock(SpatialRadiusFilter::class);
@@ -972,10 +971,12 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @return void
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testWhereSpatialPolygon(): void
     {
         $filter = $this->getFilterMock(SpatialPolygonFilter::class);
@@ -992,10 +993,12 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @return void
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testOrWhereSpatialPolygon(): void
     {
         $filter = $this->getFilterMock(SpatialPolygonFilter::class);
@@ -1012,10 +1015,12 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @return void
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testOrWhereSpatialRadius(): void
     {
         $filter = $this->getFilterMock(SpatialRadiusFilter::class);
@@ -1032,10 +1037,12 @@ class HasFilterTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @return void
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testOrWhereSpatialRectangular(): void
     {
         $filter = $this->getFilterMock(SpatialRectangularFilter::class);

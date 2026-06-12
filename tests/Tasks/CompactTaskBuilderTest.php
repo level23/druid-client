@@ -15,6 +15,9 @@ use Level23\Druid\Context\TaskContext;
 use Level23\Druid\Tasks\TaskInterface;
 use Level23\Druid\Tasks\CompactTaskBuilder;
 use Level23\Druid\TuningConfig\TuningConfig;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class CompactTaskBuilderTest extends TestCase
 {
@@ -65,9 +68,6 @@ class CompactTaskBuilderTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     *
      * @param array<string,string>|TaskContext $context
      * @param string|null                      $interval
      * @param string|null                      $segmentGranularity
@@ -78,8 +78,11 @@ class CompactTaskBuilderTest extends TestCase
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
-     * @dataProvider        buildTaskDataProvider
+
      */
+    #[DataProvider('buildTaskDataProvider')]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testBuildTask(
         array|TaskContext $context,
         ?string $interval,

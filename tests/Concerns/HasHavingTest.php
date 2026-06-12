@@ -20,6 +20,9 @@ use Level23\Druid\HavingFilters\AndHavingFilter;
 use Level23\Druid\HavingFilters\QueryHavingFilter;
 use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\HavingFilters\DimensionSelectorHavingFilter;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasHavingTest extends TestCase
 {
@@ -88,17 +91,18 @@ class HasHavingTest extends TestCase
     }
 
     /**
-     * @dataProvider        whereDataProvider
-     *
      * @param string                     $field
      * @param string                     $operator
      * @param float|bool|int|string|null $value
      * @param string                     $boolean
      *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      * @throws \Exception
      */
+    #[DataProvider('whereDataProvider')]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testHaving(
         string $field,
         string $operator,

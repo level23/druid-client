@@ -17,6 +17,8 @@ use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\Collections\OrderByCollection;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasLimitTest extends TestCase
 {
@@ -46,10 +48,8 @@ class HasLimitTest extends TestCase
         return Mockery::mock($builder);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLimit(): void
     {
         $this->assertEquals(null, $this->builder->getLimit());
@@ -82,10 +82,8 @@ class HasLimitTest extends TestCase
         }
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testOrderBy(): void
     {
         Mockery::mock('overload:' . OrderBy::class)

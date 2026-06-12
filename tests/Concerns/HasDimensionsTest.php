@@ -19,6 +19,9 @@ use Level23\Druid\Dimensions\DimensionInterface;
 use Level23\Druid\Dimensions\ListFilteredDimension;
 use Level23\Druid\Dimensions\RegexFilteredDimension;
 use Level23\Druid\Dimensions\PrefixFilteredDimension;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasDimensionsTest extends TestCase
 {
@@ -79,12 +82,13 @@ class HasDimensionsTest extends TestCase
     /**
      * Test our select method with various types.
      *
-     * @dataProvider selectDataProvider
+
      *
      * @param array<int,string|DimensionInterface|ArrayObject<string,string>|array<int|string,string|null>> $parameters
      * @param array<string,string>                                                                          $expectedResult
      * @param bool                                                                                          $expectException
      */
+    #[DataProvider('selectDataProvider')]
     public function testSelect(array $parameters, array $expectedResult, bool $expectException = false): void
     {
         if ($expectException) {
@@ -112,9 +116,11 @@ class HasDimensionsTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLookup(): void
     {
         Mockery::mock('overload:' . LookupDimension::class, DimensionInterface::class)
@@ -141,10 +147,8 @@ class HasDimensionsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testInlineLookup(): void
     {
         $departments = [
@@ -189,10 +193,8 @@ class HasDimensionsTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testLookupDefaults(): void
     {
         Mockery::mock('overload:' . LookupDimension::class, DimensionInterface::class)
@@ -223,10 +225,9 @@ class HasDimensionsTest extends TestCase
      * @testWith ["string", true]
      *           ["long", true]
      *           ["double", false]
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMultiValueListSelect(string $outputType, bool $isWhitelist): void
     {
         $dimensionName = 'myMultiValDimension';
@@ -252,10 +253,9 @@ class HasDimensionsTest extends TestCase
      * @testWith ["string"]
      *           ["long"]
      *           ["float"]
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMultiValueRegexSelect(string $outputType): void
     {
         $dimensionName = 'myMultiValDimension';
@@ -281,10 +281,9 @@ class HasDimensionsTest extends TestCase
      * @testWith ["string"]
      *           ["long"]
      *           ["float"]
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testMultiValuePrefixSelect(string $outputType): void
     {
         $dimensionName = 'myMultiValDimension';

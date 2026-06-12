@@ -13,6 +13,8 @@ use Level23\Druid\SearchFilters\RegexSearchFilter;
 use Level23\Druid\SearchFilters\ContainsSearchFilter;
 use Level23\Druid\SearchFilters\FragmentSearchFilter;
 use Level23\Druid\SearchFilters\SearchFilterInterface;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
 class HasSearchFiltersTest extends TestCase
 {
@@ -42,9 +44,11 @@ class HasSearchFiltersTest extends TestCase
 
     /**
      * @throws \Exception
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSearchContainsWithDefaults(): void
     {
         $filter = $this->getSearchFilterMock(ContainsSearchFilter::class);
@@ -63,10 +67,9 @@ class HasSearchFiltersTest extends TestCase
      *
      * @param string $value
      * @param bool   $caseSensitive
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSearchContains(string $value, bool $caseSensitive): void
     {
         $filter = $this->getSearchFilterMock(ContainsSearchFilter::class);
@@ -81,9 +84,11 @@ class HasSearchFiltersTest extends TestCase
 
     /**
      * @throws \Exception
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
+
+
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSearchFragmentWithDefaults(): void
     {
         $fragment = ['John', 'Doe'];
@@ -104,10 +109,9 @@ class HasSearchFiltersTest extends TestCase
      *
      * @param array<int|string,string> $values
      * @param bool                     $caseSensitive
-     *
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
      */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSearchFragment(array $values, bool $caseSensitive): void
     {
         $filter = $this->getSearchFilterMock(FragmentSearchFilter::class);
@@ -120,10 +124,8 @@ class HasSearchFiltersTest extends TestCase
         $this->assertEquals($this->builder, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testSearchRegex(): void
     {
         $regex  = "^Wiki";

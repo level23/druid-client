@@ -8,6 +8,7 @@ use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Types\SortingOrder;
 use Level23\Druid\Types\OrderByDirection;
 use Level23\Druid\OrderBy\OrderBy;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class OrderByTest extends TestCase
 {
@@ -27,13 +28,12 @@ class OrderByTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
-     *
      * @param string $dimension
      * @param string|OrderByDirection $direction
      * @param string|SortingOrder $sorting
      * @param bool   $expectException
      */
+    #[DataProvider('dataProvider')]
     public function testOrderBy(
         string $dimension,
         string|OrderByDirection $direction,

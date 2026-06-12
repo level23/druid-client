@@ -15,6 +15,7 @@ use Level23\Druid\Interval\Interval;
 use GuzzleHttp\Client as GuzzleClient;
 use Level23\Druid\Tasks\CompactTaskBuilder;
 use Level23\Druid\Metadata\MetadataBuilder;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TaskBuilderTest extends TestCase
 {
@@ -209,8 +210,9 @@ class TaskBuilderTest extends TestCase
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception
-     * @dataProvider validateIntervalDataProvider
+
      */
+    #[DataProvider('validateIntervalDataProvider')]
     public function testValidateInterval(string $givenInterval, array $allIntervals, bool $expectsValid): void
     {
         $dataSource = 'animals';
