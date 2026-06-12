@@ -143,7 +143,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client);
 
-        $client->metadata();
+        $this->assertInstanceOf(MetadataBuilder::class, $client->metadata());
     }
 
     #[RunInSeparateProcess]
@@ -159,7 +159,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client, 'someDataSource', $inputSource);
 
-        $client->index('someDataSource', $inputSource);
+        $this->assertInstanceOf(IndexTaskBuilder::class, $client->index('someDataSource', $inputSource));
     }
 
     #[RunInSeparateProcess]
@@ -175,7 +175,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client, $dataSource);
 
-        $client->compact($dataSource);
+        $this->assertInstanceOf(CompactTaskBuilder::class, $client->compact($dataSource));
     }
 
     #[RunInSeparateProcess]
@@ -189,7 +189,7 @@ class DruidClientTest extends TestCase
             ->once()
             ->with($client, 'someDataSource');
 
-        $client->kill('someDataSource');
+        $this->assertInstanceOf(KillTaskBuilder::class, $client->kill('someDataSource'));
     }
 
     /**
