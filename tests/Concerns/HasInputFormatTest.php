@@ -12,8 +12,11 @@ use Level23\Druid\InputFormats\OrcInputFormat;
 use Level23\Druid\InputFormats\CsvInputFormat;
 use Level23\Druid\InputFormats\TsvInputFormat;
 use Level23\Druid\InputFormats\JsonInputFormat;
+use Level23\Druid\InputFormats\KafkaInputFormat;
+use Level23\Druid\InputFormats\AvroOcfInputFormat;
 use Level23\Druid\InputFormats\ParquetInputFormat;
 use Level23\Druid\InputFormats\ProtobufInputFormat;
+use Level23\Druid\InputFormats\AvroStreamInputFormat;
 use Level23\Druid\InputFormats\InputFormatInterface;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -143,6 +146,77 @@ class HasInputFormatTest extends TestCase
         $this->assertEquals(
             $builder,
             $builder->tsvFormat(['name', 'age'], ',', '|', true, 2)
+        );
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testAvroStreamFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $decoder = [
+            'type' => 'schema_registry',
+            'url'  => 'http://schema-registry:8081',
+        ];
+
+        $flattenSpec = new FlattenSpec(true);
+        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
+
+        $mock = $this->getConstructorMock(AvroStreamInputFormat::class, InputFormatInterface::class);
+        $mock->shouldReceive('__construct')
+            ->once()
+            ->with($decoder, $flattenSpec, true, true);
+
+        $this->assertEquals(
+            $builder,
+            $builder->avroStreamFormat($decoder, $flattenSpec, true, true)
+        );
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testAvroOcfFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $flattenSpec = new FlattenSpec(true);
+        $flattenSpec->field(FlattenFieldType::ROOT, 'blah');
+
+        $schema = ['type' => 'record', 'name' => 'wikipedia', 'fields' => []];
+
+        $mock = $this->getConstructorMock(AvroOcfInputFormat::class, InputFormatInterface::class);
+        $mock->shouldReceive('__construct')
+            ->once()
+            ->with($flattenSpec, $schema, false, true);
+
+        $this->assertEquals(
+            $builder,
+            $builder->avroOcfFormat($flattenSpec, $schema, false, true)
+        );
+    }
+
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testKafkaFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $value  = new JsonInputFormat();
+        $key    = new CsvInputFormat(['key']);
+        $header = ['type' => 'string', 'encoding' => 'UTF-8'];
+
+        $mock = $this->getConstructorMock(KafkaInputFormat::class, InputFormatInterface::class);
+        $mock->shouldReceive('__construct')
+            ->once()
+            ->with($value, $key, $header, 'kafka.h.', 'kafka.k', 'kafka.ts', 'kafka.t');
+
+        $this->assertEquals(
+            $builder,
+            $builder->kafkaFormat($value, $key, $header, 'kafka.h.', 'kafka.k', 'kafka.ts', 'kafka.t')
         );
     }
 }
