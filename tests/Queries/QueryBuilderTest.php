@@ -473,6 +473,48 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
     }
 
+    public function testIsTimeSeriesQueryWithNoDimensionsAndAggregations(): void
+    {
+        $this->builder->sum('reward');
+
+        $this->assertTrue($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    }
+
+    public function testIsTimeSeriesQueryWithNoDimensionsAndNoAggregations(): void
+    {
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    }
+
+    public function testIsTimeSeriesQueryWithNoDimensionsButHavingFallsBackToGroupBy(): void
+    {
+        $this->builder->sum('reward');
+        $this->builder->having('reward', '>', 0);
+
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    }
+
+    public function testIsTimeSeriesQueryWithNoDimensionsButSubtotalsFallsBackToGroupBy(): void
+    {
+        $this->builder->sum('reward');
+        $this->builder->subtotals([['country']]);
+
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    }
+
+    public function testIsScanQueryDefersToSearchWhenSearchFilterIsSet(): void
+    {
+        $this->builder->searchContains('needle');
+
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isScanQuery());
+    }
+
+    public function testIsScanQueryDefersToSelectWhenPagingIdentifierIsSet(): void
+    {
+        $this->builder->pagingIdentifier(['segment' => 0]);
+
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isScanQuery());
+    }
+
     /**
      * @testWith [true, true]
      *           [true, false]
