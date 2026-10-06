@@ -81,8 +81,16 @@ DRUID_ROUTER_URL=http://druid-router.url:8080
 ## Todo's
 
 - Support for building metricSpec and DimensionSpec in CompactTaskBuilder
-- Implement hadoop-based batch ingestion (indexing)
-- Implement Avro Stream and Avro OCF input formats.
+- SQL-based ingestion (MSQ) via `/druid/v2/sql/task` (INSERT/REPLACE)
+- Async SQL queries via the statements API (`/druid/v2/sql/statements`)
+- Supervisor management (Kafka/Kinesis streaming ingestion)
+- Compaction API and compaction supervisors
+- Iceberg input source
+- `ARRAY` and `COMPLEX<json>` data types
+- Ingestion-time `expression` aggregator
+- Enum variants for `setCloneQueryMode()` and `setRealtimeSegmentsMode()`
+- PasswordProvider support for `requestHeaders` in the `HttpInputSource`
+- Remove the deprecated select query in v5.0
 
 ## Examples
 
