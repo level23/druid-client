@@ -58,7 +58,7 @@ $app->register(Level23\Druid\DruidServiceProvider::class);
 
 #### Laravel/Lumen Configuration:
 
-You should also define the correct endpoint URL's in your `.env` in your Laravel/Lumen project:
+You should also define the correct endpoint URLs in your `.env` in your Laravel/Lumen project:
 
 ```
 DRUID_BROKER_URL=http://broker.url:8082
@@ -123,6 +123,7 @@ for more information.
         - [toJson()](#tojson)
     - [QueryBuilder: Data Sources](#querybuilder-data-sources)
         - [from()](#from)
+        - [fromInline()](#frominline)
         - [join()](#join)
         - [leftJoin()](#leftjoin)
         - [innerJoin()](#innerjoin)
@@ -147,7 +148,7 @@ for more information.
         - [hyperUnique()](#hyperunique)
         - [cardinality()](#cardinality)
         - [distinctCount()](#distinctcount)
-        - [doublesSketch()](#doublesSketch)
+        - [doublesSketch()](#doublessketch)
     - [QueryBuilder: Filters](#querybuilder-filters)
         - [where()](#where)
         - [orWhere()](#orwhere)
@@ -227,7 +228,7 @@ for more information.
         - [kafka()](#kafka)
         - [jdbc()](#jdbc)
         - [map()](#map)
-        - [maxHeapPercentage()](maxheappercentage)
+        - [maxHeapPercentage()](#maxheappercentage)
         - [pollPeriod()](#pollperiod)
         - [injective()](#injective)
         - [firstCacheTimeout()](#firstcachetimeout)
@@ -254,6 +255,11 @@ for more information.
         - [S3InputSource](#s3inputsource)
         - [HdfsInputSource](#hdfsinputsource)
         - [HttpInputSource](#httpinputsource)
+        - [InlineInputSource](#inlineinputsource)
+        - [LocalInputSource](#localinputsource)
+        - [DruidInputSource](#druidinputsource)
+        - [SqlInputSource](#sqlinputsource)
+        - [CombiningInputSource](#combininginputsource)
     - [Input Formats](#input-formats)
         - [csvFormat()](#csvformat)
         - [tsvFormat()](#tsvformat)
@@ -340,10 +346,10 @@ configuration of your instance.
 
 The `DruidClient` constructor has the following arguments:
 
-| **Type**            | **Optional/Required** | **Argument** | **Example**                         | ** Description**                                                                                                                       |
+| **Type**            | **Optional/Required** | **Argument** | **Example**                         | **Description**                                                                                                                       |
 |---------------------|-----------------------|--------------|-------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | array               | Required              | `$config`    | `['router_url' => 'http://my.url']` | The configuration which is used for this DruidClient. This configuration contains the endpoints where we should send druid queries to. |
-| `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.            |
+| `GuzzleHttp\Client` | Optional              | `$client`    | See example below                   | If given, we will use this Guzzle Client for sending queries to your druid instance. This allows you to control the connection.            |
 
 For a complete list of configuration settings take a look at the default values which are defined in the
 `$config` property in the DruidClient class.
@@ -351,7 +357,7 @@ For a complete list of configuration settings take a look at the default values 
 This class supports some newer functions of Druid. To make sure your server supports these functions, it is recommended
 to supply the `version` config setting.
 
-By default, we will use a guzzle client for handing the connection between your application and the druid server. If you
+By default, we will use a guzzle client for handling the connection between your application and the druid server. If you
 want to change this, for example because you want to use a proxy, you can do this with a custom guzzle client.
 
 Example of using a custom guzzle client:
@@ -517,7 +523,7 @@ $client = new DruidClient(['router_url' => 'https://router.url:8080']);
 // For example, this returns my-query6148716d3772c
 $queryId = uniqid('my-query');
 
-// Please note: this will be blocking until we have got result from druid.
+// Please note: this will be blocking until we have got the result from druid.
 // So cancellation has to be done within another php process. 
 $result = $client
     ->query('wikipedia', Granularity::DAY) 
@@ -533,7 +539,7 @@ you can "stop" the running queries by executing this:
 $client->cancelQuery('my-query6148716d3772c')
 ```
 
-The query method has 1 parameter:
+The `cancelQuery()` method has 1 parameter:
 
 | **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                   |
 |----------|-----------------------|---------------|-------------|-------------------------------------------------------------------|
@@ -552,7 +558,7 @@ For more information, see [compact()](#compact).
 
 #### `DruidClient::reindex()`
 
-The `compact()` method returns a `IndexTaskBuilder` object which allows you to build a re-index task.
+The `reindex()` method returns an `IndexTaskBuilder` object which allows you to build a re-index task.
 
 For more information, see [reindex()](#reindex).
 
@@ -616,13 +622,13 @@ The `interval()` method has the following parameters:
 | **Type**                  | **Optional/Required** | **Argument** | **Example**      | **Description**                                                                                                                                                                   |
 |---------------------------|-----------------------|--------------|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/int/DateTime       | Required              | `$start`     | "now - 24 hours" | The start date from where we will query. See the examples above which formats are allowed.                                                                                        |
-| /string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out. |
+| string/int/DateTime/null | Optional              | `$stop`      | "now"            | The stop date from where we will query. See the examples above which formats are allowed. When a string containing a slash is given as start date, the stop date can be left out. |
 
 #### `limit()`
 
 The `limit()` method allows you to limit the result set of the query.
 
-The Limit can be used for all query types. However, its mandatory for the TopN Query and the Select Query.
+The Limit can be used for all query types. However, it's mandatory for the TopN Query and the Select Query.
 
 The `$offset` parameter only applies to `GroupBy` and `Scan` queries and is only supported since druid version 0.20.0.
 
@@ -650,7 +656,7 @@ The `limit()` method has the following arguments:
 #### `orderBy()`
 
 The `orderBy()` method allows you to order the result in a given way.
-This method only applies to **GroupBy** and **TopN** Queries. You should use `orderByDirection()`.
+This method only applies to **GroupBy** and **TopN** Queries. For other query types, use `orderByDirection()`.
 
 Example:
 
@@ -667,18 +673,18 @@ The `orderBy()` method has the following arguments:
 | **Type** | **Optional/Required** | **Argument**         | **Example**              | **Description**                                                                                                        |
 |----------|-----------------------|----------------------|--------------------------|------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimensionOrMetric` | "channel"                | The dimension or metric where you want to order by                                                                     |
-| string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |
+| string   | Optional              | `$direction`         | `OrderByDirection::DESC` | The direction of your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". Default "asc" |
 | string   | Optional              | `$sortingOrder`      | `SortingOrder::STRLEN`   | This defines how the sorting is executed.                                                                              |
 
 See for more information about SortingOrders this
 page: https://druid.apache.org/docs/latest/querying/sorting-orders.html
 
-Please note: this method differs per query type. Please read below how this method workers per Query Type.
+Please note: this method differs per query type. Please read below how this method works per Query Type.
 
 **GroupBy Query**
 
 You can call this method multiple times, adding an order-by to the query.
-The GroupBy Query only allows ordering the result if there is a limit is given. If you do not supply a limit, we will
+The GroupBy Query only allows ordering the result if a limit is given. If you do not supply a limit, we will
 use
 a default limit of `999999`.
 
@@ -690,7 +696,7 @@ where you want to order your result by.
 #### `orderByDirection()`
 
 The `orderByDirection()` method allows you to specify the direction of the order by. This method only applies to the
-TimeSeries, Select and Scan Queries. Use `orderBy()` For GroupBy and TopN Queries.
+TimeSeries, Select and Scan Queries. Use `orderBy()` for GroupBy and TopN Queries.
 
 Example:
 
@@ -707,7 +713,7 @@ The `orderByDirection()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                          |
 |----------|-----------------------|--------------|--------------------------|----------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction or your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". |
+| string   | Required              | `$direction` | `OrderByDirection::DESC` | The direction of your order. You can use an OrderByDirection constant, or a string like "asc" or "desc". |
 
 #### `pagingIdentifier()`
 
@@ -728,7 +734,7 @@ $page2 = $builder->limit(10, 10)->scan();
 
 The `pagingIdentifier()` allows you to do paginating on the result set. This only works on SELECT queries.
 
-When you execute a select query, you will return a paging identifier. To request the next "page", use this paging
+When you execute a select query, you will receive a paging identifier. To request the next "page", use this paging
 identifier in your next request.
 
 Example:
@@ -744,7 +750,7 @@ $builder = $client->query('wikipedia')
 $response1 = $builder->selectQuery();
 
 // Now, request "page 2".
- $builder->pagingIdentifier($response1->getPagingIdentifier());
+$builder->pagingIdentifier($response1->pagingIdentifier());
 
 // Execute the query for "page 2".
 $response2 = $builder->selectQuery($context);
@@ -768,7 +774,7 @@ The `pagingIdentifier()` method has the following arguments:
 The `subtotals()` method allows you to retrieve your aggregations over various dimensions in your query. This is quite
 similar to the `WITH ROLLUP` mysql logic.
 
-**NOTE::** This method only applies to groupBy queries!
+**NOTE:** This method only applies to groupBy queries!
 
 Example:
 
@@ -815,7 +821,7 @@ The `subtotals()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**                                | **Description**                                                                                               |
 |----------|-----------------------|--------------|--------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
+| array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains arrays with dimensions where you want to receive your totals for. See example above. |
 
 #### `metrics()`
 
@@ -902,7 +908,7 @@ $builder = $client->query('wikipedia')
     ->select(['__time', 'channel', 'user', 'deleted', 'added'])    
     ->limit(10);
 
-// Show the query as an array
+// Show the query as a JSON string
 var_export($builder->toJson());
 ```
 
@@ -961,11 +967,11 @@ This method has the following arguments:
 | **Type** | **Optional/Required** | **Argument**   | **Example**                                                  | **Description**                                                                                                 |
 |----------|-----------------------|----------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | array    | Required              | `$columnNames` | ["country", "city"]                                          | The column names of the data you will supply.                                                                   |
-| array    | Required              | `$rows`        | [ ["United States", "San Francisco"], ["Canada", "Calgary"]] | The rows of data which will be used. Each row has to have as much items as the number of names in $columnNames. |
+| array    | Required              | `$rows`        | [ ["United States", "San Francisco"], ["Canada", "Calgary"]] | The rows of data which will be used. Each row has to have as many items as the number of names in $columnNames. |
 
 ```php
 $builder = $client->query()->fromInline(
-    ["country", "city"]
+    ["country", "city"],
     [
         ["United States", "San Francisco"], 
         ["Canada", "Calgary"]
@@ -1005,7 +1011,7 @@ $builder = $client->query('users')
 
 You can also specify another DataSource as value. For example, you can create a new `JoinDataSource` object and pass
 that as value. However, there are easy methods created for this (for example `joinLookup()`) so you probably
-do not have to use this. It might be usefully for whe you want to join with inline data (you can use
+do not have to use this. It might be useful for when you want to join with inline data (you can use
 the `InlineDataSource`)
 
 This method has the following arguments:
@@ -1014,7 +1020,7 @@ This method has the following arguments:
 |------------------------------------|-----------------------|------------------------|------------------|------------------------------------------------------------------------------------------------------|
 | string/DataSourceInterface/Closure | Required              | `$dataSourceOrClosure` | countries        | The name of the dataSource which you want to join. You can also specify a Closure. Please see above. |
 | string                             | Required              | `$as`                  | alias            | The alias name as this dataSource is accessible in your query.                                       |
-| Closure                            | Required              | `$condition`           | alias.a = main.a | Here you can specify the condition of the join                                                       |
+| string                             | Required              | `$condition`           | alias.a = main.a | Here you can specify the condition of the join                                                       |
 | string                             | Optional              | `$joinType`            | INNER            | The join type. This can either be INNER or LEFT.                                                     |
 
 #### `leftJoin()`
@@ -1037,7 +1043,7 @@ Example:
 ```php
 $builder = $client->query('users')
     ->interval('now - 1 week', 'now')
-    ->join('departments', 'dep', 'users.department_id = dep.k')
+    ->joinLookup('departments', 'dep', 'users.department_id = dep.k')
     ->select('dep.v', 'departmentName')
     ->select('...')
 ```
@@ -1050,7 +1056,7 @@ This method has the following arguments:
 |----------|-----------------------|---------------|------------------|----------------------------------------------------------------|
 | string   | Required              | `$lookupName` | departments      | The name of the lookup which you want to join.                 |
 | string   | Required              | `$as`         | alias            | The alias name as this dataSource is accessible in your query. |
-| Closure  | Required              | `$condition`  | alias.a = main.a | Here you can specify the condition of the join                 |
+| string   | Required              | `$condition`  | alias.a = main.a | Here you can specify the condition of the join                 |
 | string   | Optional              | `$joinType`   | INNER            | The join type. This can either be INNER or LEFT.               |
 
 #### `union()`
@@ -1088,7 +1094,7 @@ This method has the following arguments:
 
 | **Type**        | **Optional/Required** | **Argument**   | **Example**            | **Description**                                                                                                                                      |
 |-----------------|-----------------------|----------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string or array | Required              | `$dataSources` | ["hits_eu", "hits_us"] | The name of the dataSources which you want to query. NOTE! The current dataSource is automatically added!                                            |
+| string or array | Required              | `$dataSources` | ["hits_eu", "hits_us"] | The name of the dataSources which you want to query. The current dataSource is added when `$append` is true.                                        |
 | bool            | Optional              | `$append`      | true                   | This controls if the currently used dataSource should be added to this list or not. This only works if the current dataSource is a table dataSource. |
 
 ## QueryBuilder: Dimension Selections
@@ -1107,7 +1113,7 @@ This method has the following arguments:
 | string          | Optional              | `$as`         | country     | The name where the result will be available by in the result set.       |
 | string          | Optional              | `$outputType` | string      | The output type of the data. If left unspecified, we will use `string`. |
 
-This method allows you to select a dimension in various way's, as shown in the example above.
+This method allows you to select a dimension in various ways, as shown in the example above.
 
 You can use:
 
@@ -1164,7 +1170,7 @@ This method has the following arguments:
 | string      | Required              | `$lookupFunction`   | username_by_id | The name of the lookup function which you want to use for this dimension.                                                                                                                                                                                            |
 | string      | Required              | `$dimension`        | user_id        | The dimension which you want to transform.                                                                                                                                                                                                                           |
 | string      | Optional              | `$as`               | username       | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
-| bool/string | Optional              | `$keepMissingValue` | Unknown        | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
+| bool/string | Optional              | `$keepMissingValue` | Unknown        | When the user_id dimension could not be found, what do you want to do? Use `false` to remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
 
 Example:
 
@@ -1183,10 +1189,10 @@ This method has the following arguments:
 
 | **Type**    | **Optional/Required** | **Argument**        | **Example**                   | **Description**                                                                                                                                                                                                                                                      |
 |-------------|-----------------------|---------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| array       | Required              | `$map`              | `[1 => "IT", 2 => "Finance"]` | The list with key => value items, where the dimensions value will be used to find the value in the list.                                                                                                                                                             |
+| array       | Required              | `$map`              | `[1 => "IT", 2 => "Finance"]` | The list with key => value items, where the dimension's value will be used to find the value in the list.                                                                                                                                                             |
 | string      | Required              | `$dimension`        | user_id                       | The dimension which you want to transform.                                                                                                                                                                                                                           |
 | string      | Optional              | `$as`               | username                      | The name where the result will be available by in the result set.                                                                                                                                                                                                    |
-| bool/string | Optional              | `$keepMissingValue` | Unknown                       | When the user_id dimension could not be found, what do you want to do? Use `false` for remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
+| bool/string | Optional              | `$keepMissingValue` | Unknown                       | When the user_id dimension could not be found, what do you want to do? Use `false` to remove the value from the result, use `true` to keep the original dimension value (the user_id). Or, when a string is given, we will replace the value with the given string. |
 | bool        | Optional              | `$isOneToOne`       | true                          | Set to true if the key/value items are unique in the given map.                                                                                                                                                                                                      |
 
 Example:
@@ -1273,7 +1279,7 @@ $builder->multiValuePrefixSelect('tags', 'test', 'testTags', DataType::STRING);
 
 ## QueryBuilder: Metric Aggregations
 
-Metrics are fields which you normally aggregate, like summing the values of this field, Typical examples are:
+Metrics are fields which you normally aggregate, like summing the values of this field. Typical examples are:
 
 - Revenue
 - Hits
@@ -1298,8 +1304,6 @@ $builder->longSum('pageViews', 'pageViewsByKids', function(FilterBuilder $filter
 
 See also this page: https://druid.apache.org/docs/latest/querying/aggregations.html
 
-This method uses the following arguments:
-
 #### `count()`
 
 This aggregation will return the number of rows which match the filters.
@@ -1316,7 +1320,7 @@ $builder->count('nrOfResults');
 
 | **Type** | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                         |
 |----------|-----------------------|------------------|----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$as`            | "nrOfRows"                                   | The size of the bucket where the numerical values are grouped in                                                        |
+| string   | Required              | `$as`            | "nrOfRows"                                   | The name which will be used in the output result                                                                        |
 | Closure  | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only count the records which match with the given filter. |
 
 #### `sum()`
@@ -1387,7 +1391,7 @@ The `max()` aggregation method has the following parameters:
 
 #### `first()`
 
-The `first()` aggregation computes the metric value with the minimum timestamp or 0 if no row exist.
+The `first()` aggregation computes the metric value with the minimum timestamp or 0 if no rows exist.
 
 **Note:** Alternatives are: `longFirst()`, `doubleFirst()`, `floatFirst()` and `stringFirst()`, which allow you to
 directly specify the output type by using the appropriate method name. These methods do not have the `$type` parameter.
@@ -1409,7 +1413,7 @@ The `first()` aggregation method has the following parameters:
 
 #### `last()`
 
-The `last()` aggregation computes the metric value with the maximum timestamp or 0 if no row exist.
+The `last()` aggregation computes the metric value with the maximum timestamp or 0 if no rows exist.
 
 Note that queries with last aggregators on a segment created with rollup enabled will return the rolled up value,
 and not the last value within the raw ingested data.
@@ -1428,7 +1432,7 @@ The `last()` aggregation method has the following parameters:
 | **Type**        | **Optional/Required** | **Argument**     | **Example**                                  | **Description**                                                                                                                             |
 |-----------------|-----------------------|------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | string          | Required              | `$metric`        | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
-| string          | Optional              | `$as`            | "firstDevice"                                | The name which will be used in the output result                                                                                            |
+| string          | Optional              | `$as`            | "lastDevice"                                 | The name which will be used in the output result                                                                                            |
 | string/DataType | Optional              | `$type`          | DataType::LONG                               | The output type. This can either be string, long, float or double. See also the DataType enum.                                              |
 | Closure         | Optional              | `$filterBuilder` | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
 
@@ -1449,11 +1453,11 @@ The `any()` aggregation method has the following parameters:
 
 | **Type**        | **Optional/Required** | **Argument**      | **Example**                                  | **Description**                                                                                                                             |
 |-----------------|-----------------------|-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| string          | Required              | `$metric`         | "device"                                     | The metric which you want to compute the last value of.                                                                                     |
+| string          | Required              | `$metric`         | "device"                                     | The metric which you want to fetch any value of.                                                                                            |
 | string          | Optional              | `$as`             | "anyDevice"                                  | The name which will be used in the output result                                                                                            |
 | string/DataType | Optional              | `$type`           | DataType::STRING                             | The output type. This can either be string, long, float or double. See DataType enum                                                        |
-| int             | Optional              | `$maxStringBytes` | 2048                                         | Then the type is string, you can specify here the max bytes of the string. Defaults to 1024.                                                |
-| Closure         | Optional              | `$filterBuilder`  | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only compute the last value of the records which match with the given filter. |
+| int             | Optional              | `$maxStringBytes` | 2048                                         | When the type is string, you can specify here the max bytes of the string. Defaults to 1024.                                                |
+| Closure         | Optional              | `$filterBuilder`  | See example in the beginning of this chapter | A closure which receives a FilterBuilder. When given, we will only fetch any value of the records which match with the given filter.        |
 
 #### `javascript()`
 
@@ -1512,7 +1516,7 @@ The `hyperUnique()` aggregation method has the following parameters:
 |----------|-----------------------|-----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$metric`             | "dimension" | The dimension that has been aggregated as a "hyperUnique" metric at indexing time.                                                                                                                                   |
 | string   | Required              | `$as`                 | "myField"   | The name which will be used in the output result                                                                                                                                                                     |
-| bool     | Optional              | `$round`              | true        | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
+| bool     | Optional              | `$round`              | true        | The HyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
 | bool     | Optional              | `$isInputHyperUnique` | false       | Only affects ingestion-time behavior, and is ignored at query-time. Set to true to index pre-computed HLL (Base64 encoded output from druid-hll is expected).                                                        |
 
 #### `cardinality()`
@@ -1527,7 +1531,7 @@ In general, we strongly recommend using the `distinctCount()` or `hyperUnique()`
 the `cardinality()`
 aggregator if you do not care about the individual values of a dimension.
 
-When setting `$byRow` to `false` (the default) it computes the cardinality of the set composed of the union of al
+When setting `$byRow` to `false` (the default) it computes the cardinality of the set composed of the union of all
 dimension values for all the given dimensions. For a single dimension, this is equivalent to:
 
 ```sql
@@ -1587,7 +1591,7 @@ The `cardinality()` aggregation method has the following parameters:
 | string        | Required              | `$as`                           | "distinctCount"    | The name which will be used in the output result                                                                                                                                                                     |
 | Closure/array | Required              | `$dimensionsOrDimensionBuilder` | See example above. | An array with dimension(s) or a function which receives an instance of the DimensionBuilder class. You should select the dimensions which you want to use to calculate the cardinality over.                         |
 | bool          | Optional              | `$byRow`                        | false              | See above for more info.                                                                                                                                                                                             |
-| bool          | Optional              | `$round`                        | true               | TheHyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
+| bool          | Optional              | `$round`                        | true               | The HyperLogLog algorithm generates decimal estimates with some error. "round" can be set to true to round off estimated values to whole numbers. Note that even with rounding, the cardinality is still an estimate. |
 
 #### `distinctCount()`
 
@@ -1644,7 +1648,7 @@ The `doublesSketch()` aggregation method has the following parameters:
 | string   | Required              | `$metric`          | `"salary"`     | The metric where you want to do calculations over.                                                                                                                                                                                                                                                                                                                                                                                                             |
 | string   | Optional              | `$as`              | `"salaryData"` | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                                                                                                              |
 | int      | Optional              | `$sizeAndAccuracy` | 128            | Parameter that determines the accuracy and size of the sketch. Higher k means higher accuracy but more space to store sketches. Must be a power of 2 from 2 to 32768. See accuracy information in the DataSketches documentation for details.                                                                                                                                                                                                                  |
-| int      | Optional              | `$maxStreamLength` | 1000000000     | This parameter is a temporary solution to avoid a known issue. It may be removed in a future release after the bug is fixed. This parameter defines the maximum number of items to store in each sketch. If a sketch reaches the limit, the query can throw IllegalStateException. To workaround this issue, increase the maximum stream length. See accuracy information in the DataSketches documentation for how many bytes are required per stream length. |
+| int      | Optional              | `$maxStreamLength` | 1000000000     | This parameter is a temporary solution to avoid a known issue. It may be removed in a future release after the bug is fixed. This parameter defines the maximum number of items to store in each sketch. If a sketch reaches the limit, the query can throw IllegalStateException. To work around this issue, increase the maximum stream length. See accuracy information in the DataSketches documentation for how many bytes are required per stream length. |
 
 ## QueryBuilder: Filters
 
@@ -1661,7 +1665,7 @@ This method uses the following arguments:
 | string   | Required              | `$dimension` | "cityName"   | The dimension which you want to filter.                                                                                                                      |
 | string   | Required              | `$operator`  | "="          | The operator which you want to use to filter. See below for a complete list of supported operators.                                                          |
 | mixed    | Optional              | `$value`     | "Auburn"     | The value which you want to use in your filter comparison. Set to null to match against NULL values.                                                         |
-| string   | Optional              | `$boolean`   | "and" / "or" | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`   | "and" / "or" | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 The following `$operator` values are supported:
 
@@ -1708,7 +1712,7 @@ $builder->where('channel', 'en');
 This would be the same as an SQL equivalent:
 ```SELECT ... WHERE (namespace = 'Talk' OR 'namespace' = 'Main') AND 'channel' = 'en'; ```
 
-As last, you can also supply a raw filter object. For example:
+Lastly, you can also supply a raw filter object. For example:
 
 ```php
 $builder->where( new SelectorFilter('name', 'John') );
@@ -1718,7 +1722,7 @@ However, this is not recommended and should not be needed.
 
 #### `orWhere()`
 
-Same as `where()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `where()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereNot()`
 
@@ -1739,12 +1743,12 @@ This method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument**     | **Example** | **Description**                                                                                                                                              |
 |----------|-----------------------|------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Closure  | Required              | `$filterBuilder` | "flags"     | A closure function which will receive a `FilterBuilder` object. All applied filters will be inverted.                                                        |
-| string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| Closure  | Required              | `$filterBuilder` | (see above) | A closure function which will receive a `FilterBuilder` object. All applied filters will be inverted.                                                        |
+| string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereNot()`
 
-Same as `whereNot()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereNot()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereNull()`
 
@@ -1758,7 +1762,7 @@ This method has the following arguments:
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$column`    | "city"      | The column or virtual column which you want to filter on null values.                                                                                        |
-| string   | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 Example:
 
@@ -1774,7 +1778,7 @@ $builder->whereNot(function (FilterBuilder $filterBuilder) {
 
 #### `orWhereNull()`
 
-Same as `whereNull()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereNull()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereIn()`
 
@@ -1786,7 +1790,7 @@ This method has the following arguments:
 |----------|-----------------------|--------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension` | country_iso        | The dimension which you want to filter                                                                                                                       |
 | array    | Required              | `$items`     | ["it", "de", "au"] | A list of values. We will return records where the dimension is in this list.                                                                                |
-| string   | Optional              | `$boolean`   | "and"              | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`   | "and"              | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 Example:
 
@@ -1797,7 +1801,7 @@ $builder->whereIn('country_iso', ['it', 'de', 'au']);
 
 #### `orWhereIn()`
 
-Same as `whereIn()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereIn()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereArrayContains()`
 
@@ -1809,7 +1813,7 @@ This method has the following arguments:
 |-----------------------|-----------------------|--------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string                | Required              | `$column`    | country_iso | Input column or virtual column name to filter on.                                                                                                            |
 | int/string/float/null | Required              | `$value`     | "it"        | Array element value to match. This value can be null.                                                                                                        |
-| string                | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string                | Optional              | `$boolean`   | "and"       | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 Example:
 
@@ -1819,7 +1823,7 @@ $builder->whereArrayContains('features', 'myNewFeature');
 
 #### `orWhereArrayContains()`
 
-Same as `whereArrayContains()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereArrayContains()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereBetween()`
 
@@ -1836,12 +1840,12 @@ This method has the following arguments:
 | string           | Required              | `$dimension` | year              | The dimension which you want to filter                                                                                                                       |
 | int/float/string | Required              | `$minValue`  | 1990              | The minimum value where the dimension should match. It should be equal or greater than this value.                                                           |
 | int/float/string | Required              | `$maxValue`  | 2000              | The maximum value where the dimension should match. It should be less than this value.                                                                       |
-| DataType         | Optional              | `$valueType` | `DataType::FLOAT` | This determines how druid will interprets the min and max values in comparison with the existing values. When not given we will auto detect it.              |
-| string           | Optional              | `$boolean`   | "and"             | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| DataType         | Optional              | `$valueType` | `DataType::FLOAT` | This determines how druid will interpret the min and max values in comparison with the existing values. When not given we will auto detect it.              |
+| string           | Optional              | `$boolean`   | "and"             | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereBetween()`
 
-Same as `whereBetween()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereBetween()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereColumn()`
 
@@ -1852,13 +1856,13 @@ The `whereColumn()` filter has the following arguments:
 
 | **Type**       | **Optional/Required** | **Argument**  | **Example**  | **Description**                                                                                                                                              |
 |----------------|-----------------------|---------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way.  |
-| string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advance way.  |
-| string         | Optional              | `$boolean`    | "and"        | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string/Closure | Required              | `$dimensionA` | "initials"   | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advanced way.  |
+| string/Closure | Required              | `$dimensionB` | "first_name" | The dimension which you want to compare, or a Closure which will receive a `DimensionBuilder` which allows you to select a dimension in a more advanced way.  |
+| string         | Optional              | `$boolean`    | "and"        | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereColumn()`
 
-Same as `whereColumn()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereColumn()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereInterval()`
 
@@ -1875,14 +1879,14 @@ This method has the following arguments:
 |----------|-----------------------|--------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension` | __time            | The dimension which you want to filter                                                                                                                       |
 | array    | Required              | `$intervals` | ['yesterday/now'] | See below for more info                                                                                                                                      |
-| string   | Optional              | `$boolean`   | "and" / "or"      | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`   | "and" / "or"      | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 The `$intervals` array can contain the following:
 
 - an `Interval` object
 - a raw interval string as used in druid. For example: "2019-04-15T08:00:00.000Z/2019-04-15T09:00:00.000Z"
 - an interval string, separating the start and the stop with a / (for example "12-02-2019/13-02-2019")
-- an array which contains 2 elements, a start and stop date. These can be an DateTime object, a unix timestamp or
+- an array which contains 2 elements, a start and stop date. These can be a DateTime object, a unix timestamp or
   anything which can be parsed by DateTime::__construct
 
 See for more info also the `interval()` method.
@@ -1895,14 +1899,14 @@ $builder->whereInterval('__time', ['12-09-2019/13-09-2019', '19-09-2019/20-09-20
 
 #### `orWhereInterval()`
 
-Same as `whereInterval()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereInterval()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereFlags()`
 
 This filter allows you to filter on a dimension where the value should match against your filter using a bitwise AND
 comparison.
 
-Support for 64-bit integers are supported.
+64-bit integers are supported.
 
 Druid has support for bitwise flags since version 0.20.2. Before that, we have built our own variant, but then
 javascript support is required. To make use of the javascript variant, you should pass `true` as the 4th parameter
@@ -1931,12 +1935,12 @@ This method has the following arguments:
 |----------|-----------------------|------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dimension`     | "flags"     | The dimension where you want to filter on                                                                                                                    |
 | int      | Required              | `$flags`         | 64          | The flags which should match in the given dimension (comparing with a bitwise AND)                                                                           |
-| string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
-| boolean  | Optional              | `$useJavascript` | true        | Older versions do not yet support the bitwiseAnd expression. Set this parameter to `true` to use an javascript alternative instead.                          |
+| string   | Optional              | `$boolean`       | "and"       | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| boolean  | Optional              | `$useJavascript` | true        | Older versions do not yet support the bitwiseAnd expression. Set this parameter to `true` to use a javascript alternative instead.                          |
 
 #### `orWhereFlags()`
 
-Same as `whereFlags()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereFlags()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 #### `whereExpression()`
 
@@ -1963,13 +1967,13 @@ This method has the following arguments:
 | **Type** | **Optional/Required** | **Argument**  | **Example**                                 | **Description**                                                                                                                                              |
 |----------|-----------------------|---------------|---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$expression` | `"((product_type == 42) && (!is_deleted))"` | The expression to use for your filter.                                                                                                                       |
-| string   | Optional              | `$boolean`    | `"and"`                                     | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`    | `"and"`                                     | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 #### `orWhereExpression()`
 
-Same as `whereExpression()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereExpression()`, but now we will join previously added filters with an `or` instead of an `and`.
 
-### `whereSpatialRectangular()`
+#### `whereSpatialRectangular()`
 
 This filter allows you to filter on your records where your spatial dimension is within the given rectangular shape.
 
@@ -1989,18 +1993,18 @@ This method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
+| string   | Required              | `$dimension` | `"location"`             | The spatial dimension to filter on.                                                                                                                          |
 | array    | Required              | `$minCoords` | `[0.350189, 51.248163]`  | List of minimum dimension coordinates for coordinates [x, y, z]                                                                                              |
 | array    | Required              | `$maxCoords` | `[-0.613861, 51.248163]` | List of maximum dimension coordinates for coordinates [x, y, z]                                                                                              |
-| string   | Optional              | `$boolean`   | "and"                    | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`   | "and"                    | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
-### `orWhereSpatialRectangular()`
+#### `orWhereSpatialRectangular()`
 
-Same as `whereSpatialRectangular()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereSpatialRectangular()`, but now we will join previously added filters with an `or` instead of an `and`.
 
-### `whereSpatialRadius()`
+#### `whereSpatialRadius()`
 
-This filter allows you to filter on your records where your spatial dimension is within radios of a given point.
+This filter allows you to filter on your records where your spatial dimension is within a radius of a given point.
 
 Example:
 
@@ -2011,23 +2015,23 @@ $client = new \Level23\Druid\DruidClient([
 
 $client->query('myDataSource')
     ->interval('now - 1 day', 'now')
-    ->whereSpatialRectangular('location', [0.350189, 51.248163], [-0.613861, 51.248163]);
+    ->whereSpatialRadius('location', [0.350189, 51.248163], 0.1);
 ```
 
 This method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
-| array    | Required              | `$minCoords` | `[0.350189, 51.248163]`  | List of minimum dimension coordinates for coordinates [x, y, z]                                                                                              |
-| array    | Required              | `$maxCoords` | `[-0.613861, 51.248163]` | List of maximum dimension coordinates for coordinates [x, y, z]                                                                                              |
-| string   | Optional              | `$boolean`   | `"and"`                  | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Required              | `$dimension` | `"location"`             | The spatial dimension to filter on.                                                                                                                          |
+| array    | Required              | `$coords`    | `[0.350189, 51.248163]`  | Origin coordinates in the form [x, y, z]                                                                                                                     |
+| float    | Required              | `$radius`    | `0.1`                    | The float radius value                                                                                                                                       |
+| string   | Optional              | `$boolean`   | `"and"`                  | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
-### `orWhereSpatialRadius()`
+#### `orWhereSpatialRadius()`
 
-Same as `whereSpatialRadius()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereSpatialRadius()`, but now we will join previously added filters with an `or` instead of an `and`.
 
-### `whereSpatialPolygon()`
+#### `whereSpatialPolygon()`
 
 This filter allows you to filter on your records where your spatial dimension is within a given polygon.
 
@@ -2047,14 +2051,14 @@ This method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**              | **Description**                                                                                                                                              |
 |----------|-----------------------|--------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| string   | Required              | `$dimension` | `"location"`             | The expression to use for your filter.                                                                                                                       |
+| string   | Required              | `$dimension` | `"location"`             | The spatial dimension to filter on.                                                                                                                          |
 | array    | Required              | `$abscissa`  | `[0.350189, 51.248163]`  | (The x axis) Horizontal coordinate for corners of the polygon                                                                                                |
 | array    | Required              | `$ordinate`  | `[-0.613861, 51.248163]` | (The y axis) Vertical coordinate for corners of the polygon                                                                                                  |
-| string   | Optional              | `$boolean`   | `"and"`                  | This influences how this filter will be joined with previous added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string   | Optional              | `$boolean`   | `"and"`                  | This influences how this filter will be joined with previously added filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
-### `orWhereSpatialPolygon()`
+#### `orWhereSpatialPolygon()`
 
-Same as `orWhereSpatialPolygon()`, but now we will join previous added filters with a `or` instead of an `and`.
+Same as `whereSpatialPolygon()`, but now we will join previously added filters with an `or` instead of an `and`.
 
 ## QueryBuilder: Having Filters
 
@@ -2076,7 +2080,7 @@ This method has the following arguments:
 | string     | Required              | `$having`    | "totalClicks" | The metric which you want to filter.                                                                                                                                       |
 | string     | Required              | `$operator`  | ">"           | The operator which you want to use to filter. See below for a complete list of supported operators.                                                                        |
 | string/int | Required              | `$value`     | 50            | The value which you want to use in your filter comparison                                                                                                                  |
-| string     | Optional              | `$boolean`   | "and" / "or"  | This influences how this having-filter will be joined with previous added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
+| string     | Optional              | `$boolean`   | "and" / "or"  | This influences how this having-filter will be joined with previously added having-filters. Should both filters apply ("and") or one or the other ("or") ? Default is "and". |
 
 The following `$operator` values are supported:
 
@@ -2108,17 +2112,17 @@ $builder->having('sumKids', '=', 2);
 We also support using a `Closure` to group various havings in 1 filter. It will receive a `HavingBuilder`. For example:
 
 ```php
-$builder->having(function (FilterBuilder $filterBuilder) {
-    $filterBuilder->orHaving('sumCats', '>', 0);
-    $filterBuilder->orHaving('sumDogs', '>', 0);
+$builder->having(function (HavingBuilder $havingBuilder) {
+    $havingBuilder->orHaving('sumCats', '>', 0);
+    $havingBuilder->orHaving('sumDogs', '>', 0);
 });
 $builder->having('sumKids', '=', 0);
 ```
 
 This would be the same as an SQL equivalent:
-```SELECT ... HAVING (sumKats > 0 OR sumDogs > 0) AND sumKids = 0;```
+```SELECT ... HAVING (sumCats > 0 OR sumDogs > 0) AND sumKids = 0;```
 
-As last, you can also supply a raw filter or having-filter object. For example:
+Lastly, you can also supply a raw filter or having-filter object. For example:
 
 ```php
 // example using a having filter
@@ -2132,7 +2136,7 @@ However, this is not recommended and should not be needed.
 
 #### `orHaving()`
 
-Same as `having()`, but now we will join previous added having-filters with a `or` instead of an `and`.
+Same as `having()`, but now we will join previously added having-filters with an `or` instead of an `and`.
 
 ## QueryBuilder: Virtual Columns
 
@@ -2248,8 +2252,8 @@ The `fieldAccess()` post aggregator has the following arguments:
 | **Type** | **Optional/Required** | **Argument**            | **Example**  | **Description**                                                                                 |
 |----------|-----------------------|-------------------------|--------------|-------------------------------------------------------------------------------------------------|
 | string   | Required              | `$aggregatorOutputName` | totalRevenue | This refers to the output name of the aggregator given in the aggregations portion of the query |
-| string   | Required              | `$as`                   | myField      | The output name as how we can access it                                                         |
-| string   | Optional              | `$finalizing`           | false        | Set this to true if you want to return a finalized value, such as an estimated cardinality      |
+| string   | Optional              | `$as`                   | myField      | The output name as how we can access it. Defaults to `$aggregatorOutputName`.                    |
+| bool     | Optional              | `$finalizing`           | false        | Set this to true if you want to return a finalized value, such as an estimated cardinality      |
 
 #### `constant()`
 
@@ -2308,7 +2312,7 @@ The `expression()` post aggregator has the following arguments:
 | string          | Required              | `$as`         | pi              | The output name as how we can access it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | string          | Required              | `$expression` | field1 + field2 | The expression which you want to compute.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | string          | Optional              | `$ordering`   | "numericFirst"  | If no ordering (or `null`) is specified, the "natural" ordering is used. `numericFirst` ordering always returns finite values first, followed by NaN, and infinite values last. If the expression produces array or complex types, specify ordering as null and use outputType instead to use the correct type native ordering.                                                                                                                                                                                                                                                                                                             |
-| DataType/string | Optional              | `$outputType` | DOUBLE          | Output type is optional, and can be any native Druid type. Use a string value for ARRAY types (e.g. `ARRAY<LONG>`), or COMPLEX types (e.g. `COMPLEX<json>`). If not specified, the output type will be inferred from the expression. If specified and ordering is null, the type native ordering will be used for sorting values. If the expression produces array or complex types, this value must be non-null to ensure the correct ordering is used. If outputType does not match the actual output type of the expression, the value will be attempted to coerced to the specified type, possibly failing if coercion is not possible. |
+| DataType/string | Optional              | `$outputType` | DOUBLE          | Output type is optional, and can be any native Druid type. Use a string value for ARRAY types (e.g. `ARRAY<LONG>`), or COMPLEX types (e.g. `COMPLEX<json>`). If not specified, the output type will be inferred from the expression. If specified and ordering is null, the type native ordering will be used for sorting values. If the expression produces array or complex types, this value must be non-null to ensure the correct ordering is used. If outputType does not match the actual output type of the expression, the value will be attempted to be coerced to the specified type, possibly failing if coercion is not possible. |
 
 #### `divide()`
 
@@ -2353,7 +2357,7 @@ $builder->divide('avgSalary', 'totalSalary', 'nrOfEmployees', 'totalBonus');
 
 **Method 3: Closure**
 
-You can also supply a closure, which allows you to build more advance math calculations.
+You can also supply a closure, which allows you to build more advanced math calculations.
 
 Example:
 
@@ -2376,7 +2380,7 @@ The `divide()` post aggregator has the following arguments:
 
 #### `multiply()`
 
-The `multiply()` post aggregator method multiply the given fields.
+The `multiply()` post aggregator method multiplies the given fields.
 
 Example:
 
@@ -2393,7 +2397,7 @@ The `multiply()` post aggregator has the following arguments:
 
 #### `subtract()`
 
-The `subtract()` post aggregator method subtract the given fields.
+The `subtract()` post aggregator method subtracts the given fields.
 
 Example:
 
@@ -2410,7 +2414,7 @@ The `subtract()` post aggregator has the following arguments:
 
 #### `add()`
 
-The `add()` post aggregator method add the given fields.
+The `add()` post aggregator method adds the given fields.
 
 Example:
 
@@ -2433,11 +2437,11 @@ behaves like regular floating point division.
 Example:
 
 ```php
-// for example: quotient = 15 / 4 = 3 (e.g., how much times fits 4 into 15?)
+// for example: quotient = 15 / 4 = 3.75
 $builder->quotient('quotient', ['dividend', 'divisor']);
 ```
 
-The `add()` post aggregator has the following arguments:
+The `quotient()` post aggregator has the following arguments:
 
 | **Type**                | **Optional/Required** | **Argument**      | **Example**                      | **Description**                                                                 |
 |-------------------------|-----------------------|-------------------|----------------------------------|---------------------------------------------------------------------------------|
@@ -2446,7 +2450,7 @@ The `add()` post aggregator has the following arguments:
 
 #### `longGreatest()` and `doubleGreatest()`
 
-The `longGreatest()` and `doubleGreatest()` post aggregation methods computes the maximum of all fields.
+The `longGreatest()` and `doubleGreatest()` post aggregation methods compute the maximum of all fields.
 
 The difference between the `doubleMax()` aggregator and the `doubleGreatest()` post-aggregator is that doubleMax returns
 the highest value of all rows for one specific column while doubleGreatest returns the highest value of multiple columns
@@ -2471,7 +2475,7 @@ The `longGreatest()` and `doubleGreatest()` post aggregator have the following a
 
 #### `longLeast()` and `doubleLeast()`
 
-The `longLeast()` and `doubleLeast()` post aggregation methods computes the maximum of all fields.
+The `longLeast()` and `doubleLeast()` post aggregation methods compute the minimum of all fields.
 
 The difference between the `doubleMin()` aggregator and the `doubleLeast()` post-aggregator is that doubleMin returns
 the lowest value of all rows for one specific column while doubleLeast returns the lowest value of multiple columns
@@ -2551,7 +2555,7 @@ The `quantile()` post aggregator is used to return an approximation to the value
 given fraction of a hypothetical sorted version of the input stream.
 
 This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
-For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
 
 Example:
 
@@ -2577,7 +2581,7 @@ The `quantile()` post aggregator has the following arguments:
 The `quantiles()` post aggregator returns an array of quantiles corresponding to a given array of fractions.
 
 This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
-For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
 
 Example:
 
@@ -2609,7 +2613,7 @@ If the number of bins is specified instead of split points, the interval between
 divided into the given number of equally-spaced bins.
 
 This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
-For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
 
 Example:
 
@@ -2619,8 +2623,8 @@ $builder = $client->query('dataSource')
     ->interval('now - 1 hour', 'now')
     ->select('country')
     ->doublesSketch('salary', 'salaryData') // this collects the data 
-    // This would spit the data in "buckets". 
-    // It will return an array with the number of people earning, 1000 or less, 
+    // This would split the data in "buckets". 
+    // It will return an array with the number of people earning 1000 or less, 
     // the number of people earning 1001 to 1500, etc.
     ->histogram('salaryGroups', 'salaryData', [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]);  
 ```
@@ -2631,8 +2635,8 @@ The `histogram()` post aggregator has the following arguments:
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
-| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          | |
-| int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` as defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
+| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |
+| int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` are defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
 
 The parameters `$splitPoints` and `$numBins` are mutually exclusive.
 
@@ -2642,7 +2646,7 @@ The `rank()` post aggregator returns an approximation to the rank of a given val
 of the distribution less than that value.
 
 This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
-For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
 
 Example:
 
@@ -2663,10 +2667,7 @@ The `rank()` post aggregator has the following arguments:
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
-| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          | |
-| int            | Optional              | `$numBins`        | `10`          | When no `$splitPoints` as defined, you can set the number of bins and the interval between the minimum and maximum values is divided into the given number of equally-spaced bins.                                                                                                                                                                                        |
-
-The parameters `$splitPoints` and `$numBins` are mutually exclusive.
+| float/int      | Required              | `$value`          | `2500`        | The value for which the rank is computed.                                                                                                                                                                                                                                                                                                                                 |
 
 #### `cdf()`
 
@@ -2679,7 +2680,7 @@ The definition of an interval is inclusive of the left split point and exclusive
 The resulting array of fractions can be viewed as ranks of each split point with one additional rank that is always 1.
 
 This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
-For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
 
 Example:
 
@@ -2698,17 +2699,15 @@ The `cdf()` post aggregator has the following arguments:
 |----------------|-----------------------|-------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string         | Required              | `$as`             | myResult      | The name which will be used in the output result.                                                                                                                                                                                                                                                                                                                         |
 | string/Closure | Required              | `$fieldOrClosure` | myField       | Field which will be used that refers to a DoublesSketch  (fieldAccess or another post aggregator). When a string is given, we assume that it refers to another field in the query. If you give a closure, it will receive an instance of the PostAggregationsBuilder. With this builder you can build another post-aggregation or use constants as input for this method. |
-| array          | Optional              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          | |
+| array          | Required              | `$splitPoints`    | `[0.8, 0.95]` | An array of m unique, monotonically increasing split points divide the real number line into m+1 consecutive disjoint intervals.                                                                                                                                                                                                                                          |
 
 #### `sketchSummary()`
-
-CDF stands for Cumulative Distribution Function.
 
 The `sketchSummary()` post aggregator returns a summary of the sketch that can be used for debugging.
 This is the result of calling toString() method.
 
 This method uses the Apache DataSketches library, and it should be enabled to make use of this post aggregator.  
-For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-quantiles.html
 
 Example:
 
@@ -2917,7 +2916,7 @@ $names = $client->lookup()->names();
 var_export($names);
 ```
 
-This will result a list of all lookups which are defined, for example:
+This will return a list of all lookups which are defined, for example:
 
 ```php
 array (
@@ -2928,7 +2927,7 @@ array (
 
 #### `introspect()`
 
-The `introspect()` method allows you fetch the current content of a lookup (so the key/value list).
+The `introspect()` method allows you to fetch the current content of a lookup (so the key/value list).
 See also: https://druid.apache.org/docs/latest/querying/lookups/#introspect-a-lookup
 
 The `introspect()` method has the following arguments:
@@ -2976,13 +2975,13 @@ $keys = $client->lookup()->keys('countryNames');
 var_export($keys);
 ```
 
-The result will be a keys of the contents of the lookup. For example:
+The result will be a list of the keys of the lookup. For example:
 
 ```php
 array(
-    0 => 'nl'
-    1 => 'be'
-    2 => 'de'
+    0 => 'nl',
+    1 => 'be',
+    2 => 'de',
 )
 ```
 
@@ -3006,7 +3005,7 @@ $values = $client->lookup()->values('countryNames');
 var_export($values);
 ```
 
-The result will be a keys of the contents of the lookup. For example:
+The result will be a list of the values of the lookup. For example:
 
 ```php
 array(
@@ -3024,7 +3023,7 @@ The `tiers()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example** | **Description**                                                                                                                                           |
 |----------|-----------------------|--------------|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| boolean  | Optional              | `$discover`  | `false`     | When set to true (default), we will also discover all tiers which are active in the cluster, and not only in the ones known in the dynamic configuration. |
+| boolean  | Optional              | `$discover`  | `false`     | When set to true (default), we will also discover all tiers which are active in the cluster, and not only the ones known in the dynamic configuration. |
 
 Example:
 
@@ -3092,7 +3091,7 @@ The store method does not have any result. If the store fails, it will throw an 
 
 #### `delete()`
 
-The `delete()` method will delete a lookup from the cluster. If it was last lookup in the tier, then tier is deleted as
+The `delete()` method will delete a lookup from the cluster. If it was the last lookup in the tier, then the tier is deleted as
 well.
 See also: https://druid.apache.org/docs/latest/api-reference/lookups-api/#delete-lookup
 
@@ -3126,7 +3125,7 @@ It is required to also specify how we can parse the file. You can do this with o
 
 Also, if you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
 
-Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+Finally, you can also define the max heap percentage. See: [maxHeapPercentage](#maxheappercentage)
 
 The `uri()` method has the following arguments:
 
@@ -3161,14 +3160,14 @@ It is required to also specify how we can parse the file(s). You can do this wit
 
 Also, if you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
 
-Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+Finally, you can also define the max heap percentage. See: [maxHeapPercentage](#maxheappercentage)
 
 The `uriPrefix()` method has the following arguments:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**          | **Description**                                                                       |
 |----------|-----------------------|--------------|----------------------|---------------------------------------------------------------------------------------|
 | string   | Required              | `$uriPrefix` | "/mount/disk/files/" | The path prefix of where the file(s) can be found                                     |
-| string   | Optional              | `$fileRegex` | "*.json"             | Optional regex for matching the file name under uriPrefix. By default `".*"` is used/ |
+| string   | Optional              | `$fileRegex` | ".*\.json"           | Optional regex for matching the file name under uriPrefix. By default `".*"` is used. |
 
 Example:
 
@@ -3176,7 +3175,7 @@ Example:
 
 $client->lookup()
     // define the location of the file(s)
-    ->uriPrefix("s3://bucket/some/key/", "*.json")
+    ->uriPrefix('s3://bucket/some/key/', '.*\.json')
     // define how the file should be parsed
     ->customJson("country_iso", "country_title")
     // store the lookup
@@ -3225,7 +3224,7 @@ See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global/#j
 
 If you want the lookup to be updated periodically, you should define a poll period. See [pollPeriod](#pollperiod)
 
-Finally, you can also define the max heap percentage, See: [maxHeapPercentage](#maxheappercentage)
+Finally, you can also define the max heap percentage. See: [maxHeapPercentage](#maxheappercentage)
 
 The `jdbc()` method has the following arguments:
 
@@ -3234,13 +3233,13 @@ The `jdbc()` method has the following arguments:
 | string      | Required              | `$connectUri`         | "jdbc:mysql://localhost:3306/druid" | The URI where to connect to.                                                                                                                                                                                                                                                        |
 | string/null | Required              | `$username`           | "johnny"                            | The username for the connection, or null when not used.                                                                                                                                                                                                                             |
 | string/null | Required              | `$password`           | "fooBarBaz123;"                     | The password for the connection, or null when not used.                                                                                                                                                                                                                             |
-| string      | Required              | `$table`              | "customers"                         | A string or array with the server(s)                                                                                                                                                                                                                                                |
+| string      | Required              | `$table`              | "customers"                         | The table which contains the lookup data.                                                                                                                                                                                                                                           |
 | string      | Required              | `$keyColumn`          | "id"                                | The column from the table which is used as key for the lookup.                                                                                                                                                                                                                      |
-| string      | Required              | `$valueColumn`        | "company_name                       | The column from the table which is used as value from the lookup.                                                                                                                                                                                                                   |
+| string      | Required              | `$valueColumn`        | "company_name"                      | The column from the table which is used as value from the lookup.                                                                                                                                                                                                                   |
 | string      | Optional              | `$filter`             | status = 'active' and sector='it'   | Specify a filter (like a where statement) which should be used in the query to fetch the data from the database.                                                                                                                                                                    |
 | string      | Optional              | `$tsColumn`           | "updated_at"                        | Specify a column which contains a datetime. Druid will use this to only fetch rows from the database which have been changed since the last poll request. This reduces database load and is highly recommended!                                                                     |
 | int         | Optional              | `$jitterSeconds`      | 300                                 | How much jitter to add (in seconds) up to maximum as a delay (actual value will be used as random from 0 to jitterSeconds), used to distribute db load more evenly.                                                                                                                 |
-| int         | Optional              | `$loadTimeoutSeconds` | 60                                  | How much time (in seconds) it can take to query and populate lookup values. It will be helpful in lookup updates. On lookup update, it will wait maximum of loadTimeoutSeconds for new lookup to come up and  continue serving from old lookup until new lookup successfully loads. |
+| int         | Optional              | `$loadTimeoutSeconds` | 60                                  | How much time (in seconds) it can take to query and populate lookup values. It will be helpful in lookup updates. On lookup update, it will wait a maximum of loadTimeoutSeconds for new lookup to come up and  continue serving from old lookup until new lookup successfully loads. |
 
 Example:
 
@@ -3265,6 +3264,28 @@ $client->lookup()->jdbc(
 ```
 
 #### `map()`
+
+The `map()` method allows you to define a lookup with a static key/value map.
+
+See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global/#map-lookup
+
+The `map()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                                  | **Description**                          |
+|----------|-----------------------|--------------|----------------------------------------------|------------------------------------------|
+| array    | Required              | `$map`       | `['nl' => 'Netherlands', 'be' => 'Belgium']` | The key/value pairs used for the lookup. |
+
+Example:
+
+```php
+$client->lookup()
+    ->map([
+        'nl' => 'The Netherlands',
+        'be' => 'Belgium',
+        'de' => 'Germany',
+    ])
+    ->store('country_names');
+```
 
 #### `maxHeapPercentage()`
 
@@ -3331,6 +3352,7 @@ Example:
 $client->lookup()
     ->jdbc( ... )    
     ->pollPeriod('PT30M') // renew our data every 30 minutes
+    ->injective()
     ->store( ... );
 ```
 
@@ -3361,12 +3383,12 @@ $client->lookup()
 When a lookup is filled with data from a file, we need to know how to parse the file.
 This can be done with the following parse specification types.
 
-These method only apply on the [uri](#uri) and [uriPrefix](#uriprefix) lookup types.
+These methods only apply to the [uri](#uri) and [uriPrefix](#uriprefix) lookup types.
 
 #### `tsv()`
 
 With this method you can indicate that the file which is going to be processed is a TSV file.
-TSV are files where the content is seperated most commonly by tabs.
+TSV are files where the content is separated most commonly by tabs.
 
 The `tsv()` method has the following arguments:
 
@@ -3374,10 +3396,10 @@ The `tsv()` method has the following arguments:
 |------------|-----------------------|-------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array/null | Required              | `$columns`        | `['id', 'type', 'age', 'company_name']` | List of columns in the tsv file. Set to `null` if the file already has a header row which can be used as column names. In this case you should set `$hasHeaderRow` to `true` | 
 | string     | Optional              | `$keyColumn`      | "id"                                    | The name of the column containing the key. When not specified the first column is used.                                                                                      | 
-| string     | Optional              | `$valueColumn`    | "company_name"                          | The name of the column containing the value. When not specified the seconds column is used.                                                                                  | 
+| string     | Optional              | `$valueColumn`    | "company_name"                          | The name of the column containing the value. When not specified the second column is used.                                                                                  | 
 | string     | Optional              | `$delimiter`      | "\t"                                    | The delimiter in the file. By default this is a tab (`\t`)                                                                                                                   | 
 | string     | Optional              | `$listDelimiter`  | "\n"                                    | The list delimiter in the file. By default this is a "Start of Header" (`\x01`)                                                                                              | 
-| boolean    | Optional              | `$hasHeaderRow`   | true                                    | Set to `true` to indicate that column information can be extracted from the input files header row                                                                           | 
+| boolean    | Optional              | `$hasHeaderRow`   | true                                    | Set to `true` to indicate that column information can be extracted from the input file's header row                                                                           | 
 | int        | Optional              | `$skipHeaderRows` | 2                                       | Number of header rows to be skipped.                                                                                                                                         | 
 
 If both skipHeaderRows and hasHeaderRow options are set, skipHeaderRows is first applied. For example, if you set
@@ -3392,7 +3414,7 @@ Example:
 $client->lookup()
     ->uri('/path/to/my/file.tsv')
     ->tsv(
-        ['id', 'type', 'age', 'company_name',
+        ['id', 'type', 'age', 'company_name'],
         'id',
         'company_name',
         "\t",
@@ -3405,7 +3427,7 @@ $client->lookup()
 #### `csv()`
 
 With this method you can indicate that the file which is going to be processed is a CSV file.
-CSV are files where the content is seperated most comma's.
+CSV are files where the content is separated mostly by commas.
 
 The `csv()` method has the following arguments:
 
@@ -3413,8 +3435,8 @@ The `csv()` method has the following arguments:
 |------------|-----------------------|-------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | array/null | Required              | `$columns`        | `['id', 'type', 'age', 'company_name']` | List of columns in the csv file. Set to `null` if the file already has a header row which can be used as column names. In this case you should set `$hasHeaderRow` to `true` | 
 | string     | Optional              | `$keyColumn`      | "id"                                    | The name of the column containing the key. When not specified the first column is used.                                                                                      | 
-| string     | Optional              | `$valueColumn`    | "company_name"                          | The name of the column containing the value. When not specified the seconds column is used.                                                                                  |  
-| boolean    | Optional              | `$hasHeaderRow`   | true                                    | Set to `true` to indicate that column information can be extracted from the input files header row                                                                           | 
+| string     | Optional              | `$valueColumn`    | "company_name"                          | The name of the column containing the value. When not specified the second column is used.                                                                                  |  
+| boolean    | Optional              | `$hasHeaderRow`   | true                                    | Set to `true` to indicate that column information can be extracted from the input file's header row                                                                           | 
 | int        | Optional              | `$skipHeaderRows` | 2                                       | Number of header rows to be skipped.                                                                                                                                         | 
 
 If both skipHeaderRows and hasHeaderRow options are set, skipHeaderRows is first applied. For example, if you set
@@ -3429,7 +3451,7 @@ Example:
 $client->lookup()
     ->uri('s3://my_bucket/path/to/my/file.csv')
     ->csv(
-        ['id', 'type', 'age', 'company_name',
+        ['id', 'type', 'age', 'company_name'],
         'id',
         'company_name'       
     )
@@ -3458,7 +3480,7 @@ Example:
 // Create our lookup based on JSON files
 $client->lookup()
     ->uri('s3://my_bucket/path/to/my/companies.json')
-    ->json
+    ->json()
     ->pollPeriod('PT5M') // Refresh every 5 minutes
     ->store('company_names');
 ```
@@ -3469,10 +3491,10 @@ With this method you can indicate that the file which is going to be processed i
 
 The `customJson()` method has the following arguments:
 
-| **Type** | **Optional/Required** | **Argument**      | **Example**   | **Description**             |
-|----------|-----------------------|-------------------|---------------|-----------------------------|
-| string   | Required              | `$keyFieldName`   | "id"          | The field name of the key   | 
-| string   | Required              | `$valueFieldName` | "company_name | The field name of the value | 
+| **Type** | **Optional/Required** | **Argument**      | **Example**    | **Description**             |
+|----------|-----------------------|-------------------|----------------|-----------------------------|
+| string   | Required              | `$keyFieldName`   | "id"           | The field name of the key   | 
+| string   | Required              | `$valueFieldName` | "company_name" | The field name of the value | 
 
 Example JSON content:
 
@@ -3495,7 +3517,7 @@ $client->lookup()
 
 ## QueryBuilder: Execute The Query
 
-The following methods allow you to execute the query which you have build using the other methods. There are various
+The following methods allow you to execute the query which you have built using the other methods. There are various
 query types available, or you can use the `execute()` method which tries to detect the best query type for your query.
 
 #### `execute()`
@@ -3525,16 +3547,16 @@ The `QueryContext()` object contains context properties which apply to all queri
 
 **Response**
 
-The response of this method is dependent of the query which is executed. Each query has its own response object.
-However, all query responses are extended of the `QueryResponse` object. Each query response has therefor
+The response of this method is dependent on the query which is executed. Each query has its own response object.
+However, all query responses extend the `QueryResponse` object. Each query response has therefore
 a `$response->raw()` method which will return an array with the raw data returned by druid. There is also
-an `$response->data()` method which returns the data in a "normalized" way so that it can be directly used.
+a `$response->data()` method which returns the data in a "normalized" way so that it can be directly used.
 
 #### `groupBy()`
 
-The `groupBy()` method will execute your build query as a GroupBy query.
+The `groupBy()` method will execute your built query as a GroupBy query.
 
-This the most commonly used query type. However, it is not the quickest. If you are doing aggregations with time as your
+This is the most commonly used query type. However, it is not the quickest. If you are doing aggregations with time as your
 only grouping, or an ordered groupBy over a single dimension, consider Timeseries and TopN queries as well as groupBy.
 
 For more information, see this page: https://druid.apache.org/docs/latest/querying/groupbyquery.html
@@ -3565,7 +3587,7 @@ The `groupBy()` method has the following arguments:
 **Context**
 
 The `groupBy()` method accepts 1 parameter, the query context. This can be given as an array with key => value pairs,
-or an `GroupByQueryContext` object.
+or a `GroupByQueryContext` object.
 
 Example using query context:
 
@@ -3590,13 +3612,13 @@ $result = $builder->groupBy($context);
 
 **Response**
 
-The response of this query will be an `GroupByQueryResponse` (this applies for both query strategies). <br>
+The response of this query will be a `GroupByQueryResponse` (this applies for both query strategies). <br>
 The `$response->raw()` method will return an array with the raw data returned by druid. <br>
 The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used.
 
 #### `topN()`
 
-The `topN()` method will execute your query as an TopN query. TopN queries return a sorted set of results for the values
+The `topN()` method will execute your query as a TopN query. TopN queries return a sorted set of results for the values
 in a given dimension according to some criteria.
 
 For more information about topN queries, see this page: https://druid.apache.org/docs/latest/querying/topnquery.html
@@ -3622,7 +3644,7 @@ The `topN()` method has the following arguments:
 **Context**
 
 The `topN()` method receives 1 parameter, the query context. The query context is either an array with key => value
-pairs, or an `TopNQueryContext` object. The context allows you to change the behaviour of the query execution.
+pairs, or a `TopNQueryContext` object. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3644,7 +3666,7 @@ $response = $builder->topN($context);
 
 **Response**
 
-The response of this query will be an `TopNQueryResponse`. <br>
+The response of this query will be a `TopNQueryResponse`. <br>
 The `$response->raw()` method will return an array with the raw data returned by druid. <br>
 The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used.
 
@@ -3701,7 +3723,7 @@ The `selectQuery()` method has the following arguments:
 **Context**
 
 The `selectQuery()` method receives 1 parameter, the query context. The query context is either an array with key =>
-value pairs, or an `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific
+value pairs, or a `QueryContext` object. There is no SelectQueryContext, as there are no context parameters specific
 for this query type. The context allows you to change the behaviour of the query execution.
 
 Example:
@@ -3717,10 +3739,10 @@ $response = $builder->selectQuery($context);
 
 **Response**
 
-The response of this query will be an `SelectQueryResponse`. <br>
+The response of this query will be a `SelectQueryResponse`. <br>
 The `$response->raw()` method will return an array with the raw data returned by druid. <br>
 The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used. <br>
-The `$response->pagingIdentifier()` method returns paging identifier. The paging identifier will be something like this:
+The `$response->pagingIdentifier()` method returns the paging identifier. The paging identifier will be something like this:
 
 ```
 Array(
@@ -3752,7 +3774,7 @@ $builder = $client->query('wikipedia')
 $response = $builder->scan();
 ```
 
-the `scan()` method has the following parameters:
+The `scan()` method has the following parameters:
 
 | **Type**           | **Optional/Required** | **Argument**    | **Example**                        | **Description**                                                                                                                                                                                 |
 |--------------------|-----------------------|-----------------|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -3764,7 +3786,7 @@ the `scan()` method has the following parameters:
 **Context**
 
 The first parameter of the `scan()` method is the query context. The query context is either an array with key => value
-pairs, or an `ScanQueryContext` object. The context allows you to change the behaviour of the query execution.
+pairs, or a `ScanQueryContext` object. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3780,7 +3802,7 @@ $response = $builder->scan($context);
 
 **Response**
 
-The response of this query will be an `ScanQueryResponse`. <br>
+The response of this query will be a `ScanQueryResponse`. <br>
 The `$response->raw()` method will return an array with the raw data returned by druid. <br>
 The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used.
 
@@ -3858,7 +3880,7 @@ The `timeseries()` method has the following arguments:
 **Context**
 
 The `timeseries()` method receives 1 parameter, the query context. The query context is either an array with key =>
-value pairs, or an `TimeSeriesQueryContext` object.
+value pairs, or a `TimeSeriesQueryContext` object.
 The context allows you to change the behaviour of the query execution.
 
 Example:
@@ -3874,14 +3896,14 @@ $response = $builder->timeseries($context);
 
 **Response**
 
-The response of this query will be an `TimeSeriesQueryResponse`. <br>
+The response of this query will be a `TimeSeriesQueryResponse`. <br>
 The `$response->raw()` method will return an array with the raw data returned by druid. <br>
 The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used.
 
 #### `search()`
 
 The `search()` method executes your query as a Search Query. A Search Query will return the unique values of a dimension
-which matches a specific search selection. The response will be containing the dimension which matched your search
+which matches a specific search selection. The response will contain the dimension which matched your search
 criteria, the value of your dimension and the number of occurrences.
 
 For more information about the Search Query, see this
@@ -3913,7 +3935,7 @@ The `search()` method has the following arguments:
 **Context**
 
 The `search()` method receives as first parameter the query context. The query context is either an array with key =>
-value pairs, or an `QueryContext` object. The context allows you to change the behaviour of the query execution.
+value pairs, or a `QueryContext` object. The context allows you to change the behaviour of the query execution.
 
 Example:
 
@@ -3928,7 +3950,7 @@ $response = $builder->search($context);
 
 **Response**
 
-The response of this query will be an `SearchQueryResponse`. <br>
+The response of this query will be a `SearchQueryResponse`. <br>
 The `$response->raw()` method will return an array with the raw data returned by druid. <br>
 The `$response->data()` method returns the data as an array in a "normalized" way so that it can be directly used.
 
@@ -3939,7 +3961,7 @@ Besides querying data, the `DruidClient` class also allows you to extract metada
 The `metadata()` method returns a `MetadataBuilder` instance. With this instance you can retrieve various metadata
 information about your druid setup.
 
-Below we have described the most common used methods.
+Below we have described the most commonly used methods.
 
 #### `metadata()->intervals()`
 
@@ -4040,7 +4062,7 @@ The `structure()` method has the following parameters:
 | **Type** | **Optional/Required** | **Argument**  | **Example** | **Description**                                                                                                                                                   |
 |----------|-----------------------|---------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string   | Required              | `$dataSource` | "wikipedia" | The name of the dataSource (table) which you want to retrieve interval information from.                                                                          |
-| string   | Optional              | `$structure`  | "last"      | The interval where we read the structure data from. You can use "first", "last" or a raw interval string like "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" |
+| string   | Optional              | `$interval`   | "last"      | The interval where we read the structure data from. You can use "first", "last" or a raw interval string like "2019-08-19T14:00:00.000Z/2019-08-19T15:00:00.000Z" |
 
 Example response:
 
@@ -4103,7 +4125,7 @@ The `timeBoundary()` method has the following parameters:
 | **Type**                   | **Optional/Required** | **Argument**     | **Example**         | **Description**                                                                                                                                                          |
 |----------------------------|-----------------------|------------------|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string/DataSourceInterface | Required              | `$dataSource`    | "wikipedia"         | The name of the dataSource (table) where you want the boundary from. This can also be a DataSource object.                                                               |
-| null/ string/TimeBound     | Optional              | `$bound`         | TimeBound::BOTH     | Set to TimeBound::MAX_TIME or TimeBound::MIN_TIME ( or "maxTime"/"minTime") to return only the latest or earliest timestamp. Default to returning both if not set (null) |
+| null/ string/TimeBound     | Optional              | `$bound`         | TimeBound::BOTH     | Set to TimeBound::MAX_TIME or TimeBound::MIN_TIME ( or "maxTime"/"minTime") to return only the latest or earliest timestamp. Defaults to returning both if not set (null) |
 | Closure                    | Optional              | `$filterBuilder` | See below           | A closure which receives a FilterBuilder. When given, we will get the bound(s) for the records which match with the given filter.                                        |
 | Context                    | Optional              | `$context`       | ['timeout' => 1000] | Query context parameters.                                                                                                                                                |
 
@@ -4148,7 +4170,7 @@ The `rowCount()` method has the following parameters:
 |---------------------------|-----------------------|---------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | string                    | Required              | `$dataSource` | "wikipedia"      | The name of the dataSource (table) where you want to count the rows for.                                                                                                                  |
 | string/int/DateTime       | Required              | `$start`      | "now - 24 hours" | The start date to retrieve the row count for. See [interval()](#interval) for all allowed formats.                                                                                        |
-| /string/int/DateTime/null | Optional              | `$stop`       | "now"            | The stop date to retrieve the row count for. See [interval()](#interval) for all allowed formats. When a string containing a slash is given as start date, the stop date can be left out. |
+| string/int/DateTime/null | Optional              | `$stop`       | "now"            | The stop date to retrieve the row count for. See [interval()](#interval) for all allowed formats. When a string containing a slash is given as start date, the stop date can be left out. |
 
 Example:
 
@@ -4161,13 +4183,13 @@ $numRows = $client->metadata()->rowCount("wikipedia", "now - 1 week", "now");
 
 Druid stores data in segments. When you want to update some data, you have to rebuild the _whole_ segment.
 Therefore, we use smaller segments when the data is still "fresh".
-In our experience, if data needs to be updated (rebuild), it is most of the time fresh data.
-By keeping fresh data in smaller segments, we only need to rebuild 1 hour of data, instead for a whole month or such.
+In our experience, if data needs to be updated (rebuilt), it is most of the time fresh data.
+By keeping fresh data in smaller segments, we only need to rebuild 1 hour of data, instead of a whole month or such.
 
 We use for example hour segments for "today" and "yesterday", and we have some processes which will change this data
 into bigger segments after that.
 
-Reindexing and compacting data is therefor very important to us. Here we show you how you can use this.
+Reindexing and compacting data is therefore very important to us. Here we show you how you can use this.
 
 **Note**: when you re-index data, druid will collect the data and put it in a new segment. The old segments are not
 deleted, but marked as unused. This is the same principle as Laravel soft-deletes. To permanently delete the unused
@@ -4281,7 +4303,7 @@ echo "Final status: \n";
 print_r($status->data());
 ```
 
-The `reindex` method will return a `IndexTaskBuilder` object which allows you to specify the rest of the
+The `reindex` method will return an `IndexTaskBuilder` object which allows you to specify the rest of the
 required data. By default, we will use a `DruidInputSource` to ingest data from an existing data source.
 
 If you want you can change the data source where the data is read from using the `inputSource()` method.
@@ -4339,11 +4361,11 @@ Below we will describe all available input sources, but first we will explain ho
 The `$client->index(...)` method returns an `IndexTaskBuilder` object, which allows you to specify your index task.
 
 It is important to understand that druid will replace your SEGMENTS by default!
-So, for example, of you stored your data in DAY segments, then you have to import your data for that whole segment in
+So, for example, if you stored your data in DAY segments, then you have to import your data for that whole segment in
 one task. Otherwise, the second task will replace the previous data.
 
 To solve this, you can use `appendToExisting()`, which will allow you to append to an existing segment without removing
-the previous imported data.
+the previously imported data.
 
 For more methods on the `IndexTaskBuilder`, see the example below. Above each method call we have added some comment as
 explanation:
@@ -4391,8 +4413,8 @@ $taskId = $client->index('myTableName', $inputSource)
     // Execute the task
     ->execute();
     
-// If you want to stop your task (for whatever reason), you can call:    
-// $client->cancelQuery($taskId);    
+// If you want to stop your task (for whatever reason), you can shut it down via the overlord:    
+// $client->executeRawRequest('post', $overlordUrl . '/druid/indexer/v1/task/' . urlencode($taskId) . '/shutdown');    
     
 // Now poll for our final status    
 $status = $client->pollTaskStatus($taskId);
@@ -4403,7 +4425,8 @@ print_r($status->data());
 
 ## Input Sources
 
-To index data, you need to specify where the data is read from. You can do this with an
+To index data, you need to specify where the data is read from. You can do this with an input source. Below are the
+available input sources.
 
 #### `AzureInputSource`
 
@@ -4440,7 +4463,7 @@ $indexTaskBuilder = $client->index('azureData', $inputSource);
 
 #### `GoogleCloudInputSource`
 
-The GoogleCloudInputSource reads data from your Azure Blob store or Azure Data Lake sources.
+The GoogleCloudInputSource reads data from your Google Cloud Storage buckets.
 
 Important! You need to include the `druid-google-extensions` as an extension to use the Google Cloud Storage input
 source.
@@ -4449,9 +4472,9 @@ The constructor allows you to specify the following parameters:
 
 | **Type** | **Optional/Required** | **Argument** | **Example**                                                                                                         | **Description**                                                                                                                               |
 |----------|-----------------------|--------------|---------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| array    | Optional              | `$uris`      | `["gs://<container>/<path-to-file>", ...]`                                                                          | Array of URIs where the Google Cloud Storage to be ingested are located.                                                                      |
-| array    | Optional              | `$prefixes`  | `["gs://<container>/<prefix>", ...]`                                                                                | Array of URI prefixes for the locations of Google Cloud Storage to ingest. Empty objects starting with one of the given prefixes are skipped. |
-| array    | Optional              | `$objects`   | `[ ["bucket" => "container", "path" => "path/file1.json"], ["bucket" => "container", "path" => "path/file2.json"]]` | Array of Google Cloud Storage to ingest.                                                                                                      |
+| array    | Optional              | `$uris`      | `["gs://<container>/<path-to-file>", ...]`                                                                          | Array of URIs where the Google Cloud Storage objects to be ingested are located.                                                              |
+| array    | Optional              | `$prefixes`  | `["gs://<container>/<prefix>", ...]`                                                                                | Array of URI prefixes for the locations of Google Cloud Storage objects to ingest. Empty objects starting with one of the given prefixes are skipped. |
+| array    | Optional              | `$objects`   | `[ ["bucket" => "container", "path" => "path/file1.json"], ["bucket" => "container", "path" => "path/file2.json"]]` | Array of Google Cloud Storage objects to ingest.                                                                                              |
 
 Either one of these parameters is required. When you execute your index task in parallel, each task will process one (or
 more)
@@ -4644,19 +4667,19 @@ Example:
 // First, define your inputSource. 
 
 // Example 1, specify the files to ingest
-$inputSource = new \Level23\Druid\InputSources\LocalInputSource([
+$inputSource = new \Level23\Druid\InputSources\LocalInputSource(
     ["/bar/foo/file.json", "/foo/bar/file.json"]
-]);
+);
 
 // Example 2, specify a dir and wildcard for files to ingest
-$inputSource = new \Level23\Druid\InputSources\LocalInputSource([
+$inputSource = new \Level23\Druid\InputSources\LocalInputSource(
     [],
     "/path/to/dir",
     "*.json"
-]);
+);
 
-# Now, start building your task (import it into a datasource called inlineData) 
-$indexTaskBuilder = $client->index('inlineData', $inputSource);
+# Now, start building your task (import it into a datasource called localData) 
+$indexTaskBuilder = $client->index('localData', $inputSource);
 // $indexTaskBuilder-> ...
 ```
 
@@ -4668,8 +4691,8 @@ The constructor allows you to specify the following parameters:
 
 | **Type**          | **Optional/Required** | **Argument**  | **Example**                          | **Description**                                                                                                        |
 |-------------------|-----------------------|---------------|--------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| array             | Required              | `$dataSource` | `["/bar/foo", "/foo/bar"]`           | The datasource where you want to read data from.                                                                       |
-| IntervalInterface | Optional              | `$inteval`    | `new Interval('now - 1 day', 'now')` | The interval which will be used for reading data from your datasource. Only records within this interval will be read. |
+| string            | Required              | `$dataSource` | `"hits"`                             | The datasource where you want to read data from.                                                                       |
+| IntervalInterface | Optional              | `$interval`    | `new Interval('now - 1 day', 'now')` | The interval which will be used for reading data from your datasource. Only records within this interval will be read. |
 | FilterInterface   | Optional              | `$filter`     | (See below)                          | A filter which will be used to select records which will be read. Only records matching this filter will be used.      |
 
 Example:
@@ -4677,7 +4700,7 @@ Example:
 ```php
 // First, define your inputSource. 
 
-// Example 1, specify the files to ingest
+// Read data from the "hits" dataSource
 $inputSource = new \Level23\Druid\InputSources\DruidInputSource('hits');
 
 // only process records from a week ago until now.
@@ -4702,8 +4725,8 @@ Note: If you want to use mysql as source, you must have enabled the extension `m
 If you want to use postgresql as source, you must have enabled the extension `postgresql-metadata-storage` in druid.
 
 Since this input source has a fixed input format for reading events, no inputFormat field needs to be specified in the
-ingestion spec when using this input source. Please refer to the Recommended practices section below before using this
-input source.
+ingestion spec when using this input source. Please refer to the recommended practices in the Druid documentation
+before using this input source.
 
 See https://druid.apache.org/docs/latest/ingestion/native-batch.html#sql-input-source for more information.
 
@@ -4722,7 +4745,7 @@ Example:
 ```php
 // First, define your inputSource. 
 
-// Example 1, specify the files to ingest
+// Read data from the results of these SQL queries
 $inputSource = new \Level23\Druid\InputSources\SqlInputSource(
     "jdbc:mysql://host:port/schema",
     "username",
@@ -4751,14 +4774,14 @@ The constructor allows you to specify the following parameters:
 
 | **Type** | **Optional/Required** | **Argument**    | **Example**                                          | **Description**                                                        |
 |----------|-----------------------|-----------------|------------------------------------------------------|------------------------------------------------------------------------|
-| array    | Required              | `$inputSources` | `[new HttpInputSource(...), new S3InputSource(...)]` | List with other import sources which should be processed all together. |
+| array    | Required              | `$inputSources` | `[new HttpInputSource(...), new S3InputSource(...)]` | List with other input sources which should be processed all together. |
 
 Example:
 
 ```php
 // First, define your inputSource. 
 
-// Example 1, specify the files to ingest
+// Combine multiple input sources
 $inputSource = new \Level23\Druid\InputSources\CombiningInputSource([
     new \Level23\Druid\InputSources\HttpInputSource(['http://127.0.0.1/file.json']),
     new \Level23\Druid\InputSources\S3InputSource(['s3://bucket/file2.json'])
@@ -4776,13 +4799,13 @@ You can choose several input formats in your TaskBuilder. Below they are explain
 
 ## `csvFormat()`
 
-The `csvFormat()` allows you to specify how your csv data is build.
+The `csvFormat()` allows you to specify how your csv data is built.
 
 This method allows you to specify the following parameters:
 
 | **Type** | **Optional/Required** | **Argument**             | **Example**       | **Description**                                                                                           |
 |----------|-----------------------|--------------------------|-------------------|-----------------------------------------------------------------------------------------------------------|
-| array    | Required              | `$columns`               | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
+| array    | Required              | `$columns`               | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order as the columns of your data. |
 | string   | Optional              | `$listDelimiter`         | `"$"`             | A custom delimiter for multi-value dimensions.                                                            |
 | boolean  | Optional              | `$findColumnsFromHeader` | `true`            | If this is set, the task will find the column names from the header row.                                  |
 | int      | Optional              | `$skipHeaderRows`        | `2`               | If this is set, the task will skip the first skipHeaderRows rows.                                         |
@@ -4805,13 +4828,13 @@ $builder = $client->index('data', $inputSource)
 
 ## `tsvFormat()`
 
-The `tsvFormat()` allows you to specify how your tsv data is build.
+The `tsvFormat()` allows you to specify how your tsv data is built.
 
 This method allows you to specify the following parameters:
 
 | **Type** | **Optional/Required** | **Argument**             | **Example**       | **Description**                                                                                           |
 |----------|-----------------------|--------------------------|-------------------|-----------------------------------------------------------------------------------------------------------|
-| array    | Required              | `$columns`               | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order with the columns of your data. |
+| array    | Required              | `$columns`               | `["name", "age"]` | Specifies the columns of the data. The columns should be in the same order as the columns of your data. |
 | string   | Optional              | `$delimiter`             | `"\t"`            | A custom delimiter for data values (default is a tab `\t`).                                               |
 | string   | Optional              | `$listDelimiter`         | `"$"`             | A custom delimiter for multi-value dimensions.                                                            |
 | boolean  | Optional              | `$findColumnsFromHeader` | `true`            | If this is set, the task will find the column names from the header row.                                  |
@@ -4847,10 +4870,10 @@ See also:
 
 This method allows you to specify the following parameters:
 
-| **Type**    | **Optional/Required** | **Argument**   | **Example** | **Description**                                                                   |
-|-------------|-----------------------|----------------|-------------|-----------------------------------------------------------------------------------|
-| FlattenSpec | Optional              | `$flattenSpec` | (see below) | Specifies flattening configuration for nested JSON data. See below for more info. |
-| array       | Optional              | `$features`    | `"\t"`      | List the features which apply for this json input format.                         |
+| **Type**    | **Optional/Required** | **Argument**   | **Example**                       | **Description**                                                                   |
+|-------------|-----------------------|----------------|-----------------------------------|-----------------------------------------------------------------------------------|
+| FlattenSpec | Optional              | `$flattenSpec` | (see below)                       | Specifies flattening configuration for nested JSON data. See below for more info. |
+| array       | Optional              | `$features`    | `['ALLOW_SINGLE_QUOTES' => true]` | List the features which apply for this json input format.                         |
 
 The flattenSpec object bridges the gap between potentially nested input data, such as JSON or Avro, and Druid's flat
 data model.
@@ -4873,7 +4896,7 @@ $builder = $client->index('data', $inputSource)
 
 ## `orcFormat()`
 
-The `orcFormat()` allows you to specify the ORC input format. However, to make use of this input source, you should have
+The `orcFormat()` allows you to specify the ORC input format. However, to make use of this input format, you should have
 added the `druid-orc-extensions` to druid.
 
 See:
@@ -4908,7 +4931,7 @@ $builder = $client->index('data', $inputSource)
 
 ## `parquetFormat()`
 
-The `parquetFormat()` allows you to specify the Parquet input format. However, to make use of this input source, you
+The `parquetFormat()` allows you to specify the Parquet input format. However, to make use of this input format, you
 should have
 added the `druid-parquet-extensions` to druid.
 
@@ -4943,7 +4966,7 @@ $builder = $client->index('data', $inputSource)
 
 ## `protobufFormat()`
 
-The `parquetFormat()` allows you to specify the Protobuf input format. However, to make use of this input source, you
+The `protobufFormat()` allows you to specify the Protobuf input format. However, to make use of this input format, you
 should have
 added the `druid-protobuf-extensions` to druid.
 
