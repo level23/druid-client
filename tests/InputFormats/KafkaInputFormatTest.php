@@ -35,7 +35,9 @@ class KafkaInputFormatTest extends TestCase
             'kafka.h.',
             'kafka.k',
             'kafka.ts',
-            'kafka.t'
+            'kafka.t',
+            'kafka.o',
+            'kafka.p'
         );
 
         $this->assertEquals([
@@ -47,6 +49,8 @@ class KafkaInputFormatTest extends TestCase
             'keyColumnName'       => 'kafka.k',
             'timestampColumnName' => 'kafka.ts',
             'topicColumnName'     => 'kafka.t',
+            'offsetColumnName'    => 'kafka.o',
+            'partitionColumnName' => 'kafka.p',
         ], $input->toArray());
     }
 }

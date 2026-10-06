@@ -90,7 +90,10 @@ class HasPostAggregationsTest extends TestCase
         ];
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Incorrect field type given in postAggregation fields');
+        $this->expectExceptionMessage(
+            'Incorrect field type given in postAggregation fields. Only strings (which will become' .
+            'FieldAccess types), Objects of the type PostAggregatorInterface and Closure\'s are allowed!'
+        );
 
         /** @noinspection PhpParamsInspection */
         $this->builder->shouldAllowMockingProtectedMethods()->buildFields($fields);

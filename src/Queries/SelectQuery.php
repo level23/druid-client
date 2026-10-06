@@ -21,8 +21,9 @@ use Level23\Druid\DataSources\DataSourceInterface;
  * not support pagination. However, the Scan query type is able to return a virtually unlimited number of results even
  * without pagination, making it unnecessary in many cases.
  *
- * @see     https://druid.apache.org/docs/latest/querying/select-query.html
- * @package Level23\Druid\Queries
+ * @see        https://druid.apache.org/docs/latest/querying/select-query.html
+ * @package    Level23\Druid\Queries
+ * @deprecated The select query was removed in Druid 0.17. Use the ScanQuery instead.
  */
 class SelectQuery implements QueryInterface
 {

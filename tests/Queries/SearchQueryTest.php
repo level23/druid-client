@@ -32,7 +32,7 @@ class SearchQueryTest extends TestCase
 
         $query = new SearchQuery(
             $dataSource,
-            Granularity::DAY,
+            'DAY',
             $intervals,
             $searchFilter
         );
@@ -48,7 +48,7 @@ class SearchQueryTest extends TestCase
 
         $this->assertEquals($expected, $query->toArray());
 
-        $query->setSort(SortingOrder::STRLEN);
+        $query->setSort('STRLEN');
         $expected['sort']['type'] = SortingOrder::STRLEN->value;
         $this->assertEquals($expected, $query->toArray());
 

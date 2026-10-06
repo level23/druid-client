@@ -47,7 +47,7 @@ class CompactTaskTest extends TestCase
         $task = new CompactTask(
             'mySource',
             $interval,
-            $segmentGranularity,
+            strtoupper($segmentGranularity),
             ($tuningConfig ? new TuningConfig($tuningConfig) : null),
             ($context ? new TaskContext($context) : null),
             $targetCompactionSizeBytes,

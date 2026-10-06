@@ -27,6 +27,16 @@ use function json_decode;
 
 class DruidClient
 {
+    /**
+     * Keys whose string values are masked in the task log.
+     */
+    protected const SECRET_KEYS = [
+        'httpAuthenticationPassword',
+        'password',
+        'secretAccessKey',
+        'sessionToken',
+    ];
+
     protected GuzzleClient $client;
 
     protected ?LoggerInterface $logger = null;
@@ -213,7 +223,7 @@ class DruidClient
         /** @var array<string,array<mixed>|int|string> $payload */
         $payload = $task->toArray();
 
-        $this->log('Executing druid task: ' . var_export($payload, true));
+        $this->log('Executing druid task: ' . var_export($this->redactSecrets($payload), true));
 
         /** @var string[] $result */
         $result = $this->executeRawRequest(
@@ -304,6 +314,28 @@ class DruidClient
                 $exception
             );
         }
+    }
+
+    /**
+     * Mask credentials and request headers so they do not end up in the log.
+     *
+     * @param array<mixed> $data
+     *
+     * @return array<mixed>
+     */
+    protected function redactSecrets(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if ($key === 'requestHeaders' && is_array($value)) {
+                $data[$key] = array_map(fn() => '***', $value);
+            } elseif (is_string($value) && in_array($key, static::SECRET_KEYS, true)) {
+                $data[$key] = '***';
+            } elseif (is_array($value)) {
+                $data[$key] = $this->redactSecrets($value);
+            }
+        }
+
+        return $data;
     }
 
     /**

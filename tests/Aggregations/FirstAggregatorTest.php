@@ -46,4 +46,11 @@ class FirstAggregatorTest extends TestCase
             'fieldName' => 'abc',
         ], $aggregator->toArray());
     }
+
+    public function testUpperCaseType(): void
+    {
+        $aggregator = new FirstAggregator('abc', 'dim123', 'DOUBLE');
+
+        $this->assertEquals('doubleFirst', $aggregator->toArray()['type']);
+    }
 }

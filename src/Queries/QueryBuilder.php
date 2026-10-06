@@ -202,9 +202,15 @@ class QueryBuilder
      * @param array<string> $metrics
      *
      * @return $this
+     * @deprecated The select query was removed in Druid 0.17. Use a scan query instead.
      */
     public function metrics(array $metrics): self
     {
+        trigger_error(
+            'QueryBuilder::metrics() is deprecated, the select query was removed in Druid 0.17. Use scan() instead.',
+            E_USER_DEPRECATED
+        );
+
         $this->metrics = $metrics;
 
         return $this;
@@ -216,9 +222,16 @@ class QueryBuilder
      * @param array<string,int> $pagingIdentifier
      *
      * @return \Level23\Druid\Queries\QueryBuilder
+     * @deprecated The select query was removed in Druid 0.17. Use a scan query with limit/offset instead.
      */
     public function pagingIdentifier(array $pagingIdentifier): QueryBuilder
     {
+        trigger_error(
+            'QueryBuilder::pagingIdentifier() is deprecated, the select query was removed in Druid 0.17. ' .
+            'Use scan() with limit/offset instead.',
+            E_USER_DEPRECATED
+        );
+
         $this->pagingIdentifier = $pagingIdentifier;
 
         return $this;
@@ -325,9 +338,15 @@ class QueryBuilder
      * @return SelectQueryResponse
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @deprecated The select query was removed in Druid 0.17. Use scan() instead.
      */
     public function selectQuery(array|QueryContext $context = []): SelectQueryResponse
     {
+        trigger_error(
+            'QueryBuilder::selectQuery() is deprecated, the select query was removed in Druid 0.17. Use scan() instead.',
+            E_USER_DEPRECATED
+        );
+
         $query = $this->buildSelectQuery($context);
 
         $rawResponse = $this->client->executeQuery($query);
@@ -893,6 +912,7 @@ class QueryBuilder
      * Check if we should use a select query.
      *
      * @return bool
+     * @deprecated The select query was removed in Druid 0.17. Will be removed in v5.0.
      */
     protected function isSelectQuery(): bool
     {

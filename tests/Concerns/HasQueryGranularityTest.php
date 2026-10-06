@@ -17,7 +17,7 @@ class HasQueryGranularityTest extends TestCase
     {
         $builder = new IndexTaskBuilder(new DruidClient([]), 'dataSource');
 
-        $result = $builder->queryGranularity('week');
+        $result = $builder->queryGranularity('WEEK');
 
         $this->assertEquals($builder, $result);
 

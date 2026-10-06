@@ -233,7 +233,11 @@ class TaskBuilderTest extends TestCase
 
         if (!$expectsValid) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('Error, invalid interval given.');
+            $this->expectExceptionMessage(
+                'Error, invalid interval given. The given dates do not match a complete interval!' . PHP_EOL .
+                'Given interval: ' . (new Interval($givenInterval))->getInterval() . PHP_EOL .
+                'Valid intervals: ' . implode(', ', array_keys($allIntervals))
+            );
         }
 
         $builder->shouldAllowMockingProtectedMethods()->validateInterval(

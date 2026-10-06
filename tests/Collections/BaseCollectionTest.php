@@ -85,7 +85,9 @@ class BaseCollectionTest extends TestCase
     public function testOffsetSetIncorrectType(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('We only accept');
+        $this->expectExceptionMessage(
+            'We only accept Level23\\Druid\\Aggregations\\AggregatorInterface as values!'
+        );
 
         $collection = new AggregationCollection();
         // @phpstan-ignore-next-line

@@ -197,6 +197,16 @@ class HasFilterTest extends TestCase
         $this->assertEquals($expected, $response);
     }
 
+    public function testNormalizeIntervalsExceptionMessage(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Invalid type given in the interval array. We cannot process ' . var_export([null], true)
+        );
+
+        $this->builder->shouldAllowMockingProtectedMethods()->normalizeIntervals([null]);
+    }
+
     /**
      * @param string $class
      *
@@ -1130,5 +1140,35 @@ class HasFilterTest extends TestCase
         $this->assertEquals([
             new VirtualColumn('concat(foo, bar)', 'fooBar', 'string'),
         ], $this->getProperty($builder, 'virtualColumns'));
+    }
+
+    /**
+     * @return array<array<string|array<mixed>>>
+     */
+    public static function upperCaseBooleanDataProvider(): array
+    {
+        return [
+            ['whereNull', ['city', 'AND']],
+            ['whereSpatialRectangular', ['location', [1, 2], [3, 4], 'AND']],
+            ['whereSpatialRadius', ['location', [1, 2], 0.5, 'AND']],
+            ['whereSpatialPolygon', ['location', [1, 2], [3, 4], 'AND']],
+        ];
+    }
+
+    /**
+     * @param string       $method
+     * @param array<mixed> $arguments
+     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    #[DataProvider('upperCaseBooleanDataProvider')]
+    public function testUpperCaseBooleanIsAndFilter(string $method, array $arguments): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSource');
+        $builder->where('name', '=', 'John');
+
+        $builder->$method(...$arguments);
+
+        $this->assertInstanceOf(AndFilter::class, $builder->getFilter());
     }
 }

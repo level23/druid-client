@@ -44,4 +44,15 @@ class ArbitraryGranularityTest extends TestCase
             'intervals'        => $intervalCollection->toArray(),
         ], $granularity->toArray());
     }
+
+    public function testUpperCaseGranularity(): void
+    {
+        $granularity = new ArbitraryGranularity(
+            'DAY',
+            true,
+            new IntervalCollection(new Interval('12-04-2019', '15-04-2019'))
+        );
+
+        $this->assertEquals('day', $granularity->toArray()['queryGranularity']);
+    }
 }

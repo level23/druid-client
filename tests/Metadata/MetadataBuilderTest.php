@@ -220,7 +220,7 @@ class MetadataBuilderTest extends TestCase
         $druidClient = new DruidClient([]);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(' Maybe there are no intervals for this dataSource?');
+        $this->expectExceptionMessage('Error, interval "" is invalid. Maybe there are no intervals for this dataSource?');
 
         $druidClient->metadata()->structure('wikipedia', '');
     }
@@ -267,9 +267,14 @@ class MetadataBuilderTest extends TestCase
 
         $exception = false;
 
-        $intervalResponse = reset($intervalResponse);
+        $rawIntervalResponse = $intervalResponse;
+        $intervalResponse    = reset($intervalResponse);
         if (!$intervalResponse) {
             $this->expectException(QueryResponseException::class);
+            $this->expectExceptionMessage(
+                'We failed to retrieve a correct structure for dataSource: ' . $dataSource . '.' . PHP_EOL .
+                'Failed to parse raw interval structure data: ' . var_export($rawIntervalResponse, true)
+            );
             $exception = true;
         }
 
@@ -682,7 +687,7 @@ class MetadataBuilderTest extends TestCase
             ],
             [
                 [],
-                'Received incorrect response:',
+                'Received incorrect response: ' . var_export([[]], true),
             ],
 
         ];

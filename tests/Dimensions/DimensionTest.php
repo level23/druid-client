@@ -87,4 +87,12 @@ class DimensionTest extends TestCase
         $this->assertEquals($outputName, $dimensionObj->getOutputName());
         $this->assertEquals($dimension, $dimensionObj->getDimension());
     }
+
+    public function testDimensionWithUnsupportedOutputType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incorrect type given: double. This can either be "long", "float" or "string"');
+
+        new Dimension('price', null, 'double');
+    }
 }

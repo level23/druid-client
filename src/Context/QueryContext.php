@@ -337,4 +337,49 @@ class QueryContext extends Context implements ContextInterface
 
         return $this;
     }
+
+    /**
+     * Per-segment processing timeout in millis, beyond which unfinished queries will be cancelled.
+     * Requires Druid 35 or higher.
+     *
+     * @param int $perSegmentTimeout
+     *
+     * @return $this
+     */
+    public function setPerSegmentTimeout(int $perSegmentTimeout): self
+    {
+        $this->properties['perSegmentTimeout'] = $perSegmentTimeout;
+
+        return $this;
+    }
+
+    /**
+     * Whether the Broker should query clone Historicals: "excludeClones" (default), "includeClones" or
+     * "preferClones". Requires Druid 34 or higher.
+     *
+     * @param string $cloneQueryMode
+     *
+     * @return $this
+     */
+    public function setCloneQueryMode(string $cloneQueryMode): self
+    {
+        $this->properties['cloneQueryMode'] = $cloneQueryMode;
+
+        return $this;
+    }
+
+    /**
+     * Whether realtime segments are queried: "include" (default), "exclude" or "exclusive".
+     * Requires Druid 38 or higher.
+     *
+     * @param string $realtimeSegmentsMode
+     *
+     * @return $this
+     */
+    public function setRealtimeSegmentsMode(string $realtimeSegmentsMode): self
+    {
+        $this->properties['realtimeSegmentsMode'] = $realtimeSegmentsMode;
+
+        return $this;
+    }
 }

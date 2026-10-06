@@ -28,7 +28,9 @@ class GreatestPostAggregatorTest extends TestCase
 
         if (!in_array(strtolower($type), ['long', 'double'])) {
             $this->expectException(InvalidArgumentException::class);
-            $this->expectExceptionMessage('Supported types are "long" and "double".');
+            $this->expectExceptionMessage(
+                'Supported types are "long" and "double". Value given: ' . strtolower($type)
+            );
 
             new GreatestPostAggregator('greatestValue', $collections, $type);
         } else {

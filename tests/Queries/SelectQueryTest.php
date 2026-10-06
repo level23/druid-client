@@ -80,7 +80,7 @@ class SelectQueryTest extends TestCase
         $expected['filter'] = $filter->toArray();
         $this->assertEquals($expected, $query->toArray());
 
-        $query->setGranularity(Granularity::DAY);
+        $query->setGranularity('DAY');
         $expected['granularity'] = Granularity::DAY->value;
         $this->assertEquals($expected, $query->toArray());
 

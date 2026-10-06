@@ -8,6 +8,7 @@ use Level23\Druid\InputFormats\CsvInputFormat;
 use Level23\Druid\InputFormats\TsvInputFormat;
 use Level23\Druid\InputFormats\OrcInputFormat;
 use Level23\Druid\InputFormats\JsonInputFormat;
+use Level23\Druid\InputFormats\LinesInputFormat;
 use Level23\Druid\InputFormats\KafkaInputFormat;
 use Level23\Druid\InputFormats\AvroOcfInputFormat;
 use Level23\Druid\InputFormats\ParquetInputFormat;
@@ -52,14 +53,23 @@ trait HasInputFormat
      *                                             lines and then extract column information from the third line.
      *                                             columns will be ignored if this is set to true.
      * @param int           $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
+     * @param bool|null     $tryParseNumbers       If this is set, the task will attempt to parse numeric strings into
+     *                                             long or double. Requires Druid 32 or higher.
      */
     public function csvFormat(
         ?array $columns = null,
         ?string $listDelimiter = null,
         ?bool $findColumnsFromHeader = null,
-        int $skipHeaderRows = 0
+        int $skipHeaderRows = 0,
+        ?bool $tryParseNumbers = null
     ): self {
-        $this->inputFormat = new CsvInputFormat($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);
+        $this->inputFormat = new CsvInputFormat(
+            $columns,
+            $listDelimiter,
+            $findColumnsFromHeader,
+            $skipHeaderRows,
+            $tryParseNumbers
+        );
 
         return $this;
     }
@@ -80,20 +90,24 @@ trait HasInputFormat
      *                                                  this is set to true.
      * @param int                $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows
      *                                                  rows.
+     * @param bool|null          $tryParseNumbers       If this is set, the task will attempt to parse numeric strings
+     *                                                  into long or double. Requires Druid 32 or higher.
      */
     public function tsvFormat(
         ?array $columns = null,
         ?string $delimiter = null,
         ?string $listDelimiter = null,
         ?bool $findColumnsFromHeader = null,
-        int $skipHeaderRows = 0
+        int $skipHeaderRows = 0,
+        ?bool $tryParseNumbers = null
     ): self {
         $this->inputFormat = new TsvInputFormat(
             $columns,
             $delimiter,
             $listDelimiter,
             $findColumnsFromHeader,
-            $skipHeaderRows
+            $skipHeaderRows,
+            $tryParseNumbers
         );
 
         return $this;
@@ -238,6 +252,10 @@ trait HasInputFormat
      *                                                         'kafka.timestamp'.
      * @param string|null               $topicColumnName     Column name for the Kafka topic. Druid default:
      *                                                         'kafka.topic'.
+     * @param string|null               $offsetColumnName    Column name for the Kafka record offset. Druid default:
+     *                                                         'kafka.offset'. Requires Druid 36 or higher.
+     * @param string|null               $partitionColumnName Column name for the Kafka partition number. Druid
+     *                                                         default: 'kafka.partition'. Requires Druid 36 or higher.
      *
      * @see https://druid.apache.org/docs/latest/ingestion/data-formats#kafka
      */
@@ -248,7 +266,9 @@ trait HasInputFormat
         ?string $headerColumnPrefix = null,
         ?string $keyColumnName = null,
         ?string $timestampColumnName = null,
-        ?string $topicColumnName = null
+        ?string $topicColumnName = null,
+        ?string $offsetColumnName = null,
+        ?string $partitionColumnName = null
     ): self {
         $this->inputFormat = new KafkaInputFormat(
             $valueFormat,
@@ -257,8 +277,24 @@ trait HasInputFormat
             $headerColumnPrefix,
             $keyColumnName,
             $timestampColumnName,
-            $topicColumnName
+            $topicColumnName,
+            $offsetColumnName,
+            $partitionColumnName
         );
+
+        return $this;
+    }
+
+    /**
+     * Specify that we use the lines input format. Each line is read as UTF-8 text into a single column named "line".
+     *
+     * Requires Druid 35 or higher.
+     *
+     * @see https://druid.apache.org/docs/latest/ingestion/data-formats#lines
+     */
+    public function linesFormat(): self
+    {
+        $this->inputFormat = new LinesInputFormat();
 
         return $this;
     }

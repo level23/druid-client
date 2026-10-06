@@ -76,4 +76,12 @@ class FlattenSpecTest extends TestCase
 
         $spec->field($type, 'field');
     }
+
+    public function testUpperCaseType(): void
+    {
+        $spec = new FlattenSpec();
+        $spec->field('ROOT', 'myField');
+
+        $this->assertEquals([['type' => 'root', 'name' => 'myField']], $spec->toArray()['fields']);
+    }
 }

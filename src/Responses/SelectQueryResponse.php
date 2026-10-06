@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Responses;
 
+/**
+ * @deprecated The select query was removed in Druid 0.17. Use the ScanQueryResponse instead.
+ */
 class SelectQueryResponse extends QueryResponse
 {
     /**

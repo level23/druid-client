@@ -66,7 +66,7 @@ class GroupByQueryTest extends TestCase
             $dimensionCollection,
             $intervalCollection,
             [$sum],
-            $granularity
+            strtoupper($granularity)
         );
 
         $havingFilter = new GreaterThanHavingFilter('age', 18);

@@ -19,7 +19,7 @@ This package only requires Guzzle as a dependency. The PHP and Guzzle version re
 
 | Druid Client Version | PHP Requirements                        | Guzzle Requirements | Druid Requirements |
 |----------------------|-----------------------------------------|---------------------|--------------------|
-| 4.* (current)        | PHP 8.2 or higher                       | Version 7.0         | >= 28.0.0          |
+| 4.* (current)        | PHP 8.2 or higher                       | Version 7.0 or 8.0  | >= 28.0.0          |
 | 3.*                  | PHP 8.2 or higher                       | Version 7.0         |                    |
 | 2.*                  | PHP 7.4, 8.0, 8.1 and 8.2.              | Version 6.2 or 7.*  |                    |
 | 1.*                  | PHP version 7.2, 7.4, 8.0, 8.1 and 8.2. | Version 6.2 or 7.*  |                    |
@@ -253,6 +253,7 @@ for more information.
         - [orcFormat()](#orcformat)
         - [parquetFormat()](#parquetformat)
         - [protobufFormat()](#protobufformat)
+        - [linesFormat()](#linesformat)
 
 # Documentation
 
@@ -702,6 +703,21 @@ The `orderByDirection()` method has the following arguments:
 
 #### `pagingIdentifier()`
 
+**Deprecated:** the select query was removed in Druid 0.17 and this method triggers an `E_USER_DEPRECATED` notice.
+It will be removed in v5.0. Use [`scan()`](#scan) with a limit and offset to paginate instead:
+
+```php
+$builder = $client->query('wikipedia')
+    ->interval('2015-09-12 00:00:00', '2015-09-13 00:00:00')
+    ->select(['__time', 'channel', 'user', 'deleted', 'added']);
+
+// Page 1
+$page1 = $builder->limit(10)->scan();
+
+// Page 2
+$page2 = $builder->limit(10, 10)->scan();
+```
+
 The `pagingIdentifier()` allows you to do paginating on the result set. This only works on SELECT queries.
 
 When you execute a select query, you will return a paging identifier. To request the next "page", use this paging
@@ -794,6 +810,9 @@ The `subtotals()` method has the following arguments:
 | array    | Required              | `$subtotals` | `[ ['country', 'city'], ['country'], [] ]` | An array which contains array's with dimensions where you want to receive your totals for. See example above. |
 
 #### `metrics()`
+
+**Deprecated:** the select query was removed in Druid 0.17 and this method triggers an `E_USER_DEPRECATED` notice.
+It will be removed in v5.0. Use [`scan()`](#scan) instead.
 
 With the `metrics()` method you can specify which metrics you want to select when you are executing a `selectQuery()`.
 
@@ -3623,6 +3642,9 @@ The `$response->data()` method returns the data as an array in a "normalized" wa
 
 #### `selectQuery()`
 
+**Deprecated:** the select query was removed in Druid 0.17 and this method triggers an `E_USER_DEPRECATED` notice.
+It will be removed in v5.0. Use [`scan()`](#scan) instead.
+
 The `selectQuery()` method will execute your query as a select query. It's important to not mix up this method with the
 `select()` method, which will select dimensions for your query.
 
@@ -4525,6 +4547,7 @@ The constructor allows you to specify the following parameters:
 | array        | Required              | `$uris`      | `["http://example.com/uri1", "http://example2.com/uri2"]` | URIs of the input files.                                                                                                                                 |
 | string       | Optional              | `$username`  | `"john"`                                                  | Username to use for authentication with specified URIs. Can be optionally used if the URIs specified in the spec require a Basic Authentication Header.  |
 | string/array | Optional              | `$password`  | `"isTheBest"`                                             | Password or PasswordProvider to use with specified URIs. Can be optionally used if the URIs specified in the spec require a Basic Authentication Header. |
+| array        | Optional              | `$requestHeaders` | `["Accept" => "application/ndjson"]`                 | Headers to send with each request. Requires Druid 32+ and the headers must be allowed via `druid.ingestion.http.allowedHeaders`. Values are masked in the log. |
 
 When you execute your index task in parallel, each task will process one (or more)
 of the files (uris) given.
@@ -4554,6 +4577,14 @@ $inputSource = new \Level23\Druid\InputSources\HttpInputSource(
         "type" => "environment",
         "variable" => "HTTP_INPUT_SOURCE_PW"
     ]
+);
+
+// Example 4. Send extra request headers. 
+$inputSource = new \Level23\Druid\InputSources\HttpInputSource(
+    ["http://example.com/uri1"],
+    null,
+    null,
+    ["Accept" => "application/ndjson"]
 );
 
 # Now, start building your task (import it into a datasource called httpData) 
@@ -4747,6 +4778,7 @@ This method allows you to specify the following parameters:
 | string   | Optional              | `$listDelimiter`         | `"$"`             | A custom delimiter for multi-value dimensions.                                                            |
 | boolean  | Optional              | `$findColumnsFromHeader` | `true`            | If this is set, the task will find the column names from the header row.                                  |
 | int      | Optional              | `$skipHeaderRows`        | `2`               | If this is set, the task will skip the first skipHeaderRows rows.                                         |
+| boolean  | Optional              | `$tryParseNumbers`       | `true`            | Parse numeric strings into long or double values. Requires Druid 32+.                                     |
 
 Note that skipHeaderRows will be applied before finding column names from the header. For example, if you set
 skipHeaderRows to 2 and findColumnsFromHeader to true, the task will skip the first two lines and then extract column
@@ -4776,6 +4808,7 @@ This method allows you to specify the following parameters:
 | string   | Optional              | `$listDelimiter`         | `"$"`             | A custom delimiter for multi-value dimensions.                                                            |
 | boolean  | Optional              | `$findColumnsFromHeader` | `true`            | If this is set, the task will find the column names from the header row.                                  |
 | int      | Optional              | `$skipHeaderRows`        | `2`               | If this is set, the task will skip the first skipHeaderRows rows.                                         |
+| boolean  | Optional              | `$tryParseNumbers`       | `true`            | Parse numeric strings into long or double values. Requires Druid 32+.                                     |
 
 Be sure to change the delimiter to the appropriate delimiter for your data. Like CSV, you must specify the columns
 and which subset of the columns you want indexed.
@@ -4935,6 +4968,19 @@ $builder = $client->index('data', $inputSource)
         "descriptor" => "file:///tmp/metrics.desc",
         "protoMessageType" => "Metrics"
     ], $spec)
+    //-> ....
+;
+```
+
+## `linesFormat()`
+
+The `linesFormat()` reads each line of the input as UTF-8 text into a single column named `line`. Requires Druid 35+.
+
+```php
+$inputSource = new HttpInputSource( /*...*/ );
+
+$builder = $client->index('data', $inputSource)
+    ->linesFormat()
     //-> ....
 ;
 ```

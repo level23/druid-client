@@ -16,6 +16,8 @@ class CsvInputFormat implements InputFormatInterface
 
     protected int $skipHeaderRows;
 
+    protected ?bool $tryParseNumbers;
+
     /**
      * @param string[]|null $columns               Specifies the columns of the data. The columns should be in the same
      *                                             order with the columns of your data.
@@ -27,17 +29,21 @@ class CsvInputFormat implements InputFormatInterface
      *                                             and then extract column information from the third line. columns will
      *                                             be ignored if this is set to true.
      * @param int           $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows rows.
+     * @param bool|null     $tryParseNumbers       If this is set, the task will attempt to parse numeric strings into
+     *                                             long or double. Requires Druid 32 or higher.
      */
     public function __construct(
         ?array $columns = null,
         ?string $listDelimiter = null,
         ?bool $findColumnsFromHeader = null,
-        int $skipHeaderRows = 0
+        int $skipHeaderRows = 0,
+        ?bool $tryParseNumbers = null
     ) {
         $this->listDelimiter         = $listDelimiter;
         $this->columns               = $columns;
         $this->findColumnsFromHeader = $findColumnsFromHeader;
         $this->skipHeaderRows        = $skipHeaderRows;
+        $this->tryParseNumbers       = $tryParseNumbers;
     }
 
     /**
@@ -63,6 +69,10 @@ class CsvInputFormat implements InputFormatInterface
 
         if ($this->skipHeaderRows > 0) {
             $result['skipHeaderRows'] = $this->skipHeaderRows;
+        }
+
+        if ($this->tryParseNumbers !== null) {
+            $result['tryParseNumbers'] = $this->tryParseNumbers;
         }
 
         return $result;

@@ -78,4 +78,15 @@ class ArithmeticPostAggregatorTest extends TestCase
             $collections
         );
     }
+
+    public function testUpperCaseFunction(): void
+    {
+        $aggregator = new ArithmeticPostAggregator(
+            'average',
+            'QUOTIENT',
+            new PostAggregationCollection(new FieldAccessPostAggregator('totals', 'totals'))
+        );
+
+        $this->assertEquals('quotient', $aggregator->toArray()['fn']);
+    }
 }

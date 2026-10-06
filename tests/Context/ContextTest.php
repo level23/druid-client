@@ -108,7 +108,9 @@ class ContextTest extends TestCase
     public function testNonScalarValue(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid value');
+        $this->expectExceptionMessage(
+            'Invalid value ' . var_export(['oops'], true) . ' for priority in Level23\\Druid\\Context\\Context'
+        );
 
         /** @noinspection PhpParamsInspection */
         // @phpstan-ignore-next-line

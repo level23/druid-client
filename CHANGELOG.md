@@ -1,5 +1,20 @@
 # Changelog
 
+**v4.2.0** (2026-10-06)
+
+- Allow Guzzle 8 (`^7.0|^8.0`).
+- Deprecated the select query (removed in Druid 0.17): `selectQuery()`, `pagingIdentifier()`, `metrics()`, `SelectQuery`, `SelectQueryResponse` and `isSelectQuery()`. The methods now trigger an `E_USER_DEPRECATED` notice. `execute()` still routes a `pagingIdentifier` to select; this will be removed in v5.0. Use `scan()` with limit/offset instead.
+- Added Druid 32-38 options:
+  - `tryParseNumbers` for the CSV and TSV input formats.
+  - `requestHeaders` for the `HttpInputSource`. Headers must be allowed via `druid.ingestion.http.allowedHeaders`.
+  - New `lines` input format via `linesFormat()`.
+  - `offsetColumnName` and `partitionColumnName` for the Kafka input format.
+  - Query context setters `setPerSegmentTimeout()`, `setCloneQueryMode()`, `setRealtimeSegmentsMode()` and groupBy context setter `setMaxSpillFileCount()`.
+- Credentials and request headers are masked when a task is logged.
+- Fixed `ScanQuery::setResultFormat('compactedList')` throwing a `ValueError`. The string value is now matched case-insensitive.
+- Note: `csvFormat()`, `tsvFormat()`, `kafkaFormat()` and the related constructors got new optional parameters. Subclasses overriding them must add these parameters.
+- Improved test coverage (mutation score 87% to 94%).
+
 **v4.1.4**
 
 - `execute()` auto-detect: aggregation-only queries with no dimensions now route to a timeseries query instead of groupBy. Timeseries is the canonical efficient shape for "one number over the interval".

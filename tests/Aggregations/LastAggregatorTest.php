@@ -47,4 +47,11 @@ class LastAggregatorTest extends TestCase
             'fieldName' => 'abc',
         ], $aggregator->toArray());
     }
+
+    public function testUpperCaseType(): void
+    {
+        $aggregator = new LastAggregator('abc', 'dim123', 'DOUBLE');
+
+        $this->assertEquals('doubleLast', $aggregator->toArray()['type']);
+    }
 }

@@ -29,7 +29,7 @@ class TimeSeriesQueryTest extends TestCase
         $intervals   = new IntervalCollection(new Interval('12-02-2019', '13-02-2019'));
         $granularity = 'week';
 
-        $query = new TimeSeriesQuery($dataSource, $intervals, $granularity);
+        $query = new TimeSeriesQuery($dataSource, $intervals, strtoupper($granularity));
 
         $expected = [
             'queryType'   => 'timeseries',
