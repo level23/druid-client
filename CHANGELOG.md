@@ -10,6 +10,7 @@
   - New `lines` input format via `linesFormat()`.
   - `offsetColumnName` and `partitionColumnName` for the Kafka input format.
   - Query context setters `setPerSegmentTimeout()`, `setCloneQueryMode()`, `setRealtimeSegmentsMode()` and groupBy context setter `setMaxSpillFileCount()`.
+- Added `DruidClient::shutdownTask($taskId)` to shut down a running task.
 - Credentials and request headers are masked when a task is logged.
 - Fixed `ScanQuery::setResultFormat('compactedList')` throwing a `ValueError`. The string value is now matched case-insensitive.
 - Note: `csvFormat()`, `tsvFormat()`, `kafkaFormat()` and the related constructors got new optional parameters. Subclasses overriding them must add these parameters.

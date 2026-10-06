@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Level23\Druid\Metadata\MetadataBuilder metadata()
  * @method static \Level23\Druid\Responses\TaskResponse taskStatus(string $taskId)
  * @method static \Level23\Druid\Responses\TaskResponse pollTaskStatus(string $taskId)
+ * @method static void shutdownTask(string $taskId)
  * @method static \Level23\Druid\Tasks\CompactTaskBuilder compact(string $dataSource)
  * @method static \Level23\Druid\Tasks\KillTaskBuilder kill(string $dataSource)
  * @method static \Level23\Druid\Tasks\IndexTaskBuilder index(string $dataSource, \Level23\Druid\InputSources\InputSourceInterface $inputSource)

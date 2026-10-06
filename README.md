@@ -109,6 +109,7 @@ for more information.
     - [DruidClient::reindex()](#druidclientreindex)
     - [DruidClient::pollTaskStatus()](#druidclientpolltaskstatus)
     - [DruidClient::taskStatus()](#druidclienttaskstatus)
+    - [DruidClient::shutdownTask()](#druidclientshutdowntask)
     - [DruidClient::metadata()](#druidclientmetadata)
     - [QueryBuilder: Generic Query Methods](#querybuilder-generic-query-methods)
         - [interval()](#interval)
@@ -573,6 +574,27 @@ For more information and an example, see [reindex()](#reindex) or [compact()](#c
 The `pollTaskStatus()` method allows you to wait until the status of a task is other than `RUNNING`.
 
 For more information and an example, see [reindex()](#reindex) or [compact()](#compact).
+
+#### `DruidClient::shutdownTask()`
+
+The `shutdownTask()` method allows you to shut down a running task, for example an index, compact or kill task.
+
+The `shutdownTask()` method has the following arguments:
+
+| **Type** | **Optional/Required** | **Argument** | **Example**                    | **Description**                          |
+|----------|-----------------------|--------------|--------------------------------|------------------------------------------|
+| string   | Required              | `$taskId`    | `"index_parallel_hits_abc123"` | The identifier of the task to shut down. |
+
+Example:
+
+```php
+$taskId = $client->index('hits', $inputSource)
+    // ...
+    ->execute();
+
+// Stop the task
+$client->shutdownTask($taskId);
+```
 
 #### `DruidClient::metadata()`
 
@@ -4413,8 +4435,8 @@ $taskId = $client->index('myTableName', $inputSource)
     // Execute the task
     ->execute();
     
-// If you want to stop your task (for whatever reason), you can shut it down via the overlord:    
-// $client->executeRawRequest('post', $overlordUrl . '/druid/indexer/v1/task/' . urlencode($taskId) . '/shutdown');    
+// If you want to stop your task (for whatever reason), you can shut it down:
+// $client->shutdownTask($taskId);
     
 // Now poll for our final status    
 $status = $client->pollTaskStatus($taskId);

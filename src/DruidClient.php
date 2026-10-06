@@ -470,6 +470,20 @@ class DruidClient
     }
 
     /**
+     * Shut down a running druid task.
+     *
+     * @param string $taskId
+     *
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function shutdownTask(string $taskId): void
+    {
+        $url = $this->config('overlord_url') . '/druid/indexer/v1/task/' . urlencode($taskId) . '/shutdown';
+
+        $this->executeRawRequest('post', $url);
+    }
+
+    /**
      * Fetch the status of a druid task.
      *
      * @param string $taskId

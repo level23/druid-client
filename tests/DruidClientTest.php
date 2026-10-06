@@ -431,6 +431,28 @@ class DruidClientTest extends TestCase
     }
 
     /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testShutdownTask(): void
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $client->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('config')
+            ->once()
+            ->with('overlord_url')
+            ->andReturn('https://overlord.test');
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('post', 'https://overlord.test/druid/indexer/v1/task/index_parallel%2F1234/shutdown')
+            ->andReturn(['task' => 'index_parallel/1234']);
+
+        $client->shutdownTask('index_parallel/1234');
+    }
+
+    /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function testPollTaskStatus(): void
