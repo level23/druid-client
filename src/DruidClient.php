@@ -19,6 +19,7 @@ use Level23\Druid\Tasks\IndexTaskBuilder;
 use Level23\Druid\Responses\TaskResponse;
 use Level23\Druid\Metadata\MetadataBuilder;
 use Level23\Druid\Tasks\CompactTaskBuilder;
+use Level23\Druid\Responses\SqlQueryResponse;
 use Level23\Druid\InputSources\DruidInputSource;
 use Level23\Druid\Exceptions\QueryResponseException;
 use Level23\Druid\InputSources\InputSourceInterface;
@@ -158,6 +159,45 @@ class DruidClient
         $this->log('Received druid response: ' . var_export($result, true));
 
         return $result;
+    }
+
+    /**
+     * Execute a raw Druid SQL query and return the response.
+     *
+     * The default Druid SQL `resultFormat` is `"object"` — rows come back as `[{column => value, ...}, ...]` which
+     * matches what `QueryResponse::data()` consumers expect.
+     *
+     * @param string                          $query      The SQL query to execute. Use `?` for parameter placeholders.
+     * @param array<int,array<string,mixed>>  $parameters List of parameters, one per `?` placeholder. Each entry must
+     *                                                    be shaped as `['type' => 'VARCHAR', 'value' => 'foo']`. See
+     *                                                    the Druid SQL types reference for supported `type` values.
+     * @param array<string,string|int|bool>   $context    Optional query context (e.g. `priority`, `useApproximateCountDistinct`).
+     *
+     * @return \Level23\Druid\Responses\SqlQueryResponse
+     * @throws \Level23\Druid\Exceptions\QueryResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * @see https://druid.apache.org/docs/latest/querying/sql-api#request-body
+     */
+    public function sql(string $query, array $parameters = [], array $context = []): SqlQueryResponse
+    {
+        $payload = ['query' => $query];
+
+        if (count($parameters) > 0) {
+            $payload['parameters'] = $parameters;
+        }
+
+        if (count($context) > 0) {
+            $payload['context'] = $context;
+        }
+
+        $this->log('Executing druid SQL query: ' . json_encode($payload, JSON_UNESCAPED_SLASHES));
+
+        $result = $this->executeRawRequest('post', $this->config('broker_url') . '/druid/v2/sql/', $payload);
+
+        $this->log('Received druid SQL response: ' . var_export($result, true));
+
+        return new SqlQueryResponse($result);
     }
 
     /**

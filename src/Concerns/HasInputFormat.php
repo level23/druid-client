@@ -8,8 +8,11 @@ use Level23\Druid\InputFormats\CsvInputFormat;
 use Level23\Druid\InputFormats\TsvInputFormat;
 use Level23\Druid\InputFormats\OrcInputFormat;
 use Level23\Druid\InputFormats\JsonInputFormat;
+use Level23\Druid\InputFormats\KafkaInputFormat;
+use Level23\Druid\InputFormats\AvroOcfInputFormat;
 use Level23\Druid\InputFormats\ParquetInputFormat;
 use Level23\Druid\InputFormats\ProtobufInputFormat;
+use Level23\Druid\InputFormats\AvroStreamInputFormat;
 use Level23\Druid\InputFormats\InputFormatInterface;
 
 trait HasInputFormat
@@ -155,6 +158,107 @@ trait HasInputFormat
     public function protobufFormat(array $protoBytesDecoder, ?FlattenSpec $flattenSpec = null): self
     {
         $this->inputFormat = new ProtobufInputFormat($protoBytesDecoder, $flattenSpec);
+
+        return $this;
+    }
+
+    /**
+     * Specify that we use Avro stream as input format.
+     *
+     * To use the Avro stream input format, load the Druid Avro extension (druid-avro-extensions).
+     *
+     * @param array<string,mixed> $avroBytesDecoder    Specifies how to decode bytes into an Avro record. The shape
+     *                                                  depends on the decoder type (schema_registry, schema_inline,
+     *                                                  schema_repo, etc.).
+     * @param FlattenSpec|null    $flattenSpec         Specifies flattening configuration for nested Avro data.
+     * @param bool|null           $binaryAsString      Treat binary Avro columns as UTF-8 strings. Default false.
+     * @param bool|null           $extractUnionsByType Extract Avro union fields as a structured object keyed by the
+     *                                                  union member type instead of the raw value. Default false.
+     *
+     * @see https://druid.apache.org/docs/latest/ingestion/data-formats#avro-stream
+     */
+    public function avroStreamFormat(
+        array $avroBytesDecoder,
+        ?FlattenSpec $flattenSpec = null,
+        ?bool $binaryAsString = null,
+        ?bool $extractUnionsByType = null
+    ): self {
+        $this->inputFormat = new AvroStreamInputFormat(
+            $avroBytesDecoder,
+            $flattenSpec,
+            $binaryAsString,
+            $extractUnionsByType
+        );
+
+        return $this;
+    }
+
+    /**
+     * Specify that we use Avro Object Container Files as input format (batch).
+     *
+     * To use the Avro OCF input format, load the Druid Avro extension (druid-avro-extensions).
+     *
+     * @param FlattenSpec|null         $flattenSpec         Specifies flattening configuration for nested Avro data.
+     * @param array<string,mixed>|null $schema              Optional reader schema as an Avro JSON record. When omitted
+     *                                                       the writer schema embedded in the OCF file is used.
+     * @param bool|null                $binaryAsString      Treat binary Avro columns as UTF-8 strings. Default false.
+     * @param bool|null                $extractUnionsByType Extract Avro union fields as a structured object keyed by
+     *                                                       the union member type instead of the raw value. Default
+     *                                                       false.
+     *
+     * @see https://druid.apache.org/docs/latest/ingestion/data-formats#avro-ocf
+     */
+    public function avroOcfFormat(
+        ?FlattenSpec $flattenSpec = null,
+        ?array $schema = null,
+        ?bool $binaryAsString = null,
+        ?bool $extractUnionsByType = null
+    ): self {
+        $this->inputFormat = new AvroOcfInputFormat(
+            $flattenSpec,
+            $schema,
+            $binaryAsString,
+            $extractUnionsByType
+        );
+
+        return $this;
+    }
+
+    /**
+     * Specify that we use the Kafka input format. This wraps another input format and exposes Kafka envelope
+     * metadata (timestamp, headers, key, topic) as columns alongside the parsed value.
+     *
+     * @param InputFormatInterface      $valueFormat         Input format used to parse the Kafka record value.
+     * @param InputFormatInterface|null $keyFormat           Input format used to parse the Kafka record key.
+     * @param array<string,string>|null $headerFormat        Header decoder spec, e.g. ['type' => 'string', 'encoding'
+     *                                                         => 'UTF-8'].
+     * @param string|null               $headerColumnPrefix  Prefix for header columns. Druid default: 'kafka.header.'.
+     * @param string|null               $keyColumnName       Column name for the parsed key. Druid default: 'kafka.key'.
+     * @param string|null               $timestampColumnName Column name for the Kafka timestamp. Druid default:
+     *                                                         'kafka.timestamp'.
+     * @param string|null               $topicColumnName     Column name for the Kafka topic. Druid default:
+     *                                                         'kafka.topic'.
+     *
+     * @see https://druid.apache.org/docs/latest/ingestion/data-formats#kafka
+     */
+    public function kafkaFormat(
+        InputFormatInterface $valueFormat,
+        ?InputFormatInterface $keyFormat = null,
+        ?array $headerFormat = null,
+        ?string $headerColumnPrefix = null,
+        ?string $keyColumnName = null,
+        ?string $timestampColumnName = null,
+        ?string $topicColumnName = null
+    ): self {
+        $this->inputFormat = new KafkaInputFormat(
+            $valueFormat,
+            $keyFormat,
+            $headerFormat,
+            $headerColumnPrefix,
+            $keyColumnName,
+            $timestampColumnName,
+            $topicColumnName
+        );
 
         return $this;
     }

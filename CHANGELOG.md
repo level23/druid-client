@@ -1,5 +1,12 @@
 # Changelog
 
+**v4.1.4**
+
+- `execute()` auto-detect: aggregation-only queries with no dimensions now route to a timeseries query instead of groupBy. Timeseries is the canonical efficient shape for "one number over the interval".
+- `execute()` auto-detect: when a search filter (`searchContains`/`searchFragment`/`searchRegex`) or a `pagingIdentifier` is set, scan no longer wins. The explicit signal now routes to a search or select query as intended.
+- Added input formats: `avro_stream`, `avro_ocf`, `kafka`.
+- Added raw SQL support via `DruidClient::sql($query, $parameters, $context)`. Returns a `SqlQueryResponse` with `raw()` and `data()` methods matching the existing query-response shape.
+
 **v4.1.3**
 
 - Fixed 6 security vulnerabilities by updating dependencies.

@@ -854,6 +854,16 @@ class QueryBuilder
      */
     protected function isTimeSeriesQuery(): bool
     {
+        // No dimensions but one or more aggregations: a timeseries query with
+        // the configured granularity is the canonical efficient shape for
+        // "aggregate(s) over the interval(s)". Fall through to groupBy when
+        // groupBy-only features (having / subtotals) are in use.
+        if (count($this->dimensions) === 0) {
+            return count($this->aggregations) > 0
+                && $this->having === null
+                && count($this->subtotals) === 0;
+        }
+
         if (count($this->dimensions) != 1) {
             return false;
         }
@@ -906,6 +916,14 @@ class QueryBuilder
      */
     protected function isScanQuery(): bool
     {
+        // Defer to the more specific search/select shapes when the user gave
+        // an explicit signal for them. Otherwise scan would silently win for
+        // any aggregation-less query and the search filter / paging identifier
+        // would be dropped.
+        if ($this->searchFilter !== null || $this->pagingIdentifier !== null) {
+            return false;
+        }
+
         return count($this->aggregations) == 0 && $this->isDimensionsListScanCompliant();
     }
 
