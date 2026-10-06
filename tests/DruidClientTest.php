@@ -109,6 +109,27 @@ class DruidClientTest extends TestCase
         $client->executeRawRequest('GET', '/druid/coordinator/v1/servers?simple');
     }
 
+    public function testAuthWithPostAndDelete(): void
+    {
+        $guzzle = Mockery::mock(Client::class);
+        $client = new DruidClient([], $guzzle);
+
+        $client->auth('foo', 'bar');
+
+        $guzzle->shouldReceive('post')
+            ->once()
+            ->with('/druid/v2', ['json' => ['query' => 'here'], 'auth' => ['foo', 'bar']])
+            ->andReturn(new Response(200, [], '{ "status" : "OK" }'));
+
+        $guzzle->shouldReceive('delete')
+            ->once()
+            ->with('/druid/v2/abc', ['auth' => ['foo', 'bar']])
+            ->andReturn(new Response(202, [], ''));
+
+        $this->assertEquals(['status' => 'OK'], $client->executeRawRequest('POST', '/druid/v2', ['query' => 'here']));
+        $this->assertEquals([], $client->executeRawRequest('DELETE', '/druid/v2/abc'));
+    }
+
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
     public function testQuery(): void
@@ -270,15 +291,20 @@ class DruidClientTest extends TestCase
 
         $this->assertNull($client->getLogger());
 
+        $payload = ['task' => 'here'];
+
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('debug')->twice();
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Executing druid task: ' . var_export($payload, true), []);
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Received task response: ' . var_export(['task' => 'myTaskIdentifier'], true), []);
 
         $client->setLogger($logger);
 
         // Test that our getter also works.
         $this->assertEquals($logger, $client->getLogger());
-
-        $payload = ['task' => 'here'];
 
         $task->shouldReceive('toArray')
             ->once()
@@ -300,6 +326,74 @@ class DruidClientTest extends TestCase
         $response = $client->executeTask($task);
 
         $this->assertEquals('myTaskIdentifier', $response);
+    }
+
+    /**
+     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testExecuteTaskRedactsSecretsInLog(): void
+    {
+        $task = Mockery::mock(TaskInterface::class);
+
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $payload = [
+            'inputSource' => [
+                'type'                       => 'http',
+                'httpAuthenticationPassword' => 'secret',
+                'requestHeaders'             => ['Authorization' => 'Bearer token'],
+                'nested'                     => [
+                    'password'        => 'secret',
+                    'secretAccessKey' => 'secret',
+                    'sessionToken'    => 'secret',
+                    'username'        => 'john',
+                ],
+                'provider'                   => ['password' => ['type' => 'environment', 'variable' => 'PW']],
+            ],
+        ];
+
+        $redacted = [
+            'inputSource' => [
+                'type'                       => 'http',
+                'httpAuthenticationPassword' => '***',
+                'requestHeaders'             => ['Authorization' => '***'],
+                'nested'                     => [
+                    'password'        => '***',
+                    'secretAccessKey' => '***',
+                    'sessionToken'    => '***',
+                    'username'        => 'john',
+                ],
+                'provider'                   => ['password' => ['type' => 'environment', 'variable' => 'PW']],
+            ],
+        ];
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Executing druid task: ' . var_export($redacted, true), []);
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Received task response: ' . var_export(['task' => 'myTaskIdentifier'], true), []);
+
+        $client->setLogger($logger);
+
+        $task->shouldReceive('toArray')
+            ->once()
+            ->andReturn($payload);
+
+        $client->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('config')
+            ->once()
+            ->with('overlord_url')
+            ->andReturn('http://overlord.test');
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('post', 'http://overlord.test/druid/indexer/v1/task', $payload)
+            ->andReturn(['task' => 'myTaskIdentifier']);
+
+        $this->assertEquals('myTaskIdentifier', $client->executeTask($task));
     }
 
     /**
@@ -337,6 +431,28 @@ class DruidClientTest extends TestCase
     }
 
     /**
+     * @throws \Level23\Druid\Exceptions\QueryResponseException|\GuzzleHttp\Exception\GuzzleException
+     */
+    public function testShutdownTask(): void
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $client->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('config')
+            ->once()
+            ->with('overlord_url')
+            ->andReturn('https://overlord.test');
+
+        $client->shouldReceive('executeRawRequest')
+            ->once()
+            ->with('post', 'https://overlord.test/druid/indexer/v1/task/index_parallel%2F1234/shutdown')
+            ->andReturn(['task' => 'index_parallel/1234']);
+
+        $client->shutdownTask('index_parallel/1234');
+    }
+
+    /**
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function testPollTaskStatus(): void
@@ -353,6 +469,7 @@ class DruidClientTest extends TestCase
 
         $client->shouldReceive('config')
             ->with('polling_sleep_seconds')
+            ->once()
             ->andReturn(0);
 
         $response = $client->pollTaskStatus('task-1234');
@@ -402,8 +519,15 @@ class DruidClientTest extends TestCase
             ->once()
             ->andReturn(['query' => 'here']);
 
+        $result = ['result' => 'yes', 'other' => 'no'];
+
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('debug')->twice();
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Executing druid query: {"query":"here"}', []);
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Received druid response: ' . var_export($result, true), []);
 
         $client->shouldReceive('config')
             ->with('broker_url')
@@ -413,11 +537,11 @@ class DruidClientTest extends TestCase
         $client->shouldReceive('executeRawRequest')
             ->once()
             ->with('post', 'http://broker.url/druid/v2', ['query' => 'here'])
-            ->andReturn(['result' => 'yes']);
+            ->andReturn($result);
 
         $client->setLogger($logger);
 
-        $this->assertEquals(['result' => 'yes'], $client->executeQuery($query));
+        $this->assertEquals($result, $client->executeQuery($query));
     }
 
     public function testSqlMinimal(): void
@@ -431,7 +555,12 @@ class DruidClientTest extends TestCase
         ];
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('debug')->twice();
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Executing druid SQL query: {"query":"SELECT page, COUNT(*) AS edits FROM wikipedia GROUP BY page"}', []);
+        $logger->shouldReceive('debug')
+            ->once()
+            ->with('Received druid SQL response: ' . var_export($rows, true), []);
 
         $client->shouldReceive('config')
             ->with('broker_url')
@@ -502,16 +631,35 @@ class DruidClientTest extends TestCase
         $client->makePartial();
 
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('debug')->times(3);
+        $logger->shouldReceive('debug')->once()->with('We failed to decode druid response. ', []);
+        $logger->shouldReceive('debug')->once()->with('Status code: 200', []);
+        $logger->shouldReceive('debug')->once()->with('Response body: something', []);
 
         $client->setLogger($logger);
 
         $this->expectException(QueryResponseException::class);
-        $this->expectExceptionMessage('Failed to parse druid response. Invalid json?');
+        $this->expectExceptionMessage(
+            'Failed to parse druid response. Invalid json? Status code(200). Response body: something'
+        );
 
         /** @noinspection PhpUndefinedMethodInspection */
         $client->shouldAllowMockingProtectedMethods()
             ->parseResponse(new GuzzleResponse(200, [], 'something'));
+    }
+
+    public function testParseResponseWithNonArrayJson(): void
+    {
+        $client = $this->mockDruidClient();
+        $client->makePartial();
+
+        $this->expectException(QueryResponseException::class);
+        $this->expectExceptionMessage(
+            'Failed to parse druid response. Invalid json? Status code(200). Response body: "some string"'
+        );
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $client->shouldAllowMockingProtectedMethods()
+            ->parseResponse(new GuzzleResponse(200, [], '"some string"'));
     }
 
     public function testConfig(): void
@@ -710,7 +858,7 @@ class DruidClientTest extends TestCase
         $guzzle = new GuzzleClient(['base_uri' => 'https://httpbin.org']);
 
         $client = Mockery::mock(DruidClient::class, [
-            [],
+            ['broker_url' => 'http://broker.test'],
             $guzzle,
         ]);
         $client->makePartial();
@@ -718,7 +866,7 @@ class DruidClientTest extends TestCase
         $guzzle = Mockery::mock(GuzzleClient::class);
         $guzzle->shouldReceive('delete')
             ->once()
-            ->with('/druid/v2/my-long-query-id', [])
+            ->with('http://broker.test/druid/v2/my-long-query-id', [])
             ->times(1)
             ->andReturnUsing(function () {
                 return new GuzzleResponse(202, [], '');
@@ -790,6 +938,26 @@ class DruidClientTest extends TestCase
             ->times($retries + 1)
             ->andReturn($retries);
 
+        $logger = Mockery::mock(LoggerInterface::class);
+        for ($attempt = 1; $attempt <= $retries; $attempt++) {
+            $logger->shouldReceive('debug')
+                ->once()
+                ->with(
+                    'Query failed due to a server exception. Doing a retry. Retry attempt ' . $attempt . ' of ' . $retries,
+                    []
+                );
+        }
+        $logger->shouldReceive('debug')
+            ->times($retries)
+            ->with('Request exception', []);
+        $logger->shouldReceive('debug')
+            ->times($retries)
+            ->with(Mockery::on(fn(string $message): bool => str_starts_with($message, '#0 ')), []);
+        $logger->shouldReceive('debug')
+            ->times($delay > 0 ? $retries : 0)
+            ->with('Sleep for ' . $delay . ' ms', []);
+
+        $client->setLogger($logger);
         $client->setGuzzleClient($guzzle);
 
         $this->expectException(QueryResponseException::class);

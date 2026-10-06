@@ -155,7 +155,17 @@ class ScanQuery implements QueryInterface
      */
     public function setResultFormat(string|ScanQueryResultFormat $resultFormat): void
     {
-        $this->resultFormat = is_string($resultFormat) ? ScanQueryResultFormat::from(strtolower($resultFormat)) : $resultFormat;
+        if (is_string($resultFormat)) {
+            // Case-insensitive match, as "compactedList" is camelCase and would break on strtolower().
+            $match = array_filter(
+                ScanQueryResultFormat::cases(),
+                fn(ScanQueryResultFormat $case) => strcasecmp($case->value, $resultFormat) === 0
+            );
+
+            $resultFormat = reset($match) ?: ScanQueryResultFormat::from($resultFormat);
+        }
+
+        $this->resultFormat = $resultFormat;
     }
 
     /**

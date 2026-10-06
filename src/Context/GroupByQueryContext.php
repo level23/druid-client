@@ -180,4 +180,19 @@ class GroupByQueryContext extends QueryContext implements ContextInterface
 
         return $this;
     }
+
+    /**
+     * Maximum number of spill files allowed for this query. Overrides druid.query.groupBy.maxSpillFileCount.
+     * Requires Druid 37 or higher.
+     *
+     * @param int $maxSpillFileCount
+     *
+     * @return $this
+     */
+    public function setMaxSpillFileCount(int $maxSpillFileCount): self
+    {
+        $this->properties['maxSpillFileCount'] = $maxSpillFileCount;
+
+        return $this;
+    }
 }

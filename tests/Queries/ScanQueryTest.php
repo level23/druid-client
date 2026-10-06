@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Level23\Druid\Tests\Queries;
 
+use ValueError;
 use Level23\Druid\Tests\TestCase;
 use Level23\Druid\Queries\ScanQuery;
 use Level23\Druid\Interval\Interval;
@@ -15,6 +16,7 @@ use Level23\Druid\DataSources\TableDataSource;
 use Level23\Druid\VirtualColumns\VirtualColumn;
 use Level23\Druid\Collections\IntervalCollection;
 use Level23\Druid\Collections\VirtualColumnCollection;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class ScanQueryTest extends TestCase
 {
@@ -205,5 +207,44 @@ class ScanQueryTest extends TestCase
         ], $response->data());
 
         $this->assertEquals($rawResponse, $response->raw());
+    }
+
+    public function testUpperCaseResultFormat(): void
+    {
+        $query = new ScanQuery(
+            new TableDataSource('wikipedia'),
+            new IntervalCollection(new Interval('12-02-2018', '13-02-2018'))
+        );
+        $query->setResultFormat('LIST');
+
+        $this->assertEquals('list', $query->toArray()['resultFormat']);
+    }
+
+    /**
+     * @param string $resultFormat
+     */
+    #[TestWith(['compactedList'])]
+    #[TestWith(['COMPACTEDLIST'])]
+    #[TestWith(['compactedlist'])]
+    public function testCamelCaseResultFormat(string $resultFormat): void
+    {
+        $query = new ScanQuery(
+            new TableDataSource('wikipedia'),
+            new IntervalCollection(new Interval('12-02-2018', '13-02-2018'))
+        );
+        $query->setResultFormat($resultFormat);
+
+        $this->assertEquals('compactedList', $query->toArray()['resultFormat']);
+    }
+
+    public function testInvalidResultFormat(): void
+    {
+        $query = new ScanQuery(
+            new TableDataSource('wikipedia'),
+            new IntervalCollection(new Interval('12-02-2018', '13-02-2018'))
+        );
+
+        $this->expectException(ValueError::class);
+        $query->setResultFormat('wrong');
     }
 }

@@ -87,4 +87,11 @@ class BoundFilterTest extends TestCase
 
         new BoundFilter('age', 'is', '18');
     }
+
+    public function testUpperCaseOrdering(): void
+    {
+        $filter = new BoundFilter('age', '>', '18', 'NUMERIC');
+
+        $this->assertEquals('numeric', $filter->toArray()['ordering']);
+    }
 }

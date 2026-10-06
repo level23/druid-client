@@ -16,7 +16,8 @@ class S3InputSource extends CloudInputSource
      * @param string[]                    $uris
      * @param string[]                    $prefixes
      * @param array<array<string,string>> $objects
-     * @param array<string,string>        $properties
+     * @param array<string,string>        $properties Credentials, e.g. accessKeyId, secretAccessKey, sessionToken
+     *                                                (Druid 35+), assumeRoleArn and assumeRoleExternalId.
      */
     public function __construct(array $uris = [], array $prefixes = [], array $objects = [], array $properties = [])
     {

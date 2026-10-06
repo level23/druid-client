@@ -52,4 +52,18 @@ class UniformGranularityTest extends TestCase
             'intervals'          => $intervalCollection->toArray(),
         ], $granularity->toArray());
     }
+
+    public function testUpperCaseGranularity(): void
+    {
+        $granularity = new UniformGranularity(
+            'DAY',
+            'HOUR',
+            true,
+            new IntervalCollection(new Interval('12-04-2019', '15-04-2019'))
+        );
+
+        $result = $granularity->toArray();
+        $this->assertEquals('day', $result['segmentGranularity']);
+        $this->assertEquals('hour', $result['queryGranularity']);
+    }
 }

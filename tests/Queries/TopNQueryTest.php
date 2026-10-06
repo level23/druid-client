@@ -28,7 +28,7 @@ class TopNQueryTest extends TestCase
         $granularity = 'week';
         $dimension   = new Dimension('name', 'pet_name');
 
-        $query = new TopNQuery($dataSource, $intervals, $dimension, 5, 'owners', $granularity);
+        $query = new TopNQuery($dataSource, $intervals, $dimension, 5, 'owners', strtoupper($granularity));
 
         $expected = [
             'queryType'   => 'topN',

@@ -21,16 +21,19 @@ class TsvInputFormat extends CsvInputFormat
      *                                                  this is set to true.
      * @param int                $skipHeaderRows        If this is set, the task will skip the first skipHeaderRows
      *                                                  rows.
+     * @param bool|null          $tryParseNumbers       If this is set, the task will attempt to parse numeric strings
+     *                                                  into long or double. Requires Druid 32 or higher.
      */
     public function __construct(
         ?array $columns = null,
         ?string $delimiter = null,
         ?string $listDelimiter = null,
         ?bool $findColumnsFromHeader = null,
-        int $skipHeaderRows = 0
+        int $skipHeaderRows = 0,
+        ?bool $tryParseNumbers = null
     ) {
         $this->delimiter = $delimiter;
-        parent::__construct($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows);
+        parent::__construct($columns, $listDelimiter, $findColumnsFromHeader, $skipHeaderRows, $tryParseNumbers);
     }
 
     /**

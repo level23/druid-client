@@ -54,6 +54,7 @@ use Level23\Druid\HavingFilters\HavingFilterInterface;
 use Level23\Druid\Collections\PostAggregationCollection;
 use Level23\Druid\Responses\SegmentMetadataQueryResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 
@@ -140,7 +141,7 @@ class QueryBuilderTest extends TestCase
      */
     public function testGranularity(): void
     {
-        $response = $this->builder->granularity('year');
+        $response = $this->builder->granularity('YEAR');
         $this->assertEquals($this->builder, $response);
 
         $this->assertEquals(Granularity::YEAR, $this->getProperty($this->builder, 'granularity'));
@@ -320,8 +321,13 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
+    #[IgnoreDeprecations]
     public function testMetrics(): void
     {
+        $this->expectUserDeprecationMessage(
+            'QueryBuilder::metrics() is deprecated, the select query was removed in Druid 0.17. Use scan() instead.'
+        );
+
         $metrics = ['added', 'deleted'];
 
         $this->assertEquals([], $this->getProperty($this->builder, 'metrics'));
@@ -335,8 +341,13 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
+    #[IgnoreDeprecations]
     public function testSelect(): void
     {
+        $this->expectUserDeprecationMessage(
+            'QueryBuilder::selectQuery() is deprecated, the select query was removed in Druid 0.17. Use scan() instead.'
+        );
+
         $context = ['foo' => 'bar'];
         $query   = $this->getSelectQueryMock();
 
@@ -508,6 +519,7 @@ class QueryBuilderTest extends TestCase
         $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isScanQuery());
     }
 
+    #[IgnoreDeprecations]
     public function testIsScanQueryDefersToSelectWhenPagingIdentifierIsSet(): void
     {
         $this->builder->pagingIdentifier(['segment' => 0]);
@@ -524,6 +536,7 @@ class QueryBuilderTest extends TestCase
      * @param bool $withIdentifier
      * @param bool $withAggregations
      */
+    #[IgnoreDeprecations]
     public function testIsSelectQuery(bool $withIdentifier, bool $withAggregations): void
     {
         $expected = ($withIdentifier && !$withAggregations);
@@ -682,8 +695,13 @@ class QueryBuilderTest extends TestCase
     /**
      * @throws \ReflectionException
      */
+    #[IgnoreDeprecations]
     public function testPagingIdentifier(): void
     {
+        $this->expectUserDeprecationMessage(
+            'QueryBuilder::pagingIdentifier() is deprecated, the select query was removed in Druid 0.17. Use scan() with limit/offset instead.'
+        );
+
         $identifier = [
             'wikipedia_2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z_2019-09-12T14:15:44.694Z' => 9,
         ];
@@ -1031,6 +1049,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
+    #[IgnoreDeprecations]
     public function testBuildSelectQueryWithoutInterval(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -1043,6 +1062,7 @@ class QueryBuilderTest extends TestCase
      * @throws \Level23\Druid\Exceptions\QueryResponseException
      * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
+    #[IgnoreDeprecations]
     public function testBuildSelectQueryWithoutLimit(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -1201,6 +1221,7 @@ class QueryBuilderTest extends TestCase
      */
     #[RunInSeparateProcess]
     #[PreserveGlobalState(false)]
+    #[IgnoreDeprecations]
     public function testBuildSelectQuery(
         array $context,
         bool $contextAsObject,
@@ -1319,7 +1340,10 @@ class QueryBuilderTest extends TestCase
     public function testBuildScanQueryWithoutCorrectDimensions(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Only simple dimension or metric selects are available in a scan query.');
+        $this->expectExceptionMessage(
+            'Only simple dimension or metric selects are available in a scan query. ' .
+            'Aliases, extractions or lookups are not available.'
+        );
 
         $this->builder->interval('12-02-2019/13-02-2019');
         $this->builder->lookup('country', 'iso');

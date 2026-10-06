@@ -52,4 +52,20 @@ class HttpInputSourceTest extends TestCase
             ],
         ], $http->toArray());
     }
+
+    public function testHttpInputSourceWithRequestHeaders(): void
+    {
+        $http = new HttpInputSource(
+            ['http://example.com/uri1'],
+            null,
+            null,
+            ['Accept' => 'application/ndjson']
+        );
+
+        $this->assertEquals([
+            'type'           => 'http',
+            'uris'           => ['http://example.com/uri1'],
+            'requestHeaders' => ['Accept' => 'application/ndjson'],
+        ], $http->toArray());
+    }
 }

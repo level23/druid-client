@@ -59,4 +59,15 @@ class TsvInputFormatTest extends TestCase
 
         $this->assertEquals($expected, $input->toArray());
     }
+
+    public function testTryParseNumbers(): void
+    {
+        $input = new TsvInputFormat(['a', 'b'], null, null, null, 0, true);
+
+        $this->assertEquals([
+            'type'            => 'tsv',
+            'columns'         => ['a', 'b'],
+            'tryParseNumbers' => true,
+        ], $input->toArray());
+    }
 }

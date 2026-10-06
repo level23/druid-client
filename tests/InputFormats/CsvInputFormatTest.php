@@ -53,4 +53,15 @@ class CsvInputFormatTest extends TestCase
 
         $this->assertEquals($expected, $input->toArray());
     }
+
+    public function testTryParseNumbers(): void
+    {
+        $input = new CsvInputFormat(['a', 'b'], null, null, 0, true);
+
+        $this->assertEquals([
+            'type'            => 'csv',
+            'columns'         => ['a', 'b'],
+            'tryParseNumbers' => true,
+        ], $input->toArray());
+    }
 }

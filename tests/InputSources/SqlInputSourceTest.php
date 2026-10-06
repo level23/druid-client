@@ -66,4 +66,22 @@ class SqlInputSourceTest extends TestCase
             'sqls'     => $sqls,
         ], $sql->toArray());
     }
+
+    public function testSqlInputSourceUpperCasePostgres(): void
+    {
+        $sql = new SqlInputSource('jdbc:PostgreSQL://host:port/schema', 'username', 'password', ['select 1']);
+
+        $this->assertEquals([
+            'type'     => 'sql',
+            'database' => [
+                'type'            => 'postgresql',
+                'connectorConfig' => [
+                    'connectURI' => 'jdbc:PostgreSQL://host:port/schema',
+                    'user'       => 'username',
+                    'password'   => 'password',
+                ],
+            ],
+            'sqls'     => ['select 1'],
+        ], $sql->toArray());
+    }
 }

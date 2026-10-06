@@ -22,6 +22,10 @@ class KafkaInputFormat implements InputFormatInterface
 
     protected ?string $topicColumnName;
 
+    protected ?string $offsetColumnName;
+
+    protected ?string $partitionColumnName;
+
     /**
      * @param InputFormatInterface      $valueFormat           Input format used to parse the Kafka record value.
      * @param InputFormatInterface|null $keyFormat             Input format used to parse the Kafka record key. When
@@ -33,6 +37,10 @@ class KafkaInputFormat implements InputFormatInterface
      * @param string|null               $keyColumnName         Column name for the parsed key.
      * @param string|null               $timestampColumnName   Column name for the Kafka timestamp.
      * @param string|null               $topicColumnName       Column name for the Kafka topic.
+     * @param string|null               $offsetColumnName      Column name for the Kafka record offset. Requires Druid 36
+     *                                                         or higher.
+     * @param string|null               $partitionColumnName   Column name for the Kafka partition number. Requires
+     *                                                         Druid 36 or higher.
      *
      * @see https://druid.apache.org/docs/latest/ingestion/data-formats#kafka
      */
@@ -43,7 +51,9 @@ class KafkaInputFormat implements InputFormatInterface
         ?string $headerColumnPrefix = null,
         ?string $keyColumnName = null,
         ?string $timestampColumnName = null,
-        ?string $topicColumnName = null
+        ?string $topicColumnName = null,
+        ?string $offsetColumnName = null,
+        ?string $partitionColumnName = null
     ) {
         $this->valueFormat         = $valueFormat;
         $this->keyFormat           = $keyFormat;
@@ -52,6 +62,8 @@ class KafkaInputFormat implements InputFormatInterface
         $this->keyColumnName       = $keyColumnName;
         $this->timestampColumnName = $timestampColumnName;
         $this->topicColumnName     = $topicColumnName;
+        $this->offsetColumnName    = $offsetColumnName;
+        $this->partitionColumnName = $partitionColumnName;
     }
 
     /**
@@ -86,6 +98,14 @@ class KafkaInputFormat implements InputFormatInterface
 
         if ($this->topicColumnName !== null) {
             $result['topicColumnName'] = $this->topicColumnName;
+        }
+
+        if ($this->offsetColumnName !== null) {
+            $result['offsetColumnName'] = $this->offsetColumnName;
+        }
+
+        if ($this->partitionColumnName !== null) {
+            $result['partitionColumnName'] = $this->partitionColumnName;
         }
 
         return $result;

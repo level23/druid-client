@@ -12,6 +12,7 @@ use Level23\Druid\InputFormats\OrcInputFormat;
 use Level23\Druid\InputFormats\CsvInputFormat;
 use Level23\Druid\InputFormats\TsvInputFormat;
 use Level23\Druid\InputFormats\JsonInputFormat;
+use Level23\Druid\InputFormats\LinesInputFormat;
 use Level23\Druid\InputFormats\KafkaInputFormat;
 use Level23\Druid\InputFormats\AvroOcfInputFormat;
 use Level23\Druid\InputFormats\ParquetInputFormat;
@@ -123,11 +124,11 @@ class HasInputFormatTest extends TestCase
         $jsonInputFormat = $this->getConstructorMock(CsvInputFormat::class, InputFormatInterface::class);
         $jsonInputFormat->shouldReceive('__construct')
             ->once()
-            ->with(['name', 'age'], '|', true, 2);
+            ->with(['name', 'age'], '|', true, 2, true);
 
         $this->assertEquals(
             $builder,
-            $builder->csvFormat(['name', 'age'], '|', true, 2)
+            $builder->csvFormat(['name', 'age'], '|', true, 2, true)
         );
     }
 
@@ -141,11 +142,11 @@ class HasInputFormatTest extends TestCase
         $jsonInputFormat = $this->getConstructorMock(TsvInputFormat::class, InputFormatInterface::class);
         $jsonInputFormat->shouldReceive('__construct')
             ->once()
-            ->with(['name', 'age'], ',', '|', true, 2);
+            ->with(['name', 'age'], ',', '|', true, 2, true);
 
         $this->assertEquals(
             $builder,
-            $builder->tsvFormat(['name', 'age'], ',', '|', true, 2)
+            $builder->tsvFormat(['name', 'age'], ',', '|', true, 2, true)
         );
     }
 
@@ -212,11 +213,33 @@ class HasInputFormatTest extends TestCase
         $mock = $this->getConstructorMock(KafkaInputFormat::class, InputFormatInterface::class);
         $mock->shouldReceive('__construct')
             ->once()
-            ->with($value, $key, $header, 'kafka.h.', 'kafka.k', 'kafka.ts', 'kafka.t');
+            ->with($value, $key, $header, 'kafka.h.', 'kafka.k', 'kafka.ts', 'kafka.t', 'kafka.o', 'kafka.p');
 
         $this->assertEquals(
             $builder,
-            $builder->kafkaFormat($value, $key, $header, 'kafka.h.', 'kafka.k', 'kafka.ts', 'kafka.t')
+            $builder->kafkaFormat(
+                $value,
+                $key,
+                $header,
+                'kafka.h.',
+                'kafka.k',
+                'kafka.ts',
+                'kafka.t',
+                'kafka.o',
+                'kafka.p'
+            )
+        );
+    }
+
+    public function testLinesFormat(): void
+    {
+        $client  = new DruidClient([]);
+        $builder = new IndexTaskBuilder($client, 'animals');
+
+        $this->assertEquals($builder, $builder->linesFormat());
+        $this->assertEquals(
+            new LinesInputFormat(),
+            $this->getProperty($builder, 'inputFormat')
         );
     }
 }
