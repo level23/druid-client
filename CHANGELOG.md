@@ -4,7 +4,10 @@
 
 - Reverted the 4.1.4 auto-detect change for queries without dimensions: `execute()`/`getQuery()` use groupBy again, like 4.1.2.
 - Added `preferTimeSeries()` to opt in to a timeseries query for aggregations without dimensions. It is only used without having, subtotals, limit, offset or a non-`__time` orderBy, and it always sets `skipEmptyBuckets`.
+- Added `allowTopN(false)` to make `execute()`/`getQuery()` use groupBy with a limitSpec instead of topN.
+- Added the `thetaSketchEstimate()` and `thetaSketchSetOp()` post aggregators (Theta Sketch extension).
 - Documented the auto-detect rules of `execute()` in the README.
+- Added upgrade notes to the README for the 4.2.0 deprecation notices and changed input format signatures.
 
 **v4.2.0** (2026-10-06)
 

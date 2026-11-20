@@ -38,6 +38,22 @@ You can also download it as a ZIP file and include it in your project, as long a
 
 See [CHANGELOG](CHANGELOG.md) for changes in the different versions and how to upgrade to the latest version.
 
+This package follows [semantic versioning](https://semver.org): changes that can break your code (changed method
+signatures, a different query type or result for the same builder calls) are only made in a major version.
+
+### Upgrade notes for 4.x
+
+- **Deprecation notices (4.2.0).** `selectQuery()`, `pagingIdentifier()`, `metrics()`, `SelectQuery`,
+  `SelectQueryResponse` and `isSelectQuery()` trigger an `E_USER_DEPRECATED` notice. Laravel writes these to the log
+  when a deprecations channel is configured (`logging.deprecations`), and PHPUnit with `failOnDeprecation` or a strict
+  error handler turns them into failures. Replace these calls with `scan()` and `limit()`. They will be removed in v5.0.
+- **Changed signatures (4.2.0).** `csvFormat()`, `tsvFormat()` and `kafkaFormat()` (and the `CsvInputFormat`,
+  `TsvInputFormat` and `KafkaInputFormat` constructors) got new optional parameters. A subclass that overrides one of
+  them must add these parameters as well.
+- **Auto-detect (4.1.4 - 4.2.0).** `execute()`/`getQuery()` used a timeseries query for queries without dimensions in
+  these versions. Since 4.2.1 this is a groupBy query again, unless you call `preferTimeSeries()`. See
+  [execute()](#execute).
+
 ## Laravel/Lumen support.
 
 This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, but it's not required.
@@ -202,6 +218,8 @@ for more information.
         - [rank()](#rank)
         - [cdf()](#cdf)
         - [sketchSummary()](#sketchsummary)
+        - [thetaSketchEstimate()](#thetasketchestimate)
+        - [thetaSketchSetOp()](#thetasketchsetop)
     - [QueryBuilder: Search Filters](#querybuilder-search-filters)
         - [searchContains()](#searchcontains)
         - [searchFragment()](#searchfragment)
@@ -2772,6 +2790,50 @@ Example output:
 ### END SKETCH SUMMARY
 ```
 
+#### `thetaSketchEstimate()`
+
+The `thetaSketchEstimate()` post aggregator returns the estimated number of unique values of a theta sketch. The
+input is a theta sketch aggregation (like `distinctCount()`) or the result of `thetaSketchSetOp()`.
+
+This method uses the Theta Sketch extension, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example (a funnel: the number of users who did both step 1 and step 2):
+
+```php
+$builder = $client->query('dataSource')
+    ->interval('now - 1 day', 'now')
+    ->distinctCount('user_id', 'step1', 16384, fn(FilterBuilder $filter) => $filter->where('event', '=', 'step1'))
+    ->distinctCount('user_id', 'step2', 16384, fn(FilterBuilder $filter) => $filter->where('event', '=', 'step2'))
+    ->thetaSketchEstimate('step1_and_step2', function (PostAggregationsBuilder $builder) {
+        $builder->thetaSketchSetOp('both', ThetaSketchFunction::INTERSECT, ['step1', 'step2']);
+    });
+```
+
+The `thetaSketchEstimate()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                                                                                       |
+|----------------|-----------------------|----------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`                | myResult    | The name which will be used in the output result.                                                                                                                                     |
+| string/Closure | Required              | `$fieldOrClosure`    | step1       | Field which refers to a theta sketch. If you give a closure, it will receive an instance of the PostAggregationsBuilder, so you can use `thetaSketchSetOp()` as input.               |
+| int            | Optional              | `$errorBoundsStdDev` | 2           | When given, the estimate is returned with error bounds for this number of standard deviations (1, 2 or 3).                                                                            |
+
+#### `thetaSketchSetOp()`
+
+The `thetaSketchSetOp()` post aggregator applies a set operation on two or more theta sketches: `UNION`, `INTERSECT`
+or `NOT`. The result is a sketch; wrap it in `thetaSketchEstimate()` to get a number (see the example above).
+
+This method uses the Theta Sketch extension, and it should be enabled to make use of this post aggregator.
+
+The `thetaSketchSetOp()` post aggregator has the following arguments:
+
+| **Type**                   | **Optional/Required** | **Argument** | **Example**                    | **Description**                                                                                                                         |
+|----------------------------|-----------------------|--------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| string                     | Required              | `$as`        | both                           | The name which will be used in the output result.                                                                                       |
+| string/ThetaSketchFunction | Required              | `$function`  | ThetaSketchFunction::INTERSECT | The set operation: `UNION`, `INTERSECT` or `NOT`.                                                                                        |
+| array                      | Required              | `$fields`    | ['step1', 'step2']             | Fields which refer to theta sketches. A string refers to an aggregation in the query; a closure receives a PostAggregationsBuilder.    |
+| int                        | Optional              | `$size`      | 16384                          | Sketch size, a power of 2. Druid uses 16384 when not given.                                                                              |
+
 ## QueryBuilder: Search Filters
 
 Search filters are filters which are only used for a search query. They allow you to specify which filter should be
@@ -3577,7 +3639,7 @@ match wins:
 | scan           | No aggregations, only plain dimensions (no alias, lookup or other dimension spec), and no search filter or paging identifier.                                                                                                         |
 | timeseries     | Exactly one dimension: `__time` (an alias is allowed).                                                                                                                                                                                 |
 | timeseries     | Only with `preferTimeSeries()`: no dimensions, at least one aggregation, and no `having()`, `subtotals()`, `limit()`, offset or `orderBy()` on anything other than `__time`. The context gets `skipEmptyBuckets: true`. |
-| topN           | Exactly one dimension, a limit, no offset and exactly one `orderBy()`.                                                                                                                                                                |
+| topN           | Exactly one dimension, a limit, no offset and exactly one `orderBy()`, unless `allowTopN(false)` is called.                                                                                                                         |
 | select         | A paging identifier and no aggregations (deprecated).                                                                                                                                                                                  |
 | search         | A search filter.                                                                                                                                                                                                                       |
 | groupBy        | Everything else, including queries without dimensions (unless `preferTimeSeries()` applies).                                                                                                                                           |
@@ -3603,6 +3665,21 @@ Differences with the default groupBy:
 - `getQuery()` returns a `TimeSeriesQuery` and `execute()` returns a `TimeSeriesQueryResponse`.
 - Each row in `data()` has an extra `timestamp` key, e.g. `['added' => 123, 'timestamp' => '2015-09-12T00:00:00.000Z']`.
 - Empty periods give no rows, like groupBy: `skipEmptyBuckets` is always set to `true`.
+
+**`allowTopN()`**
+
+A single dimension with `limit()` and one `orderBy()` becomes a topN query. TopN results are approximate. Call
+`allowTopN(false)` to get an exact groupBy query with a limitSpec instead:
+
+```php
+$response = $builder
+  ->select('channel')
+  ->longSum('deleted')
+  ->orderBy('deleted', OrderByDirection::DESC)
+  ->limit(10)
+  ->allowTopN(false)
+  ->execute(); // groupBy
+```
 
 **Response**
 
