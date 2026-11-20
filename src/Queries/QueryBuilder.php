@@ -97,6 +97,11 @@ class QueryBuilder
     protected bool $preferTimeSeries = false;
 
     /**
+     * When false, auto-detect never uses a topN query.
+     */
+    protected bool $allowTopN = true;
+
+    /**
      * QueryBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
@@ -210,6 +215,21 @@ class QueryBuilder
     public function preferTimeSeries(bool $preferTimeSeries = true): self
     {
         $this->preferTimeSeries = $preferTimeSeries;
+
+        return $this;
+    }
+
+    /**
+     * Allow or prevent execute()/getQuery() from using a topN query for a single dimension with limit and orderBy.
+     * When disabled, such a query becomes a groupBy query with a limitSpec.
+     *
+     * @param bool $allowTopN
+     *
+     * @return $this
+     */
+    public function allowTopN(bool $allowTopN = true): self
+    {
+        $this->allowTopN = $allowTopN;
 
         return $this;
     }
@@ -961,7 +981,7 @@ class QueryBuilder
      */
     protected function isTopNQuery(): bool
     {
-        if (count($this->dimensions) != 1) {
+        if (!$this->allowTopN || count($this->dimensions) != 1) {
             return false;
         }
 

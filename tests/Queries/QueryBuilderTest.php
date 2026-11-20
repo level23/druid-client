@@ -561,6 +561,28 @@ class QueryBuilderTest extends TestCase
         $this->assertTrue($query->toArray()['descending']);
     }
 
+    public function testAllowTopN(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName');
+        $builder->interval('2015-02-12', '2015-02-13')
+            ->select('country')
+            ->sum('reward')
+            ->orderBy('reward', 'desc')
+            ->limit(10);
+
+        $this->assertInstanceOf(TopNQuery::class, $builder->getQuery());
+
+        $result = $builder->allowTopN(false);
+        $this->assertSame($builder, $result);
+
+        $query = $builder->getQuery();
+        $this->assertInstanceOf(GroupByQuery::class, $query);
+        $this->assertEquals($builder->getLimit()?->toArray(), $query->toArray()['limitSpec']);
+
+        $builder->allowTopN();
+        $this->assertInstanceOf(TopNQuery::class, $builder->getQuery());
+    }
+
     public function testNoDimensionsAggregationQueryIsGroupByByDefault(): void
     {
         $builder = new QueryBuilder($this->client, 'dataSourceName');
