@@ -202,6 +202,8 @@ for more information.
         - [rank()](#rank)
         - [cdf()](#cdf)
         - [sketchSummary()](#sketchsummary)
+        - [thetaSketchEstimate()](#thetasketchestimate)
+        - [thetaSketchSetOp()](#thetasketchsetop)
     - [QueryBuilder: Search Filters](#querybuilder-search-filters)
         - [searchContains()](#searchcontains)
         - [searchFragment()](#searchfragment)
@@ -549,7 +551,7 @@ The `cancelQuery()` method has 1 parameter:
 If the cancellation fails, the method will throw an exception. Otherwise, it will not return any result.
 
 See also:
-https://druid.apache.org/docs/latest/querying/querying.html#query-cancellation
+https://druid.apache.org/docs/latest/querying/#query-cancellation
 
 #### `DruidClient::compact()`
 
@@ -1180,7 +1182,7 @@ This method allows you to look up a dimension using a registered lookup function
 functions on these pages:
 
 * https://druid.apache.org/docs/latest/querying/lookups.html
-* https://druid.apache.org/docs/latest/development/extensions-core/lookups-cached-global.html
+* https://druid.apache.org/docs/latest/querying/lookups-cached-global
 
 Lookups are a handy way to transform an ID value into a user readable name, like transforming a `user_id` into the
 `username`, without having to store the username in your dataset.
@@ -1522,9 +1524,6 @@ Please note: use `distinctCount()` when the Theta Sketch extension is available,
 
 See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
-
-This page also explains the usage of hyperUnique very well:
-https://cleanprogrammer.net/getting-unique-counts-from-druid-using-hyperloglog/
 
 Example:
 
@@ -2772,6 +2771,50 @@ Example output:
 ### END SKETCH SUMMARY
 ```
 
+#### `thetaSketchEstimate()`
+
+The `thetaSketchEstimate()` post aggregator returns the estimated number of unique values of a theta sketch. The
+input is a theta sketch aggregation (like `distinctCount()`) or the result of `thetaSketchSetOp()`.
+
+This method uses the Theta Sketch extension, and it should be enabled to make use of this post aggregator.  
+For more information, see: https://druid.apache.org/docs/latest/development/extensions-core/datasketches-theta.html
+
+Example (a funnel: the number of users who did both step 1 and step 2):
+
+```php
+$builder = $client->query('dataSource')
+    ->interval('now - 1 day', 'now')
+    ->distinctCount('user_id', 'step1', 16384, fn(FilterBuilder $filter) => $filter->where('event', '=', 'step1'))
+    ->distinctCount('user_id', 'step2', 16384, fn(FilterBuilder $filter) => $filter->where('event', '=', 'step2'))
+    ->thetaSketchEstimate('step1_and_step2', function (PostAggregationsBuilder $builder) {
+        $builder->thetaSketchSetOp('both', ThetaSketchFunction::INTERSECT, ['step1', 'step2']);
+    });
+```
+
+The `thetaSketchEstimate()` post aggregator has the following arguments:
+
+| **Type**       | **Optional/Required** | **Argument**         | **Example** | **Description**                                                                                                                                                                       |
+|----------------|-----------------------|----------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| string         | Required              | `$as`                | myResult    | The name which will be used in the output result.                                                                                                                                     |
+| string/Closure | Required              | `$fieldOrClosure`    | step1       | Field which refers to a theta sketch. If you give a closure, it will receive an instance of the PostAggregationsBuilder, so you can use `thetaSketchSetOp()` as input.               |
+| int            | Optional              | `$errorBoundsStdDev` | 2           | When given, the estimate is returned with error bounds for this number of standard deviations (1, 2 or 3).                                                                            |
+
+#### `thetaSketchSetOp()`
+
+The `thetaSketchSetOp()` post aggregator applies a set operation on two or more theta sketches: `UNION`, `INTERSECT`
+or `NOT`. The result is a sketch; wrap it in `thetaSketchEstimate()` to get a number (see the example above).
+
+This method uses the Theta Sketch extension, and it should be enabled to make use of this post aggregator.
+
+The `thetaSketchSetOp()` post aggregator has the following arguments:
+
+| **Type**                   | **Optional/Required** | **Argument** | **Example**                    | **Description**                                                                                                                         |
+|----------------------------|-----------------------|--------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| string                     | Required              | `$as`        | both                           | The name which will be used in the output result.                                                                                       |
+| string/ThetaSketchFunction | Required              | `$function`  | ThetaSketchFunction::INTERSECT | The set operation: `UNION`, `INTERSECT` or `NOT`.                                                                                        |
+| array                      | Required              | `$fields`    | ['step1', 'step2']             | Fields which refer to theta sketches. A string refers to an aggregation in the query; a closure receives a PostAggregationsBuilder.    |
+| int                        | Optional              | `$size`      | 16384                          | Sketch size, a power of 2. Druid uses 16384 when not given.                                                                              |
+
 ## QueryBuilder: Search Filters
 
 Search filters are filters which are only used for a search query. They allow you to specify which filter should be
@@ -2831,7 +2874,7 @@ The `searchFragment()` method has the following arguments:
 The `searchRegex()` method allows you to filter on dimensions where the dimension matches the given regular expression.
 
 See this page for more information about regular
-expressions: https://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
+expressions: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/regex/Pattern.html
 
 Example:
 
@@ -3289,7 +3332,7 @@ $client->lookup()->jdbc(
 
 The `map()` method allows you to define a lookup with a static key/value map.
 
-See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global/#map-lookup
+See also: https://druid.apache.org/docs/latest/querying/lookups
 
 The `map()` method has the following arguments:
 
@@ -3566,6 +3609,58 @@ to the query type of your choice, like a `ScanQueryContext`). For more informati
 query descriptions below.
 
 The `QueryContext()` object contains context properties which apply to all queries.
+
+**Auto-detect rules**
+
+`execute()`, `getQuery()`, `toArray()` and `toJson()` pick the query type with these rules, in this order. The first
+match wins:
+
+| **Query type** | **When**                                                                                                                                                                                                                |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| scan           | No aggregations, only plain dimensions (no alias, lookup or other dimension spec), and no search filter or paging identifier.                                                                                           |
+| timeseries     | Exactly one dimension: `__time` (an alias is allowed).                                                                                                                                                                  |
+| timeseries     | Only with `preferTimeSeries()`: no dimensions, at least one aggregation, and no `having()`, `subtotals()`, `limit()`, offset or `orderBy()` on anything other than `__time`. The context gets `skipEmptyBuckets: true`. |
+| topN           | Exactly one dimension, a limit, no offset and exactly one `orderBy()`, unless `withoutTopN()` is called.                                                                                                                |
+| select         | A paging identifier and no aggregations (deprecated).                                                                                                                                                                   |
+| search         | A search filter.                                                                                                                                                                                                        |
+| groupBy        | Everything else, including queries without dimensions (unless `preferTimeSeries()` applies).                                                                                                                            |
+
+If you need a specific query type, don't rely on auto-detect. Call `groupBy()`, `timeseries()`, `topN()`, `scan()` or
+`search()` directly.
+
+**`preferTimeSeries()`**
+
+A timeseries query is cheaper than a groupBy for aggregations without dimensions. This is opt-in, because the result
+is not identical to the groupBy you get by default:
+
+```php
+$response = $client->query('wikipedia', Granularity::DAY)
+    ->interval('2015-09-12', '2015-09-14')
+    ->longSum('added')
+    ->preferTimeSeries()
+    ->execute();
+```
+
+Differences with the default groupBy:
+
+- `getQuery()` returns a `TimeSeriesQuery` and `execute()` returns a `TimeSeriesQueryResponse`.
+- Each row in `data()` has an extra `timestamp` key, e.g. `['added' => 123, 'timestamp' => '2015-09-12T00:00:00.000Z']`.
+- Empty periods give no rows, like groupBy: `skipEmptyBuckets` is always set to `true`.
+
+**`withoutTopN()`**
+
+A single dimension with `limit()` and one `orderBy()` becomes a topN query. TopN results are approximate. Call
+`withoutTopN()` to get an exact groupBy query with a limitSpec instead:
+
+```php
+$response = $builder
+  ->select('channel')
+  ->longSum('deleted')
+  ->orderBy('deleted', OrderByDirection::DESC)
+  ->limit(10)
+  ->withoutTopN()
+  ->execute(); // groupBy
+```
 
 **Response**
 
@@ -4237,7 +4332,7 @@ With the `compact()` method you can create a compaction task. A compact task can
 your existing data.   
 A compaction task internally generates an index task for performing compaction work with some fixed parameters.
 
-See for more information this page: https://druid.apache.org/docs/latest/ingestion/data-management.html#compact
+See for more information this page: https://druid.apache.org/docs/latest/data-management/compaction
 
 Example:
 
@@ -4750,7 +4845,7 @@ Since this input source has a fixed input format for reading events, no inputFor
 ingestion spec when using this input source. Please refer to the recommended practices in the Druid documentation
 before using this input source.
 
-See https://druid.apache.org/docs/latest/ingestion/native-batch.html#sql-input-source for more information.
+See https://druid.apache.org/docs/latest/ingestion/input-sources#sql-input-source for more information.
 
 The constructor allows you to specify the following parameters:
 

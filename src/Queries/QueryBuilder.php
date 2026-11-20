@@ -92,6 +92,16 @@ class QueryBuilder
     public array $placeholders = [];
 
     /**
+     * When true, auto-detect may use a timeseries query for aggregation-only queries without dimensions.
+     */
+    protected bool $preferTimeSeries = false;
+
+    /**
+     * When true, auto-detect never uses a topN query.
+     */
+    protected bool $withoutTopN = false;
+
+    /**
      * QueryBuilder constructor.
      *
      * @param \Level23\Druid\DruidClient $client
@@ -189,6 +199,35 @@ class QueryBuilder
     public function subtotals(array $subtotals): self
     {
         $this->subtotals = $subtotals;
+
+        return $this;
+    }
+
+    /**
+     * Let execute()/getQuery() use a timeseries query instead of groupBy for aggregation-only queries without
+     * dimensions. Only applies when no having, subtotals, limit, offset or orderBy (other than __time) is set.
+     * Empty buckets are skipped, but the result rows contain an extra "timestamp" key.
+     *
+     * @param bool $preferTimeSeries
+     *
+     * @return $this
+     */
+    public function preferTimeSeries(bool $preferTimeSeries = true): self
+    {
+        $this->preferTimeSeries = $preferTimeSeries;
+
+        return $this;
+    }
+
+    /**
+     * Prevent execute()/getQuery() from using a topN query for a single dimension with limit and orderBy.
+     * Such a query becomes a groupBy query with a limitSpec instead.
+     *
+     * @return $this
+     */
+    public function withoutTopN(): self
+    {
+        $this->withoutTopN = true;
 
         return $this;
     }
@@ -845,6 +884,11 @@ class QueryBuilder
         // If we only have "grouped" by __time, then we can use a time series query.
         // This is preferred, because it's a lot faster than doing a group by query.
         if ($this->isTimeSeriesQuery()) {
+            if (count($this->dimensions) === 0) {
+                // Match groupBy, which returns no rows for empty periods.
+                $context = $this->withSkipEmptyBuckets($context);
+            }
+
             return $this->buildTimeSeriesQuery($context);
         }
 
@@ -873,14 +917,12 @@ class QueryBuilder
      */
     protected function isTimeSeriesQuery(): bool
     {
-        // No dimensions but one or more aggregations: a timeseries query with
-        // the configured granularity is the canonical efficient shape for
-        // "aggregate(s) over the interval(s)". Fall through to groupBy when
-        // groupBy-only features (having / subtotals) are in use.
         if (count($this->dimensions) === 0) {
-            return count($this->aggregations) > 0
+            return $this->preferTimeSeries
+                && count($this->aggregations) > 0
                 && $this->having === null
-                && count($this->subtotals) === 0;
+                && count($this->subtotals) === 0
+                && !$this->hasGroupByOnlyLimit();
         }
 
         if (count($this->dimensions) != 1) {
@@ -892,13 +934,52 @@ class QueryBuilder
     }
 
     /**
+     * Return true when a limit, offset or orderBy on anything other than __time is set.
+     *
+     * @return bool
+     */
+    protected function hasGroupByOnlyLimit(): bool
+    {
+        if ($this->limit === null) {
+            return false;
+        }
+
+        if ($this->limit->getLimit() !== null || $this->limit->getOffset() !== null) {
+            return true;
+        }
+
+        /** @var \Level23\Druid\OrderBy\OrderByInterface $orderBy */
+        foreach ($this->limit->getOrderByCollection() as $orderBy) {
+            if ($orderBy->getDimension() !== '__time') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return the given context with skipEmptyBuckets enabled.
+     *
+     * @param QueryContext|array<string,string|int|bool> $context
+     *
+     * @return TimeSeriesQueryContext
+     */
+    protected function withSkipEmptyBuckets(array|QueryContext $context): TimeSeriesQueryContext
+    {
+        $properties = is_array($context) ? $context : $context->toArray();
+
+        return (new TimeSeriesQueryContext($properties))->setSkipEmptyBuckets(true);
+    }
+
+    /**
      * Determine if the current query is topN query
      *
      * @return bool
      */
     protected function isTopNQuery(): bool
     {
-        if (count($this->dimensions) != 1) {
+        if ($this->withoutTopN || count($this->dimensions) != 1) {
             return false;
         }
 

@@ -1,5 +1,15 @@
 # Changelog
 
+**v4.2.1** (2026-11-20)
+
+- Reverted the 4.1.4 auto-detect change for queries without dimensions: `execute()`/`getQuery()` use groupBy again, like 4.1.2.
+- Added `preferTimeSeries()` to opt in to a timeseries query for aggregations without dimensions. It is only used without having, subtotals, limit, offset or a non-`__time` orderBy, and it always sets `skipEmptyBuckets`.
+- Added `withoutTopN()` to make `execute()`/`getQuery()` use groupBy with a limitSpec instead of topN.
+- Added the `thetaSketchEstimate()` and `thetaSketchSetOp()` post aggregators (Theta Sketch extension).
+- Documented the auto-detect rules of `execute()` in the README.
+- Upgrade note for 4.2.0: the select query methods trigger `E_USER_DEPRECATED`, which Laravel can log and PHPUnit with `failOnDeprecation` turns into failures. Replace them with `scan()` and `limit()` before v5.0.
+- Upgrade note for 4.2.0: subclasses overriding `csvFormat()`, `tsvFormat()`, `kafkaFormat()` or the `CsvInputFormat`, `TsvInputFormat` and `KafkaInputFormat` constructors must add the new optional parameters.
+
 **v4.2.0** (2026-10-06)
 
 - Allow Guzzle 8 (`^7.0|^8.0`).

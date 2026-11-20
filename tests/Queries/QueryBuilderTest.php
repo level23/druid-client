@@ -24,6 +24,7 @@ use Level23\Druid\Dimensions\Dimension;
 use Level23\Druid\Queries\GroupByQuery;
 use Level23\Druid\Queries\QueryBuilder;
 use Level23\Druid\Context\QueryContext;
+use Level23\Druid\Limits\Limit;
 use Level23\Druid\Limits\LimitInterface;
 use Level23\Druid\Queries\QueryInterface;
 use Level23\Druid\Filters\SelectorFilter;
@@ -484,32 +485,172 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
     }
 
-    public function testIsTimeSeriesQueryWithNoDimensionsAndAggregations(): void
+    public function testIsTimeSeriesQueryWithNoDimensionsAndAggregationsDefaultsToGroupBy(): void
     {
         $this->builder->sum('reward');
 
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    }
+
+    public function testIsTimeSeriesQueryWithNoDimensionsAndAggregationsWhenPreferred(): void
+    {
+        $this->builder->sum('reward');
+        $this->builder->preferTimeSeries();
+
         $this->assertTrue($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+
+        $this->builder->preferTimeSeries(false);
+
+        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
     }
 
     public function testIsTimeSeriesQueryWithNoDimensionsAndNoAggregations(): void
     {
-        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
-    }
-
-    public function testIsTimeSeriesQueryWithNoDimensionsButHavingFallsBackToGroupBy(): void
-    {
-        $this->builder->sum('reward');
-        $this->builder->having('reward', '>', 0);
+        $this->builder->preferTimeSeries();
 
         $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
     }
 
-    public function testIsTimeSeriesQueryWithNoDimensionsButSubtotalsFallsBackToGroupBy(): void
+    /**
+     * @return array<string,array<int,callable>>
+     */
+    public static function groupByOnlySignalsDataProvider(): array
     {
-        $this->builder->sum('reward');
-        $this->builder->subtotals([['country']]);
+        return [
+            'having'         => [fn(QueryBuilder $builder) => $builder->having('reward', '>', 0)],
+            'subtotals'      => [fn(QueryBuilder $builder) => $builder->subtotals([['country']])],
+            'orderBy metric' => [fn(QueryBuilder $builder) => $builder->orderBy('reward', 'desc')],
+            'limit'          => [fn(QueryBuilder $builder) => $builder->limit(10)],
+            'limit + offset' => [fn(QueryBuilder $builder) => $builder->limit(10, 20)],
+        ];
+    }
 
-        $this->assertFalse($this->builder->shouldAllowMockingProtectedMethods()->isTimeSeriesQuery());
+    #[DataProvider('groupByOnlySignalsDataProvider')]
+    public function testNoDimensionsWithGroupByOnlySignalStaysGroupBy(callable $applySignal): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName');
+        $builder->interval('2015-02-12', '2015-02-13')->sum('reward')->preferTimeSeries();
+        $applySignal($builder);
+
+        $this->assertInstanceOf(GroupByQuery::class, $builder->getQuery());
+    }
+
+    public function testNoDimensionsWithOffsetOnlyStaysGroupBy(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName');
+        $builder->interval('2015-02-12', '2015-02-13')->sum('reward')->preferTimeSeries();
+
+        // An offset without a limit is not reachable via the public API, so set it directly.
+        $reflection = new \ReflectionProperty(QueryBuilder::class, 'limit');
+        $reflection->setValue($builder, new Limit(null, null, 5));
+
+        $this->assertInstanceOf(GroupByQuery::class, $builder->getQuery());
+    }
+
+    public function testNoDimensionsWithOrderByTimeUsesTimeSeriesWhenPreferred(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName');
+        $builder->interval('2015-02-12', '2015-02-13')
+            ->sum('reward')
+            ->orderBy('__time', 'desc')
+            ->preferTimeSeries();
+
+        $query = $builder->getQuery();
+
+        $this->assertInstanceOf(TimeSeriesQuery::class, $query);
+        $this->assertTrue($query->toArray()['descending']);
+    }
+
+    public function testWithoutTopN(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName');
+        $builder->interval('2015-02-12', '2015-02-13')
+            ->select('country')
+            ->sum('reward')
+            ->orderBy('reward', 'desc')
+            ->limit(10);
+
+        $this->assertInstanceOf(TopNQuery::class, $builder->getQuery());
+
+        $result = $builder->withoutTopN();
+        $this->assertSame($builder, $result);
+
+        $query = $builder->getQuery();
+        $this->assertInstanceOf(GroupByQuery::class, $query);
+        $this->assertEquals($builder->getLimit()?->toArray(), $query->toArray()['limitSpec']);
+    }
+
+    public function testNoDimensionsAggregationQueryIsGroupByByDefault(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName');
+        $builder->interval('2015-02-12', '2015-02-13')->sum('reward');
+
+        $this->assertInstanceOf(GroupByQuery::class, $builder->getQuery());
+    }
+
+    public function testNoDimensionsAggregationQueryReturnsSameResultAsBefore(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName', 'day');
+        $builder->interval('2015-02-12', '2015-02-14')->sum('reward');
+
+        $this->client->shouldReceive('executeQuery')
+            ->once()
+            ->with(Mockery::type(GroupByQuery::class))
+            ->andReturn([
+                ['version' => 'v1', 'timestamp' => '2015-02-12T00:00:00.000Z', 'event' => ['reward' => 10]],
+            ]);
+
+        $response = $builder->execute();
+
+        $this->assertInstanceOf(GroupByQueryResponse::class, $response);
+        $this->assertEquals([['reward' => 10]], $response->data());
+
+        // An empty period gives no rows.
+        $this->client->shouldReceive('executeQuery')->once()->andReturn([]);
+
+        $this->assertEquals([], $builder->execute()->data());
+    }
+
+    /**
+     * @return array<string,array<int,array<string,string|int|bool>|QueryContext>>
+     */
+    public static function preferredTimeSeriesContextDataProvider(): array
+    {
+        return [
+            'array'                 => [['priority' => 10]],
+            'query context'         => [new QueryContext(['priority' => 10])],
+            'skip buckets disabled' => [['priority' => 10, 'skipEmptyBuckets' => false]],
+        ];
+    }
+
+    /**
+     * @param array<string,string|int|bool>|QueryContext $context
+     */
+    #[DataProvider('preferredTimeSeriesContextDataProvider')]
+    public function testPreferredTimeSeriesAlwaysSkipsEmptyBuckets(array|QueryContext $context): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName', 'day');
+        $builder->interval('2015-02-12', '2015-02-14')->sum('reward')->preferTimeSeries();
+
+        $query = $builder->getQuery($context);
+
+        $this->assertInstanceOf(TimeSeriesQuery::class, $query);
+        $this->assertEquals(['priority' => 10, 'skipEmptyBuckets' => true], $query->toArray()['context']);
+
+        $this->client->shouldReceive('executeQuery')->once()->with($query)->andReturn([]);
+
+        $this->assertEquals([], $query->parseResponse($this->client->executeQuery($query))->data());
+    }
+
+    public function testTimeDimensionTimeSeriesKeepsContextUntouched(): void
+    {
+        $builder = new QueryBuilder($this->client, 'dataSourceName', 'day');
+        $builder->interval('2015-02-12', '2015-02-14')->select('__time')->sum('reward');
+
+        $query = $builder->getQuery(['priority' => 10]);
+
+        $this->assertInstanceOf(TimeSeriesQuery::class, $query);
+        $this->assertEquals(['priority' => 10], $query->toArray()['context']);
     }
 
     public function testIsScanQueryDefersToSearchWhenSearchFilterIsSet(): void
@@ -768,6 +909,7 @@ class QueryBuilderTest extends TestCase
             ->andReturn($isTimeSeries);
 
         if ($isTimeSeries) {
+            $this->builder->select('__time');
             $timeseries = $this->getTimeseriesQueryMock();
             $this->builder
                 ->shouldAllowMockingProtectedMethods()
