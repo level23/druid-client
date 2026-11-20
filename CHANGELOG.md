@@ -7,7 +7,8 @@
 - Added `allowTopN(false)` to make `execute()`/`getQuery()` use groupBy with a limitSpec instead of topN.
 - Added the `thetaSketchEstimate()` and `thetaSketchSetOp()` post aggregators (Theta Sketch extension).
 - Documented the auto-detect rules of `execute()` in the README.
-- Added upgrade notes to the README for the 4.2.0 deprecation notices and changed input format signatures.
+- Upgrade note for 4.2.0: the select query methods trigger `E_USER_DEPRECATED`, which Laravel can log and PHPUnit with `failOnDeprecation` turns into failures. Replace them with `scan()` and `limit()` before v5.0.
+- Upgrade note for 4.2.0: subclasses overriding `csvFormat()`, `tsvFormat()`, `kafkaFormat()` or the `CsvInputFormat`, `TsvInputFormat` and `KafkaInputFormat` constructors must add the new optional parameters.
 
 **v4.2.0** (2026-10-06)
 

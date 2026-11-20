@@ -41,19 +41,6 @@ See [CHANGELOG](CHANGELOG.md) for changes in the different versions and how to u
 This package follows [semantic versioning](https://semver.org): changes that can break your code (changed method
 signatures, a different query type or result for the same builder calls) are only made in a major version.
 
-### Upgrade notes for 4.x
-
-- **Deprecation notices (4.2.0).** `selectQuery()`, `pagingIdentifier()`, `metrics()`, `SelectQuery`,
-  `SelectQueryResponse` and `isSelectQuery()` trigger an `E_USER_DEPRECATED` notice. Laravel writes these to the log
-  when a deprecations channel is configured (`logging.deprecations`), and PHPUnit with `failOnDeprecation` or a strict
-  error handler turns them into failures. Replace these calls with `scan()` and `limit()`. They will be removed in v5.0.
-- **Changed signatures (4.2.0).** `csvFormat()`, `tsvFormat()` and `kafkaFormat()` (and the `CsvInputFormat`,
-  `TsvInputFormat` and `KafkaInputFormat` constructors) got new optional parameters. A subclass that overrides one of
-  them must add these parameters as well.
-- **Auto-detect (4.1.4 - 4.2.0).** `execute()`/`getQuery()` used a timeseries query for queries without dimensions in
-  these versions. Since 4.2.1 this is a groupBy query again, unless you call `preferTimeSeries()`. See
-  [execute()](#execute).
-
 ## Laravel/Lumen support.
 
 This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, but it's not required.
