@@ -97,9 +97,9 @@ class QueryBuilder
     protected bool $preferTimeSeries = false;
 
     /**
-     * When false, auto-detect never uses a topN query.
+     * When true, auto-detect never uses a topN query.
      */
-    protected bool $allowTopN = true;
+    protected bool $withoutTopN = false;
 
     /**
      * QueryBuilder constructor.
@@ -220,16 +220,14 @@ class QueryBuilder
     }
 
     /**
-     * Allow or prevent execute()/getQuery() from using a topN query for a single dimension with limit and orderBy.
-     * When disabled, such a query becomes a groupBy query with a limitSpec.
-     *
-     * @param bool $allowTopN
+     * Prevent execute()/getQuery() from using a topN query for a single dimension with limit and orderBy.
+     * Such a query becomes a groupBy query with a limitSpec instead.
      *
      * @return $this
      */
-    public function allowTopN(bool $allowTopN = true): self
+    public function withoutTopN(): self
     {
-        $this->allowTopN = $allowTopN;
+        $this->withoutTopN = true;
 
         return $this;
     }
@@ -981,7 +979,7 @@ class QueryBuilder
      */
     protected function isTopNQuery(): bool
     {
-        if (!$this->allowTopN || count($this->dimensions) != 1) {
+        if ($this->withoutTopN || count($this->dimensions) != 1) {
             return false;
         }
 

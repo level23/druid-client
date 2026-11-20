@@ -3618,15 +3618,15 @@ The `QueryContext()` object contains context properties which apply to all queri
 `execute()`, `getQuery()`, `toArray()` and `toJson()` pick the query type with these rules, in this order. The first
 match wins:
 
-| **Query type** | **When**                                                                                                                                                                                                                               |
-|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| scan           | No aggregations, only plain dimensions (no alias, lookup or other dimension spec), and no search filter or paging identifier.                                                                                                         |
-| timeseries     | Exactly one dimension: `__time` (an alias is allowed).                                                                                                                                                                                 |
+| **Query type** | **When**                                                                                                                                                                                                                |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| scan           | No aggregations, only plain dimensions (no alias, lookup or other dimension spec), and no search filter or paging identifier.                                                                                           |
+| timeseries     | Exactly one dimension: `__time` (an alias is allowed).                                                                                                                                                                  |
 | timeseries     | Only with `preferTimeSeries()`: no dimensions, at least one aggregation, and no `having()`, `subtotals()`, `limit()`, offset or `orderBy()` on anything other than `__time`. The context gets `skipEmptyBuckets: true`. |
-| topN           | Exactly one dimension, a limit, no offset and exactly one `orderBy()`, unless `allowTopN(false)` is called.                                                                                                                         |
-| select         | A paging identifier and no aggregations (deprecated).                                                                                                                                                                                  |
-| search         | A search filter.                                                                                                                                                                                                                       |
-| groupBy        | Everything else, including queries without dimensions (unless `preferTimeSeries()` applies).                                                                                                                                           |
+| topN           | Exactly one dimension, a limit, no offset and exactly one `orderBy()`, unless `withoutTopN()` is called.                                                                                                                |
+| select         | A paging identifier and no aggregations (deprecated).                                                                                                                                                                   |
+| search         | A search filter.                                                                                                                                                                                                        |
+| groupBy        | Everything else, including queries without dimensions (unless `preferTimeSeries()` applies).                                                                                                                            |
 
 If you need a specific query type, don't rely on auto-detect. Call `groupBy()`, `timeseries()`, `topN()`, `scan()` or
 `search()` directly.
@@ -3650,10 +3650,10 @@ Differences with the default groupBy:
 - Each row in `data()` has an extra `timestamp` key, e.g. `['added' => 123, 'timestamp' => '2015-09-12T00:00:00.000Z']`.
 - Empty periods give no rows, like groupBy: `skipEmptyBuckets` is always set to `true`.
 
-**`allowTopN()`**
+**`withoutTopN()`**
 
 A single dimension with `limit()` and one `orderBy()` becomes a topN query. TopN results are approximate. Call
-`allowTopN(false)` to get an exact groupBy query with a limitSpec instead:
+`withoutTopN()` to get an exact groupBy query with a limitSpec instead:
 
 ```php
 $response = $builder
@@ -3661,7 +3661,7 @@ $response = $builder
   ->longSum('deleted')
   ->orderBy('deleted', OrderByDirection::DESC)
   ->limit(10)
-  ->allowTopN(false)
+  ->withoutTopN()
   ->execute(); // groupBy
 ```
 
