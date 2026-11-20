@@ -38,9 +38,6 @@ You can also download it as a ZIP file and include it in your project, as long a
 
 See [CHANGELOG](CHANGELOG.md) for changes in the different versions and how to upgrade to the latest version.
 
-This package follows [semantic versioning](https://semver.org): changes that can break your code (changed method
-signatures, a different query type or result for the same builder calls) are only made in a major version.
-
 ## Laravel/Lumen support.
 
 This package is Laravel/Lumen ready. It can be used in a Laravel/Lumen project, but it's not required.
