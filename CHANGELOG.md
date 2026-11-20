@@ -1,5 +1,11 @@
 # Changelog
 
+**v4.2.1** (2026-11-20)
+
+- Reverted the 4.1.4 auto-detect change for queries without dimensions: `execute()`/`getQuery()` use groupBy again, like 4.1.2.
+- Added `preferTimeSeries()` to opt in to a timeseries query for aggregations without dimensions. It is only used without having, subtotals, limit, offset or a non-`__time` orderBy, and it always sets `skipEmptyBuckets`.
+- Documented the auto-detect rules of `execute()` in the README.
+
 **v4.2.0** (2026-10-06)
 
 - Allow Guzzle 8 (`^7.0|^8.0`).

@@ -3567,6 +3567,43 @@ query descriptions below.
 
 The `QueryContext()` object contains context properties which apply to all queries.
 
+**Auto-detect rules**
+
+`execute()`, `getQuery()`, `toArray()` and `toJson()` pick the query type with these rules, in this order. The first
+match wins:
+
+| **Query type** | **When**                                                                                                                                                                                                                               |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| scan           | No aggregations, only plain dimensions (no alias, lookup or other dimension spec), and no search filter or paging identifier.                                                                                                         |
+| timeseries     | Exactly one dimension: `__time` (an alias is allowed).                                                                                                                                                                                 |
+| timeseries     | Only with `preferTimeSeries()`: no dimensions, at least one aggregation, and no `having()`, `subtotals()`, `limit()`, offset or `orderBy()` on anything other than `__time`. The context gets `skipEmptyBuckets: true`. |
+| topN           | Exactly one dimension, a limit, no offset and exactly one `orderBy()`.                                                                                                                                                                |
+| select         | A paging identifier and no aggregations (deprecated).                                                                                                                                                                                  |
+| search         | A search filter.                                                                                                                                                                                                                       |
+| groupBy        | Everything else, including queries without dimensions (unless `preferTimeSeries()` applies).                                                                                                                                           |
+
+If you need a specific query type, don't rely on auto-detect. Call `groupBy()`, `timeseries()`, `topN()`, `scan()` or
+`search()` directly.
+
+**`preferTimeSeries()`**
+
+A timeseries query is cheaper than a groupBy for aggregations without dimensions. This is opt-in, because the result
+is not identical to the groupBy you get by default:
+
+```php
+$response = $client->query('wikipedia', Granularity::DAY)
+    ->interval('2015-09-12', '2015-09-14')
+    ->longSum('added')
+    ->preferTimeSeries()
+    ->execute();
+```
+
+Differences with the default groupBy:
+
+- `getQuery()` returns a `TimeSeriesQuery` and `execute()` returns a `TimeSeriesQueryResponse`.
+- Each row in `data()` has an extra `timestamp` key, e.g. `['added' => 123, 'timestamp' => '2015-09-12T00:00:00.000Z']`.
+- Empty periods give no rows, like groupBy: `skipEmptyBuckets` is always set to `true`.
+
 **Response**
 
 The response of this method is dependent on the query which is executed. Each query has its own response object.
