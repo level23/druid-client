@@ -551,7 +551,7 @@ The `cancelQuery()` method has 1 parameter:
 If the cancellation fails, the method will throw an exception. Otherwise, it will not return any result.
 
 See also:
-https://druid.apache.org/docs/latest/querying/querying.html#query-cancellation
+https://druid.apache.org/docs/latest/querying/#query-cancellation
 
 #### `DruidClient::compact()`
 
@@ -1182,7 +1182,7 @@ This method allows you to look up a dimension using a registered lookup function
 functions on these pages:
 
 * https://druid.apache.org/docs/latest/querying/lookups.html
-* https://druid.apache.org/docs/latest/development/extensions-core/lookups-cached-global.html
+* https://druid.apache.org/docs/latest/querying/lookups-cached-global
 
 Lookups are a handy way to transform an ID value into a user readable name, like transforming a `user_id` into the
 `username`, without having to store the username in your dataset.
@@ -1524,9 +1524,6 @@ Please note: use `distinctCount()` when the Theta Sketch extension is available,
 
 See this page for more information:
 https://druid.apache.org/docs/latest/querying/hll-old.html#hyperunique-aggregator
-
-This page also explains the usage of hyperUnique very well:
-https://cleanprogrammer.net/getting-unique-counts-from-druid-using-hyperloglog/
 
 Example:
 
@@ -3335,7 +3332,7 @@ $client->lookup()->jdbc(
 
 The `map()` method allows you to define a lookup with a static key/value map.
 
-See also: https://druid.apache.org/docs/latest/querying/lookups-cached-global/#map-lookup
+See also: https://druid.apache.org/docs/latest/querying/lookups
 
 The `map()` method has the following arguments:
 
@@ -4335,7 +4332,7 @@ With the `compact()` method you can create a compaction task. A compact task can
 your existing data.   
 A compaction task internally generates an index task for performing compaction work with some fixed parameters.
 
-See for more information this page: https://druid.apache.org/docs/latest/ingestion/data-management.html#compact
+See for more information this page: https://druid.apache.org/docs/latest/data-management/compaction
 
 Example:
 
@@ -4848,7 +4845,7 @@ Since this input source has a fixed input format for reading events, no inputFor
 ingestion spec when using this input source. Please refer to the recommended practices in the Druid documentation
 before using this input source.
 
-See https://druid.apache.org/docs/latest/ingestion/native-batch.html#sql-input-source for more information.
+See https://druid.apache.org/docs/latest/ingestion/input-sources#sql-input-source for more information.
 
 The constructor allows you to specify the following parameters:
 
