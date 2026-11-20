@@ -2874,7 +2874,7 @@ The `searchFragment()` method has the following arguments:
 The `searchRegex()` method allows you to filter on dimensions where the dimension matches the given regular expression.
 
 See this page for more information about regular
-expressions: https://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html
+expressions: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/regex/Pattern.html
 
 Example:
 
