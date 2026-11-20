@@ -6,6 +6,7 @@ namespace Level23\Druid\Concerns;
 use Closure;
 use InvalidArgumentException;
 use Level23\Druid\Types\DataType;
+use Level23\Druid\Types\ThetaSketchFunction;
 use Level23\Druid\PostAggregations\CdfPostAggregator;
 use Level23\Druid\PostAggregations\RankPostAggregator;
 use Level23\Druid\PostAggregations\LeastPostAggregator;
@@ -22,6 +23,8 @@ use Level23\Druid\PostAggregations\JavaScriptPostAggregator;
 use Level23\Druid\PostAggregations\ExpressionPostAggregator;
 use Level23\Druid\PostAggregations\FieldAccessPostAggregator;
 use Level23\Druid\PostAggregations\SketchSummaryPostAggregator;
+use Level23\Druid\PostAggregations\ThetaSketchSetOpPostAggregator;
+use Level23\Druid\PostAggregations\ThetaSketchEstimatePostAggregator;
 use Level23\Druid\PostAggregations\HyperUniqueCardinalityPostAggregator;
 
 trait HasPostAggregations
@@ -311,6 +314,71 @@ trait HasPostAggregations
         $this->postAggregations[] = new SketchSummaryPostAggregator(
             $fields[0],
             $as
+        );
+
+        return $this;
+    }
+
+    /**
+     * Return the estimated number of unique values of a theta sketch, e.g. the result of thetaSketchSetOp().
+     *
+     * To use this post aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string         $as                The name which will be used in the output
+     * @param Closure|string $fieldOrClosure    Field which refers to a theta sketch (like a distinctCount()
+     *                                          aggregation). If you give a closure, it will receive an instance of
+     *                                          the PostAggregationsBuilder, so you can use thetaSketchSetOp().
+     * @param int|null       $errorBoundsStdDev When given, return the estimate with error bounds for this number of
+     *                                          standard deviations (1, 2 or 3).
+     *
+     * @return $this
+     */
+    public function thetaSketchEstimate(
+        string $as,
+        Closure|string $fieldOrClosure,
+        ?int $errorBoundsStdDev = null
+    ): self {
+        $fields = $this->buildFields([$fieldOrClosure]);
+        if ($fields->count() != 1 || !$fields[0]) {
+            throw new InvalidArgumentException('You can only provide one post-aggregation, field access or constant as input field');
+        }
+
+        $this->postAggregations[] = new ThetaSketchEstimatePostAggregator($fields[0], $as, $errorBoundsStdDev);
+
+        return $this;
+    }
+
+    /**
+     * Apply a set operation (UNION, INTERSECT or NOT) on two or more theta sketches. The result is a sketch; wrap it in
+     * thetaSketchEstimate() to get a number.
+     *
+     * To use this post aggregator, make sure you include the extension in your druid server config file:
+     *
+     * druid.extensions.loadList=["druid-datasketches"]
+     *
+     * @param string                                          $as       The name which will be used in the output
+     * @param string|ThetaSketchFunction                      $function The set operation: UNION, INTERSECT or NOT.
+     * @param array<string|Closure|PostAggregatorInterface>   $fields   Fields which refer to theta sketches. A string
+     *                                                                  refers to an aggregation in the query, a closure
+     *                                                                  receives a PostAggregationsBuilder.
+     * @param int|null                                        $size     Sketch size, a power of 2. Druid uses 16384
+     *                                                                  when not given.
+     *
+     * @return $this
+     */
+    public function thetaSketchSetOp(
+        string $as,
+        string|ThetaSketchFunction $function,
+        array $fields,
+        ?int $size = null
+    ): self {
+        $this->postAggregations[] = new ThetaSketchSetOpPostAggregator(
+            $as,
+            $function,
+            $this->buildFields($fields),
+            $size
         );
 
         return $this;

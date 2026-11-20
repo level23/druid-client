@@ -567,4 +567,72 @@ class HasPostAggregationsTest extends TestCase
             new ConstantPostAggregator('pi', 3.14),
         ], $this->builder->getPostAggregations());
     }
+
+    public function testThetaSketchFunnel(): void
+    {
+        $builder = new PostAggregationsBuilder();
+
+        $result = $builder->thetaSketchEstimate('step1_and_step2', function (PostAggregationsBuilder $builder) {
+            $builder->thetaSketchSetOp('both', 'INTERSECT', ['step1', 'step2']);
+        });
+
+        $this->assertSame($builder, $result);
+
+        $result = $builder->thetaSketchSetOp('either', 'UNION', ['step1', 'step2'], 32768);
+
+        $this->assertSame($builder, $result);
+
+        $builder->thetaSketchEstimate('step1_estimate', 'step1', 1);
+
+        $this->assertEquals([
+            [
+                'type'  => 'thetaSketchEstimate',
+                'name'  => 'step1_and_step2',
+                'field' => [
+                    'type'   => 'thetaSketchSetOp',
+                    'name'   => 'both',
+                    'func'   => 'INTERSECT',
+                    'fields' => [
+                        ['type' => 'fieldAccess', 'name' => 'step1', 'fieldName' => 'step1'],
+                        ['type' => 'fieldAccess', 'name' => 'step2', 'fieldName' => 'step2'],
+                    ],
+                ],
+            ],
+            [
+                'type'   => 'thetaSketchSetOp',
+                'name'   => 'either',
+                'func'   => 'UNION',
+                'fields' => [
+                    ['type' => 'fieldAccess', 'name' => 'step1', 'fieldName' => 'step1'],
+                    ['type' => 'fieldAccess', 'name' => 'step2', 'fieldName' => 'step2'],
+                ],
+                'size'   => 32768,
+            ],
+            [
+                'type'              => 'thetaSketchEstimate',
+                'name'              => 'step1_estimate',
+                'field'             => ['type' => 'fieldAccess', 'name' => 'step1', 'fieldName' => 'step1'],
+                'errorBoundsStdDev' => 1,
+            ],
+        ], array_map(fn(PostAggregatorInterface $postAggregator) => $postAggregator->toArray(), $builder->getPostAggregations()));
+    }
+
+    public function testThetaSketchEstimateWithMultipleFields(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You can only provide one post-aggregation, field access or constant as input field');
+
+        (new PostAggregationsBuilder())->thetaSketchEstimate('estimate', function (PostAggregationsBuilder $builder) {
+            $builder->fieldAccess('step1');
+            $builder->fieldAccess('step2');
+        });
+    }
+
+    public function testThetaSketchEstimateWithoutFields(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new PostAggregationsBuilder())->thetaSketchEstimate('estimate', function () {
+        });
+    }
 }
